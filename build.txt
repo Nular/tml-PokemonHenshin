@@ -1,0 +1,10 @@
+displayName = Pokemon Henshin
+author = PokemonHenshin Team
+version = 0.1.0
+modReferences = CalamityMod
+sortAfter = CalamityMod
+side = Both
+hideCode = false
+hideResources = false
+includeSource = true
+buildIgnore = docs\*, .git\*, .cursor\*, *.md, *.csproj, *.user, *.sln, obj\*, bin\*, .vs\*, .gitignore

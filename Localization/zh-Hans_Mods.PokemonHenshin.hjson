@@ -1,0 +1,24 @@
+Common: {
+	HoldToTransform: 在热键栏持握即变身；取消持握立刻恢复
+	Moves: 左键：{0}   右键：{1}
+	NoMount: 变身期间禁止使用坐骑
+}
+
+Moves: {
+	Scratch: 爪击
+	Ember: 火花
+}
+
+DamageClasses.HenshinDamage.DisplayName: 变身伤害
+
+Items: {
+	CharmanderForce: {
+		DisplayName: 小火龙之力
+		Tooltip: 火属性。挥爪近身撕裂，吐出火花点燃敌人。
+	}
+}
+
+Projectiles: {
+	ScratchSlashProj.DisplayName: 爪击
+	EmberBoltProj.DisplayName: 火花
+}

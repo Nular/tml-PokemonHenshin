@@ -1,0 +1,5 @@
+[h1]Pokemon Henshin (宝可梦之力)[/h1]
+
+Hold a "{Pokemon} Force" weapon in your hotbar to transform into that Pokemon: overlay appearance, two signature moves, and context passives. Release it and every effect vanishes the same tick. Mounts are disabled while transformed.
+
+[b]Requires Calamity Mod.[/b]

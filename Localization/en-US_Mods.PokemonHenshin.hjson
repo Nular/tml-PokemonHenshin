@@ -1,0 +1,24 @@
+Common: {
+	HoldToTransform: Hold in your hotbar to transform; release to revert instantly
+	Moves: Left click: {0}   Right click: {1}
+	NoMount: Mounts cannot be used while transformed
+}
+
+Moves: {
+	Scratch: Scratch
+	Ember: Ember
+}
+
+DamageClasses.HenshinDamage.DisplayName: henshin damage
+
+Items: {
+	CharmanderForce: {
+		DisplayName: Charmander Force
+		Tooltip: Fire type. Scratch with your claws, spit embers that ignite foes.
+	}
+}
+
+Projectiles: {
+	ScratchSlashProj.DisplayName: Scratch
+	EmberBoltProj.DisplayName: Ember
+}

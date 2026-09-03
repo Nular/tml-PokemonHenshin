@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TMLTargets>$(USERPROFILE)\Documents\My Games\Terraria\tModLoader\ModSources\tModLoader.targets</TMLTargets>
+		<AssemblyName>PokemonHenshin</AssemblyName>
+		<RootNamespace>PokemonHenshin</RootNamespace>
+		<LangVersion>latest</LangVersion>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+		<!-- 仅文档，不参与编译/打包 -->
+		<Compile Remove="docs\**" />
+		<None Remove="docs\**" />
+		<AdditionalFiles Remove="docs\**" />
+	</ItemGroup>
+	<Import Project="$(TMLTargets)" Condition="Exists('$(TMLTargets)')" />
+	<Import Project="..\tModLoader.targets" Condition="!Exists('$(TMLTargets)') And Exists('..\tModLoader.targets')" />
+</Project>
