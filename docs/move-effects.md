@@ -1,8 +1,8 @@
 # 招式泰拉适配表（权威）
 
-**Status：** Implemented（骨架已落地，待游戏内验收精修）  
-**版本：** 1.1（2026-09-04）  
-**冲突处理：** 本表与代码占位招式不一致时，以实现前以本表为准；与 `docs/requirements.md` 冲突时以需求文档产品规则为准，数值/玩法语义以本表为准。
+**Status：** Implemented（点名招式已按表落地并经手感迭代；全表仍待游戏内验收；未点名大招精修 pending）  
+**版本：** 1.2（2026-09-05）  
+**冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表；未实现行仍以本表为设计规格。
 
 ---
 
@@ -48,7 +48,7 @@
 | 自然积攒 | 持握且近期有战斗：缓慢涨；Boss 战可加快；挂机几乎不涨 |
 | 释放键 | `ModKeybind`（可配置；未满提示不足） |
 | 联机 | 能量与大招释放 **服务端权威** 同步 |
-| UI | 每个「之力」物品 Tooltip 显示该形态能量；变身手旁简易条可并存（原版血条风格，无新 UI 贴图） |
+| UI | Tooltip 显示该形态能量；物品图标底栏进度条；变身时屏幕**右下角**怒气风格条（无新 UI 贴图） |
 
 饰品修正（仅变身生效）：A19 命中能量 +30%；A20 大招后留 20%；A21 大招伤害 +25% 且非大招能量获取 −20%。讲究头带（A14）禁用技能2与大招。
 
@@ -110,7 +110,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L01_F01 | 小火龙 | **猛火**：HP&lt;50% 时火系招式伤害 +20% | 火花 Bolt+OnFire | 抓 MeleeArc（三道爪痕） | 火焰漩涡→指针火矢 HomingLock（灾厄 FlareBolt / 利刃台风橙红） | 耗 100；无额外后摇 | 爪痕三道下滑尘；火矢完整动画或台风染色 | Low |
+| L01_F01 | 小火龙 | **猛火**：HP&lt;50% 时火系招式伤害 +20% | 火花 Bolt+OnFire | 抓 MeleeArc（三道**平行**爪痕+扩盒） | 火焰漩涡 HomingLock：自玩家射出，原版 Typhoon 橙红染色，锁定首敌 | 耗 100；无额外后摇 | 三平行爪痕尘；台风染色火矢（不生成灾厄弹） | Low |
 | L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Beam（龙系冲击波） | 火焰牙 MeleeArc+OnFire | 闪焰冲锋 Lunge+Recoil+OnFire（自损约造成伤害的 25%） | 耗 100；Recoil | 龙波：紫/火尘柱；冲锋：身周火尘+突进残影 | Medium |
 | L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +25%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 Spread/Bolt+OnFire（强焰） | 龙爪 MeleeArc | 过热 AoEBurst+OnFire；释放后 **5s 本模伤害 ×0.5** | 耗 100；5s 伤害减半 | 过热：大范围火爆尘+灾厄火系参数参考 | Medium |
 
@@ -134,7 +134,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE） | 精神强念 Scatter×12 共鸣权杖 | 耗 100 | 圣骑士锤幽灵下砸；共鸣权杖散落 | Medium |
+| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，约 ×5 面板） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗 100 | 放大幽灵锤；粉紫弹+延迟追踪 | Medium |
 | L12_F02 | 胡地 | **同步**：同上 | 精神强念 Bolt+DefDown | 真气拳 Charge→MeleeArc（蓄力拳） | 预知未来 ChargeBeam+IgnoreDef（蓄力后无视防御一击） | 耗 100；长蓄力 | 蓄力圈尘→爆发紫光 | Medium |
 
 ### 4.5 龙系链 L07
@@ -177,7 +177,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +30% | 岩石封锁 Cross×4 收拢碎裂（大地法杖贴图棕染 50%） | 撞击 Lunge | 十字劈 CrossArc+EasyCrit | 耗 100 | 十字四石；交叉弧剑气 | Medium |
+| L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +30% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 撞击 Lunge（2s CD + 0.25s 无敌；速/距约半） | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | 可见四石；X 尘 + 前冲残影 | Medium |
 | L05_F02 | 豪力 | **毅力**：同上 +30% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 落石；手刀；爆拳冲击波尘 | Medium |
 | L05_F03 | 怪力 | **毅力**：同上 +30% | 尖石攻击 Bolt+EasyCrit | 十字劈 MeleeArc+EasyCrit | 近身战 Barrage/MeleeArc；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 尖石；连殴近战尘 | Medium |
 
@@ -185,14 +185,14 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风/烈暴风 GroundCyclone（灾厄 Cyclone / 台风深蓝贴地） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime，近似必中） | 耗 100 | 贴地旋风；尖角尘锥 | Medium |
+| L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（原版 Typhoon **单帧**深蓝贴地；盒随帧） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime；与撞击共用突进 CD） | 耗 100 | 单团贴地旋风；尖角尘锥 | Medium |
 | L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 AoEBurst+Stun | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 强风场尘；全身能量撞 | Medium |
 
 ### 4.12 电系链 L04
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L04_F01 | 皮卡丘 | **静电**：被敌对接触/近战打中时，反弹 Electrify（短 CD） | 电击 Bolt+Electrify | 电光一闪 Blink（最近敌闪现打击） | 十万伏特 PierceBeam；20% Electrify；0.5s 后对感电敌再射（可再感电） | 耗 100 | 穿透电光；感电延迟再射 | Medium |
+| L04_F01 | 皮卡丘 | **静电**：被敌对接触/近战打中时，反弹 Electrify（短 CD） | 电击 Bolt+Electrify | 电光一闪 Blink（指针最近敌；落点电爆伤；2s CD + 0.25s 无敌；一屏） | 十万伏特 PierceBeam×10；50% Electrify；0.5s 后对感电敌再射 | 耗 100 | 粗电束；感电延迟再射 | Medium |
 | L04_F02 | 雷丘 | **静电**：同上 | 十万伏特 Beam+Electrify（可链式） | 伏特攻击 Lunge+Recoil+Electrify | 打雷 AoEBurst/Beam+Electrify（落雷感；概率再跳） | 耗 100；伏特 Recoil | 落雷：原版雷电/暗影束尘组合 | Medium |
 
 ### 4.13 岩/钢蛇链 L13

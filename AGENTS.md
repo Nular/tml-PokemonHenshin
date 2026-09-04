@@ -21,22 +21,23 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | 路径 | 角色 |
 |------|------|
 | `docs/requirements.md` | **产品唯一真相**（v1.3） |
-| `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
+| `docs/move-effects.md` | 招式/被动/大招泰拉适配表（已落地行以代码为准） |
 | `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
 | `Assets/Forms/` · `Assets/Accessories/` | 36 形态 + 饰品图（非 FX；A13+ 暂复用旧图） |
 | `Content/Core/` | FormDefinition / Registry / ProgressStage / Keybinds / 反射适配 |
-| `Content/PlayerState/` | HenshinPlayer（能量条、冲刺、饰品标志）+ StarterGrant |
-| `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态（三文件分组） |
+| `Content/PlayerState/` | HenshinPlayer（能量分存、突进 CD、饰品标志）+ StarterGrant |
+| `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态；`Moves/RedesignedMoveProjs` 点名招式弹 |
+| `Content/Visual/` | UltimateEnergyUI（右下角能量条） |
 | `Content/Accessories/` · `Items/Accessories/` | 仅变身生效饰品 A01～A21 |
 | `Content/Affinity/` · `Evolution/` · `WeatherField/` · `TerrainEdit/` · `Loot/` · `Net/` | 被动 / 进化 / 天气 / 挖掘 / 获取 / NetOp |
 | `tools/fetch_assets.py` | 从 52poke 拉图（buildIgnore） |
-| 特效 | **禁止**新增 FX 图；复用原版/灾厄/大修写法 |
+| 特效 | **禁止**新增 FX 图；点名招式以原版贴图/尘为主（不运行时生成灾厄弹）；CWR 只读参考 |
 | 本地化 | HJSON 含引号/`\n` 须用 `"..."` 或 `'''...'''` |
 
 ## 当前状态与下一步
 
-- **代码：** 战斗模型已切到被动+技能1/2+能量大招；点名招式特效重做；大招能量 **物品底栏 + 右下角怒气风格条 + Tooltip**；灾厄弹借用已改为原版 Typhoon 染色。
-- **已知缺口：** 现役**无** `GrantsPhasing` 形态（鬼斯通改为飘浮）；A11 咒符布暂无消费者；**未点名形态大招**特效/伤害重做仍 pending。
-- **验证：** 御三家二阶需打 **史莱姆神** 或鹿角怪（**不是**史莱姆王）；`/henshin stage`；大招默认 **Mouse3**；游戏运行时请游戏内 Build + Reload（TML003）。
-- **下一步：** 游戏内手感验收、联机双端实测、其余大招重做、DPS 对标、Rage/肾上腺素。
-- 新形态：继承 `HenshinForceItem`，唯一 `NetworkId`（1～36 已满，新内容从 37 起）；共享数据只放 `FormDefinition`。
+- **代码（2026-09-05 / `4a29052`+手感补丁）：** 被动+技能1/2+能量大招；点名招式（御三家一阶/皮卡丘/腕力/波波/凯西）已重做；能量 = Tooltip + 物品底栏 + 右下角条；撞击/电光一闪 **2s CD + 0.25s 无敌**。
+- **已知缺口：** 无现役 `GrantsPhasing`；A11 咒符布无消费者；**未点名形态大招**精修 pending。
+- **验证：** 御三家二阶需 **史莱姆神/鹿角怪**（非史莱姆王）；`/henshin stage`；大招默认 **Mouse3**；游戏运行中用游戏内 Build + Reload。
+- **下一步：** 游戏内验收、联机双端、其余大招、DPS 对标、Rage/肾上腺素。
+- 新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。
