@@ -4,9 +4,9 @@
 |----|------|
 | 版本 | 1.2 |
 | 对齐需求 | `docs/requirements.md` **v1.2** |
-| 状态 | **M0 已完成**（2026-09-04 代码 + 单机游戏内验收通过）；**当前执行 M1**（供未读聊天记录的 Agent 直接执行） |
+| 状态 | **M0～M4 代码已落地**（2026-09-04）；**待游戏内验收 A1～A4**；M5 / DPS 精调后置 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
-| 产出约束 | 本文件为计划；实现期再写游戏代码 |
+| 产出约束 | 本文件对齐现役代码；冲突以 `docs/requirements.md` 为准 |
 
 **产品真相唯一来源：** `docs/requirements.md`。本计划冲突时以需求文档为准。
 
@@ -61,13 +61,13 @@
 - 未变身也有强力隐藏饰品效果
 - **任何新增专用 FX 图片文件**（特效只复用原版 / 灾厄 / 大修写法）
 
-**延后到 M4+ / 后续版本：**
+**延后到 M5 / 后续版本：**
 
-- 碰撞级别 B 全面启用（M0～M3 仅 A；B 仅挖掘形态试点且可回退）
-- 冷门属性全量（冰等可占位）
-- 对标武器 ItemID 钉死表、招式精确弹幕参数
-- 公开分发商标策略（工程上先做显示名/路径可配置）
-- 全形态 52poke 精灵图精修裁切（M0 可用单帧；M4 前按表补齐）
+- 碰撞级别 B 全面启用（当前默认 A；穿障为 C 限时）
+- 冷门属性全量微调（冰等可已占位被动）
+- 对标武器 ItemID 钉死表、招式精确弹幕参数、DPS 抽检精表
+- 公开分发商标策略（工程上显示名/路径可配置）
+- 全形态 52poke 精灵图精修（现役已入库 36 张，部分为官方立绘缩略）
 
 ---
 
@@ -80,26 +80,34 @@
 ```
 PokemonHenshin/                # 仓库根 = 模组根
   docs/                        # requirements.md（产品真相）、dev-plan.md（本文件）；buildIgnore
-  PokemonHenshin.csproj        # 仅 Import ModSources\tModLoader.targets；docs\** 从编译排除
-  build.txt                    # modReferences = CalamityMod；buildIgnore 含 docs、*.md、.git、.cursor、bin、obj
+  tools/                       # 开发脚本（fetch_assets.py）；buildIgnore，不进 .tmod
+  PokemonHenshin.csproj
+  build.txt                    # modReferences = CalamityMod；buildIgnore 含 docs、tools、*.md…
   description.txt / description_workshop.txt / icon.png
-  PokemonHenshinMod.cs         # Mod 入口：Instance + HandlePacket → HenshinNet
-  Localization/                # en-US / zh-Hans hjson（tML 首次加载会自动补缺失键）
-  Assets/Forms/                # 宝可梦贴图，按 FormId 命名；物品图标直接复用同图
-                               # 禁止：新增任何自制特效图；FX 用原版/灾厄/大修已有资源
+  PokemonHenshinMod.cs
+  Localization/                # en-US / zh-Hans hjson（特殊字符须引号或 ''' 多行）
+  Assets/
+    Forms/                     # 36 形态精灵图，按 FormId 命名
+    Accessories/               # 12 饰品图 A01～A12（非 FX）
   Content/
-    Core/                      # FormDefinition（含 MoveA/MoveB）、FormRegistry、MoveSpec、PokemonType
+    Core/                      # FormDefinition、FormRegistry、MoveSpec、ProgressStage、CalamityProgressAdapter
     Damage/                    # HenshinDamage
-    PlayerState/               # HenshinPlayer（唯一变身权威状态机）
+    PlayerState/               # HenshinPlayer、StarterGrantPlayer
     Visual/                    # HenshinOverlayLayer
-    Combat/                    # HenshinForceItem 基类；Moves/ 招式弹幕
-    Items/Forms/               # 各形态物品（CharmanderForce = L01_F01）
-    Net/                       # HenshinNet + NetOp 枚举
-    # M1+ 按需新增：Affinity/、Evolution/、Accessories/、WeatherField/、TerrainEdit/、Data/
+    Combat/                    # HenshinForceItem；Moves/
+    Affinity/                  # ConditionEvaluator、TypePassiveApplier
+    Evolution/                 # EvolutionService、确认 UI
+    Accessories/               # HenshinAccessoryItem 基类
+    Items/Forms/               # 36 形态物品（StarterLines / CombatLinesA / UtilityAndLegend）
+    Items/Accessories/         # A01～A12
+    WeatherField/              # 天气场
+    TerrainEdit/               # 挖掘预算
+    Loot/                      # Boss 掉落 + 合成
+    Net/                       # HenshinNet + NetOp
 ```
 
 **命名空间根：** `PokemonHenshin`  
-子空间与上表模块一一对应，例如 `PokemonHenshin.Content.Core`。
+子空间与上表模块一一对应。
 
 ### 2.2 Mod 元数据（`build.txt`，现役）
 
@@ -111,21 +119,20 @@ modReferences = CalamityMod
 sortAfter = CalamityMod
 ```
 
-- **强依赖 Calamity：** 需求明确平台含灾厄；进度档大量 `DownedBossSystem` 字段。`modReferences = CalamityMod`，无灾厄不可加载。
-- **弱依赖策略：** 其他模组（Boss Checklist、Magic Storage 等）一律 `weakReferences` + 可选反射；**不要**引入 InnoVault。
-- **钉死版本（2026-09-04）：** tModLoader **1.4.4.9 / 2026.07 stable（net8.0）**，CalamityMod **2.2.4**（需求 §12.8）。
-- **编译期引用灾厄 dll：** M0 未引入（盗贼类走 `ModContent.TryFind`）。M1 起需要 `DownedBossSystem` 时，在游戏内 Workshop → Calamity → Extract 得到 `ModSources\ModAssemblies\CalamityMod_v*.dll`，在 csproj 加 `<Reference Include=... Private="false" />`。
+- **强依赖 Calamity：** `modReferences = CalamityMod`，无灾厄不可加载。
+- **弱依赖策略：** 其他模组一律 `weakReferences` + 可选反射；**不要**引入 InnoVault。
+- **钉死版本（2026-09-04）：** tModLoader **1.4.4.9 / 2026.07 stable（net8.0）**，CalamityMod **2.2.4**。
+- **灾厄 API 访问（现役）：** **反射** `CalamityProgressAdapter` 读 `DownedBossSystem`；**不**要求 Extract dll，**不**在 csproj 加 Calamity Reference。盗贼伤害类仍 `ModContent.TryFind("CalamityMod","RogueDamageClass")`。
 
 ### 2.3 对 Calamity 的访问策略
 
-| 策略 | 用途 | 参考大修 |
-|------|------|----------|
-| 编译期引用 Calamity | `DownedBossSystem`、怒气/肾上腺素若公开 API 可直接用 | 大修用反射因弱引用；本模**强依赖可直接引用**公开类型 |
-| 薄适配层 `CalamityProgressAdapter` | 把灾厄 `downed*` 映射到本模 `ProgressStage`；灾厄改名只改适配层 | `CWRRef.cs` 中 `DownedBossSystem` 属性表（`GetDownedDesertScourge` 等） |
-| 禁止散落硬编码 | 物品/弹幕里不直接写十几个 `downedXxx` | 同左 |
+| 策略 | 用途 | 现役 |
+|------|------|------|
+| 反射适配 `CalamityProgressAdapter` | `downed*` → `ProgressStage`；字段缺失打日志当 false | **采用**（对齐大修 `CWRRef` 字段名） |
+| 编译期引用 Calamity dll | 可选加速/强类型；需 Extract | **未采用** |
+| 禁止散落硬编码 | 物品/弹幕不直接写十几个 `downedXxx` | 遵守 |
 
-**怒气 / 肾上腺素：** 优先走 Generic 伤害继承；若实测未计入，再在适配层读 `CalamityPlayer` 相关字段补乘（大修缓存见 `CWRRef` 的 `calPlayer_rage_*` / `adrenaline_*`）。
-
+**怒气 / 肾上腺素：** 优先走 Generic 伤害继承；若实测未计入，再在适配层读 `CalamityPlayer` 相关字段补乘（**pending 实测**）。
 ### 2.4 联机包设计（简化版大修信道）
 
 大修：`CWRNetWork.cs` + `CWRNetChannel.cs` + 各功能 `*Net`（如 `Content/Wraiths/Runtime/WraithNet.cs`）。
@@ -433,126 +440,62 @@ TryEditTile(player, action) →
 
 #### M1.1 ProgressStage 适配器
 
-- [ ] `Core/ProgressStageService.cs` + `CalamityProgressAdapter.cs`
-- [ ] 映射需求 §4.1 全部档（含 `downedBoomerDuke`）
-- **验收：** 调试命令或 UI 显示当前档；击杀测试 Boss 后档位上升
-- **风险：** 灾厄字段改名 → 单测/日志打印缺失字段
+- [x] `Core/ProgressStageService.cs` + `CalamityProgressAdapter.cs`（反射，无需 Extract dll）
+- [x] 映射需求 §4.1 全部档（含 `downedBoomerDuke`）
+- **验收：** `/henshin stage` —— **待游戏内 A1**
 
 #### M1.2 进化替换契约
 
-- [ ] `Evolution/EvolutionService.cs`
-- [ ] 前缀 + 收藏继承；范围过滤
-- **验收：** 热键栏进化保留前缀；银行中同物品不自动变
-- **风险：** 收藏字段联机不同步 → 进化后 `SyncEquipment`
+- [x] `Evolution/EvolutionService.cs`
+- [x] 前缀 + 收藏继承；范围过滤
+- **验收：** **待游戏内 A1**
 
 #### M1.3 进化确认 UI
 
-- [ ] `Evolution/EvolutionConfirmUI.cs`
-- [ ] `RequestEvolve` / `ApplyEvolve` 包
-- **验收：** 条件满足→确认→替换；取消不变；作弊包被拒
-- **风险：** UI 焦点抢输入 → 确认期间可暂停玩家用招
+- [x] `Evolution/EvolutionConfirmUI.cs`
+- [x] `RequestEvolve` / `ApplyEvolve` 包
+- **验收：** **待游戏内 A1**
 
 #### M1.4 二阶演示链
 
-- [ ] `L01_F02` 火恐龙物品 + 进化关系（触发可用「档≥4」或调试）
-- **验收：** 小火龙→火恐龙流程跑通
-- **风险：** 无
+- [x] `L01_F02` 火恐龙 + 全链至喷火龙等（M4 已满表）
+- **验收：** **待游戏内 A1**
 
 #### M1.5 开局御三家
 
-- [ ] `PlayerState/StarterGrantPlayer.cs`：小火龙/杰尼龟/妙蛙种子各 1
-- [ ] 每玩家每世界一次 flag
-- **验收：** 新玩家进世界背包有三件；重进不重复发放
-- **风险：** 背包满 → 掉落世界或提示；需写清策略（建议优先空槽，满则掉落）
+- [x] `PlayerState/StarterGrantPlayer.cs`
+- **验收：** **待游戏内 A1**
 
-**M1 总验收：** 需求 §13 M1。
+**M1 总验收：** 待用户 A1。
 
 ---
 
 ### M2 — 情境被动 + 饰品
 
-#### M2.1 情境条件引擎
+#### M2.1～M2.3
 
-- [ ] `Affinity/ConditionId` 枚举（需求 §3.1）
-- [ ] `Affinity/ConditionEvaluator.cs`（服务端）
-- **验收：** 调试下 BiomeHell / WeatherRain / TargetOnFire 等抽测正确
-- **风险：** 生物群落与灾厄 Zone 差异 → 火系地狱用原版 Layer + 可选硫磺火 Zone
-
-#### M2.2 火 / 水 / 飞 被动子集
-
-- [ ] `Affinity/TypePassives/FirePassive`、`WaterPassive`、`FlyingPassive`
-- [ ] 挂到对应 FormDefinition
-- **验收：** 持握生效、取消同 tick 消失；火：熔岩免疫；水：呼吸+水中移速；飞：能量飞行占位
-- **风险：** 飞行与坐骑/翅膀冲突 → 变身已禁坐骑；翅膀可保留但飞行能量独立计量
-
-#### M2.3 饰品框架 + A01、A07（或 A01+A02）
-
-- [ ] `Accessories/HenshinAccessoryItem` 基类：未持握时效果关 + 描述 `【仅变身生效·当前未生效】`
-- [ ] 实现至少 2 件（建议 A01 万能胶囊带 + A07 木炭袋）
-- **验收：** 未持握无加成；持握后生效；脱下立刻无
-- **风险：** 灾厄额外饰品栏 → 用标准 `UpdateAccessory`，不特殊 hook 也能进栏即可
-
-**M2 总验收：** 需求 §13 M2。
+- [x] ConditionEvaluator + 火/水/飞等 TypePassiveApplier
+- [x] HenshinAccessoryItem + A01～A12 全件
+- **验收：** **待游戏内 A2**
 
 ---
 
 ### M3 — 天气场、穿障、挖掘
 
-#### M3.1 天气场一例
-
-- [ ] `WeatherField/*` + 水箭龟或占位招式「雨天气场」（可用临时测试招式挂小火龙 B 调试，合并前改回）
-- [ ] `SyncWeatherField`；`WeatherRain` 条件读场
-- **验收：** 场内潮湿/加成一致；过期消失；联机双方判定一致
-- **风险：** 与灾厄酸雨并存 → 本模场不取消灾厄事件
-
-#### M3.2 穿障一例（鬼斯通 L06_F01）
-
-- [ ] 物品可创造获取；招式 B 穿障 1.5s
-- [ ] 硬限制全实现 + `SyncPhasing` + 卡墙处理
-- **验收：** 超时/CD/Boss 3s 窗/禁交互均符合；联机可见穿障状态
-- **风险：** 穿墙物理不同步 → 服务端设标志，客户端表现跟随
-
-#### M3.3 挖掘一例（地鼠 L10_F01）
-
-- [ ] `TerrainEdit/TerrainBudgetPlayer` + 黑名单
-- [ ] 招式挖掘遵守档≤6 预算
-- **验收：** 超预算拒绝提示；不挖箱/祭坛；联机地形一致
-- **风险：** 挖矿与原版 pickaxe 冲突 → 招式走自定义 KillTile 路径并计入预算
-
-**M3 总验收：** 需求 §13 M3。
+- [x] WeatherFieldSystem + 水箭龟雨场
+- [x] 鬼斯通穿障 + SyncPhasing
+- [x] 地鼠挖掘 + TerrainBudgetPlayer
+- **验收：** **待游戏内 A3**
 
 ---
 
 ### M4 — 内容填满与平衡
 
-#### M4.1 形态物品与招式骨架
-
-- [ ] 按需求 §9 建齐 36 形态物品（可用代码生成器/表驱动减少样板）
-- [ ] 招式按 §9.3 骨架实现；数值先占位再迭代
-- [ ] **传说线优先验收：** 超梦（L14）、洛奇亚（L16）、烈空坐（L17）须在 M4 内可玩且强度落在对应档对标区间（对齐需求 §14 第 7 条）
-- **验收：** 创造菜单可取齐；每档 1～3 只互竞可感知差异；三传说可创造获取并抽检 DPS
-- **风险：** 工作量爆炸 → 按档分批（先 1～4，再 5～8，再 9～12；传说放入最后一批但不得删）
-
-#### M4.2 饰品 12 件
-
-- [ ] A01～A12 按需求 §10
-- **验收：** 共鸣条件正确；未变身全无效
-- **风险：** 无
-
-#### M4.3 获取途径
-
-- [ ] 掉落/合成/商店等（可并存）；同档难度同阶
-- **验收：** 非创造可玩到各档至少 1 条获取链
-- **风险：** 掉率需实机调
-
-#### M4.4 DPS 抽检
-
-- [ ] 配置对标 ItemID 表（需求 §11）
-- [ ] 每档 80%～120% 记录
-- **验收：** 文档化抽检表；极端混搭 ≤130%
-- **风险：** 灾厄改数值 → 对标用配置文件
-
-**M4 总验收：** 需求 §13 M4。
+- [x] 36 形态物品与招式骨架 + 52poke 贴图
+- [x] 饰品 12 件（52poke 图/描述）
+- [x] 掉落/合成占位；传说可创造/合成
+- [ ] DPS 抽检精表（占位数值，精调后置 M5）
+- **验收：** **待游戏内 A4**
 
 ---
 
@@ -582,13 +525,10 @@ TryEditTile(player, action) →
 | 阶段 | 形态表 | 招式 | 饰品 | 宝可梦图 | 特效 |
 |------|--------|------|------|----------|------|
 | M0 | 1 条 L01_F01 | A/B 占位 | 无 | 52poke 小火龙 | 仅原版/灾厄/大修复用 |
-| M1 | +L01_F02；御三家三件 | 简占位 | 无 | 补杰尼龟/妙蛙种子/火恐龙 | 同上 |
-| M2 | 仍少；火/水/飞被动 | 不变 | 2 件 | 按需 | 同上 |
-| M3 | +穿障/挖掘/天气演示形态 | 真逻辑 | 可加 A11 | 按需 | 天气/影参考大修场与 Dust，无新图 |
-| M4 | **36 形态满表** | 骨架→数值 | **12 件满** | **按 §9 从 52poke 补齐** | 逐招式映射已有 FX，禁止新图 |
-| M5 | 冻结 ID | 微调 | 微调 | 路径可替换验收 | 回归：仓库无新增 Fx 图片 |
+| M1～M4（**现役**） | **36 形态满表** | 骨架占位（随 Stage 递增伤害） | **12 件满** | **36 Forms + 12 Acc 已入库** | 逐招式映射已有 FX，禁止新图 |
+| M5 | 冻结 ID | 数值精调 | 微调 | 路径可替换验收 | 回归：仓库无新增 Fx 图片 |
 
-**仍待实现期填写（不挡 M0）：** 招式精确数值、对标 ItemID、饰品微调、商标策略（需求 §15）。
+**仍待填写（不挡玩法骨架）：** 招式精确数值、对标 ItemID、DPS 抽检精表、商标策略（需求 §15）。
 
 ### 特效实现备忘（给实现 Agent）
 
@@ -705,8 +645,8 @@ TryEditTile(player, action) →
 |------|------|
 | 与 requirements **v1.2** 对齐 | **通过**：含禁自制 FX、52poke 取图、持握变身、禁坐骑、伤害折算、进化、御三家、传说线、联机与 M0～M5 |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
-| 主要残留风险 | ① k=0.35 API；② Overlay 藏皮；③ M4 体量；④ 招式观感受「无新 FX 图」约束，靠组合原版尘弥补 |
-| 总评 | **可行，批准按本计划开工 M0** |
+| 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
+| 总评 | **M0～M4 代码已落地；待游戏内 A1～A4 与 M5** |
 
 ---
 
@@ -718,4 +658,6 @@ TryEditTile(player, action) →
 | 1.1 | 需求对照审阅修订（进化槽位、k=0.35 回退、传说硬验收） |
 | **1.2** | 对齐 requirements v1.2：禁止新增 FX 图；宝可梦图从 52poke 自取；招式 FX 参考表 |
 | 1.2.1 | 洁癖收尾：修正验收条文交叉引用；与 AGENTS.md/README 同源 |
-| 1.2.2 | M0 完成收尾（2026-09-04）：§2.1 定为扁平布局并写实际目录；§2.2 钉死 tML 2026.07 / Calamity 2.2.4；§3.12 k=0.35 主方案落地；M0 任务勾选、新增「实测踩坑」表；Rage/Adrenaline 对照与联机双端实测标 pending |
+| 1.2.2 | M0 完成收尾：扁平布局、钉死版本、k=0.35 落地、实测踩坑表；Rage/联机标 pending |
+| 1.2.3 | M1～M4 代码落地：反射 ProgressStage、进化 UI、36 形态、12 饰品、被动/天气/穿障/挖掘、获取占位；待游戏内 A1～A4 |
+| **1.2.4** | 洁癖：纠正「须 Extract dll」过期说法；目录树/内容管线对齐现役；残留风险改为联机与 DPS |

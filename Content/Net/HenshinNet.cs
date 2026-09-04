@@ -1,23 +1,27 @@
 using System.IO;
+using PokemonHenshin.Content.Core;
+using PokemonHenshin.Content.Evolution;
 using PokemonHenshin.Content.PlayerState;
+using PokemonHenshin.Content.TerrainEdit;
+using PokemonHenshin.Content.WeatherField;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Net
 {
-	/// <summary>网络操作码（dev-plan §2.4：显式枚举，不自动编号）。后续 SyncPhasing / SyncWeatherField / Evolve 依次追加。</summary>
+	/// <summary>网络操作码（dev-plan §2.4：显式枚举，一次锁死）。</summary>
 	public enum NetOp : byte
 	{
-		/// <summary>载荷：playerId(byte) + formNetId(ushort)。</summary>
-		SyncForm = 1
+		SyncForm = 1,
+		RequestEvolve = 2,
+		ApplyEvolve = 3,
+		SyncPhasing = 4,
+		SyncWeatherField = 5,
+		TerrainBudgetReject = 6
 	}
 
-	/// <summary>
-	/// 单入口网络层。形态同步遵循服务端权威（需求 §2.1 / §8）：
-	/// 客户端本地变身后上报 → 服务端按自己视角的持握状态校验 → 广播权威值；
-	/// 客户端收到的值只应用于远端玩家，本地玩家保留预测。
-	/// </summary>
+	/// <summary>单入口网络层。形态同步遵循服务端权威。</summary>
 	public static class HenshinNet
 	{
 		private static ModPacket NewPacket(NetOp op)
@@ -27,7 +31,6 @@ namespace PokemonHenshin.Content.Net
 			return packet;
 		}
 
-		/// <summary>发送某玩家当前形态。客户端调用即发给服务端；服务端调用按 toWho / fromWho 分发。</summary>
 		public static void SendForm(HenshinPlayer mp, int toWho, int fromWho)
 		{
 			if (Main.netMode == NetmodeID.SinglePlayer)
@@ -38,12 +41,73 @@ namespace PokemonHenshin.Content.Net
 			packet.Send(toWho, fromWho);
 		}
 
-		/// <summary>服务端向全体广播某玩家的权威形态。</summary>
 		public static void BroadcastForm(HenshinPlayer mp, int ignoreClient)
 		{
 			if (Main.netMode != NetmodeID.Server)
 				return;
 			SendForm(mp, -1, ignoreClient);
+		}
+
+		/// <summary>客户端请求进化：slot(-1=鼠标) + isMouse(byte)。</summary>
+		public static void RequestEvolve(int slot, bool isMouse)
+		{
+			if (Main.netMode == NetmodeID.MultiplayerClient)
+			{
+				ModPacket packet = NewPacket(NetOp.RequestEvolve);
+				packet.Write((short)slot);
+				packet.Write(isMouse);
+				packet.Send();
+				return;
+			}
+
+			// 单机：直接服务端路径。
+			ApplyEvolveLocal(Main.LocalPlayer, slot, isMouse);
+		}
+
+		public static void SendPhasing(HenshinPlayer mp, int toWho, int fromWho)
+		{
+			if (Main.netMode == NetmodeID.SinglePlayer)
+				return;
+			ModPacket packet = NewPacket(NetOp.SyncPhasing);
+			packet.Write((byte)mp.Player.whoAmI);
+			packet.Write(mp.IsPhasing);
+			packet.Write(mp.PhasingTimeLeft);
+			packet.Send(toWho, fromWho);
+		}
+
+		public static void BroadcastPhasing(HenshinPlayer mp, int ignoreClient = -1)
+		{
+			if (Main.netMode != NetmodeID.Server)
+				return;
+			SendPhasing(mp, -1, ignoreClient);
+		}
+
+		public static void BroadcastWeatherField(WeatherFieldState field, bool remove)
+		{
+			if (Main.netMode != NetmodeID.Server)
+				return;
+			ModPacket packet = NewPacket(NetOp.SyncWeatherField);
+			packet.Write(remove);
+			packet.Write(field.Id);
+			if (!remove)
+			{
+				packet.Write(field.Center.X);
+				packet.Write(field.Center.Y);
+				packet.Write(field.Radius);
+				packet.Write(field.TimeLeft);
+				packet.Write((byte)field.Tag);
+				packet.Write((byte)field.Owner);
+			}
+			packet.Send();
+		}
+
+		public static void SendTerrainReject(int playerId)
+		{
+			if (Main.netMode != NetmodeID.Server)
+				return;
+			ModPacket packet = NewPacket(NetOp.TerrainBudgetReject);
+			packet.Write((byte)playerId);
+			packet.Send(playerId);
 		}
 
 		public static void Handle(BinaryReader reader, int whoAmI)
@@ -53,6 +117,21 @@ namespace PokemonHenshin.Content.Net
 			{
 				case NetOp.SyncForm:
 					HandleSyncForm(reader, whoAmI);
+					break;
+				case NetOp.RequestEvolve:
+					HandleRequestEvolve(reader, whoAmI);
+					break;
+				case NetOp.ApplyEvolve:
+					HandleApplyEvolve(reader, whoAmI);
+					break;
+				case NetOp.SyncPhasing:
+					HandleSyncPhasing(reader, whoAmI);
+					break;
+				case NetOp.SyncWeatherField:
+					HandleSyncWeatherField(reader, whoAmI);
+					break;
+				case NetOp.TerrainBudgetReject:
+					HandleTerrainReject(reader, whoAmI);
 					break;
 				default:
 					PokemonHenshinMod.Instance.Logger.Warn($"未知 NetOp {(byte)op}，来自 {whoAmI}");
@@ -74,15 +153,12 @@ namespace PokemonHenshin.Content.Net
 
 			if (Main.netMode == NetmodeID.Server)
 			{
-				// 基础校验：只能上报自己。
 				if (playerIndex != whoAmI)
 					return;
 
-				// 服务端权威：按自己视角判定，不信客户端声称的值。
 				ushort authoritative = mp.ResolveHeldForm()?.NetworkId ?? 0;
 				if (authoritative == claimedNetId)
 				{
-					// 一致：转发给其他客户端（本地状态机同 tick 也会得出相同结果）。
 					ModPacket relay = NewPacket(NetOp.SyncForm);
 					relay.Write((byte)playerIndex);
 					relay.Write(authoritative);
@@ -90,7 +166,6 @@ namespace PokemonHenshin.Content.Net
 				}
 				else
 				{
-					// 不一致：把权威值发回申报者纠正；其他人由服务端状态机变化时广播。
 					ModPacket correction = NewPacket(NetOp.SyncForm);
 					correction.Write((byte)playerIndex);
 					correction.Write(authoritative);
@@ -99,8 +174,138 @@ namespace PokemonHenshin.Content.Net
 				return;
 			}
 
-			// 客户端：应用服务端权威值（仅影响远端玩家；本地玩家保留预测）。
 			mp.ApplyServerForm(claimedNetId);
+		}
+
+		private static void HandleRequestEvolve(BinaryReader reader, int whoAmI)
+		{
+			short slot = reader.ReadInt16();
+			bool isMouse = reader.ReadBoolean();
+
+			if (Main.netMode != NetmodeID.Server)
+				return;
+
+			Player player = Main.player[whoAmI];
+			if (player == null || !player.active)
+				return;
+
+			if (!ApplyEvolveLocal(player, slot, isMouse))
+				return;
+
+			// 广播结果给所有客户端（含发起者）。
+			ModPacket packet = NewPacket(NetOp.ApplyEvolve);
+			packet.Write((byte)whoAmI);
+			packet.Write(slot);
+			packet.Write(isMouse);
+			Item item = EvolutionService.GetItemRef(player, slot, isMouse);
+			packet.Write(item.type);
+			packet.Write((byte)item.prefix);
+			packet.Write(item.favorited);
+			packet.Send();
+		}
+
+		private static void HandleApplyEvolve(BinaryReader reader, int whoAmI)
+		{
+			if (Main.netMode != NetmodeID.MultiplayerClient)
+				return;
+
+			int playerIndex = reader.ReadByte();
+			short slot = reader.ReadInt16();
+			bool isMouse = reader.ReadBoolean();
+			int itemType = reader.ReadInt32();
+			byte prefix = reader.ReadByte();
+			bool favorited = reader.ReadBoolean();
+
+			Player player = Main.player[playerIndex];
+			if (player == null || !player.active)
+				return;
+
+			Item item = EvolutionService.GetItemRef(player, slot, isMouse);
+			if (item == null)
+				return;
+
+			item.SetDefaults(itemType);
+			if (prefix > 0)
+				item.Prefix(prefix);
+			item.favorited = favorited;
+
+			if (playerIndex == Main.myPlayer)
+				player.GetModPlayer<EvolutionOfferPlayer>().NotifyEvolved();
+		}
+
+		internal static bool ApplyEvolveLocal(Player player, int slot, bool isMouse)
+		{
+			if (!EvolutionService.CanAutoEvolveLocation(player, slot, isMouse))
+				return false;
+
+			Item item = EvolutionService.GetItemRef(player, slot, isMouse);
+			if (item == null || item.IsAir)
+				return false;
+
+			FormDefinition current = FormRegistry.ByItemType(item.type);
+			if (current == null || !EvolutionService.MeetsTrigger(player, current))
+				return false;
+
+			FormDefinition next = EvolutionService.GetNextForm(current);
+			if (next == null || next.ItemType <= 0)
+				return false;
+
+			if (!EvolutionService.TryReplace(item, next.ItemType))
+				return false;
+
+			if (player.whoAmI == Main.myPlayer)
+				player.GetModPlayer<EvolutionOfferPlayer>()?.NotifyEvolved();
+
+			return true;
+		}
+
+		private static void HandleSyncPhasing(BinaryReader reader, int whoAmI)
+		{
+			int playerIndex = reader.ReadByte();
+			bool phasing = reader.ReadBoolean();
+			int timeLeft = reader.ReadInt32();
+
+			if (playerIndex < 0 || playerIndex >= Main.maxPlayers)
+				return;
+			Player player = Main.player[playerIndex];
+			if (player == null || !player.active)
+				return;
+
+			if (Main.netMode == NetmodeID.Server)
+			{
+				if (playerIndex != whoAmI)
+					return;
+				// 服务端权威由 HenshinPlayer 自己维护；此处仅转发广播由 BroadcastPhasing 负责。
+				return;
+			}
+
+			player.GetModPlayer<HenshinPlayer>().ApplyServerPhasing(phasing, timeLeft);
+		}
+
+		private static void HandleSyncWeatherField(BinaryReader reader, int whoAmI)
+		{
+			bool remove = reader.ReadBoolean();
+			int id = reader.ReadInt32();
+			if (remove)
+			{
+				WeatherFieldSystem.ApplyRemoteRemove(id);
+				return;
+			}
+
+			float x = reader.ReadSingle();
+			float y = reader.ReadSingle();
+			float radius = reader.ReadSingle();
+			int timeLeft = reader.ReadInt32();
+			WeatherTag tag = (WeatherTag)reader.ReadByte();
+			byte owner = reader.ReadByte();
+			WeatherFieldSystem.ApplyRemoteUpsert(id, new Microsoft.Xna.Framework.Vector2(x, y), radius, timeLeft, tag, owner);
+		}
+
+		private static void HandleTerrainReject(BinaryReader reader, int whoAmI)
+		{
+			int playerIndex = reader.ReadByte();
+			if (Main.netMode == NetmodeID.MultiplayerClient && playerIndex == Main.myPlayer)
+				TerrainBudgetPlayer.NotifyRejected();
 		}
 	}
 }

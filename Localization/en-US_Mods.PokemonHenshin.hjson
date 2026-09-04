@@ -4,9 +4,85 @@ Common: {
 	NoMount: Mounts cannot be used while transformed
 }
 
+Evolution: {
+	ConfirmTitle: Form Evolution
+	ConfirmBody: Evolve {0} into {1}? Prefix and favorite are kept.
+	ConfirmYes: Confirm
+	ConfirmNo: Cancel
+}
+
+Accessories: {
+	ActiveTag: "[Henshin only - ACTIVE]"
+	InactiveTag: "[Henshin only - inactive]"
+}
+
+Terrain.BudgetReject: Terrain edit over budget or protected
+
 Moves: {
 	Scratch: Scratch
 	Ember: Ember
+	MultiScratch: Fury Swipes
+	FlameCone: Flame Burst
+	DragonClaw: Dragon Claw
+	FireBarrage: Fire Barrage
+	WaterGun: Water Gun
+	Withdraw: Withdraw
+	WaterPulse: Water Pulse
+	TidePush: Tide
+	HydroPump: Hydro Pump
+	RainField: Rain Dance
+	VineWhip: Vine Whip
+	PoisonPowder: Poison Powder
+	LeechSeed: Leech Seed
+	SludgeBomb: Sludge Bomb
+	SolarBeam: Solar Beam
+	SeedGun: Bullet Seed
+	ElectroBall: Electro Ball
+	QuickAttack: Quick Attack
+	Thunderbolt: Thunderbolt
+	Thunder: Thunder
+	KarateChop: Karate Chop
+	SeismicToss: Seismic Toss
+	Submission: Submission
+	DynamicPunch: Dynamic Punch
+	CrossChop: Cross Chop
+	CloseCombat: Close Combat
+	ShadowBall: Shadow Ball
+	Phase: Phantom Force
+	ShadowBurst: Shadow Barrage
+	NightShade: Night Shade
+	DragonPulse: Dragon Pulse
+	Twister: Twister
+	DragonBreath: Dragon Breath
+	DragonDance: Dragon Dance
+	Outrage: Outrage
+	HyperBeam: Hyper Beam
+	MetalClaw: Metal Claw
+	BulletPunch: Bullet Punch
+	MeteorMash: Meteor Mash
+	GravityWell: Gravity
+	Splash: Splash
+	Bubble: Bubble
+	AquaTail: Aqua Tail
+	Crunch: Crunch
+	MudSlap: Mud-Slap
+	Dig: Dig
+	TripleDig: Triple Dig
+	Gust: Gust
+	WingAttack: Wing Attack
+	AirSlash: Air Slash
+	SkyAttack: Sky Attack
+	Confusion: Confusion
+	Teleport: Teleport
+	Psychic: Psychic
+	FutureSight: Future Sight
+	RockThrow: Rock Throw
+	IronTail: Iron Tail
+	Psystrike: Psystrike
+	Barrier: Barrier
+	SandField: Sandstorm
+	Aeroblast: Aeroblast
+	DragonAscent: Dragon Ascent
 }
 
 DamageClasses.HenshinDamage.DisplayName: henshin damage
@@ -14,11 +90,302 @@ DamageClasses.HenshinDamage.DisplayName: henshin damage
 Items: {
 	CharmanderForce: {
 		DisplayName: Charmander Force
-		Tooltip: Fire type. Scratch with your claws, spit embers that ignite foes.
+		Tooltip: Fire. Scratch and spit embers.
+	}
+
+	CharmeleonForce: {
+		DisplayName: Charmeleon Force
+		Tooltip: Fire. Fury swipes and flame cone.
+	}
+
+	CharizardForce: {
+		DisplayName: Charizard Force
+		Tooltip: Fire/Flying. Dragon Claw and fire barrage.
+	}
+
+	SquirtleForce: {
+		DisplayName: Squirtle Force
+		Tooltip: Water. Water Gun and Withdraw.
+	}
+
+	WartortleForce: {
+		DisplayName: Wartortle Force
+		Tooltip: Water. Water Pulse and tide push.
+	}
+
+	BlastoiseForce: {
+		DisplayName: Blastoise Force
+		Tooltip: Water. Hydro Pump and rain field.
+	}
+
+	BulbasaurForce: {
+		DisplayName: Bulbasaur Force
+		Tooltip: Grass/Poison. Vine Whip and Poison Powder.
+	}
+
+	IvysaurForce: {
+		DisplayName: Ivysaur Force
+		Tooltip: Grass/Poison. Leech Seed and sludge.
+	}
+
+	VenusaurForce: {
+		DisplayName: Venusaur Force
+		Tooltip: Grass/Poison. Solar Beam and seed gun.
+	}
+
+	PikachuForce: {
+		DisplayName: Pikachu Force
+		Tooltip: Electric. Electro Ball and Quick Attack.
+	}
+
+	RaichuForce: {
+		DisplayName: Raichu Force
+		Tooltip: Electric. Thunderbolt and Thunder.
+	}
+
+	MachopForce: {
+		DisplayName: Machop Force
+		Tooltip: Fighting. Melee chain.
+	}
+
+	MachokeForce: {
+		DisplayName: Machoke Force
+		Tooltip: Fighting. Stronger melee.
+	}
+
+	MachampForce: {
+		DisplayName: Machamp Force
+		Tooltip: Fighting. Peak close combat.
+	}
+
+	HaunterForce: {
+		DisplayName: Haunter Force
+		Tooltip: Ghost/Poison. Shadow Ball; R-click phasing.
+	}
+
+	GengarForce: {
+		DisplayName: Gengar Force
+		Tooltip: Ghost/Poison. Shadow barrage.
+	}
+
+	DratiniForce: {
+		DisplayName: Dratini Force
+		Tooltip: Dragon. Dragon Pulse.
+	}
+
+	DragonairForce: {
+		DisplayName: Dragonair Force
+		Tooltip: Dragon. Dragon Breath.
+	}
+
+	DragoniteForce: {
+		DisplayName: Dragonite Force
+		Tooltip: Dragon/Flying. Outrage and Hyper Beam.
+	}
+
+	MetangForce: {
+		DisplayName: Metang Force
+		Tooltip: Steel/Psychic. Metal Claw.
+	}
+
+	MetagrossForce: {
+		DisplayName: Metagross Force
+		Tooltip: Steel/Psychic. Meteor Mash.
+	}
+
+	MagikarpForce: {
+		DisplayName: Magikarp Force
+		Tooltip: Water/Normal. Weak splash (utility).
+	}
+
+	GyaradosForce: {
+		DisplayName: Gyarados Force
+		Tooltip: Water/Flying. Aqua Tail and Crunch.
+	}
+
+	DiglettForce: {
+		DisplayName: Diglett Force
+		Tooltip: Ground. Dig within terrain budget.
+	}
+
+	DugtrioForce: {
+		DisplayName: Dugtrio Force
+		Tooltip: Ground. Faster dig.
+	}
+
+	PidgeyForce: {
+		DisplayName: Pidgey Force
+		Tooltip: Normal/Flying. Gust and glide.
+	}
+
+	PidgeotForce: {
+		DisplayName: Pidgeot Force
+		Tooltip: Normal/Flying. Air Slash.
+	}
+
+	AbraForce: {
+		DisplayName: Abra Force
+		Tooltip: Psychic. Confusion and teleport.
+	}
+
+	AlakazamForce: {
+		DisplayName: Alakazam Force
+		Tooltip: Psychic. Psychic and Future Sight.
+	}
+
+	OnixForce: {
+		DisplayName: Onix Force
+		Tooltip: Rock. Rock Throw and Dig.
+	}
+
+	SteelixForce: {
+		DisplayName: Steelix Force
+		Tooltip: Rock/Steel. Iron Tail.
+	}
+
+	MewtwoForce: {
+		DisplayName: Mewtwo Force
+		Tooltip: Legendary Psychic. Psystrike.
+	}
+
+	GibleForce: {
+		DisplayName: Gible Force
+		Tooltip: Dragon/Ground. Dragon Claw.
+	}
+
+	GarchompForce: {
+		DisplayName: Garchomp Force
+		Tooltip: Dragon/Ground. Outrage and Dig.
+	}
+
+	LugiaForce: {
+		DisplayName: Lugia Force
+		Tooltip: Legendary Psychic/Flying. Aeroblast.
+	}
+
+	RayquazaForce: {
+		DisplayName: Rayquaza Force
+		Tooltip: Legendary Dragon/Flying. Dragon Ascent.
+	}
+
+	A01AbilityCapsuleBelt: {
+		DisplayName: Ability Capsule Belt
+		Tooltip:
+			'''
+			A capsule that switches Abilities - remade as a belt.
+			Henshin only: move cooldown x0.95
+			'''
+	}
+
+	A02MuscleBand: {
+		DisplayName: Focus Headband
+		Tooltip:
+			'''
+			An exhilarating band that slightly boosts physical moves.
+			Henshin only: +6% henshin damage
+			'''
+	}
+
+	A03SoulDewPendant: {
+		DisplayName: Aura Pendant
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves for Latios/Latias.
+			Henshin only: affinity amplitude +20%
+			'''
+	}
+
+	A04FloatStoneAnklet: {
+		DisplayName: Light Anklet
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Henshin only: flight energy +1s; move speed +5%
+			'''
+	}
+
+	A05FocusSashBadge: {
+		DisplayName: Guard Badge
+		Tooltip:
+			'''
+			Survives a would-be KO at full HP once.
+			Henshin only: damage taken x0.94
+			'''
+	}
+
+	A06LifeOrbCore: {
+		DisplayName: Calamity Core
+		Tooltip:
+			'''
+			Powers moves at a cost of HP.
+			Henshin only: HenshinDamageFactor +0.05
+			'''
+	}
+
+	A07CharcoalBag: {
+		DisplayName: Charcoal Pouch
+		Tooltip:
+			'''
+			Fuel that powers Fire moves.
+			Fire resonance: +8% vs burning targets
+			'''
+	}
+
+	A08MysticWaterPouch: {
+		DisplayName: Water Bladder
+		Tooltip:
+			'''
+			A teardrop gem that powers Water moves.
+			Water resonance: +10% swim speed
+			'''
+	}
+
+	A09MagnetChip: {
+		DisplayName: Battery Chip
+		Tooltip:
+			'''
+			A powerful magnet that powers Electric moves.
+			Electric resonance: dash cooldown x0.85
+			'''
+	}
+
+	A10SharpBeakMembrane: {
+		DisplayName: Wing Membrane
+		Tooltip:
+			'''
+			A long, sharp beak that powers Flying moves.
+			Flying resonance: fall reduction to 75%
+			'''
+	}
+
+	A11SpellTagCloth: {
+		DisplayName: Spell Cloth
+		Tooltip:
+			'''
+			An eerie tag that powers Ghost moves.
+			Ghost resonance: phasing +0.5s (cap 2.0s)
+			'''
+	}
+
+	A12DragonFangCharm: {
+		DisplayName: Dragon Fang Charm
+		Tooltip:
+			'''
+			A hard, sharp fang that powers Dragon moves.
+			Dragon resonance: +6% vs bosses
+			'''
 	}
 }
 
 Projectiles: {
 	ScratchSlashProj.DisplayName: Scratch
 	EmberBoltProj.DisplayName: Ember
+	GenericSlashProj.DisplayName: Slash
+	GenericBoltProj.DisplayName: Bolt
+	WaterBoltHenshinProj.DisplayName: Water Bolt
+	ThunderBoltHenshinProj.DisplayName: Thunder
+	ShadowBallHenshinProj.DisplayName: Shadow Ball
+	RainFieldProj.DisplayName: Rain Field
+	PhaseTriggerProj.DisplayName: Phase
+	DigBurstProj.DisplayName: Dig
 }

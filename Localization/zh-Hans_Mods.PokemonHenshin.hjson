@@ -4,9 +4,85 @@ Common: {
 	NoMount: 变身期间禁止使用坐骑
 }
 
+Evolution: {
+	ConfirmTitle: 形态进化
+	ConfirmBody: 将「{0}」进化为「{1}」？前缀与收藏会保留。
+	ConfirmYes: 确认进化
+	ConfirmNo: 取消
+}
+
+Accessories: {
+	ActiveTag: 【仅变身生效·当前生效】
+	InactiveTag: 【仅变身生效·当前未生效】
+}
+
+Terrain.BudgetReject: 地形改造超出预算或目标受保护
+
 Moves: {
 	Scratch: 爪击
 	Ember: 火花
+	MultiScratch: 连爪
+	FlameCone: 火焰锥
+	DragonClaw: 龙爪
+	FireBarrage: 火焰弹幕
+	WaterGun: 水枪
+	Withdraw: 缩壳
+	WaterPulse: 水之波动
+	TidePush: 潮汐
+	HydroPump: 水炮
+	RainField: 祈雨
+	VineWhip: 藤鞭
+	PoisonPowder: 毒粉
+	LeechSeed: 寄生种子
+	SludgeBomb: 污泥炸弹
+	SolarBeam: 阳光烈焰
+	SeedGun: 种子机关枪
+	ElectroBall: 电光弹
+	QuickAttack: 电光一闪
+	Thunderbolt: 十万伏特
+	Thunder: 打雷
+	KarateChop: 空手劈
+	SeismicToss: 地球上投
+	Submission: 地狱翻滚
+	DynamicPunch: 爆裂拳
+	CrossChop: 十字劈
+	CloseCombat: 近身战
+	ShadowBall: 暗影球
+	Phase: 影子分身·穿障
+	ShadowBurst: 暗影连射
+	NightShade: 黑夜魔影
+	DragonPulse: 龙之波动
+	Twister: 龙卷风
+	DragonBreath: 龙息
+	DragonDance: 龙之舞
+	Outrage: 逆鳞
+	HyperBeam: 破坏光线
+	MetalClaw: 金属爪
+	BulletPunch: 子弹拳
+	MeteorMash: 彗星拳
+	GravityWell: 重力
+	Splash: 跃起
+	Bubble: 泡沫
+	AquaTail: 水流尾
+	Crunch: 咬碎
+	MudSlap: 掷泥
+	Dig: 挖洞
+	TripleDig: 三连刺
+	Gust: 起风
+	WingAttack: 翅膀攻击
+	AirSlash: 空气斩
+	SkyAttack: 神鸟猛击
+	Confusion: 念力
+	Teleport: 瞬间移动
+	Psychic: 精神强念
+	FutureSight: 预知未来
+	RockThrow: 落石
+	IronTail: 铁尾
+	Psystrike: 精神击破
+	Barrier: 屏障
+	SandField: 沙暴场
+	Aeroblast: 气势轮
+	DragonAscent: 画龙点睛
 }
 
 DamageClasses.HenshinDamage.DisplayName: 变身伤害
@@ -16,9 +92,300 @@ Items: {
 		DisplayName: 小火龙之力
 		Tooltip: 火属性。挥爪近身撕裂，吐出火花点燃敌人。
 	}
+
+	CharmeleonForce: {
+		DisplayName: 火恐龙之力
+		Tooltip: 火属性。连爪撕扯，喷出火焰锥。
+	}
+
+	CharizardForce: {
+		DisplayName: 喷火龙之力
+		Tooltip: 火/飞。龙爪突进与火焰弹幕。
+	}
+
+	SquirtleForce: {
+		DisplayName: 杰尼龟之力
+		Tooltip: 水属性。水枪压制，缩壳减伤。
+	}
+
+	WartortleForce: {
+		DisplayName: 卡咪龟之力
+		Tooltip: 水属性。水弹连射与潮汐推开。
+	}
+
+	BlastoiseForce: {
+		DisplayName: 水箭龟之力
+		Tooltip: 水属性。水炮与雨天气场。
+	}
+
+	BulbasaurForce: {
+		DisplayName: 妙蛙种子之力
+		Tooltip: 草/毒。藤鞭与毒粉。
+	}
+
+	IvysaurForce: {
+		DisplayName: 妙蛙草之力
+		Tooltip: 草/毒。寄生种子与毒液弹。
+	}
+
+	VenusaurForce: {
+		DisplayName: 妙蛙花之力
+		Tooltip: 草/毒。阳光烈焰与种子机枪。
+	}
+
+	PikachuForce: {
+		DisplayName: 皮卡丘之力
+		Tooltip: 电属性。电光弹与短冲刺。
+	}
+
+	RaichuForce: {
+		DisplayName: 雷丘之力
+		Tooltip: 电属性。十万伏特与落雷。
+	}
+
+	MachopForce: {
+		DisplayName: 腕力之力
+		Tooltip: 格斗。近战连打与投掷。
+	}
+
+	MachokeForce: {
+		DisplayName: 豪力之力
+		Tooltip: 格斗。强力近战连招。
+	}
+
+	MachampForce: {
+		DisplayName: 怪力之力
+		Tooltip: 格斗。终极近身爆发。
+	}
+
+	HaunterForce: {
+		DisplayName: 鬼斯通之力
+		Tooltip: 幽灵/毒。影球；右键限时穿障。
+	}
+
+	GengarForce: {
+		DisplayName: 耿鬼之力
+		Tooltip: 幽灵/毒。暗影连射与夜袭。
+	}
+
+	DratiniForce: {
+		DisplayName: 迷你龙之力
+		Tooltip: 龙属性。龙波与缠绕。
+	}
+
+	DragonairForce: {
+		DisplayName: 哈克龙之力
+		Tooltip: 龙属性。龙息与蓄势。
+	}
+
+	DragoniteForce: {
+		DisplayName: 快龙之力
+		Tooltip: 龙/飞。逆鳞与破坏光线。
+	}
+
+	MetangForce: {
+		DisplayName: 金属怪之力
+		Tooltip: 钢/超能。金属爪与子弹拳。
+	}
+
+	MetagrossForce: {
+		DisplayName: 巨金怪之力
+		Tooltip: 钢/超能。彗星拳与重力井。
+	}
+
+	MagikarpForce: {
+		DisplayName: 鲤鱼王之力
+		Tooltip: 水/一般。弱撞击与溅水（钓鱼向）。
+	}
+
+	GyaradosForce: {
+		DisplayName: 暴鲤龙之力
+		Tooltip: 水/飞。水息与腾空撕咬。
+	}
+
+	DiglettForce: {
+		DisplayName: 地鼠之力
+		Tooltip: 地面。抓击与挖掘。
+	}
+
+	DugtrioForce: {
+		DisplayName: 三地鼠之力
+		Tooltip: 地面。三连刺与高速挖掘。
+	}
+
+	PidgeyForce: {
+		DisplayName: 波波之力
+		Tooltip: 一般/飞。起风与滑翔。
+	}
+
+	PidgeotForce: {
+		DisplayName: 大比鸟之力
+		Tooltip: 一般/飞。空气斩与俯冲。
+	}
+
+	AbraForce: {
+		DisplayName: 凯西之力
+		Tooltip: 超能。念力与侦测/瞬移占位。
+	}
+
+	AlakazamForce: {
+		DisplayName: 胡地之力
+		Tooltip: 超能。精神强念与预知。
+	}
+
+	OnixForce: {
+		DisplayName: 大岩蛇之力
+		Tooltip: 岩石。岩击与挖掘。
+	}
+
+	SteelixForce: {
+		DisplayName: 大钢蛇之力
+		Tooltip: 岩/钢。铁尾与挖速爆发。
+	}
+
+	MewtwoForce: {
+		DisplayName: 超梦之力
+		Tooltip: 传说·超能。精神击破与屏障。
+	}
+
+	GibleForce: {
+		DisplayName: 圆陆鲨之力
+		Tooltip: 龙/地面。龙爪与沙尘。
+	}
+
+	GarchompForce: {
+		DisplayName: 烈咬陆鲨之力
+		Tooltip: 龙/地面。逆鳞与改地形。
+	}
+
+	LugiaForce: {
+		DisplayName: 洛奇亚之力
+		Tooltip: 传说·超能/飞。气势轮与风暴场。
+	}
+
+	RayquazaForce: {
+		DisplayName: 烈空坐之力
+		Tooltip: 传说·龙/飞。画龙点睛与终局龙息。
+	}
+
+	A01AbilityCapsuleBelt: {
+		DisplayName: 万能胶囊带
+		Tooltip:
+			'''
+			如果用于有着２种特性的宝可梦，就能令其现有特性变为另一种的胶囊——改装成腰带后，略微缩短招式间隔。
+			仅变身时：招式冷却 ×0.95
+			'''
+	}
+
+	A02MuscleBand: {
+		DisplayName: 专注头带
+		Tooltip:
+			'''
+			力如泉涌的头带。携带后，物理招式的威力就会少量提高。
+			仅变身时：本模伤害 +6%
+			'''
+	}
+
+	A03SoulDewPendant: {
+		DisplayName: 气息挂坠
+		Tooltip:
+			'''
+			让拉帝欧斯或拉帝亚斯携带后，超能力和龙属性的招式威力就会提高的神奇珠子。
+			仅变身时：情境加成幅度 +20%
+			'''
+	}
+
+	A04FloatStoneAnklet: {
+		DisplayName: 轻身脚环
+		Tooltip:
+			'''
+			非常轻的石头。携带后，宝可梦的体重会变轻。
+			仅变身时：飞行能量 +1s；移速 +5%
+			'''
+	}
+
+	A05FocusSashBadge: {
+		DisplayName: 守护徽章
+		Tooltip:
+			'''
+			携带后，在ＨＰ全满时，即便受到可能会导致濒死的招式，也能仅以１ＨＰ撑过去１次。
+			仅变身时：受伤 ×0.94
+			'''
+	}
+
+	A06LifeOrbCore: {
+		DisplayName: 灾限核心
+		Tooltip:
+			'''
+			携带后，虽然每次攻击时ＨＰ少量减少，但招式的威力会提高。
+			仅变身时：HenshinDamageFactor +0.05
+			'''
+	}
+
+	A07CharcoalBag: {
+		DisplayName: 木炭袋
+		Tooltip:
+			'''
+			焚烧用的燃料。携带后，火属性的招式威力就会提高。
+			火共鸣·仅变身：对着火目标额外 +8%
+			'''
+	}
+
+	A08MysticWaterPouch: {
+		DisplayName: 水囊
+		Tooltip:
+			'''
+			水滴形状的宝石。携带后，水属性的招式威力就会提高。
+			水共鸣·仅变身：水中移速再 +10%
+			'''
+	}
+
+	A09MagnetChip: {
+		DisplayName: 电池片
+		Tooltip:
+			'''
+			强力的磁铁。携带后，电属性的招式威力就会提高。
+			电共鸣·仅变身：冲刺冷却 ×0.85
+			'''
+	}
+
+	A10SharpBeakMembrane: {
+		DisplayName: 薄翼膜
+		Tooltip:
+			'''
+			又长又尖的鸟嘴。携带后，飞行属性的招式威力就会提高。
+			飞共鸣·仅变身：坠落减免提高到 75%
+			'''
+	}
+
+	A11SpellTagCloth: {
+		DisplayName: 咒符布
+		Tooltip:
+			'''
+			古怪可怕的咒符。携带后，幽灵属性的招式威力就会提高。
+			幽灵共鸣·仅变身：穿障 +0.5s（封顶 2.0s）
+			'''
+	}
+
+	A12DragonFangCharm: {
+		DisplayName: 龙牙饰
+		Tooltip:
+			'''
+			坚硬锐利的牙齿。携带后，龙属性的招式威力就会提高。
+			龙共鸣·仅变身：对 Boss 再 +6%
+			'''
+	}
 }
 
 Projectiles: {
 	ScratchSlashProj.DisplayName: 爪击
 	EmberBoltProj.DisplayName: 火花
+	GenericSlashProj.DisplayName: 挥击
+	GenericBoltProj.DisplayName: 能量弹
+	WaterBoltHenshinProj.DisplayName: 水弹
+	ThunderBoltHenshinProj.DisplayName: 电光
+	ShadowBallHenshinProj.DisplayName: 影球
+	RainFieldProj.DisplayName: 雨场
+	PhaseTriggerProj.DisplayName: 穿障
+	DigBurstProj.DisplayName: 挖掘
 }

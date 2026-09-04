@@ -7,4 +7,4 @@ side = Both
 hideCode = false
 hideResources = false
 includeSource = true
-buildIgnore = docs\*, .git\*, .cursor\*, *.md, *.csproj, *.user, *.sln, obj\*, bin\*, .vs\*, .gitignore
+buildIgnore = docs\*, tools\*, .git\*, .cursor\*, *.md, *.csproj, *.user, *.sln, obj\*, bin\*, .vs\*, .gitignore

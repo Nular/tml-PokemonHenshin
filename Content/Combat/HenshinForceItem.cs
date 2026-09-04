@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
+using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -77,19 +78,24 @@ namespace PokemonHenshin.Content.Combat
 			MoveSpec move = CurrentMove(player);
 			if (move == null)
 				return false;
-			Item.useTime = move.UseTime;
-			Item.useAnimation = move.UseTime;
+			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
+			float cdMul = hp.IsTransformed ? hp.MoveCooldownMultiplier : 1f;
+			int use = (int)System.Math.Max(1, System.Math.Round(move.UseTime * cdMul));
+			Item.useTime = use;
+			Item.useAnimation = use;
 			Item.shoot = move.ProjectileType;
 			Item.shootSpeed = move.ShootSpeed;
 			Item.knockBack = move.Knockback;
 			Item.UseSound = player.altFunctionUse == 2 ? SoundID.Item20 : SoundID.Item1;
-			return move.ProjectileType > ProjectileID.None;
+			return move.ProjectileType > ProjectileID.None || move.GrantsPhasing;
 		}
 
 		public override void ModifyWeaponDamage(Player player, ref StatModifier damage)
 		{
-			// 形态微调系数（需求 §2.6）；唯一挂点，不在弹幕/玩家侧重复乘。
 			damage *= Definition.HenshinDamageFactor;
+			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
+			if (hp.IsTransformed && hp.HenshinDamageFactorBonus != 0f)
+				damage *= 1f + hp.HenshinDamageFactorBonus;
 		}
 
 		public override void ModifyShootStats(Player player, ref Vector2 position, ref Vector2 velocity, ref int type, ref int damage, ref float knockback)

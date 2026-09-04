@@ -46,6 +46,19 @@ namespace PokemonHenshin.Content.Core
 		public static FormDefinition ByItemType(int itemType)
 			=> itemType > 0 && byItemType.TryGetValue(itemType, out var def) ? def : null;
 
+		/// <summary>查找以 <paramref name="formId"/> 为 EvolvesFrom 的下一形态；无则 null。</summary>
+		public static FormDefinition FindEvolutionOf(string formId)
+		{
+			if (string.IsNullOrEmpty(formId))
+				return null;
+			foreach (FormDefinition def in byFormId.Values)
+			{
+				if (def.EvolvesFrom == formId)
+					return def;
+			}
+			return null;
+		}
+
 		internal static void Clear()
 		{
 			byFormId.Clear();

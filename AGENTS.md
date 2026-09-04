@@ -2,40 +2,40 @@
 
 ## 定位
 
-泰拉瑞亚 + tModLoader + 灾厄模组：持握「{宝可梦}之力」换皮变身、双招式、情境被动；松手失效。联机必需。
+泰拉瑞亚 + tModLoader + 灾厄：持握「{宝可梦}之力」换皮变身、双招式、情境被动；松手失效。联机必需。
 
 ## 怎么跑
 
-仓库根即 tML 模组根（扁平布局，模组内部名 `PokemonHenshin`）。
+仓库根即 tML 模组根（内部名 `PokemonHenshin`）。
 
-- 命令行：仓库根执行 `dotnet build`，`tMLMod.targets` 会自动调用 tML 打包到 `Documents\My Games\Terraria\tModLoader\Mods\PokemonHenshin.tmod`。游戏正在运行且启用本模时打包会报 TML003，此时只能走游戏内构建
-- 游戏内：`ModSources\PokemonHenshin` 是指向本仓库的目录联接，Workshop → Develop Mods → Build + Reload
-- 钉死版本：**tModLoader 1.4.4.9 / 2026.07 stable（net8.0）**，**CalamityMod 2.2.4**；必须启用 Calamity 才能加载
+- 命令行：根目录 `dotnet build` → 打包到 `Documents\My Games\Terraria\tModLoader\Mods\PokemonHenshin.tmod`；游戏运行且启用本模时会 **TML003**，只能游戏内 Build + Reload
+- 游戏内：`ModSources\PokemonHenshin` 目录联接 → Workshop → Develop Mods → Build + Reload
+- 版本钉死：**tML 1.4.4.9 / 2026.07（net8.0）**，**CalamityMod 2.2.4**（必须启用）
 
 ## 技术栈
 
-C# / tModLoader / 强依赖 CalamityMod（`build.txt` `modReferences`）。M0 代码不直接引用灾厄类型（盗贼类走 `ModContent.TryFind`）；需要 `DownedBossSystem` 时（M1）再在游戏内 Extract 灾厄 dll 到 `ModSources\ModAssemblies` 并加 csproj Reference。参考实现只读：`../CalamityOverhaul`（禁止改该仓库、禁止运行时依赖它）。
+C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `CalamityProgressAdapter`（**无需** Extract dll）。只读参考 `../CalamityOverhaul`（禁止改、禁止运行时依赖）。
 
 ## 目录与约定
 
 | 路径 | 角色 |
 |------|------|
-| `docs/requirements.md` | **产品唯一真相**（当前 v1.2） |
-| `docs/dev-plan.md` | 开发计划与任务拆解（对齐需求；冲突以需求为准） |
-| `Assets/Forms/` | 仅宝可梦精灵图（从 52poke 全国图鉴自取；`L01_F01.png` 取自 HGSS 精灵 `Spr_4h_004`，取首帧裁边） |
-| `Content/Core/` | `FormDefinition`（含 `MoveA/MoveB`）/ `FormRegistry` / `MoveSpec` / `PokemonType` |
-| `Content/Damage/` | `HenshinDamage`（k=0.35 唯一职业折算挂点） |
-| `Content/PlayerState/` | `HenshinPlayer` 变身状态机（唯一权威；含禁坐骑、HideDrawLayers、网络判脏） |
-| `Content/Visual/` | `HenshinOverlayLayer`（会先清掉其他模组塞进 `DrawDataCache` 的物品贴图，见 dev-plan「M0 实测踩坑」） |
-| `Content/Combat/` | `HenshinForceItem` 物品基类 + `Moves/` 招式弹幕（贴图全部复用原版） |
-| `Content/Items/Forms/` | 各形态物品（当前 `CharmanderForce` = L01_F01） |
-| `Content/Net/` | `HenshinNet`（显式 `NetOp` 枚举；现有 `SyncForm`） |
-| 特效 | **禁止**新增 FX 图片；复用原版 / 灾厄 / 大修写法 |
+| `docs/requirements.md` | **产品唯一真相**（v1.2） |
+| `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
+| `Assets/Forms/` · `Assets/Accessories/` | 36 形态 + 12 饰品图（非 FX） |
+| `Content/Core/` | FormDefinition / Registry / ProgressStage / 反射适配 |
+| `Content/PlayerState/` | HenshinPlayer（权威状态机）+ StarterGrant |
+| `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态（三文件分组） |
+| `Content/Accessories/` · `Items/Accessories/` | 仅变身生效饰品 A01～A12 |
+| `Content/Affinity/` · `Evolution/` · `WeatherField/` · `TerrainEdit/` · `Loot/` · `Net/` | 被动 / 进化 / 天气 / 挖掘 / 获取 / NetOp |
+| `tools/fetch_assets.py` | 从 52poke 拉图（buildIgnore） |
+| 特效 | **禁止**新增 FX 图；复用原版/灾厄/大修写法 |
+| 本地化 | HJSON 含引号/`\n` 须用 `"..."` 或 `'''...'''` |
 
 ## 当前状态与下一步
 
-- 状态：**M0 完成**（2026-09-04 单机游戏内验收通过：持握变身 / 解除 / 禁坐骑 / 双招式）。pending：联机双端互见实测（dev-plan §7.2 N1～N4）、Rage/肾上腺素是否计入 HenshinDamage。
-- 下一步：按 `dev-plan.md` §5 **M1**（ProgressStage 适配器 → 进化替换 → 确认 UI → L01_F02 → 御三家发放）；M1.1 需先在游戏内 Extract 灾厄 dll。
-- 新增形态：继承 `HenshinForceItem`，在 `CreateDefinition` 分配唯一 `NetworkId`，注册自动发生在 `SetStaticDefaults`。
-- **tML 坑：** ModItem 每个物品是新实例，模板实例字段不会被复制——每形态共享数据只放 `FormDefinition`，别放 ModItem 实例字段。
-- 开局发御三家；持握禁坐骑；后期含超梦/洛奇亚/烈空坐。
+- **代码：** M0～M4 已落地（2026-09-04）：36 形态、12 饰品、进度/进化/御三家、被动、天气/穿障/挖掘、获取占位。
+- **下一步：** 游戏内验收 A1→A4；然后 M5（负面用例、换皮路径、打包）与 DPS 精调。
+- 调试：`/henshin stage`、`/henshin evolve`
+- pending：联机双端实测、Rage/肾上腺素、DPS 对标精表
+- 新形态：继承 `HenshinForceItem`，唯一 `NetworkId`（1～36 已满，新内容从 37 起）；共享数据只放 `FormDefinition`（tML 不复制 ModItem 实例字段）
