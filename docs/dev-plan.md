@@ -4,7 +4,7 @@
 |----|------|
 | 版本 | 1.2 |
 | 对齐需求 | `docs/requirements.md` **v1.2** |
-| 状态 | **可行，可开工 M0**（供未读聊天记录的 Agent 直接执行） |
+| 状态 | **M0 已完成**（2026-09-04 代码 + 单机游戏内验收通过）；**当前执行 M1**（供未读聊天记录的 Agent 直接执行） |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件为计划；实现期再写游戏代码 |
 
@@ -73,52 +73,39 @@
 
 ## 2. 工程脚手架
 
-### 2.1 解决方案 / 目录建议
+### 2.1 解决方案 / 目录（M0 已定：扁平布局）
 
-仓库根：`PokemonHenshin/`（当前仅有 `docs/`，实现期新建模组工程）。
+**仓库根即 tML 模组根**（模组内部名 = 文件夹名 `PokemonHenshin`）。`ModSources\PokemonHenshin` 是指向本仓库的目录联接，供游戏内 Build + Reload；命令行在仓库根 `dotnet build` 会经 `tMLMod.targets` 自动调用 tML 打包（游戏运行且启用本模时打包会被 TML003 拒绝，只能游戏内 Build + Reload）。
 
 ```
-PokemonHenshin/
-  docs/
-    requirements.md          # 产品真相
-    dev-plan.md              # 本文件
-  PokemonHenshin/            # tML 模组项目根（或扁平到仓库根，二选一，开工时统一）
-    PokemonHenshin.csproj
-    build.txt
-    description.txt
-    description_workshop.txt
-    PokemonHenshinMod.cs     # Mod 入口
-    Localization/
-      en-US_Mods.PokemonHenshin.hjson
-      zh-Hans_Mods.PokemonHenshin.hjson
-    Assets/
-      Forms/                 # 宝可梦 Overlay/图标（来源：52poke 全国图鉴，按 FormId）
-      Items/                 # 物品栏图标可与 Forms 共用或缩略
-      # 禁止：Assets/Fx 下新增自制特效图；FX 用原版/灾厄/大修已有资源
-    Content/
-      Core/                  # FormDefinition、FormRegistry、ProgressStage
-      Damage/                # HenshinDamage
-      PlayerState/           # HenshinPlayer、HenshinBuff（若需要）
-      Visual/                # HenshinOverlayLayer、HideBody hooks
-      Combat/                # 招式基类、小火龙等
-      Affinity/              # 情境条件与属性被动
-      Evolution/             # 替换契约、确认 UI
-      Accessories/           # 12 饰品
-      WeatherField/          # 天气场
-      TerrainEdit/           # 地形预算
-      Net/                   # ModPacket 分发
-      Items/Forms/           # Lxx_Fyy 物品类
-      Data/                  # 静态表或 JSON 加载
+PokemonHenshin/                # 仓库根 = 模组根
+  docs/                        # requirements.md（产品真相）、dev-plan.md（本文件）；buildIgnore
+  PokemonHenshin.csproj        # 仅 Import ModSources\tModLoader.targets；docs\** 从编译排除
+  build.txt                    # modReferences = CalamityMod；buildIgnore 含 docs、*.md、.git、.cursor、bin、obj
+  description.txt / description_workshop.txt / icon.png
+  PokemonHenshinMod.cs         # Mod 入口：Instance + HandlePacket → HenshinNet
+  Localization/                # en-US / zh-Hans hjson（tML 首次加载会自动补缺失键）
+  Assets/Forms/                # 宝可梦贴图，按 FormId 命名；物品图标直接复用同图
+                               # 禁止：新增任何自制特效图；FX 用原版/灾厄/大修已有资源
+  Content/
+    Core/                      # FormDefinition（含 MoveA/MoveB）、FormRegistry、MoveSpec、PokemonType
+    Damage/                    # HenshinDamage
+    PlayerState/               # HenshinPlayer（唯一变身权威状态机）
+    Visual/                    # HenshinOverlayLayer
+    Combat/                    # HenshinForceItem 基类；Moves/ 招式弹幕
+    Items/Forms/               # 各形态物品（CharmanderForce = L01_F01）
+    Net/                       # HenshinNet + NetOp 枚举
+    # M1+ 按需新增：Affinity/、Evolution/、Accessories/、WeatherField/、TerrainEdit/、Data/
 ```
 
 **命名空间根：** `PokemonHenshin`  
 子空间与上表模块一一对应，例如 `PokemonHenshin.Content.Core`。
 
-### 2.2 Mod 元数据（`build.txt` 建议）
+### 2.2 Mod 元数据（`build.txt`，现役）
 
 ```
 displayName = Pokemon Henshin
-author = <开工时填写>
+author = PokemonHenshin Team
 version = 0.1.0
 modReferences = CalamityMod
 sortAfter = CalamityMod
@@ -126,7 +113,8 @@ sortAfter = CalamityMod
 
 - **强依赖 Calamity：** 需求明确平台含灾厄；进度档大量 `DownedBossSystem` 字段。`modReferences = CalamityMod`，无灾厄不可加载。
 - **弱依赖策略：** 其他模组（Boss Checklist、Magic Storage 等）一律 `weakReferences` + 可选反射；**不要**引入 InnoVault。
-- 开工时用当前稳定灾厄要求的 tML 版本钉死（写入 `csproj` / 文档备注），与需求 §12.8 一致。
+- **钉死版本（2026-09-04）：** tModLoader **1.4.4.9 / 2026.07 stable（net8.0）**，CalamityMod **2.2.4**（需求 §12.8）。
+- **编译期引用灾厄 dll：** M0 未引入（盗贼类走 `ModContent.TryFind`）。M1 起需要 `DownedBossSystem` 时，在游戏内 Workshop → Calamity → Extract 得到 `ModSources\ModAssemblies\CalamityMod_v*.dll`，在 csproj 加 `<Reference Include=... Private="false" />`。
 
 ### 2.3 对 Calamity 的访问策略
 
@@ -247,7 +235,7 @@ sortAfter = CalamityMod
 | 需求点 | 结论 |
 |--------|------|
 | 持握热键栏选中 = 变身 | 无完美对应；建议每 tick 读 `player.inventory[player.selectedItem]`，排除 `mouseItem` 与非热键栏 |
-| k=0.35 部分继承 | 大修只有 Full/None；**主方案**自定义 `StatInheritanceData`（若当前 tML 构造函数支持按维填 0.35）；**回退方案** `GetModifierInheritance` 对职业返回 `None`，在 `ModifyWeaponDamage`/`ModifyWeaponCrit` 等钩子按「已计算的对应职业增量 ×0.35」补乘，并单测防双算 |
+| k=0.35 部分继承 | 大修只有 Full/None；**已采用主方案**：`new StatInheritanceData(0.35f, 0.35f, 0.35f, 0.35f, 0.35f)`（damage / crit / attackSpeed / armorPen / knockback 五维，tML 2026.07 可编译）。回退方案（钩子补乘）不再需要 |
 | 进化确认 UI | 无对应；建议简易 `UIState` 确认框 + 仅服务端 Apply |
 | 穿障卡墙安全传送 | 无完美对应；建议结束时 `Collision.SolidCollision` 检测，螺旋搜最近空位，失败则短定身 |
 | 地形砖/分预算与临时还原 | 无预算系统；建议 `TerrainBudgetPlayer` 计数器 + 临时 Tile 倒计时列表 |
@@ -273,7 +261,7 @@ class HenshinDamage : DamageClass
 - 物品/弹幕：`Item.DamageType = ModContent.GetInstance<HenshinDamage>()`
 - 最终输出再乘 `FormDefinition.HenshinDamageFactor`
 - **挂点：** 优先 DamageClass 继承 + 形态系数；若改用钩子回退方案，禁止与 Full 继承叠加（防双算）。
-- **Rage/Adrenaline：** M0 结束前用木桩对照一次；未吃到则在适配层补乘（见 §2.3）。
+- **Rage/Adrenaline：** M0 未对照（**pending，移入 M1.1 一并做**）；未吃到则在适配层补乘（见 §2.3）。
 
 **验收：** 只穿近战装 vs 只穿远程装，本模武器增幅约为同阶段近战/远程武器的约 35% 职业部分 + 100% Generic；混搭不超过需求 130% 抽检上限。
 
@@ -381,60 +369,63 @@ TryEditTile(player, action) →
 
 粒度：半天～2 天。每项含模块/类名、验收、风险。
 
-### M0 — 小火龙竖切
+### M0 — 小火龙竖切（已完成，2026-09-04）
 
 #### M0.1 工程脚手架
 
-- [ ] 创建 tML 项目、`build.txt`、`PokemonHenshinMod.cs`、Localization 空壳、`.csproj` 引用 Calamity
-- [ ] 命名空间与 Content 文件夹按 §2.1 建好
-- **验收：** 带灾厄可进游戏，模组列表可见
-- **风险：** 灾厄/tML 版本不匹配 → 开工日钉死版本并写进 README 一行
+- [x] 创建 tML 项目、`build.txt`、`PokemonHenshinMod.cs`、Localization、`.csproj`（扁平布局，见 §2.1）
+- [x] 命名空间与 Content 文件夹按 §2.1 建好；`ModSources` 目录联接
+- **验收：** 带灾厄可进游戏，模组列表可见 —— 通过
+- **风险：** 灾厄/tML 版本不匹配 → 已钉死并写入 README / AGENTS.md
 
 #### M0.2 FormDefinition + 注册表 + 小火龙物品
 
-- [ ] `FormDefinition`、`FormRegistry`
-- [ ] `Items/Forms/CharmanderForce`（`L01_F01`），显示名可本地化
-- [ ] 从 52poke 小火龙图鉴页获取精灵图放入 `Assets/Forms/L01_F01`（入口：全国图鉴列表页）
-- **验收：** 创造栏可取、持握为武器、Overlay 能显示该图
-- **风险：** wiki 图需裁切透明底 → M0 可先粗糙裁切
+- [x] `FormDefinition`（含 `MoveA/MoveB`）、`FormRegistry`（FormId / NetworkId / ItemType 三向索引）
+- [x] `Items/Forms/CharmanderForce`（`L01_F01`，NetworkId 1），显示名双语可本地化
+- [x] 精灵图：52poke 小火龙页 HGSS 精灵 `Spr_4h_004.png`（原文件为 APNG，取首帧、裁透明边为 38×46）→ `Assets/Forms/L01_F01.png`；`icon.png` 同源
+- **验收：** 创造栏可取、持握为武器、Overlay 显示该图 —— 通过
 
 #### M0.3 HenshinDamage
 
-- [ ] `Damage/HenshinDamage.cs`（k=0.35）
-- [ ] 小火龙 `DamageType` 挂上；简单左键弹幕/近战命中用该类型
-- **验收：** 控制台/木桩可见伤害；仅 Generic 装与混职业装差异符合折算直觉
-- **风险：** 灾厄盗贼类名变更 → 适配层 TryFind；找不到则跳过该类继承
+- [x] `Damage/HenshinDamage.cs`（k=0.35 五维 `StatInheritanceData`；盗贼类 `TryFind("CalamityMod","RogueDamageClass")`）
+- [x] 物品与两个弹幕 `DamageType` 挂上；`HenshinDamageFactor` 只在 `HenshinForceItem.ModifyWeaponDamage` 乘一次
+- **验收：** 木桩可见「变身伤害」 —— 通过；**Rage / 肾上腺素是否计入未对照（pending，见 §4.1）**
 
 #### M0.4 HenshinPlayer 状态机 + 禁坐骑
 
-- [ ] `PlayerState/HenshinPlayer.cs`：Enter/Exit、持握判定
-- [ ] 禁坐骑实现；tooltip 提示
-- **验收：** 持握变身标志开；切换/死亡立刻关；坐骑无法召唤且强制下马
-- **风险：** 其他模组坐骑钩子抢序 → 在 `PostUpdateEquips`+`SetControls` 双挂
+- [x] `PlayerState/HenshinPlayer.cs`：`PreUpdate` 判定 → 先 Exit 再 Enter；`Kill` / `UpdateDead` 兜底
+- [x] 禁坐骑：`SetControls` + `PreUpdateMovement` + `PostUpdateEquips` 三挂点；tooltip 含提示
+- **验收：** 持握变身、切换/死亡立刻解除、坐骑不可用且强制下马 —— 通过
 
 #### M0.5 Overlay
 
-- [ ] `Visual/HenshinOverlayLayer.cs` + 隐藏原皮方案
-- [ ] 退出无残留
-- **验收：** 本地与（联机）他人可见贴图；取消持握贴图立刻消失
-- **风险：** 隐藏盔甲不完整 → M0 可先整人隐藏+Overlay，再迭代分层
+- [x] `Visual/HenshinOverlayLayer.cs`（`AfterLastVanillaLayer`，脚底锚点，按朝向翻转）+ `HenshinPlayer.HideDrawLayers` 隐藏除本层外的全部层
+- [x] 退出无残留
+- **验收：** 本地可见贴图、取消持握立刻消失 —— 通过
 
 #### M0.6 双招式占位（爪击 / 火花弹）
 
-- [ ] `Combat/Moves/ScratchMove`、`EmberMove`（数值占位）
-- [ ] 左键 A / 右键 B
-- [ ] **FX：** 火花用原版火系 Dust/火焰弹风格；爪击用近战尘或短命原版弹幕——**不新增 png**；可参考大修火焰类 Dust 组合改参数
-- **验收：** 两种手段都能造成 HenshinDamage；画面无自制特效图
-- **风险：** 右键与原版交互冲突 → 记录冲突等级；必要时用 Mod 热键作 B（需在招式表注明）
+- [x] `Combat/Moves/ScratchSlashProj`（空贴图 `Projectile_0` + Smoke/Torch 尘）、`EmberBoltProj`（复用原版 `BallofFire` 贴图 + Torch 尘 + 着火）
+- [x] 左键 A / 右键 B（`AltFunctionUse`；B 的键位冲突等级 `RightClick`）
+- [x] **FX：** 仓库无任何新增图片
+- **验收：** 两种手段都造成 HenshinDamage —— 通过
 
 #### M0.7 SyncForm 联机
 
-- [ ] `Net/HenshinNet.cs`：`SyncForm`
-- [ ] 服务端权威广播
-- **验收：** 主机变身，客户端看见形态；客户端变身主机看见
-- **风险：** 预测回滚闪烁 → 允许 1～2 帧预测，以服务端为准
+- [x] `Net/HenshinNet.cs`：`NetOp.SyncForm`（playerId + formNetId）
+- [x] 服务端按自身视角校验后转发；不一致回发纠正；`SyncPlayer` 入场同步
+- **验收：** 主机 ↔ 客户端互见形态 —— **双端实测 pending**（隔离服务端加载与世界生成已通过）
 
-**M0 总验收：** 需求 §13 M0 完成标准。
+**M0 总验收：** 需求 §13 M0 —— 单机部分通过；联机互见待双端实测（§7.2 N1～N4）。
+
+#### M0 实测踩坑（后续里程碑必读）
+
+| 现象 | 根因（已反编译 tML 2026.07 确认） | 现役约定 |
+|------|------|------|
+| 左右键失效 | `ModType.NewInstance` 默认用 `Activator.CreateInstance` 建每个物品的 ModItem 实例，**不复制模板实例字段**；`SetStaticDefaults` 里赋给模板的实例字段在真实物品上为 null | 每形态共享数据一律放 `FormDefinition` 由 `FormRegistry` 持有；`HenshinForceItem.Definition` 按 `Type` 查注册表 |
+| 出现第二只镜像宝可梦 | **WeaponDisplay** 在 `ModPlayer.ModifyDrawInfo` 直接把手持物品贴图塞进 `DrawDataCache`，绕过层系统（原版 `HeldItem` 与 WeaponOut 走层，能被 `HideDrawLayers` 隐藏） | `HenshinOverlayLayer.Draw` 先移除 `DrawDataCache` 中引用形态贴图 / 物品贴图的条目再画自己 |
+| `Hide()` 对 `HeldItem` / `FrontAccFront` 的注意点 | 这两个 `Multiple` 层在 `DrawOrder` 里被包成 `PlayerDrawLayerSlot`，原层挂为 slot 的子层；对 `Layers` 中原层 `Hide()` 有效（子层不可见即不画） | 隐藏原皮遍历 `PlayerDrawLayerLoader.Layers` 即可，无需碰 `DrawOrder` |
+| 绘制坐标 | 原版各层直接用 `drawInfo.Position`，不再加 `gfxOffY` | Overlay 亦不加 `gfxOffY` |
 
 ---
 
@@ -696,7 +687,7 @@ TryEditTile(player, action) →
 
 ---
 
-## 10. Agent 开工检查清单（M0 第一天）
+## 10. Agent 开工检查清单（M0 第一天；已执行完毕，保留作后续里程碑开工范式）
 
 1. 通读 `docs/requirements.md` **v1.2**（尤其 §1.4～1.5、§2、§8、§12、§13）
 2. 只读浏览大修：`Content/DamageModify/*`、`WraithNet.cs`、`CrabulonPlayer` 下马、`MarbleShieldLayer`、`GhostRain*`、`CWRRef` Downed 段、`build.txt`
@@ -727,3 +718,4 @@ TryEditTile(player, action) →
 | 1.1 | 需求对照审阅修订（进化槽位、k=0.35 回退、传说硬验收） |
 | **1.2** | 对齐 requirements v1.2：禁止新增 FX 图；宝可梦图从 52poke 自取；招式 FX 参考表 |
 | 1.2.1 | 洁癖收尾：修正验收条文交叉引用；与 AGENTS.md/README 同源 |
+| 1.2.2 | M0 完成收尾（2026-09-04）：§2.1 定为扁平布局并写实际目录；§2.2 钉死 tML 2026.07 / Calamity 2.2.4；§3.12 k=0.35 主方案落地；M0 任务勾选、新增「实测踩坑」表；Rage/Adrenaline 对照与联机双端实测标 pending |

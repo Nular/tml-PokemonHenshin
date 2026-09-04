@@ -37,6 +37,10 @@ namespace PokemonHenshin.Content.Core
 
 		public FormRole Role { get; init; } = FormRole.Combat;
 
+		/// <summary>招式 A（默认左键）/ B（默认右键）。由物品在 SetStaticDefaults 中填入，随定义一起注册。</summary>
+		public MoveSpec MoveA { get; internal set; }
+		public MoveSpec MoveB { get; internal set; }
+
 		/// <summary>对应「之力」物品的 ItemType，由注册表在物品加载后回填。</summary>
 		public int ItemType { get; internal set; }
 

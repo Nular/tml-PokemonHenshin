@@ -6,6 +6,7 @@ using PokemonHenshin.Content.PlayerState;
 using ReLogic.Content;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent;
 using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Visual
@@ -40,6 +41,11 @@ namespace PokemonHenshin.Content.Visual
 			Texture2D texture = ModContent.Request<Texture2D>(form.TexturePath, AssetRequestMode.ImmediateLoad).Value;
 			if (texture == null)
 				return;
+
+			// 其他模组（如 WeaponDisplay）会在 ModifyDrawInfo 里绕过层系统、直接把「手持物品贴图」塞进 DrawDataCache。
+			// 之力的物品贴图就是形态贴图，会造成第二只镜像宝可梦。本层在所有 ModifyDrawInfo 之后运行，
+			// 这里把所有使用该贴图的条目清掉，再画我们自己的一份。
+			RemoveForeignDraws(ref drawInfo, texture, form.ItemType);
 
 			// 朝向：原图朝左时，玩家朝右需翻转。
 			bool flipX = (player.direction == 1) == form.TextureFacesLeft;
@@ -77,6 +83,18 @@ namespace PokemonHenshin.Content.Visual
 			Color color = drawInfo.colorArmorBody;
 
 			drawInfo.DrawDataCache.Add(new DrawData(texture, drawPos, null, color, drawInfo.rotation, origin, 1f, effects));
+		}
+
+		private static void RemoveForeignDraws(ref PlayerDrawSet drawInfo, Texture2D formTexture, int itemType)
+		{
+			Texture2D itemTexture = itemType > 0 && TextureAssets.Item[itemType].IsLoaded ? TextureAssets.Item[itemType].Value : null;
+			var cache = drawInfo.DrawDataCache;
+			for (int i = cache.Count - 1; i >= 0; i--)
+			{
+				Texture2D tex = cache[i].texture;
+				if (ReferenceEquals(tex, formTexture) || (itemTexture != null && ReferenceEquals(tex, itemTexture)))
+					cache.RemoveAt(i);
+			}
 		}
 	}
 }

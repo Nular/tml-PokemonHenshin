@@ -16,10 +16,15 @@ namespace PokemonHenshin.Content.Combat
 	/// </summary>
 	public abstract class HenshinForceItem : ModItem
 	{
-		private FormDefinition definition;
+		/// <summary>
+		/// 仅模板实例（加载期）使用的定义缓存。
+		/// 注意：tML 为每个 Item 用默认构造新建 ModItem 实例，实例字段不会从模板复制，
+		/// 所以运行期一律走 <see cref="FormRegistry"/> 按 Type 查询，避免实例上的 null。
+		/// </summary>
+		private FormDefinition templateDefinition;
 
-		/// <summary>形态定义；首次访问时创建（Texture 在加载期就会访问）。</summary>
-		public FormDefinition Definition => definition ??= CreateDefinition();
+		/// <summary>形态定义：已注册则取注册表（所有实例共享），否则（加载期）用模板缓存。</summary>
+		public FormDefinition Definition => FormRegistry.ByItemType(Type) ?? (templateDefinition ??= CreateDefinition());
 
 		protected abstract FormDefinition CreateDefinition();
 		protected abstract MoveSpec CreateMoveA();
@@ -28,16 +33,17 @@ namespace PokemonHenshin.Content.Combat
 		/// <summary>基础伤害（招式倍率与形态系数在其上叠加）。</summary>
 		protected abstract int BaseDamage { get; }
 
-		public MoveSpec MoveA { get; private set; }
-		public MoveSpec MoveB { get; private set; }
+		public MoveSpec MoveA => Definition.MoveA;
+		public MoveSpec MoveB => Definition.MoveB;
 
 		public override string Texture => Definition.TexturePath;
 
 		public override void SetStaticDefaults()
 		{
-			FormRegistry.Register(Definition, Type);
-			MoveA = CreateMoveA();
-			MoveB = CreateMoveB();
+			FormDefinition def = Definition;
+			def.MoveA = CreateMoveA();
+			def.MoveB = CreateMoveB();
+			FormRegistry.Register(def, Type);
 			ItemID.Sets.ItemsThatAllowRepeatedRightClick[Type] = true;
 		}
 
