@@ -220,8 +220,7 @@ namespace PokemonHenshin.Content.Affinity
 						player.statLife += 1;
 					break;
 				case PokemonType.Electric:
-					// 短 CD 冲刺占位：提升跑速
-					player.moveSpeed += 0.08f * amp;
+					// 短 CD 冲刺：见 HenshinPlayer 双击方向键
 					break;
 				case PokemonType.Ground:
 					player.pickSpeed -= 0.40f * amp;
@@ -274,8 +273,14 @@ namespace PokemonHenshin.Content.Affinity
 			switch (type)
 			{
 				case PokemonType.Flying:
-					player.extraFall += 5;
+				{
+					float fallRed = System.Math.Min(0.75f, 0.5f + hp.FallDamageReduction);
+					if (fallRed >= 0.75f)
+						player.noFallDmg = true;
+					else
+						player.extraFall += (int)(25 * fallRed);
 					break;
+				}
 				case PokemonType.Poison:
 					player.buffImmune[BuffID.Poisoned] = true;
 					break;
@@ -293,7 +298,7 @@ namespace PokemonHenshin.Content.Affinity
 					break;
 				case PokemonType.Water:
 					if (player.wet)
-						player.moveSpeed += 0.05f * amp;
+						player.moveSpeed += 0.05f * amp + hp.WaterSpeedBonus;
 					break;
 			}
 		}

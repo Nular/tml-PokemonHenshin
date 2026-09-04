@@ -118,6 +118,16 @@ namespace PokemonHenshin.Content.Loot
 			AddAcc(ModContent.ItemType<A10SharpBeakMembrane>(), ItemID.GiantHarpyFeather, 1);
 			AddAcc(ModContent.ItemType<A11SpellTagCloth>(), ItemID.SoulofNight, 8);
 			AddAcc(ModContent.ItemType<A12DragonFangCharm>(), ItemID.SoulofMight, 8);
+
+			AddAcc(ModContent.ItemType<A13WideLens>(), ItemID.Lens, 5);
+			AddAcc(ModContent.ItemType<A14ChoiceBand>(), ItemID.BandofRegeneration, 1);
+			AddAcc(ModContent.ItemType<A15ScopeLens>(), ItemID.BlackLens, 2);
+			AddAcc(ModContent.ItemType<A16LifeOrb>(), ItemID.LifeCrystal, 3);
+			AddAcc(ModContent.ItemType<A17ShellBell>(), ItemID.Seashell, 5);
+			AddAcc(ModContent.ItemType<A18RockyHelmet>(), ItemID.StoneBlock, 50);
+			AddAcc(ModContent.ItemType<A19ChargeBelt>(), ItemID.Wire, 30);
+			AddAcc(ModContent.ItemType<A20EchoPendant>(), ItemID.ManaCrystal, 2);
+			AddAcc(ModContent.ItemType<A21BurstArmband>(), ItemID.SoulofFright, 5);
 		}
 
 		private static void AddAcc(int result, int ing, int stack)

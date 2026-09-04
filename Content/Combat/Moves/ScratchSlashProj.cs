@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Damage;
 using Terraria;
 using Terraria.ID;
@@ -7,20 +8,20 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Combat.Moves
 {
 	/// <summary>
-	/// 爪击（招式 A 占位）：跟随玩家、朝向前方的短命近身命中盒。
-	/// 不绘制自身贴图（复用原版空贴图 Projectile_0），观感全靠原版 Dust —— 不新增任何 FX 图片。
+	/// 爪击：身前三条平行下滑爪痕；命中盒覆盖三线宽度。
 	/// </summary>
-	public class ScratchSlashProj : ModProjectile
+	public class ScratchSlashProj : HenshinMoveProj
 	{
-		private const int Lifetime = 12;
-		private const int Reach = 30;
+		private const int Lifetime = 14;
+		private const int Reach = 48;
+		private const float LineSpacing = 16f;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 40;
-			Projectile.height = 40;
+			Projectile.width = 72;
+			Projectile.height = 64;
 			Projectile.friendly = true;
 			Projectile.hostile = false;
 			Projectile.DamageType = HenshinDamage.Instance;
@@ -43,38 +44,56 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 
-			// 首帧锁定朝向；随后跟随玩家。
-			if (Projectile.ai[0] == 0f)
-				Projectile.ai[0] = owner.direction;
-			int dir = Projectile.ai[0] >= 0f ? 1 : -1;
+			if (Projectile.ai[1] == 0f)
+				Projectile.ai[1] = owner.direction;
+			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
 
-			Projectile.Center = owner.MountedCenter + new Vector2(dir * Reach, -4f);
+			Projectile.Center = owner.MountedCenter + new Vector2(dir * Reach, 0f);
 			Projectile.velocity = Vector2.Zero;
 
-			// 前 8 帧刷爪痕尘：三道斜线，自上而下。
-			if (Projectile.timeLeft > Lifetime - 8)
+			if (Projectile.timeLeft > Lifetime - 10)
 			{
-				float t = (Lifetime - Projectile.timeLeft) / 8f;
+				float t = (Lifetime - Projectile.timeLeft) / 10f;
+				// 三条平行线：竖直等距，同步向前下滑
 				for (int line = -1; line <= 1; line++)
 				{
-					Vector2 pos = Projectile.Center + new Vector2(dir * (line * 6f - 10f + t * 24f), line * 8f - 14f + t * 28f);
-					Dust d = Dust.NewDustPerfect(pos, DustID.Smoke, new Vector2(dir * 1.5f, 0.6f), 120, Color.White, 0.9f);
-					d.noGravity = true;
-					d.fadeIn = 0.6f;
-				}
-				if (Main.rand.NextBool(2))
-				{
-					Dust spark = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(12f, 12f), DustID.Torch, new Vector2(dir * 2f, -1f), 0, default, 1.1f);
-					spark.noGravity = true;
+					float yBase = line * LineSpacing;
+					for (int seg = 0; seg < 3; seg++)
+					{
+						float along = -18f + t * 40f + seg * 8f;
+						Vector2 pos = Projectile.Center + new Vector2(dir * along, yBase + t * 6f);
+						Dust d = Dust.NewDustPerfect(pos, DustID.Smoke, new Vector2(dir * 2.4f, 0.3f), 80, Color.White, 1.35f);
+						d.noGravity = true;
+						d.fadeIn = 0.9f;
+						Dust ember = Dust.NewDustPerfect(pos, DustID.Torch, new Vector2(dir * 1.4f, 0.2f), 100, default, 1.2f);
+						ember.noGravity = true;
+					}
 				}
 			}
 		}
 
+		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+		{
+			Player owner = Main.player[Projectile.owner];
+			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
+			Vector2 origin = owner.MountedCenter + new Vector2(dir * (Reach - 20f), 0f);
+			Vector2 tip = owner.MountedCenter + new Vector2(dir * (Reach + 28f), 0f);
+			for (int line = -1; line <= 1; line++)
+			{
+				Vector2 o = origin + new Vector2(0f, line * LineSpacing);
+				Vector2 e = tip + new Vector2(0f, line * LineSpacing);
+				float point = 0f;
+				if (Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), o, e, 14f, ref point))
+					return true;
+			}
+			return false;
+		}
+
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 8; i++)
 			{
-				Dust d = Dust.NewDustDirect(target.position, target.width, target.height, DustID.Blood, hit.HitDirection * 2f, -1f);
+				Dust d = Dust.NewDustDirect(target.position, target.width, target.height, DustID.Blood, hit.HitDirection * 2.5f, -1.2f);
 				d.noGravity = false;
 			}
 		}

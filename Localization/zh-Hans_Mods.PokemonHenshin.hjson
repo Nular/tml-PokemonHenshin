@@ -1,7 +1,19 @@
 Common: {
 	HoldToTransform: 在热键栏持握即变身；取消持握立刻恢复
 	Moves: 左键：{0}   右键：{1}
+	Moves3: 技能1：{0}   技能2：{1}   大招：{2}（能量满后热键）
+	UltimateEnergy: 大招能量：{0}/{1}
 	NoMount: 变身期间禁止使用坐骑
+	UltimateNotReady: 大招能量不足
+	ChoiceBandLocked: 讲究头带：仅能使用技能1
+	StageUp: 进度档提升至 {0}（御三家二阶需史莱姆神/鹿角怪，非史莱姆王）
+}
+
+Keybinds: {
+	HenshinUltimate: {
+		$parentVal: 释放变身大招
+		// DisplayName: Henshin Ultimate
+	}
 }
 
 Evolution: {
@@ -81,8 +93,85 @@ Moves: {
 	Psystrike: 精神击破
 	Barrier: 屏障
 	SandField: 沙暴场
-	Aeroblast: 气势轮
+	Aeroblast: 空气爆炸
 	DragonAscent: 画龙点睛
+	FireSpin: 火焰漩涡
+	FireFang: 火焰牙
+	FlareBlitz: 闪焰冲锋
+	Flamethrower: 喷射火焰
+	Overheat: 过热
+	Tackle: 撞击
+	BubbleBeam: 泡沫光线
+	Bite: 咬住
+	Whirlpool: 潮旋
+	SkullBash: 火箭头锤
+	HydroCannon: 加农水炮
+	RazorLeaf: 飞叶快刀
+	SeedBomb: 种子炸弹
+	PetalDance: 花瓣舞
+	ThunderShock: 电击
+	VoltTackle: 伏特攻击
+	RockTomb: 岩石封锁
+	RockSlide: 岩崩
+	BrickBreak: 劈瓦
+	StoneEdge: 尖石攻击
+	Lick: 舌舔
+	Hypnosis: 催眠术
+	ShadowClaw: 暗影爪
+	DarkPulse: 恶之波动
+	DragonRage: 龙之怒
+	DragonTail: 龙尾
+	Hurricane: 暴风
+	DragonDive: 龙之俯冲
+	TakeDown: 猛撞
+	Flail: 抓狂
+	Earthquake: 地震
+	Peck: 啄
+	AerialAce: 燕返
+	BraveBird: 勇鸟猛攻
+	ZenHeadbutt: 意念头锤
+	FocusPunch: 真气拳
+	SandTomb: 流沙地狱
+	DracoMeteor: 流星群
+}
+
+Acquire: {
+	L01_F01: 获取：开局发放
+	L01_F02: 获取：小火龙进化（进度档≥4：史莱姆神或鹿角怪）
+	L01_F03: 获取：火恐龙进化（进度档≥7）
+	L02_F01: 获取：开局发放
+	L02_F02: 获取：杰尼龟进化（进度档≥4：史莱姆神或鹿角怪）
+	L02_F03: 获取：卡咪龟进化（进度档≥7）
+	L03_F01: 获取：开局发放
+	L03_F02: 获取：妙蛙种子进化（进度档≥4：史莱姆神或鹿角怪）
+	L03_F03: 获取：妙蛙草进化（进度档≥7）
+	L04_F01: 获取：克苏鲁之眼掉落（约35%）
+	L04_F02: 获取：皮卡丘进化（进度档≥5）
+	L05_F01: 获取：蜂后掉落（约35%）
+	L05_F02: 获取：腕力进化（进度档≥6）
+	L05_F03: 获取：豪力进化（进度档≥9）
+	L06_F01: 获取：世纪之花掉落（约35%）
+	L06_F02: 获取：鬼斯通进化（进度档≥10）
+	L07_F01: 获取：机械 Boss 掉落（约25%）
+	L07_F02: 获取：迷你龙进化（进度档≥8）
+	L07_F03: 获取：哈克龙进化（进度档≥11）
+	L08_F01: 获取：石巨人掉落（约35%）
+	L08_F02: 获取：金属怪进化（进度档≥12）
+	L09_F01: 获取：合成（鲈鱼×5 + 坠落之星×3）
+	L09_F02: 获取：鲤鱼王进化（进度档≥6）
+	L10_F01: 获取：合成（金/铂锭×8 + 土块×50）
+	L10_F02: 获取：地鼠进化（进度档≥5）
+	L11_F01: 获取：骷髅王掉落（约30%）
+	L11_F02: 获取：波波进化（进度档≥8）
+	L12_F01: 获取：骷髅王掉落（约30%）
+	L12_F02: 获取：凯西进化（档≥9）或月亮领主掉落
+	L13_F01: 获取：血肉墙掉落（约40%）
+	L13_F02: 获取：大岩蛇进化（进度档≥10）
+	L14_F01: 获取：月亮领主掉落（约50%）
+	L15_F01: 获取：月后合成（夜明锭等）
+	L15_F02: 获取：圆陆鲨进化（进度档≥12）
+	L16_F01: 获取：月后合成（夜明锭 + 星旋碎片）
+	L17_F01: 获取：月后合成（夜明锭 + 星云/星尘碎片）
 }
 
 DamageClasses.HenshinDamage.DisplayName: 变身伤害
@@ -375,6 +464,51 @@ Items: {
 			龙共鸣·仅变身：对 Boss 再 +6%
 			'''
 	}
+
+	A13WideLens: {
+		DisplayName: 广角镜
+		Tooltip: 仅变身：射弹类招式获得角速度追踪
+	}
+
+	A14ChoiceBand: {
+		DisplayName: 讲究头带
+		Tooltip: 仅变身：只能使用技能1（禁用技能2与大招）；本模伤害 +50%
+	}
+
+	A15ScopeLens: {
+		DisplayName: 焦点镜
+		Tooltip: 仅变身：10% 升暴击档（未暴→暴击；普通暴击→超暴击×4）
+	}
+
+	A16LifeOrb: {
+		DisplayName: 生命宝珠
+		Tooltip: 仅变身：造成招式伤害时扣 1 HP；全伤害 +20%
+	}
+
+	A17ShellBell: {
+		DisplayName: 贝壳之铃
+		Tooltip: 仅变身：造成伤害回复 2 HP（短 CD，对齐灾厄吸血节奏）
+	}
+
+	A18RockyHelmet: {
+		DisplayName: 凸凸头盔
+		Tooltip: 仅变身：受击时对附近敌人造成 1.0×当前变身基准伤害
+	}
+
+	A19ChargeBelt: {
+		DisplayName: 充能束带
+		Tooltip: 仅变身：攻击命中能量获取 +30%
+	}
+
+	A20EchoPendant: {
+		DisplayName: 余韵挂坠
+		Tooltip: 仅变身：大招释放后保留 20% 能量
+	}
+
+	A21BurstArmband: {
+		DisplayName: 爆发腕章
+		Tooltip: 仅变身：大招伤害 +25%；能量获取 -20%
+	}
 }
 
 Projectiles: {
@@ -388,4 +522,28 @@ Projectiles: {
 	RainFieldProj.DisplayName: 雨场
 	PhaseTriggerProj.DisplayName: 穿障
 	DigBurstProj.DisplayName: 挖掘
+	// AoEBurstProj.DisplayName: Ao E Burst Proj
+	// BeamBoltProj.DisplayName: Beam Bolt Proj
+	// LungeProj.DisplayName: Lunge Proj
+	// SelfGuardProj.DisplayName: Self Guard Proj
+	// SleepWaveProj.DisplayName: Sleep Wave Proj
+	// StrikeFallProj.DisplayName: Strike Fall Proj
+	// VortexBindProj.DisplayName: Vortex Bind Proj
+	// AquaScepterShotProj.DisplayName: Aqua Scepter Shot Proj
+	// BarrageDirectorProj.DisplayName: Barrage Director Proj
+	// BlinkStrikeProj.DisplayName: Blink Strike Proj
+	// BorrowedVisualBoltProj.DisplayName: Borrowed Visual Bolt Proj
+	// CrossChopArcProj.DisplayName: Cross Chop Arc Proj
+	// FlareBoltUltProj.DisplayName: Flare Bolt Ult Proj
+	// GrassWhipProj.DisplayName: Grass Whip Proj
+	// GroundCycloneProj.DisplayName: Ground Cyclone Proj
+	// PeckConeProj.DisplayName: Peck Cone Proj
+	// ResonanceScatterProj.DisplayName: Resonance Scatter Proj
+	// RockTombDirectorProj.DisplayName: Rock Tomb Director Proj
+	// RockTombShardProj.DisplayName: Rock Tomb Shard Proj
+	// ThunderboltChainDirector.DisplayName: Thunderbolt Chain Director
+	// ThunderboltUltProj.DisplayName: Thunderbolt Ult Proj
+	// ZenHammerSmashProj.DisplayName: Zen Hammer Smash Proj
+	// BlinkStrikeBurstProj.DisplayName: Blink Strike Burst Proj
+	// CrossChopDashProj.DisplayName: Cross Chop Dash Proj
 }

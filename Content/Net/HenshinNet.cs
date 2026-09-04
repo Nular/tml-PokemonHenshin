@@ -18,7 +18,8 @@ namespace PokemonHenshin.Content.Net
 		ApplyEvolve = 3,
 		SyncPhasing = 4,
 		SyncWeatherField = 5,
-		TerrainBudgetReject = 6
+		TerrainBudgetReject = 6,
+		SyncEnergy = 7
 	}
 
 	/// <summary>单入口网络层。形态同步遵循服务端权威。</summary>
@@ -82,6 +83,16 @@ namespace PokemonHenshin.Content.Net
 			SendPhasing(mp, -1, ignoreClient);
 		}
 
+		public static void SendEnergy(HenshinPlayer mp, int toWho = -1, int fromWho = -1)
+		{
+			if (Main.netMode == NetmodeID.SinglePlayer)
+				return;
+			ModPacket packet = NewPacket(NetOp.SyncEnergy);
+			packet.Write((byte)mp.Player.whoAmI);
+			packet.Write(mp.UltimateEnergy);
+			packet.Send(toWho, fromWho);
+		}
+
 		public static void BroadcastWeatherField(WeatherFieldState field, bool remove)
 		{
 			if (Main.netMode != NetmodeID.Server)
@@ -132,6 +143,9 @@ namespace PokemonHenshin.Content.Net
 					break;
 				case NetOp.TerrainBudgetReject:
 					HandleTerrainReject(reader, whoAmI);
+					break;
+				case NetOp.SyncEnergy:
+					HandleSyncEnergy(reader, whoAmI);
 					break;
 				default:
 					PokemonHenshinMod.Instance.Logger.Warn($"未知 NetOp {(byte)op}，来自 {whoAmI}");
@@ -306,6 +320,28 @@ namespace PokemonHenshin.Content.Net
 			int playerIndex = reader.ReadByte();
 			if (Main.netMode == NetmodeID.MultiplayerClient && playerIndex == Main.myPlayer)
 				TerrainBudgetPlayer.NotifyRejected();
+		}
+
+		private static void HandleSyncEnergy(BinaryReader reader, int whoAmI)
+		{
+			int playerIndex = reader.ReadByte();
+			float energy = reader.ReadSingle();
+			if (playerIndex < 0 || playerIndex >= Main.maxPlayers)
+				return;
+			Player player = Main.player[playerIndex];
+			if (player == null || !player.active)
+				return;
+
+			if (Main.netMode == NetmodeID.Server)
+			{
+				if (playerIndex != whoAmI)
+					return;
+				player.GetModPlayer<HenshinPlayer>().ApplyServerEnergy(energy);
+				SendEnergy(player.GetModPlayer<HenshinPlayer>(), -1, whoAmI);
+				return;
+			}
+
+			player.GetModPlayer<HenshinPlayer>().ApplyServerEnergy(energy);
 		}
 	}
 }

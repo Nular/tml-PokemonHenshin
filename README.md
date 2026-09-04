@@ -1,22 +1,24 @@
 # Pokemon Henshin（宝可梦之力）
 
-泰拉瑞亚 + 灾厄模组：热键栏持握「xxx之力」变身对应宝可梦并使用双招式；松手同 tick 清除本模效果。持握禁坐骑。
+泰拉瑞亚 + 灾厄模组：热键栏持握「xxx之力」变身；**持握被动 + 技能1/2 + 能量大招**；仅变身生效饰品；松手同 tick 清除本模效果。持握禁坐骑。
 
 ## 文档
 
 | 文档 | 说明 |
 |------|------|
-| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，v1.2） |
-| [docs/dev-plan.md](docs/dev-plan.md) | 开发计划 M0～M5 |
+| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，**v1.3**） |
+| [docs/move-effects.md](docs/move-effects.md) | 招式 / 被动 / 大招泰拉适配表 |
+| [docs/dev-plan.md](docs/dev-plan.md) | 开发计划（冲突以需求为准） |
 | [AGENTS.md](AGENTS.md) | AI Agent 项目入口 |
 
 ## 状态
 
-**M0～M4 代码已落地**（2026-09-04）：36 形态 + 12 饰品 + 进度/进化/御三家 + 情境被动 + 天气场/穿障/挖掘 + 获取占位。
+**现役代码（2026-09-05）：** 36 形态 + **A01～A21** 饰品；战斗为被动+三招（能量大招默认 Mouse3）；获取条件 Tooltip；进度档提升提示。
 
-**待你游戏内验收**（Build + Reload）：A1 进化/御三家 → A2 被动/饰品门控 → A3 天气/穿障/挖掘 → A4 内容总检。调试：`/henshin stage`、`/henshin evolve`。
+**待游戏内验收：** Build + Reload 后验手感/特效/联机；调试 `/henshin stage`、`/henshin evolve`。  
+**注意：** 御三家二阶进度看 **史莱姆神 / 鹿角怪**，不是史莱姆王。
 
-后置：M5 发布打磨、联机双端实测、DPS 精调。
+后置：特效精修、联机双端实测、DPS 对标、Rage/肾上腺素、M5 发布打磨。
 
 ## 构建
 
@@ -30,5 +32,5 @@
 
 ## 资源约定
 
-- 宝可梦 / 饰品外观：52poke（图鉴与[道具列表](https://wiki.52poke.com/wiki/道具列表)）；脚本见 `tools/fetch_assets.py`
+- 宝可梦 / 饰品外观：52poke；脚本见 `tools/fetch_assets.py`（A13+ 暂复用 A01～A12 贴图）
 - 特效：不新增 FX 图片；复用原版 / 灾厄 / 参考 CalamityOverhaul 写法

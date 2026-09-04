@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Damage;
 using Terraria;
 using Terraria.Audio;
@@ -7,11 +8,7 @@ using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Combat.Moves
 {
-	/// <summary>
-	/// 火花弹（招式 B 占位）：小型火球，微重力、命中附着火。
-	/// 贴图复用原版火球（BallofFire），尾迹复用原版 Torch Dust —— 不新增任何 FX 图片。
-	/// </summary>
-	public class EmberBoltProj : ModProjectile
+	public class EmberBoltProj : HenshinMoveProj
 	{
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.BallofFire;
 
@@ -38,6 +35,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			HenshinProjUtil.HomingAI(Projectile, Homing, HomingTurnRate);
 			Projectile.rotation += 0.25f * Projectile.direction;
 			Projectile.velocity.Y += 0.08f;
 			if (Projectile.velocity.Y > 12f)
@@ -45,23 +43,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			if (Projectile.wet)
 			{
-				Extinguish();
+				for (int i = 0; i < 8; i++)
+					Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Smoke, 0f, -1f, 150, default, 1f).noGravity = true;
+				Projectile.Kill();
 				return;
 			}
 
 			Lighting.AddLight(Projectile.Center, 0.9f, 0.45f, 0.1f);
-
 			for (int i = 0; i < 2; i++)
 			{
 				Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Torch,
 					Projectile.velocity.X * 0.2f, Projectile.velocity.Y * 0.2f, 100, default, 1.4f);
 				d.noGravity = true;
 				d.velocity *= 0.5f;
-			}
-			if (Main.rand.NextBool(4))
-			{
-				Dust smoke = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Smoke, 0f, -0.5f, 150, default, 0.8f);
-				smoke.noGravity = true;
 			}
 		}
 
@@ -79,16 +73,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				d.noGravity = true;
 				d.velocity = Main.rand.NextVector2Circular(3f, 3f);
 			}
-		}
-
-		private void Extinguish()
-		{
-			for (int i = 0; i < 8; i++)
-			{
-				Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Smoke, 0f, -1f, 150, default, 1f);
-				d.noGravity = true;
-			}
-			Projectile.Kill();
 		}
 	}
 }

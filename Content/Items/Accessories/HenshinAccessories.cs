@@ -2,6 +2,7 @@ using PokemonHenshin.Content.Accessories;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.PlayerState;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Items.Accessories
@@ -71,7 +72,7 @@ namespace PokemonHenshin.Content.Items.Accessories
 	{
 		public override string Texture => "PokemonHenshin/Assets/Accessories/A10";
 		protected override PokemonType RequiredType => PokemonType.Flying;
-		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.FallDamageReduction = 0.25f; // 0.5+0.25→0.75
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.FallDamageReduction = 0.25f;
 	}
 
 	public class A11SpellTagCloth : TypeResonanceAccessory
@@ -80,7 +81,6 @@ namespace PokemonHenshin.Content.Items.Accessories
 		protected override PokemonType RequiredType => PokemonType.Ghost;
 		protected override void ApplyHenshinEffect(HenshinPlayer hp)
 		{
-			// +0.5s (=30 ticks)；若已满 2.0s 则 CD×0.9
 			float room = HenshinPlayer.PhasingMaxTicks - HenshinPlayer.PhasingBaseTicks;
 			if (hp.PhasingBonusTicks < room)
 				hp.PhasingBonusTicks += 30f;
@@ -94,5 +94,68 @@ namespace PokemonHenshin.Content.Items.Accessories
 		public override string Texture => "PokemonHenshin/Assets/Accessories/A12";
 		protected override PokemonType RequiredType => PokemonType.Dragon;
 		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.BossDamageBonus += 0.06f;
+	}
+
+	// —— A13～A21 ——
+	public class A13WideLens : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A02";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp)
+		{
+			hp.AccWideLens = true;
+			hp.HomingTurnRate = 0.12f;
+		}
+	}
+
+	public class A14ChoiceBand : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A01";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.AccChoiceBand = true;
+	}
+
+	public class A15ScopeLens : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A03";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.AccScopeLens = true;
+	}
+
+	public class A16LifeOrb : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A06";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.AccLifeOrb = true;
+	}
+
+	public class A17ShellBell : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A08";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.AccShellBell = true;
+	}
+
+	public class A18RockyHelmet : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A05";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.AccRockyHelmet = true;
+	}
+
+	public class A19ChargeBelt : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A09";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.EnergyGainMultiplier *= 1.30f;
+	}
+
+	public class A20EchoPendant : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A04";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp) => hp.UltRetainFraction = System.Math.Max(hp.UltRetainFraction, 0.20f);
+	}
+
+	public class A21BurstArmband : HenshinAccessoryItem
+	{
+		public override string Texture => "PokemonHenshin/Assets/Accessories/A12";
+		protected override void ApplyHenshinEffect(HenshinPlayer hp)
+		{
+			hp.UltDamageBonus += 0.25f;
+			hp.EnergyGainMultiplier *= 0.80f;
+		}
 	}
 }

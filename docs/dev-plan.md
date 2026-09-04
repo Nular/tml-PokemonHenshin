@@ -2,9 +2,9 @@
 
 | 项 | 内容 |
 |----|------|
-| 版本 | 1.2 |
-| 对齐需求 | `docs/requirements.md` **v1.2** |
-| 状态 | **M0～M4 代码已落地**（2026-09-04）；**待游戏内验收 A1～A4**；M5 / DPS 精调后置 |
+| 版本 | 1.3 |
+| 对齐需求 | `docs/requirements.md` **v1.3** |
+| 状态 | **战斗模型 v1.3 已落地**（被动+技能1/2+能量大招、A01～A21、获取 Tooltip；2026-09-05）；**待游戏内验收**；M5 / DPS / 联机精测后置 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码；冲突以 `docs/requirements.md` 为准 |
 
@@ -29,13 +29,14 @@
 
 在泰拉瑞亚 + tModLoader + 灾厄环境下，实现「**{宝可梦名}之力**」换皮武器模组：
 
-- 热键栏**持握** = 变身（外观 Overlay、双招式、属性情境被动、仅变身生效的饰品）
+- 热键栏**持握** = 变身（外观 Overlay、**持握被动 + 技能1/2 + 能量大招**、属性情境弱加成、仅变身生效的饰品）
 - **取消持握**同 tick 清除本模全部相关效果
 - 持握期间**禁止坐骑**
 - 独立伤害类型 `HenshinDamage`，职业专精按 **k = 0.35** 折算
 - 随 `ProgressStage` 进化（物品替换，保留前缀与收藏）
-- 开局发放御三家；第一版约 **17 链 / 36 形态** + **12 饰品**
-- **联机必须一致**（形态、伤害、进化、天气场伤害侧、地形变更）
+- 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01～A21 饰品**
+- **联机必须一致**（形态、能量、伤害、进化、天气场伤害侧、地形变更）
+- 招式泰拉适配权威表：`docs/move-effects.md`
 
 ### 1.2 里程碑（对齐需求 §13）
 
@@ -88,7 +89,7 @@ PokemonHenshin/                # 仓库根 = 模组根
   Localization/                # en-US / zh-Hans hjson（特殊字符须引号或 ''' 多行）
   Assets/
     Forms/                     # 36 形态精灵图，按 FormId 命名
-    Accessories/               # 12 饰品图 A01～A12（非 FX）
+    Accessories/               # 饰品图 A01～A12（非 FX；A13+ 暂复用）
   Content/
     Core/                      # FormDefinition、FormRegistry、MoveSpec、ProgressStage、CalamityProgressAdapter
     Damage/                    # HenshinDamage
@@ -629,7 +630,7 @@ TryEditTile(player, action) →
 
 ## 10. Agent 开工检查清单（M0 第一天；已执行完毕，保留作后续里程碑开工范式）
 
-1. 通读 `docs/requirements.md` **v1.2**（尤其 §1.4～1.5、§2、§8、§12、§13）
+1. 通读 `docs/requirements.md` **v1.3**（尤其 §1.4～1.5、§2.5、§8、§12、§13）与 `docs/move-effects.md`
 2. 只读浏览大修：`Content/DamageModify/*`、`WraithNet.cs`、`CrabulonPlayer` 下马、`MarbleShieldLayer`、`GhostRain*`、`CWRRef` Downed 段、`build.txt`
 3. **不修改** CalamityOverhaul；**不新增**任何 FX 图片到本仓库
 4. 创建 PokemonHenshin 模组工程（本计划 §2）
@@ -643,10 +644,10 @@ TryEditTile(player, action) →
 
 | 维度 | 结论 |
 |------|------|
-| 与 requirements **v1.2** 对齐 | **通过**：含禁自制 FX、52poke 取图、持握变身、禁坐骑、伤害折算、进化、御三家、传说线、联机与 M0～M5 |
+| 与 requirements **v1.3** 对齐 | **通过**：含禁自制 FX、52poke 取图、持握变身、禁坐骑、被动+技能1/2+能量大招、进化、御三家、传说线、A01～A21、联机与 M0～M5 |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
 | 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
-| 总评 | **M0～M4 代码已落地；待游戏内 A1～A4 与 M5** |
+| 总评 | **v1.3 战斗/饰品已落地；待游戏内验收与 M5；现役穿障形态为 0（Excel 取消鬼斯通穿障）** |
 
 ---
 
@@ -661,3 +662,5 @@ TryEditTile(player, action) →
 | 1.2.2 | M0 完成收尾：扁平布局、钉死版本、k=0.35 落地、实测踩坑表；Rage/联机标 pending |
 | 1.2.3 | M1～M4 代码落地：反射 ProgressStage、进化 UI、36 形态、12 饰品、被动/天气/穿障/挖掘、获取占位；待游戏内 A1～A4 |
 | **1.2.4** | 洁癖：纠正「须 Extract dll」过期说法；目录树/内容管线对齐现役；残留风险改为联机与 DPS |
+| **1.3.0** | 战斗改为被动+技能1/2+能量大招；A13～A21；move-effects.md；获取 Tooltip；旧饰品修复 |
+| 1.3.1 | 洁癖：页眉/目标/总评与 README·AGENTS 对齐 v1.3；注明现役无穿障形态 |

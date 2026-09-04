@@ -1,7 +1,19 @@
 Common: {
 	HoldToTransform: Hold in your hotbar to transform; release to revert instantly
 	Moves: Left click: {0}   Right click: {1}
+	Moves3: Skill1: {0}   Skill2: {1}   Ult: {2} (hotkey when charged)
+	UltimateEnergy: Ultimate energy: {0}/{1}
 	NoMount: Mounts cannot be used while transformed
+	UltimateNotReady: Ultimate energy not ready
+	ChoiceBandLocked: Choice Band: Skill1 only
+	StageUp: Progress stage raised to {0} (starter mid-evo needs Slime God/Deerclops, not King Slime)
+}
+
+Keybinds: {
+	HenshinUltimate: {
+		$parentVal: Fire Henshin Ultimate
+		DisplayName: Henshin Ultimate
+	}
 }
 
 Evolution: {
@@ -83,6 +95,83 @@ Moves: {
 	SandField: Sandstorm
 	Aeroblast: Aeroblast
 	DragonAscent: Dragon Ascent
+	FireSpin: Fire Spin
+	FireFang: Fire Fang
+	FlareBlitz: Flare Blitz
+	Flamethrower: Flamethrower
+	Overheat: Overheat
+	Tackle: Tackle
+	BubbleBeam: Bubble Beam
+	Bite: Bite
+	Whirlpool: Whirlpool
+	SkullBash: Skull Bash
+	HydroCannon: Hydro Cannon
+	RazorLeaf: Razor Leaf
+	SeedBomb: Seed Bomb
+	PetalDance: Petal Dance
+	ThunderShock: Thunder Shock
+	VoltTackle: Volt Tackle
+	RockTomb: Rock Tomb
+	RockSlide: Rock Slide
+	BrickBreak: Brick Break
+	StoneEdge: Stone Edge
+	Lick: Lick
+	Hypnosis: Hypnosis
+	ShadowClaw: Shadow Claw
+	DarkPulse: Dark Pulse
+	DragonRage: Dragon Rage
+	DragonTail: Dragon Tail
+	Hurricane: Hurricane
+	DragonDive: Dragon Dive
+	TakeDown: Take Down
+	Flail: Flail
+	Earthquake: Earthquake
+	Peck: Peck
+	AerialAce: Aerial Ace
+	BraveBird: Brave Bird
+	ZenHeadbutt: Zen Headbutt
+	FocusPunch: Focus Punch
+	SandTomb: Sand Tomb
+	DracoMeteor: Draco Meteor
+}
+
+Acquire: {
+	L01_F01: Obtain: Starter grant
+	L01_F02: Obtain: Evolve Charmander (stage ≥4: Slime God or Deerclops)
+	L01_F03: Obtain: Evolve Charmeleon (stage ≥7)
+	L02_F01: Obtain: Starter grant
+	L02_F02: Obtain: Evolve Squirtle (stage ≥4: Slime God or Deerclops)
+	L02_F03: Obtain: Evolve Wartortle (stage ≥7)
+	L03_F01: Obtain: Starter grant
+	L03_F02: Obtain: Evolve Bulbasaur (stage ≥4: Slime God or Deerclops)
+	L03_F03: Obtain: Evolve Ivysaur (stage ≥7)
+	L04_F01: Obtain: Eye of Cthulhu drop (~35%)
+	L04_F02: Obtain: Evolve Pikachu (stage ≥5)
+	L05_F01: Obtain: Queen Bee drop (~35%)
+	L05_F02: Obtain: Evolve Machop (stage ≥6)
+	L05_F03: Obtain: Evolve Machoke (stage ≥9)
+	L06_F01: Obtain: Plantera drop (~35%)
+	L06_F02: Obtain: Evolve Haunter (stage ≥10)
+	L07_F01: Obtain: Mechanical boss drop (~25%)
+	L07_F02: Obtain: Evolve Dratini (stage ≥8)
+	L07_F03: Obtain: Evolve Dragonair (stage ≥11)
+	L08_F01: Obtain: Golem drop (~35%)
+	L08_F02: Obtain: Evolve Metang (stage ≥12)
+	L09_F01: Obtain: Craft (Bass×5 + Fallen Star×3)
+	L09_F02: Obtain: Evolve Magikarp (stage ≥6)
+	L10_F01: Obtain: Craft (Gold/Platinum Bar×8 + Dirt×50)
+	L10_F02: Obtain: Evolve Diglett (stage ≥5)
+	L11_F01: Obtain: Skeletron drop (~30%)
+	L11_F02: Obtain: Evolve Pidgey (stage ≥8)
+	L12_F01: Obtain: Skeletron drop (~30%)
+	L12_F02: Obtain: Evolve Abra (stage ≥9) or Moon Lord drop
+	L13_F01: Obtain: Wall of Flesh drop (~40%)
+	L13_F02: Obtain: Evolve Onix (stage ≥10)
+	L14_F01: Obtain: Moon Lord drop (~50%)
+	L15_F01: Obtain: Post-Moon Lord craft
+	L15_F02: Obtain: Evolve Gible (stage ≥12)
+	L16_F01: Obtain: Post-Moon Lord craft
+	L17_F01: Obtain: Post-Moon Lord craft
 }
 
 DamageClasses.HenshinDamage.DisplayName: henshin damage
@@ -375,6 +464,51 @@ Items: {
 			Dragon resonance: +6% vs bosses
 			'''
 	}
+
+	A13WideLens: {
+		DisplayName: Wide Lens
+		Tooltip: Henshin only: ranged projectiles gain angular homing
+	}
+
+	A14ChoiceBand: {
+		DisplayName: Choice Band
+		Tooltip: Henshin only: Skill1 only (no Skill2/Ult); +50% henshin damage
+	}
+
+	A15ScopeLens: {
+		DisplayName: Scope Lens
+		Tooltip: Henshin only: 10% crit-tier upgrade (miss→crit; crit→×4 hypercrit)
+	}
+
+	A16LifeOrb: {
+		DisplayName: Life Orb
+		Tooltip: Henshin only: -1 HP on move hit; +20% damage
+	}
+
+	A17ShellBell: {
+		DisplayName: Shell Bell
+		Tooltip: Henshin only: heal 2 HP on hit (short CD like Calamity lifesteal)
+	}
+
+	A18RockyHelmet: {
+		DisplayName: Rocky Helmet
+		Tooltip: Henshin only: on hurt, damage nearby foes for 1.0× henshin base damage
+	}
+
+	A19ChargeBelt: {
+		DisplayName: Charge Belt
+		Tooltip: Henshin only: +30% ultimate energy on hit
+	}
+
+	A20EchoPendant: {
+		DisplayName: Echo Pendant
+		Tooltip: Henshin only: keep 20% energy after ultimate
+	}
+
+	A21BurstArmband: {
+		DisplayName: Burst Armband
+		Tooltip: Henshin only: +25% ultimate damage; -20% energy gain
+	}
 }
 
 Projectiles: {
@@ -388,4 +522,28 @@ Projectiles: {
 	RainFieldProj.DisplayName: Rain Field
 	PhaseTriggerProj.DisplayName: Phase
 	DigBurstProj.DisplayName: Dig
+	AoEBurstProj.DisplayName: Ao E Burst Proj
+	BeamBoltProj.DisplayName: Beam Bolt Proj
+	LungeProj.DisplayName: Lunge Proj
+	SelfGuardProj.DisplayName: Self Guard Proj
+	SleepWaveProj.DisplayName: Sleep Wave Proj
+	StrikeFallProj.DisplayName: Strike Fall Proj
+	VortexBindProj.DisplayName: Vortex Bind Proj
+	AquaScepterShotProj.DisplayName: Aqua Scepter Shot Proj
+	BarrageDirectorProj.DisplayName: Barrage Director Proj
+	BlinkStrikeProj.DisplayName: Blink Strike Proj
+	BorrowedVisualBoltProj.DisplayName: Borrowed Visual Bolt Proj
+	CrossChopArcProj.DisplayName: Cross Chop Arc Proj
+	FlareBoltUltProj.DisplayName: Flare Bolt Ult Proj
+	GrassWhipProj.DisplayName: Grass Whip Proj
+	GroundCycloneProj.DisplayName: Ground Cyclone Proj
+	PeckConeProj.DisplayName: Peck Cone Proj
+	ResonanceScatterProj.DisplayName: Resonance Scatter Proj
+	RockTombDirectorProj.DisplayName: Rock Tomb Director Proj
+	RockTombShardProj.DisplayName: Rock Tomb Shard Proj
+	ThunderboltChainDirector.DisplayName: Thunderbolt Chain Director
+	ThunderboltUltProj.DisplayName: Thunderbolt Ult Proj
+	ZenHammerSmashProj.DisplayName: Zen Hammer Smash Proj
+	BlinkStrikeBurstProj.DisplayName: Blink Strike Burst Proj
+	CrossChopDashProj.DisplayName: Cross Chop Dash Proj
 }

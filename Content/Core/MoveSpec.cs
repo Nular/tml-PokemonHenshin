@@ -3,15 +3,11 @@ namespace PokemonHenshin.Content.Core
 	/// <summary>键位冲突等级（需求 §2.5 招式表必填项）。</summary>
 	public enum KeyConflictLevel : byte
 	{
-		/// <summary>默认左键，无冲突。</summary>
 		None = 0,
-		/// <summary>右键；可能与原版右键交互（开门/开箱等）竞争。</summary>
 		RightClick = 1,
-		/// <summary>需要独立 Mod 热键。</summary>
 		ModKeybind = 2
 	}
 
-	/// <summary>联机风险等级（需求 §2.5）。</summary>
 	public enum NetRisk : byte
 	{
 		Low = 0,
@@ -19,17 +15,18 @@ namespace PokemonHenshin.Content.Core
 		High = 2
 	}
 
-	/// <summary>
-	/// 招式元数据（dev-plan §4.4 MoveSpec）。数值为占位，M4 迭代。
-	/// </summary>
+	public enum MoveSlot : byte
+	{
+		Skill1 = 0,
+		Skill2 = 1,
+		Ultimate = 2
+	}
+
+	/// <summary>招式元数据。技能1/2/大招共用。</summary>
 	public sealed class MoveSpec
 	{
 		public string NameKey { get; init; }
-
-		/// <summary>发射的弹幕类型；由物品在 SetDefaults 之后解析。</summary>
 		public int ProjectileType { get; init; }
-
-		/// <summary>相对物品基础伤害的倍率。</summary>
 		public float DamageMultiplier { get; init; } = 1f;
 		public int UseTime { get; init; } = 20;
 		public float ShootSpeed { get; init; } = 0f;
@@ -39,5 +36,28 @@ namespace PokemonHenshin.Content.Core
 		public NetRisk NetRisk { get; init; } = NetRisk.Low;
 		public CollisionTier Collision { get; init; } = CollisionTier.A;
 		public bool GrantsPhasing { get; init; }
+
+		/// <summary>写入弹幕 ai[0]：Dust 或子类型。</summary>
+		public float Ai0 { get; init; }
+		/// <summary>写入弹幕 ai[1]：BuffID 等。</summary>
+		public float Ai1 { get; init; }
+		/// <summary>写入弹幕 ai[2]：扩展。</summary>
+		public float Ai2 { get; init; }
+
+		public bool IsRangedProjectile { get; init; }
+		/// <summary>在鼠标世界坐标生成（落点技 / 指针大招）。</summary>
+		public bool SpawnAtMouse { get; init; }
+		/// <summary>撞击类：0.5s 内置 CD。</summary>
+		public bool RequiresLungeCooldown { get; init; }
+		public bool EasyCrit { get; init; }
+		public bool IgnoreDefensePartial { get; init; }
+		public bool RecoilSelf { get; init; }
+		public float RecoilFraction { get; init; } = 0.08f;
+		public bool CountsAsFireMove { get; init; }
+		public bool CountsAsWaterMove { get; init; }
+		public bool CountsAsGrassMove { get; init; }
+		public int AftermathDamagePenaltyTicks { get; init; }
+		public float AftermathDamagePenalty { get; init; }
+		public int SelfStunTicks { get; init; }
 	}
 }
