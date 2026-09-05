@@ -463,6 +463,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			for (int i = 0; i < 8; i++)
 				Dust.NewDustPerfect(target.Center, DustID.Smoke, Main.rand.NextVector2Circular(4f, 4f), 100, default, 1.3f).noGravity = true;
+			if (Projectile.ai[1] > 0)
+				target.AddBuff((int)Projectile.ai[1], 180);
+			if (dust == DustID.Torch)
+			{
+				for (int i = 0; i < 10; i++)
+					Dust.NewDustPerfect(target.Center, DustID.Torch, Main.rand.NextVector2Circular(6f, 6f), 60, default, 1.5f).noGravity = true;
+			}
 		}
 
 		public override bool PreDraw(ref Color lightColor) => false;

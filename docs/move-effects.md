@@ -1,8 +1,8 @@
 # 招式泰拉适配表（权威）
 
-**Status：** Implemented（点名招式已按表落地并经手感迭代；全表仍待游戏内验收；未点名大招精修 pending）  
-**版本：** 1.2（2026-09-05）  
-**冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表；未实现行仍以本表为设计规格。
+**Status：** Implemented（全形态招式/大招按 v1.3 接线；待游戏内验收）  
+**版本：** 1.3（2026-09-05）  
+**冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
 
@@ -96,7 +96,7 @@
 
 ## 4. 全形态适配表
 
-列说明：
+列说明：含 **Code**=Done（v1.3 已接线）。
 
 - **Passive**：可验收数值。
 - **Skill1 / Skill2 / Ultimate**：玩法代号 + 简述。
@@ -104,15 +104,15 @@
 - **VFX note**：无新图前提下的手法。
 - **Net risk**：Low / Medium / High（位移、场地、挖砖、穿障、多段同步越高）。
 
-所有行 Status = **Design（待实现验收）**。
+列外加 **Code**：`Done` = 已接线；验收见计划验收清单。
 
 ### 4.1 火系链 L01
 
-| FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
-|--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L01_F01 | 小火龙 | **猛火**：HP&lt;50% 时火系招式伤害 +20% | 火花 Bolt+OnFire | 抓 MeleeArc（三道**平行**爪痕+扩盒） | 火焰漩涡 HomingLock：自玩家射出，原版 Typhoon 橙红染色，锁定首敌 | 耗 100；无额外后摇 | 三平行爪痕尘；台风染色火矢（不生成灾厄弹） | Low |
-| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Beam（龙系冲击波） | 火焰牙 MeleeArc+OnFire | 闪焰冲锋 Lunge+Recoil+OnFire（自损约造成伤害的 25%） | 耗 100；Recoil | 龙波：紫/火尘柱；冲锋：身周火尘+突进残影 | Medium |
-| L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +25%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 Spread/Bolt+OnFire（强焰） | 龙爪 MeleeArc | 过热 AoEBurst+OnFire；释放后 **5s 本模伤害 ×0.5** | 耗 100；5s 伤害减半 | 过热：大范围火爆尘+灾厄火系参数参考 | Medium |
+| FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk | Code |
+|--------|------|-------------------|--------|--------|----------|------------------|----------|----------|------|
+| L01_F01 | 小火龙 | **猛火**：HP&lt;50% 时火系招式伤害 +20% | 火花 Bolt+OnFire | 抓 MeleeArc（三道**平行**爪痕+扩盒） | 火焰漩涡 HomingLock：自玩家射出，原版 Typhoon 橙红染色，锁定首敌 | 耗 100；无额外后摇 | 三平行爪痕尘；台风染色火矢（不生成灾厄弹） | Low | Done |
+| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 ThickBeam | 火焰牙 MeleeArc+OnFire | 闪焰冲锋 Lunge+Recoil25%+OnFire | 耗 100；Recoil | 紫火粗束；火尘冲锋+命中爆 | Medium | Done |
+| L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +25%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 FlameCone×10 | 龙爪 Scratch火 | 过热 MouseAoE+OnFire；**5s 伤×0.5** | 耗 100；5s 伤害减半 | 指针大环火爆 | Medium | Done |
 
 ### 4.2 草系链 L03
 
@@ -236,3 +236,5 @@
 | 版本 | 日期 | 说明 |
 |------|------|------|
 | 1.0 | 2026-09-04 | 初版：Excel 全表泰拉适配 + 地鼠补全；Status=Design |
+| 1.2 | 2026-09-05 | 点名 7 形态手感落地；能量 UI C |
+| 1.3 | 2026-09-05 | 全 36 形态招式/大招按 Redesigned+Wave2 积木接线；Code 列 Done |

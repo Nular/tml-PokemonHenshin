@@ -546,4 +546,41 @@ Projectiles: {
 	// ZenHammerSmashProj.DisplayName: Zen Hammer Smash Proj
 	// BlinkStrikeBurstProj.DisplayName: Blink Strike Burst Proj
 	// CrossChopDashProj.DisplayName: Cross Chop Dash Proj
+	// AirBurstProj.DisplayName: Air Burst Proj
+	// BigShadowBallProj.DisplayName: Big Shadow Ball Proj
+	// BiteArcProj.DisplayName: Bite Arc Proj
+	// BrickBreakProj.DisplayName: Brick Break Proj
+	// ChargeBeamDirectorProj.DisplayName: Charge Beam Director Proj
+	// CloseCombatDirectorProj.DisplayName: Close Combat Director Proj
+	// CrossChopShortProj.DisplayName: Cross Chop Short Proj
+	// DarkPulseConeProj.DisplayName: Dark Pulse Cone Proj
+	// DigUltBurstProj.DisplayName: Dig Ult Burst Proj
+	// DragonBreathConeProj.DisplayName: Dragon Breath Cone Proj
+	// DynamicPunchProj.DisplayName: Dynamic Punch Proj
+	// FallingBoulderProj.DisplayName: Falling Boulder Proj
+	// FlailBarrageProj.DisplayName: Flail Barrage Proj
+	// FlameConeDirectorProj.DisplayName: Flame Cone Director Proj
+	// FutureSightProj.DisplayName: Future Sight Proj
+	// HurricaneFieldProj.DisplayName: Hurricane Field Proj
+	// HypnosisWaveProj.DisplayName: Hypnosis Wave Proj
+	// LeafSpreadProj.DisplayName: Leaf Spread Proj
+	// LickFanProj.DisplayName: Lick Fan Proj
+	// MeteorBarrageDirectorProj.DisplayName: Meteor Barrage Director Proj
+	// MeteorShardProj.DisplayName: Meteor Shard Proj
+	// MidThunderBeamProj.DisplayName: Mid Thunder Beam Proj
+	// MouseAoEBurstProj.DisplayName: Mouse Ao E Burst Proj
+	// MouseVortexProj.DisplayName: Mouse Vortex Proj
+	// MudSlapBoltProj.DisplayName: Mud Slap Bolt Proj
+	// OutrageDirectorProj.DisplayName: Outrage Director Proj
+	// PetalDanceFieldProj.DisplayName: Petal Dance Field Proj
+	// QuakeWaveProj.DisplayName: Quake Wave Proj
+	// RockSlideDirectorProj.DisplayName: Rock Slide Director Proj
+	// SeedBombProj.DisplayName: Seed Bomb Proj
+	// SludgeBoltProj.DisplayName: Sludge Bolt Proj
+	// StoneEdgeBoltProj.DisplayName: Stone Edge Bolt Proj
+	// StrongPsychicBoltProj.DisplayName: Strong Psychic Bolt Proj
+	// ThickBeamProj.DisplayName: Thick Beam Proj
+	// ThunderPillarBoltProj.DisplayName: Thunder Pillar Bolt Proj
+	// ThunderPillarUltProj.DisplayName: Thunder Pillar Ult Proj
+	// TripleStabProj.DisplayName: Triple Stab Proj
 }

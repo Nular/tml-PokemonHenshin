@@ -104,7 +104,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				Collision = CollisionTier.A
 			};
 
-		public static MoveSpec Lunge(string nameKey, float mult, int use, int dust, bool recoil = false, float recoilFrac = 0.08f)
+		public static MoveSpec Lunge(string nameKey, float mult, int use, int dust, bool recoil = false, float recoilFrac = 0.08f, int onHitBuff = 0, KeyConflictLevel key = KeyConflictLevel.None)
 			=> new()
 			{
 				NameKey = nameKey,
@@ -114,9 +114,11 @@ namespace PokemonHenshin.Content.Items.Forms
 				ShootSpeed = 0f,
 				Knockback = 4f,
 				Ai0 = dust,
+				Ai1 = onHitBuff,
 				RecoilSelf = recoil,
 				RecoilFraction = recoilFrac,
-				RequiresLungeCooldown = true
+				RequiresLungeCooldown = true,
+				KeyConflict = key
 			};
 
 		public static MoveSpec Vortex(string nameKey, float mult, int dust, int buff = 0)
@@ -396,6 +398,442 @@ namespace PokemonHenshin.Content.Items.Forms
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
+		public static MoveSpec BubbleBarrage(string nameKey, int count, float mult, int use = 36)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BarrageDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 1.2f,
+				Ai0 = BarrageDirectorProj.ModeBubble,
+				Ai1 = count,
+				Ai2 = 16f,
+				CountsAsWaterMove = true
+			};
+
+		public static MoveSpec ThickBeam(string nameKey, float mult, int dust, bool aftermath = false, int selfStun = 0, int onHitBuff = 0, bool ignoreDef = false, bool ult = true)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<ThickBeamProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult ? 42 : 24,
+				ShootSpeed = 17f,
+				Knockback = 2.5f,
+				Ai0 = dust,
+				Ai1 = onHitBuff,
+				IsRangedProjectile = true,
+				IgnoreDefensePartial = ignoreDef,
+				AftermathDamagePenaltyTicks = aftermath ? 180 : 0,
+				AftermathDamagePenalty = aftermath ? 0.5f : 1f,
+				SelfStunTicks = selfStun > 0 ? selfStun : (aftermath ? 90 : 0),
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+			};
+
+		public static MoveSpec MouseAoE(string nameKey, float mult, int dust, int buff = 0, bool aftermath = false, bool ignoreDef = false)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<MouseAoEBurstProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				Knockback = 5f,
+				Ai0 = dust,
+				Ai1 = buff,
+				SpawnAtMouse = true,
+				IgnoreDefensePartial = ignoreDef,
+				AftermathDamagePenaltyTicks = aftermath ? 300 : 0,
+				AftermathDamagePenalty = aftermath ? 0.5f : 1f,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec ChargeBeamUlt(string nameKey, float mult = 4f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<ChargeBeamDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 55,
+				ShootSpeed = 0f,
+				Ai0 = DustID.ChlorophyteWeapon,
+				CountsAsGrassMove = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec RockSlideX(string nameKey, int count, float mult, bool ult = false)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<RockSlideDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult ? 40 : 28,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				SpawnAtMouse = true,
+				Ai1 = count,
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+			};
+
+		public static MoveSpec MeteorBarrageUlt(string nameKey, int count = 8, float mult = 4.2f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<MeteorBarrageDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 48,
+				ShootSpeed = 0f,
+				SpawnAtMouse = true,
+				Ai1 = count,
+				AftermathDamagePenaltyTicks = 300,
+				AftermathDamagePenalty = 0.85f,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec FlameCone(string nameKey, float mult = 1.55f, int count = 10)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<FlameConeDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 26,
+				ShootSpeed = 0f,
+				Ai1 = count,
+				CountsAsFireMove = true
+			};
+
+		public static MoveSpec LeafSpread(string nameKey, float mult = 1.3f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<LeafSpreadProj>(),
+				DamageMultiplier = mult,
+				UseTime = 18,
+				ShootSpeed = 0f,
+				CountsAsGrassMove = true
+			};
+
+		public static MoveSpec SeedBombUlt(string nameKey, float mult = 3.3f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<SeedBombProj>(),
+				DamageMultiplier = mult,
+				UseTime = 32,
+				ShootSpeed = 10f,
+				IsRangedProjectile = true,
+				EasyCrit = true,
+				CountsAsGrassMove = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec HurricaneField(string nameKey, float mult, bool ult = false)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<HurricaneFieldProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult ? 40 : 28,
+				ShootSpeed = 0f,
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+			};
+
+		public static MoveSpec ThunderPillarUlt(string nameKey, float mult = 3.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<ThunderPillarUltProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				SpawnAtMouse = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec CloseCombatUlt(string nameKey, float mult = 4f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<CloseCombatDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 48,
+				ShootSpeed = 0f,
+				AftermathDamagePenaltyTicks = 300,
+				AftermathDamagePenalty = 0.8f,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec OutrageUlt(string nameKey, float mult = 4.2f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<OutrageDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 50,
+				ShootSpeed = 0f,
+				AftermathDamagePenaltyTicks = 120,
+				AftermathDamagePenalty = 0.7f,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec FutureSightUlt(string nameKey, float mult = 3.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<FutureSightProj>(),
+				DamageMultiplier = mult,
+				UseTime = 50,
+				ShootSpeed = 0f,
+				SpawnAtMouse = true,
+				IgnoreDefensePartial = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec DarkPulseCone(string nameKey, float mult = 3.6f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DarkPulseConeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 30,
+				ShootSpeed = 0f,
+				EasyCrit = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec FlailUlt(string nameKey, float mult = 1.5f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<FlailBarrageProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec BiteArc(string nameKey, float mult = 1.25f, int brokenArmorTicks = 0)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BiteArcProj>(),
+				DamageMultiplier = mult,
+				UseTime = 18,
+				ShootSpeed = 0f,
+				Knockback = 3.5f,
+				Ai1 = brokenArmorTicks
+			};
+
+		public static MoveSpec DragonBreath(string nameKey, float mult = 1.25f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DragonBreathConeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 22,
+				ShootSpeed = 0f
+			};
+
+		public static MoveSpec PetalDance(string nameKey, float mult = 1.5f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<PetalDanceFieldProj>(),
+				DamageMultiplier = mult,
+				UseTime = 36,
+				ShootSpeed = 0f,
+				CountsAsGrassMove = true
+			};
+
+		public static MoveSpec MudSlap(string nameKey, float mult = 1f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<MudSlapBoltProj>(),
+				DamageMultiplier = mult,
+				UseTime = 16,
+				ShootSpeed = 10f,
+				IsRangedProjectile = true
+			};
+
+		public static MoveSpec CrossChopShort(string nameKey, float mult = 1.6f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<CrossChopShortProj>(),
+				DamageMultiplier = mult,
+				UseTime = 18,
+				ShootSpeed = 0f,
+				EasyCrit = true
+			};
+
+		public static MoveSpec TripleStab(string nameKey, float mult = 1.3f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<TripleStabProj>(),
+				DamageMultiplier = mult,
+				UseTime = 20,
+				ShootSpeed = 0f
+			};
+
+		public static MoveSpec BrickBreak(string nameKey, float mult = 1.4f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BrickBreakProj>(),
+				DamageMultiplier = mult,
+				UseTime = 18,
+				ShootSpeed = 0f
+			};
+
+		public static MoveSpec MouseVortex(string nameKey, float mult, int dust, int buff = 0)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<MouseVortexProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				Ai0 = dust,
+				Ai1 = buff,
+				SpawnAtMouse = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec DynamicPunchUlt(string nameKey, float mult = 3.4f, bool ult = true)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DynamicPunchProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult ? 32 : 36,
+				ShootSpeed = 0f,
+				RequiresLungeCooldown = true,
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.RightClick
+			};
+
+		public static MoveSpec MidThunder(string nameKey, float mult = 1.5f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<MidThunderBeamProj>(),
+				DamageMultiplier = mult,
+				UseTime = 20,
+				ShootSpeed = 14f,
+				IsRangedProjectile = true
+			};
+
+		public static MoveSpec BigShadowBall(string nameKey, float mult = 1.35f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BigShadowBallProj>(),
+				DamageMultiplier = mult,
+				UseTime = 24,
+				ShootSpeed = 9f,
+				IsRangedProjectile = true
+			};
+
+		public static MoveSpec SludgeBolt(string nameKey, float mult = 1.45f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<SludgeBoltProj>(),
+				DamageMultiplier = mult,
+				UseTime = 24,
+				ShootSpeed = 9f,
+				IsRangedProjectile = true
+			};
+
+		public static MoveSpec HypnosisUlt(string nameKey)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<HypnosisWaveProj>(),
+				DamageMultiplier = 2.6f,
+				UseTime = 50,
+				ShootSpeed = 0f,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec LickFan(string nameKey, float mult = 0.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<LickFanProj>(),
+				DamageMultiplier = mult,
+				UseTime = 22,
+				ShootSpeed = 0f
+			};
+
+		public static MoveSpec AirBurst(string nameKey, float mult = 1.9f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<AirBurstProj>(),
+				DamageMultiplier = mult,
+				UseTime = 22,
+				ShootSpeed = 0f,
+				SpawnAtMouse = true,
+				EasyCrit = true
+			};
+
+		public static MoveSpec StoneEdge(string nameKey, float mult = 1.7f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<StoneEdgeBoltProj>(),
+				DamageMultiplier = mult,
+				UseTime = 18,
+				ShootSpeed = 12f,
+				IsRangedProjectile = true,
+				EasyCrit = true
+			};
+
+		public static MoveSpec DigUlt(string nameKey, float mult = 3f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DigUltBurstProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				NetRisk = NetRisk.High
+			};
+
+		public static MoveSpec QuakeUlt(string nameKey, float mult = 3.6f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<QuakeWaveProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				NetRisk = NetRisk.High
+			};
+
+		public static MoveSpec StrongPsychic(string nameKey, float mult = 1.7f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<StrongPsychicBoltProj>(),
+				DamageMultiplier = mult,
+				UseTime = 20,
+				ShootSpeed = 10f,
+				IsRangedProjectile = true
+			};
+
+		public static MoveSpec HyperBeamUlt(string nameKey, float mult = 4.2f)
+			=> ThickBeam(nameKey, mult, DustID.PurpleTorch, aftermath: true, selfStun: 120);
+
+		public static MoveSpec FlareBlitzUlt(string nameKey, float mult = 3.2f)
+			=> Lunge(nameKey, mult, 36, DustID.Torch, recoil: true, recoilFrac: 0.25f, onHitBuff: BuffID.OnFire, key: KeyConflictLevel.ModKeybind);
+
 		public static int StageDamage(int stage) => 8 + stage * 6;
 	}
 
@@ -413,18 +851,18 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F02", 2, "Mods.PokemonHenshin.Items.CharmeleonForce.DisplayName", PokemonType.Fire, 4, "L01_F01", FormPassiveKind.Blaze);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.DragonPulse", ModContent.ProjectileType<GenericBoltProj>(), 1.35f, 24, 10f, ai0: DustID.PurpleTorch);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.DragonPulse", 1.35f, DustID.PurpleTorch, ult: false);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.FireFang", 1.3f, 20, DustID.Torch);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.FlareBlitz", 2.0f, 36, DustID.Torch, recoil: true, recoilFrac: 0.10f);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.FlareBlitzUlt("Mods.PokemonHenshin.Moves.FlareBlitz");
 	}
 
 	public class CharizardForce : HenshinForceItem
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F03", 3, "Mods.PokemonHenshin.Items.CharizardForce.DisplayName", PokemonType.Fire, 7, "L01_F02", FormPassiveKind.SolarPower, secondary: PokemonType.Flying);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.FireBolt("Mods.PokemonHenshin.Moves.Flamethrower", 1.55f, 22);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.DragonClaw", 1.4f, 16, DustID.Torch);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.Beam("Mods.PokemonHenshin.Moves.Overheat", 2.2f, aftermath: true);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.FlameCone("Mods.PokemonHenshin.Moves.Flamethrower", 1.55f, 10);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.Scratch("Mods.PokemonHenshin.Moves.DragonClaw", 1.4f, 16);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseAoE("Mods.PokemonHenshin.Moves.Overheat", 4.0f, DustID.Torch, BuffID.OnFire, aftermath: true);
 	}
 
 	public class SquirtleForce : HenshinForceItem
@@ -440,18 +878,18 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F02", 5, "Mods.PokemonHenshin.Items.WartortleForce.DisplayName", PokemonType.Water, 4, "L02_F01", FormPassiveKind.Torrent);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.WaterBolt("Mods.PokemonHenshin.Moves.BubbleBeam", 1.35f, 20, 60);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.Bite", 1.25f, 18, DustID.Blood);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.Vortex("Mods.PokemonHenshin.Moves.Whirlpool", 1.5f, DustID.Water);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 24, 1.35f, 28);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseVortex("Mods.PokemonHenshin.Moves.Whirlpool", 3.2f, DustID.Water);
 	}
 
 	public class BlastoiseForce : HenshinForceItem
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F03", 6, "Mods.PokemonHenshin.Items.BlastoiseForce.DisplayName", PokemonType.Water, 7, "L02_F02", FormPassiveKind.RainDish);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.WaterBolt("Mods.PokemonHenshin.Moves.HydroPump", 1.7f, 32);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.HydroPump", 1.7f, DustID.Water, ult: false);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.SkullBash", 1.6f, 34, DustID.Water);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.Beam("Mods.PokemonHenshin.Moves.HydroCannon", 2.3f, aftermath: true);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.HydroCannon", 4.0f, DustID.Water, aftermath: true, selfStun: 90);
 	}
 
 	public class BulbasaurForce : HenshinForceItem
@@ -467,17 +905,17 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L03_F02", 8, "Mods.PokemonHenshin.Items.IvysaurForce.DisplayName", PokemonType.Grass, 4, "L03_F01", FormPassiveKind.Overgrow, secondary: PokemonType.Poison);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.RazorLeaf", ModContent.ProjectileType<GenericBoltProj>(), 1.3f, 16, 12f, ai0: DustID.Grass);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.Bite", 1.25f, 18, DustID.Blood);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.SeedBomb", ModContent.ProjectileType<GenericBoltProj>(), 1.6f, 28, 9f, ai0: DustID.Grass, easyCrit: true);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.LeafSpread("Mods.PokemonHenshin.Moves.RazorLeaf", 1.3f);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.SeedBombUlt("Mods.PokemonHenshin.Moves.SeedBomb", 3.3f);
 	}
 
 	public class VenusaurForce : HenshinForceItem
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L03_F03", 9, "Mods.PokemonHenshin.Items.VenusaurForce.DisplayName", PokemonType.Grass, 7, "L03_F02", FormPassiveKind.Chlorophyll, secondary: PokemonType.Poison);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.SludgeBomb", ModContent.ProjectileType<GenericBoltProj>(), 1.45f, 26, 8f, ai0: DustID.CorruptGibs, ai1: BuffID.Poisoned);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.AoE("Mods.PokemonHenshin.Moves.PetalDance", 1.5f, DustID.Firework_Pink);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.Beam("Mods.PokemonHenshin.Moves.SolarBeam", 2.1f);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.SludgeBolt("Mods.PokemonHenshin.Moves.SludgeBomb", 1.45f);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.PetalDance("Mods.PokemonHenshin.Moves.PetalDance", 1.5f);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.ChargeBeamUlt("Mods.PokemonHenshin.Moves.SolarBeam", 4.0f);
 	}
 }
