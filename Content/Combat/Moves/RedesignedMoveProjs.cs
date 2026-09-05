@@ -57,6 +57,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			};
 			if (_childType <= 0)
 				_childType = Projectile.ai[0] == ModeBubble ? ProjectileID.Bubble : ProjectileID.Seed;
+			// 泡沫光线：提前 Load Bubble 贴图（勿等玩家先用泡泡枪）
+			if (Projectile.ai[0] == ModeBubble)
+				Main.instance.LoadProjectile(ProjectileID.Bubble);
 		}
 
 		public override void AI()
@@ -92,19 +95,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 						spawn = owner.MountedCenter + _dir * 16f + Main.rand.NextVector2Circular(4f, 4f);
 					}
 
-					int perShot = System.Math.Max(1, Projectile.damage / 8);
+					int perShot = System.Math.Max(1, Projectile.damage / (_total <= 32 ? 4 : 6));
 					int id;
 					if (Projectile.ai[0] == ModeResonance)
 					{
 						id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, vel * 0.15f,
 							ModContent.ProjectileType<BorrowedVisualBoltProj>(), System.Math.Max(1, (int)(Projectile.damage * 0.35f)), Projectile.knockBack * 0.4f, Projectile.owner,
-							_childType, 0f, 0f);
+							ProjectileID.RainbowRodBullet, 0f, 1f);
 					}
 					else
 					{
+						// 泡泡强制用可见 Bubble 贴图；种子用 Seed。不直接 NewProjectile 原版弹：其 AI/伤害类不可控。
+						int texId = Projectile.ai[0] == ModeBubble ? ProjectileID.Bubble : ProjectileID.Seed;
 						id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, vel,
 							ModContent.ProjectileType<BorrowedVisualBoltProj>(), perShot, Projectile.knockBack * 0.2f, Projectile.owner,
-							_childType, EasyCrit ? 1f : 0f, 0f);
+							texId, EasyCrit ? 1f : 0f, 0f);
 					}
 
 					if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
@@ -155,6 +160,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_texType = ProjectileID.RainbowRodBullet;
 				_tint = new Color(230, 140, 255);
 			}
+			// 泡泡：始终用 ProjectileID.Bubble，并立刻 Load（勿等玩家先用泡泡枪）
+			if (_texType == ProjectileID.Bubble || _texType == ProjectileBorrow.ItemShoot(ItemID.BubbleGun))
+			{
+				_texType = ProjectileID.Bubble;
+				Main.instance.LoadProjectile(ProjectileID.Bubble);
+			}
+			else
+				Main.instance.LoadProjectile(_texType);
+
 			EasyCrit = Projectile.ai[1] > 0f;
 			Projectile.penetrate = _texType == ProjectileID.RainbowRodBullet ? 3 : 1;
 			if (_texType == ProjectileID.Typhoon)
@@ -172,7 +186,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
-			if (_texType == ProjectileID.Seed || _texType == ProjectileBorrow.ItemShoot(ItemID.BubbleGun) || _texType == ProjectileID.Bubble)
+			if (_texType == ProjectileID.Seed || _texType == ProjectileID.Bubble)
 				Projectile.tileCollide = true;
 			else if (_texType != ProjectileID.RainbowRodBullet)
 				Projectile.tileCollide = false;
@@ -196,7 +210,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int dust = _texType switch
 			{
 				_ when _texType == ProjectileID.Seed => DustID.Grass,
-				_ when _texType == ProjectileID.Bubble || _texType == ProjectileBorrow.ItemShoot(ItemID.BubbleGun) => DustID.Water,
+				_ when _texType == ProjectileID.Bubble => DustID.Water,
 				_ when _texType == ProjectileID.RainbowRodBullet => DustID.PinkTorch,
 				_ when _texType == ProjectileID.Typhoon => DustID.Torch,
 				_ => DustID.Smoke
@@ -214,7 +228,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int drawId = _texType > 0 ? _texType : ProjectileID.Seed;
 			if (drawId == ProjectileBorrow.ItemShoot(ItemID.PrincessWeapon) || drawId <= 0)
 				drawId = ProjectileID.RainbowRodBullet;
-			Texture2D tex = TextureAssets.Projectile[drawId].Value;
+			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(drawId);
 			Rectangle frame = tex.Frame();
 			Vector2 origin = frame.Size() * 0.5f;
 			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, _tint, Projectile.rotation, origin, Projectile.scale, SpriteEffects.None, 0);
@@ -353,9 +367,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Texture2D tex = TextureAssets.Projectile[_texType].Value;
+			int drawId = _texType > 0 ? _texType : ProjectileID.WaterStream;
+			Texture2D tex = TextureAssets.Projectile[drawId].Value;
+			if (tex.Width <= 1)
+				tex = TextureAssets.Projectile[ProjectileID.WaterBolt].Value;
 			Rectangle frame = tex.Frame();
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, lightColor, Projectile.rotation, frame.Size() * 0.5f, 1.1f, SpriteEffects.None, 0);
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, new Color(120, 200, 255), Projectile.rotation, frame.Size() * 0.5f, 1.2f, SpriteEffects.None, 0);
 			return false;
 		}
 	}
@@ -635,13 +652,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 				NPC n = Main.npc[i];
 				if (!n.active || n.friendly || n.life <= 0 || !n.HasBuff(BuffID.Electrified))
 					continue;
-				Vector2 vel = n.Center - p.MountedCenter;
-				if (vel == Vector2.Zero)
-					vel = Vector2.UnitX;
-				vel = Vector2.Normalize(vel) * 18f;
-				// ai2=1：连锁弹可感电，但不再挂导演
+				Vector2 toNpc = n.Center - p.MountedCenter;
+				if (toNpc == Vector2.Zero)
+					toNpc = Vector2.UnitX;
+				float dist = MathHelper.Clamp(toNpc.Length(), 48f, 64f * 16f);
+				Vector2 vel = Vector2.Normalize(toNpc) * dist;
+				// ai0=0 光束；velocity 长度=劈距；ai2=1 不再挂导演
 				Projectile.NewProjectile(Projectile.GetSource_FromThis(), p.MountedCenter, vel,
-					ModContent.ProjectileType<ThunderboltUltProj>(), dmg, 1f, Projectile.owner, 0f, 0f, 1f);
+					ModContent.ProjectileType<SkyBoltLightningProj>(), dmg, 1f, Projectile.owner, 0f, 0f, 1f);
 			}
 		}
 

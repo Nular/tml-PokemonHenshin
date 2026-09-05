@@ -82,7 +82,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(8);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L07_F02", 18, "Mods.PokemonHenshin.Items.DragonairForce.DisplayName", PokemonType.Dragon, 8, "L07_F01", FormPassiveKind.ShedSkin);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.DragonPulse", 1.45f, DustID.PurpleTorch, ult: false);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.45f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.DragonTail", 1.35f, 18, DustID.Cloud);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.HurricaneField("Mods.PokemonHenshin.Moves.Hurricane", 3.4f, ult: true);
 	}

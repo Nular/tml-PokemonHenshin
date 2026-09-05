@@ -342,7 +342,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>飞叶扇形 Spread×5。</summary>
+	/// <summary>飞叶快刃：锥形散射×5，射弹与吹叶机相同（ProjectileID.Leaf），绿粒子。</summary>
 	public class LeafSpreadProj : HenshinMoveProj
 	{
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
@@ -368,17 +368,26 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (dir == Vector2.Zero) dir = new Vector2(owner.direction, 0f);
 				dir.Normalize();
 				int per = System.Math.Max(1, Projectile.damage / 3);
+				int leafType = ProjectileBorrow.ItemShoot(ItemID.LeafBlower);
+				if (leafType <= 0)
+					leafType = ProjectileID.Leaf;
 				for (int i = -2; i <= 2; i++)
 				{
 					Vector2 vel = dir.RotatedBy(i * 0.18f) * 13f;
 					int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter, vel,
-						ModContent.ProjectileType<BorrowedVisualBoltProj>(), per, Projectile.knockBack, Projectile.owner,
-						ProjectileID.SeedlerThorn, 0f, 0f);
+						leafType, per, Projectile.knockBack, Projectile.owner);
 					if (id >= 0)
 					{
-						Main.projectile[id].scale = 1.1f;
-						if (Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
-							tagged.EasyCrit = EasyCrit;
+						Projectile leaf = Main.projectile[id];
+						ProjectileBorrow.RetargetAsHenshin(leaf);
+						leaf.DamageType = HenshinDamage.Instance;
+						leaf.friendly = true;
+						leaf.hostile = false;
+						for (int d = 0; d < 3; d++)
+						{
+							Dust dust = Dust.NewDustPerfect(leaf.Center, DustID.Grass, vel * 0.15f + Main.rand.NextVector2Circular(1.2f, 1.2f), 80, new Color(80, 200, 90), 1.15f);
+							dust.noGravity = true;
+						}
 					}
 				}
 			}
@@ -760,22 +769,26 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>咬击弧。</summary>
+	/// <summary>咬住/咬碎：身前两段咬合；尖牙用 destination Rectangle 画三角（禁 MagicPixel 无源矩形缩放，易拉成通天黑条）。ai0=体型倍率。</summary>
 	public class BiteArcProj : HenshinMoveProj
 	{
+		private const int Lifetime = 18;
+		private int _dir;
+		private float _size = 1f;
+
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 52;
-			Projectile.height = 40;
+			Projectile.width = 64;
+			Projectile.height = 56;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 12;
+			Projectile.timeLeft = Lifetime;
 			Projectile.tileCollide = false;
 			Projectile.penetrate = -1;
 			Projectile.usesLocalNPCImmunity = true;
-			Projectile.localNPCHitCooldown = 12;
+			Projectile.localNPCHitCooldown = 8;
 			Projectile.ownerHitCheck = true;
 		}
 
@@ -787,10 +800,31 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Kill();
 				return;
 			}
-			int dir = owner.direction;
-			Projectile.Center = owner.MountedCenter + new Vector2(dir * 40f, 0f);
-			for (int i = 0; i < 2; i++)
-				Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(14f, 10f), DustID.Blood, new Vector2(dir * 2f, 0f), 80, default, 1.2f).noGravity = true;
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				_dir = owner.direction;
+				_size = Projectile.ai[0] > 0.1f ? Projectile.ai[0] : 1f;
+				Projectile.width = (int)(64 * _size);
+				Projectile.height = (int)(56 * _size);
+				SoundEngine.PlaySound(SoundID.Item1 with { Pitch = -0.35f }, owner.Center);
+			}
+			Projectile.Center = owner.MountedCenter + new Vector2(_dir * (40f + 8f * _size), 0f);
+
+			int phase = Lifetime - Projectile.timeLeft;
+			if (phase == 2 || phase == 10)
+			{
+				for (int i = 0; i < 6; i++)
+					Dust.NewDustPerfect(Projectile.Center, DustID.Blood, new Vector2(_dir * Main.rand.NextFloat(1f, 3f), Main.rand.NextFloat(-2f, 2f)), 80, default, 1.2f);
+			}
+		}
+
+		public override bool? CanDamage()
+		{
+			int age = Lifetime - Projectile.timeLeft;
+			if (age <= 6 || (age >= 9 && age <= 15))
+				return null;
+			return false;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -799,7 +833,236 @@ namespace PokemonHenshin.Content.Combat.Moves
 				target.AddBuff(BuffID.BrokenArmor, (int)Projectile.ai[1]);
 		}
 
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Texture2D pixel = TextureAssets.MagicPixel.Value;
+			Rectangle src = new(0, 0, 1, 1);
+			float t = 1f - Projectile.timeLeft / (float)Lifetime;
+			float close = t < 0.45f ? t / 0.45f : 1f - (t - 0.45f) * 0.35f;
+			close = MathHelper.Clamp(close, 0f, 1f);
+			float openGap = MathHelper.Lerp(18f, 2f, close) * _size;
+			Color fang = new(18, 18, 22, 240);
+			Color edge = new(55, 55, 62, 220);
+
+			Vector2 origin = Projectile.Center - Main.screenPosition;
+			int teeth = _size >= 1.35f ? 6 : 5;
+			float span = 44f * _size;
+			for (int i = 0; i < teeth; i++)
+			{
+				float u = (i + 0.5f) / teeth - 0.5f;
+				float x = u * span;
+				float toothW = (6f + (i % 2 == 0 ? 2f : 0f)) * _size;
+				float toothH = (12f + (i % 2 == 0 ? 3f : 0f)) * _size;
+				// 上牙尖向下
+				DrawToothTri(pixel, src, origin + new Vector2(x, -openGap), toothW, toothH, fang, edge, tipDown: true);
+				// 下牙尖向上
+				DrawToothTri(pixel, src, origin + new Vector2(x, openGap), toothW, toothH, fang, edge, tipDown: false);
+			}
+			return false;
+		}
+
+		/// <summary>用多层 destination Rectangle 叠成小三角尖牙（像素尺寸硬封顶，避免通天拉伸）。</summary>
+		private static void DrawToothTri(Texture2D pixel, Rectangle src, Vector2 baseCenter, float w, float h, Color fill, Color edge, bool tipDown)
+		{
+			w = MathHelper.Clamp(w, 3f, 28f);
+			h = MathHelper.Clamp(h, 6f, 36f);
+			const int layers = 5;
+			for (int layer = 0; layer < layers; layer++)
+			{
+				float k = layer / (float)(layers - 1);
+				float layerW = MathHelper.Lerp(w, 1.5f, k);
+				float y = tipDown ? baseCenter.Y + k * h : baseCenter.Y - k * h - 1f;
+				int rw = System.Math.Max(1, (int)System.Math.Round(layerW));
+				int rh = System.Math.Max(1, (int)System.Math.Round(h / layers + 0.6f));
+				var rect = new Rectangle((int)System.Math.Round(baseCenter.X - rw * 0.5f), (int)System.Math.Round(y), rw, rh);
+				Main.spriteBatch.Draw(pixel, rect, src, layer == 0 ? edge : fill);
+			}
+		}
+	}
+
+	/// <summary>龙之波动：从角色连发 10 枚星云奥秘外观弹（70%、不穿透、不追踪），碰撞后走原版爆炸碎片。</summary>
+	public class NebulaPulseDirectorProj : HenshinMoveProj
+	{
+		private const int Total = 10;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 8;
+			Projectile.height = 8;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.timeLeft = Total + 4;
+			Projectile.tileCollide = false;
+			Projectile.penetrate = -1;
+		}
+
+		public override void AI()
+		{
+			if (Projectile.owner != Main.myPlayer)
+				return;
+			Player owner = Main.player[Projectile.owner];
+			Projectile.Center = owner.MountedCenter;
+			int fired = (int)Projectile.localAI[0];
+			if (fired >= Total)
+			{
+				Projectile.Kill();
+				return;
+			}
+			// 每帧一发，从角色中心朝指针扇出
+			if (Projectile.localAI[1] > 0f)
+			{
+				Projectile.localAI[1] -= 1f;
+				return;
+			}
+			Projectile.localAI[1] = 1f;
+
+			Vector2 dir = Main.MouseWorld - owner.MountedCenter;
+			if (dir.LengthSquared() < 1f)
+				dir = new Vector2(owner.direction, 0f);
+			dir.Normalize();
+			float spread = (fired - (Total - 1) * 0.5f) * 0.06f;
+			Vector2 vel = dir.RotatedBy(spread) * 12f;
+			int per = System.Math.Max(1, Projectile.damage / 4);
+			int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter + dir * 12f, vel,
+				ModContent.ProjectileType<NebulaPulseShardProj>(), per, Projectile.knockBack, Projectile.owner);
+			if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+				tagged.EasyCrit = EasyCrit;
+
+			Projectile.localAI[0] = fired + 1;
+			if (fired + 1 >= Total)
+				Projectile.Kill();
+		}
+
+		public override bool? CanDamage() => false;
 		public override bool PreDraw(ref Color lightColor) => false;
+	}
+
+	/// <summary>
+	/// 星云奥秘同款外观直飞弹：自管运动（不套原版 AI，避免位置/显隐异常），
+	/// 0.7 缩放、穿透 1、无追踪；亡时生成原版 NebulaArcanumExplosionShotShard。
+	/// </summary>
+	public class NebulaPulseShardProj : HenshinMoveProj
+	{
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.NebulaArcanum;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 28;
+			Projectile.height = 28;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.penetrate = 1;
+			Projectile.timeLeft = 75;
+			Projectile.tileCollide = true;
+			Projectile.scale = 0.7f;
+			Projectile.extraUpdates = 0;
+			Projectile.usesLocalNPCImmunity = true;
+			Projectile.localNPCHitCooldown = 10;
+		}
+
+		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
+		{
+			Main.instance.LoadProjectile(ProjectileID.NebulaArcanum);
+			Main.instance.LoadProjectile(ProjectileID.NebulaArcanumExplosionShotShard);
+			if (Projectile.velocity.LengthSquared() < 1f)
+			{
+				Player owner = Main.player[Projectile.owner];
+				Vector2 dir = Main.MouseWorld - owner.MountedCenter;
+				if (dir.LengthSquared() < 1f)
+					dir = new Vector2(owner.direction, 0f);
+				Projectile.velocity = Vector2.Normalize(dir) * 12f;
+			}
+		}
+
+		public override void AI()
+		{
+			// 锁定初速，禁止任何追踪/漂浮
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				Projectile.localAI[1] = Projectile.velocity.X;
+				Projectile.localAI[2] = Projectile.velocity.Y;
+			}
+			Projectile.velocity = new Vector2(Projectile.localAI[1], Projectile.localAI[2]);
+			Projectile.rotation += 0.2f;
+			Lighting.AddLight(Projectile.Center, 0.55f, 0.25f, 0.75f);
+			if (Main.rand.NextBool(2))
+				Dust.NewDustPerfect(Projectile.Center, DustID.PurpleTorch, -Projectile.velocity * 0.08f, 120, default, 1.15f).noGravity = true;
+		}
+
+		public override void OnKill(int timeLeft)
+		{
+			SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.55f, Pitch = 0.15f }, Projectile.Center);
+			Color nebula = new(180, 90, 255);
+			for (int i = 0; i < 28; i++)
+			{
+				Vector2 v = Main.rand.NextVector2Circular(6f, 6f);
+				Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.PurpleTorch, v, 80, nebula, Main.rand.NextFloat(1.2f, 1.8f));
+				d.noGravity = true;
+				if (Main.rand.NextBool())
+					Dust.NewDustPerfect(Projectile.Center, DustID.CrystalPulse, v * 0.6f, 100, nebula, 1.3f).noGravity = true;
+			}
+			Lighting.AddLight(Projectile.Center, 0.7f, 0.25f, 1.0f);
+
+			if (Projectile.owner != Main.myPlayer)
+				return;
+			int shards = 12;
+			int shardDmg = System.Math.Max(1, (int)(Projectile.damage * 0.65f));
+			for (int i = 0; i < shards; i++)
+			{
+				Vector2 vel = Main.rand.NextVector2CircularEdge(7f, 7f) * Main.rand.NextFloat(0.85f, 1.3f);
+				int id = Projectile.NewProjectile(Projectile.GetSource_Death(), Projectile.Center, vel,
+					ProjectileID.NebulaArcanumExplosionShotShard, shardDmg, Projectile.knockBack * 0.8f, Projectile.owner);
+				if (id < 0)
+					continue;
+				Projectile p = Main.projectile[id];
+				ProjectileBorrow.RetargetAsHenshin(p);
+				p.scale *= 0.7f;
+				p.DamageType = HenshinDamage.Instance;
+				p.penetrate = 1;
+				p.GetGlobalProjectile<HenshinNebulaShardTintGlobal>().TintPurple = true;
+			}
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.NebulaArcanum);
+			Color tint = new(210, 140, 255);
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, null, tint,
+				Projectile.rotation, tex.Size() * 0.5f, Projectile.scale, SpriteEffects.None);
+			return false;
+		}
+	}
+
+	/// <summary>龙之波动爆炸碎片强制紫染色（原版 shard 在光照下偏棕）。</summary>
+	public sealed class HenshinNebulaShardTintGlobal : GlobalProjectile
+	{
+		public override bool InstancePerEntity => true;
+		public bool TintPurple;
+
+		public override Color? GetAlpha(Projectile projectile, Color lightColor)
+		{
+			if (!TintPurple || projectile.type != ProjectileID.NebulaArcanumExplosionShotShard)
+				return null;
+			return new Color(200, 110, 255, 220);
+		}
+
+		public override bool PreDraw(Projectile projectile, ref Color lightColor)
+		{
+			if (!TintPurple || projectile.type != ProjectileID.NebulaArcanumExplosionShotShard)
+				return true;
+			Main.instance.LoadProjectile(projectile.type);
+			Texture2D tex = Terraria.GameContent.TextureAssets.Projectile[projectile.type].Value;
+			Color c = new(210, 120, 255, 230);
+			Main.EntitySpriteDraw(tex, projectile.Center - Main.screenPosition, null, c,
+				projectile.rotation, tex.Size() * 0.5f, projectile.scale, SpriteEffects.None);
+			// 追加紫尘，盖住原版棕焰感
+			if (Main.rand.NextBool(2))
+				Dust.NewDustPerfect(projectile.Center, DustID.PurpleTorch, projectile.velocity * 0.1f, 100, new Color(180, 90, 255), 1.2f).noGravity = true;
+			return false;
+		}
 	}
 
 	/// <summary>龙息短锥雾。</summary>

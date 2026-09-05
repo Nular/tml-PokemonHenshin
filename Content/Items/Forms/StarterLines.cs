@@ -315,12 +315,11 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<ThunderboltUltProj>(),
+				ProjectileType = ModContent.ProjectileType<SkyBoltLightningProj>(),
 				DamageMultiplier = mult,
 				UseTime = 36,
-				ShootSpeed = 18f,
+				ShootSpeed = 0f,
 				Knockback = 2f,
-				IsRangedProjectile = true,
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
@@ -544,11 +543,10 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<ThunderPillarUltProj>(),
+				ProjectileType = ModContent.ProjectileType<SkyBoltRainUltProj>(),
 				DamageMultiplier = mult,
 				UseTime = 40,
 				ShootSpeed = 0f,
-				SpawnAtMouse = true,
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
@@ -614,7 +612,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
-		public static MoveSpec BiteArc(string nameKey, float mult = 1.25f, int brokenArmorTicks = 0)
+		public static MoveSpec BiteArc(string nameKey, float mult = 1.25f, int brokenArmorTicks = 0, float size = 1f)
 			=> new()
 			{
 				NameKey = nameKey,
@@ -623,7 +621,21 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = 18,
 				ShootSpeed = 0f,
 				Knockback = 3.5f,
+				Ai0 = size,
 				Ai1 = brokenArmorTicks
+			};
+
+		/// <summary>龙之波动：10 枚星云奥秘同款弹（70%、不穿透、不追踪、碰撞爆炸）。</summary>
+		public static MoveSpec DragonPulse(string nameKey, float mult = 1.45f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<NebulaPulseDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 36,
+				ShootSpeed = 0f,
+				Knockback = 3f,
+				IsRangedProjectile = true
 			};
 
 		public static MoveSpec DragonBreath(string nameKey, float mult = 1.25f)
@@ -851,7 +863,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F02", 2, "Mods.PokemonHenshin.Items.CharmeleonForce.DisplayName", PokemonType.Fire, 4, "L01_F01", FormPassiveKind.Blaze);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.DragonPulse", 1.35f, DustID.PurpleTorch, ult: false);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.35f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.FireFang", 1.3f, 20, DustID.Torch);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.FlareBlitzUlt("Mods.PokemonHenshin.Moves.FlareBlitz");
 	}
@@ -878,7 +890,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F02", 5, "Mods.PokemonHenshin.Items.WartortleForce.DisplayName", PokemonType.Water, 4, "L02_F01", FormPassiveKind.Torrent);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 24, 1.35f, 28);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 24, 2.4f, 28);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseVortex("Mods.PokemonHenshin.Moves.Whirlpool", 3.2f, DustID.Water);
 	}

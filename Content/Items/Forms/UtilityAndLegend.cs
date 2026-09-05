@@ -38,7 +38,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override int BaseDamage => FormItemUtil.StageDamage(9);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L09_F02", 23, "Mods.PokemonHenshin.Items.GyaradosForce.DisplayName", PokemonType.Water, 9, "L09_F01", FormPassiveKind.Moxie, secondary: PokemonType.Flying);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.HydroPump", 1.6f, DustID.Water, ult: false);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.5f, brokenArmorTicks: 180);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.5f, brokenArmorTicks: 180, size: 1.45f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.HyperBeamUlt("Mods.PokemonHenshin.Moves.HyperBeam", 4.0f);
 	}
 
@@ -136,8 +136,8 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(11);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L15_F02", 34, "Mods.PokemonHenshin.Items.GarchompForce.DisplayName", PokemonType.Dragon, 11, "L15_F01", FormPassiveKind.RoughSkin, secondary: PokemonType.Ground);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.DragonPulse", 1.7f, DustID.PurpleTorch, ult: false);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.7f, brokenArmorTicks: 200);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.7f);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.7f, brokenArmorTicks: 200, size: 1.55f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.MeteorBarrageUlt("Mods.PokemonHenshin.Moves.DracoMeteor", 8, 4.2f);
 	}
 
@@ -154,8 +154,8 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(12);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L17_F01", 36, "Mods.PokemonHenshin.Items.RayquazaForce.DisplayName", PokemonType.Dragon, 12, null, FormPassiveKind.AirLock, secondary: PokemonType.Flying, role: FormRole.Legendary, dmgFactor: 1.2f);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.DragonPulse", 1.9f, DustID.Torch, ult: false);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.8f, brokenArmorTicks: 200);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.9f);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.8f, brokenArmorTicks: 200, size: 1.6f);
 		protected override MoveSpec CreateUltimate() => new()
 		{
 			NameKey = "Mods.PokemonHenshin.Moves.DragonAscent",

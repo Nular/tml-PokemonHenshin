@@ -583,4 +583,8 @@ Projectiles: {
 	ThunderPillarBoltProj.DisplayName: Thunder Pillar Bolt Proj
 	ThunderPillarUltProj.DisplayName: Thunder Pillar Ult Proj
 	TripleStabProj.DisplayName: Triple Stab Proj
+	SkyBoltLightningProj.DisplayName: Sky Bolt Lightning Proj
+	SkyBoltRainUltProj.DisplayName: Sky Bolt Rain Ult Proj
+	NebulaPulseDirectorProj.DisplayName: Nebula Pulse Director Proj
+	NebulaPulseShardProj.DisplayName: Nebula Pulse Shard Proj
 }
