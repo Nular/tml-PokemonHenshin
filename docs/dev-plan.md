@@ -453,9 +453,10 @@ TryEditTile(player, action) →
 
 #### M1.3 进化确认 UI
 
-- [x] `Evolution/EvolutionConfirmUI.cs`
+- [x] `Evolution/EvolutionConfirmUI.cs`（**UserInterface + UIState**；Esc/背包取消）
+- [x] 弹出时机：`ProgressAnnounceSystem` 在 **ProgressStage 上升**时 `TryOfferLocalAfterStageUp`（不再每 tick 扫背包）；手动 `/henshin evolve`
 - [x] `RequestEvolve` / `ApplyEvolve` 包
-- **验收：** **待游戏内 A1**
+- **验收：** **待游戏内 A1**（交互与档位触发已游戏内点验过一轮）
 
 #### M1.4 二阶演示链
 
@@ -664,3 +665,4 @@ TryEditTile(player, action) →
 | **1.2.4** | 洁癖：纠正「须 Extract dll」过期说法；目录树/内容管线对齐现役；残留风险改为联机与 DPS |
 | **1.3.0** | 战斗改为被动+技能1/2+能量大招；A13～A21；move-effects.md；获取 Tooltip；旧饰品修复 |
 | 1.3.1 | 洁癖：页眉/目标/总评与 README·AGENTS 对齐 v1.3；注明现役无穿障形态 |
+| 1.3.2 | 洁癖：M1.3 对齐 UIState + ProgressStage 上升弹窗；去掉「每 tick 扫」过期说法 |

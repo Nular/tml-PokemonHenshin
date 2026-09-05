@@ -36,7 +36,8 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 ## 当前状态与下一步
 
-- **代码（2026-09-05）：** 被动+技能1/2+能量大招；点名 7 形态 + **全 36 形态招式/大招特效重接线**；能量 = Tooltip + 物品底栏 + 右下角条；撞击/电光一闪 **2s CD + 0.25s 无敌**。
+- **代码（2026-09-05 / `532cd2b`）：** 被动+技能1/2+能量大招；点名 7 形态 + **全 36 形态招式/大招特效重接线**（`Wave2MoveProjs`）；能量 = Tooltip + 物品底栏 + 右下角条；撞击/电光一闪 **2s CD + 0.25s 无敌**。
+- **进化：** 确认框为 **UserInterface/UIState**（可点确认/取消，Esc/背包取消）；**ProgressStage 上升时**（通常击败对应 Boss）对本机弹出，**不再**每 tick 扫可进化；漏弹可用 `/henshin evolve`。
 - **已知缺口：** 无现役 `GrantsPhasing`；A11 咒符布无消费者；游戏内手感/联机/DPS 验收 pending。
 - **验证：** 御三家二阶需 **史莱姆神/鹿角怪**（非史莱姆王）；`/henshin stage`；大招默认 **Mouse3**；游戏运行中用游戏内 Build + Reload。
 - **下一步：** 游戏内按验收清单打勾、联机双端、DPS 对标、Rage/肾上腺素。
