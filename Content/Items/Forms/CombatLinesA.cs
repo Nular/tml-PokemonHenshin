@@ -84,14 +84,14 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L07_F02", 18, "Mods.PokemonHenshin.Items.DragonairForce.DisplayName", PokemonType.Dragon, 8, "L07_F01", FormPassiveKind.ShedSkin);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.45f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.DragonTail", 1.35f, 18, DustID.Cloud);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.HurricaneField("Mods.PokemonHenshin.Moves.Hurricane", 3.4f, ult: true);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.WeatherPainHurricane("Mods.PokemonHenshin.Moves.Hurricane", 3.4f, ult: true);
 	}
 
 	public class DragoniteForce : HenshinForceItem
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(11);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L07_F03", 19, "Mods.PokemonHenshin.Items.DragoniteForce.DisplayName", PokemonType.Dragon, 11, "L07_F02", FormPassiveKind.Multiscale, secondary: PokemonType.Flying);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.HurricaneField("Mods.PokemonHenshin.Moves.Hurricane", 1.7f);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.WeatherPainHurricane("Mods.PokemonHenshin.Moves.Hurricane", 1.7f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.DragonDive", 1.8f, 28, DustID.Torch);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.OutrageUlt("Mods.PokemonHenshin.Moves.Outrage", 4.2f);
 	}

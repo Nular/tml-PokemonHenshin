@@ -2872,14 +2872,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			float a = Projectile.timeLeft / (float)_lifetime;
 			float diam = _radiusPx * 2f * (0.85f + (1f - a) * 0.25f);
+			bool rockLand = Projectile.ai[0] > 0.5f && Projectile.ai[0] <= 2f;
 			HenshinFxDraw.BeginAdditive();
 			float circScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 170, 70), 0.75f * a), circScale);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 200, 110), 0.55f * a), circScale * 0.55f);
-			int flash = HenshinFxDraw.AgeFrame(_lifetime, Projectile.timeLeft, 2, HenshinFxDraw.FlashImpactFrames);
-			HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center, HenshinFxDraw.WithAlpha(new Color(255, 230, 180), 0.7f * a), 1.1f, 0f, flash);
+			if (rockLand)
+			{
+				// 岩崩落地：仅石色扩散，去掉 FlashImpact 金光
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(180, 130, 80), 0.45f * a), circScale);
+			}
+			else
+			{
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(255, 170, 70), 0.75f * a), circScale);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(255, 200, 110), 0.55f * a), circScale * 0.55f);
+				int flash = HenshinFxDraw.AgeFrame(_lifetime, Projectile.timeLeft, 2, HenshinFxDraw.FlashImpactFrames);
+				HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center, HenshinFxDraw.WithAlpha(new Color(255, 230, 180), 0.7f * a), 1.1f, 0f, flash);
+			}
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
@@ -3002,6 +3012,32 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			for (int i = 0; i < 8; i++)
 				Dust.NewDustPerfect(Projectile.Center, DustID.CorruptGibs, Main.rand.NextVector2Circular(3f, 3f), 80, default, 1.2f);
+
+			if (Projectile.owner != Main.myPlayer)
+				return;
+
+			// 毒气瓶式毒云簇（原版 AI）
+			Main.instance.LoadProjectile(ProjectileID.ToxicCloud);
+			Main.instance.LoadProjectile(ProjectileID.ToxicCloud2);
+			Main.instance.LoadProjectile(ProjectileID.ToxicCloud3);
+			int cloudDmg = Math.Max(1, Projectile.damage / 3);
+			int[] cloudTypes = { ProjectileID.ToxicCloud, ProjectileID.ToxicCloud2, ProjectileID.ToxicCloud3 };
+			for (int i = 0; i < 5; i++)
+			{
+				Vector2 off = Main.rand.NextVector2Circular(18f, 18f);
+				int type = cloudTypes[i % cloudTypes.Length];
+				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center + off,
+					Main.rand.NextVector2Circular(1.5f, 1.5f), type, cloudDmg, 0.5f, Projectile.owner);
+				if (id >= 0)
+				{
+					Projectile cloud = Main.projectile[id];
+					ProjectileBorrow.RetargetAsHenshin(cloud);
+					cloud.friendly = true;
+					cloud.hostile = false;
+					cloud.DamageType = HenshinDamage.Instance;
+				}
+			}
+			SoundEngine.PlaySound(SoundID.Item107, Projectile.Center);
 		}
 	}
 

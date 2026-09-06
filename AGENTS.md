@@ -48,14 +48,16 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 ## 当前状态与下一步
 
-- **代码（2026-09-06）：** 全 36 形态接线；**脚下**大招能量条（`UltimateEnergyUI`）+ 满充金尘；Stage 6+ FX 主路径已落地。详见 `docs/fx-knowledge.md`、`docs/move-effects.md`。
+- **代码（2026-09-06）：** 全 36 形态接线；脚下能量条；Stage 6+ FX；`PidgeotMoveProjs`（天候棒暴风/燕返/勇鸟）。详见 `docs/fx-knowledge.md`、`docs/move-effects.md`。
 - **已验收基线（Stage≤5 cookbook）：** 天雷 / 泡沫 Load / 飞叶 Leaf / 咬合尖牙 / 龙波 Nebula（直线连发）。
 - **已验收（能量 UI）：** 脚下条 + 满充金尘（2026-09-06）。
-- **已验收（Wave1 手感，2026-09-06）：** 抓狂（15 格三线爪）/ 火焰牙（两对大弧牙）/ 闪焰冲锋（32 格多线火径+包裹焰+收尾减速）/ 泡沫光线（窄直线+破裂）/ 念力（ShadowBeam 索敌弹射×2+命中紫环）。
-- **已验收（Stage 6，2026-09-06）：** 豪力（岩崩微偏+落地1格爆 / 劈瓦 / 爆裂拳挥拳石爆）/ 迷你龙 / 三地鼠 / 圆陆鲨（含流沙 Typhoon+琥珀）；大岩蛇岩崩 12 石±12 格。
-- **待游戏内验收：** Stage 7+ → 联机/DPS。
-- **进化：** UIState；**ProgressStage 上升时**弹出；`/henshin evolve` 可补弹。
-- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending；`StoneEdge` / `DracoMeteor` 等仍 NeedsUpgrade。
-- **验证：** 游戏运行中用游戏内 Build + Reload（TML003）；大招默认 **Mouse3**。
-- **下一步：** Stage 7+ → 联机双端 → DPS 对标 → Rage/肾上腺素。
+- **已验收（Wave1，2026-09-06）：** 抓狂 / 火焰牙 / 闪焰 / 泡沫 / 念力。
+- **已验收（Stage 6，2026-09-06）：** 豪力（岩崩微偏+落地1格爆无金光 / 劈瓦 / 爆裂拳）/ 迷你龙 / 三地鼠 / 圆陆鲨；大岩蛇岩崩。
+- **已验收（御三家终阶+金属怪，2026-09-06）：** 喷火龙 / 妙蛙花（污泥 ToxicCloud）/ 水箭龟 / 金属怪。
+- **已验收（暴风 WeatherPain，2026-09-06）：** 大比鸟技能 / 哈克龙大招（主+4伴随）/ 快龙技能；直立帧、穿透牵引。`HurricaneField` 仍供气势洞等。
+- **代码已落地、待游戏内点验：** 大比鸟燕返 / 勇鸟猛攻。
+- **进化：** UIState；ProgressStage 上升弹窗；`/henshin evolve` 可补弹。
+- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending；`StoneEdge` / `DracoMeteor` NeedsUpgrade。
+- **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3。
+- **下一步：** 点验燕返/勇鸟 → Stage 7+ → 联机 → DPS → Rage。
 - 新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

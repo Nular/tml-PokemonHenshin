@@ -314,6 +314,48 @@ namespace PokemonHenshin.Content.Items.Forms
 				RequiresLungeCooldown = true
 			};
 
+		public static MoveSpec AerialAceBlink(string nameKey, float mult = 1.6f, int use = 16)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<AerialAceBlinkProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 3f,
+				NetRisk = NetRisk.Medium,
+				RequiresLungeCooldown = true
+			};
+
+		public static MoveSpec WeatherPainHurricane(string nameKey, float mult = 1.6f, bool ult = false)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<WeatherPainHurricaneProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult ? 40 : 28,
+				ShootSpeed = ult ? 15f : 14f,
+				Knockback = 3f,
+				Ai2 = ult ? 1f : 0f,
+				IsRangedProjectile = true,
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+			};
+
+		public static MoveSpec BraveBirdUlt(string nameKey, float mult = 3.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BraveBirdLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 36,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				RecoilSelf = true,
+				RecoilFraction = 0.25f,
+				RequiresLungeCooldown = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
 		public static MoveSpec ThunderboltUlt(string nameKey, float mult = 10f)
 			=> new()
 			{

@@ -532,6 +532,12 @@ Projectiles: {
 	AquaScepterShotProj.DisplayName: Aqua Scepter Shot Proj
 	BarrageDirectorProj.DisplayName: Barrage Director Proj
 	BlinkStrikeProj.DisplayName: Blink Strike Proj
+	WeatherPainHurricaneProj.DisplayName: Weather Pain Hurricane
+	WeatherPainOrbitProj.DisplayName: Weather Pain Orbit
+	AerialAceBlinkProj.DisplayName: Aerial Ace
+	AerialAceArcTrailProj.DisplayName: Aerial Ace Arc
+	BraveBirdLungeProj.DisplayName: Brave Bird Lunge
+	BraveBirdCrossProj.DisplayName: Brave Bird Cross
 	BorrowedVisualBoltProj.DisplayName: Borrowed Visual Bolt Proj
 	CrossChopArcProj.DisplayName: Cross Chop Arc Proj
 	FlareBoltUltProj.DisplayName: Flare Bolt Ult Proj

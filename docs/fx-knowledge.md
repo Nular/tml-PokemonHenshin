@@ -183,9 +183,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | DragonPulse/龙之波动 | L01_F02,4 | Bolt×10 | NebulaPulse* **直线连发** | Nebula 617/620 | 紫炸 | Accepted |
 | FireFang/火焰牙 | L01_F02,4 | MeleeArc+OnFire | BiteArc **两对大弧牙**+OnFire | BiteArc cookbook | 火焰牙 | Accepted |
 | FlareBlitz/闪焰冲锋 | L01_F02,4 | Lunge+Recoil | `LungeProj` **32格** 多线火径+包裹焰+收尾减速 | 火尘残影 | 可见冲锋 | Accepted |
-| Flamethrower/喷射火焰 | L01_F03,7 | FlameCone | 真 Flames + **Fire 帧**（枪口小 TearFlame） | **Flames(85)** 真焰柱 | 喷火柱 | Implemented |
-| DragonClaw/龙爪 | L01_F03,7 | Scratch | ScratchSlash **20格** + HitJagged **帧** | — | 远爪 | Implemented |
-| Overheat/过热 | L01_F03 Ult | MouseAoE | 半径15格、5脉冲；Fire/Flash **帧** | InfernoFriendlyBlast | 可见火环 | Implemented |
+| Flamethrower/喷射火焰 | L01_F03,7 | FlameCone | 真 Flames + **Fire 帧**（枪口小 TearFlame） | **Flames(85)** 真焰柱 | 喷火柱 | Accepted |
+| DragonClaw/龙爪 | L01_F03,7 | Scratch | ScratchSlash **20格** + HitJagged **帧** | — | 远爪 | Accepted |
+| Overheat/过热 | L01_F03 Ult | MouseAoE | 半径15格、5脉冲；Fire/Flash **帧** | InfernoFriendlyBlast | 可见火环 | Accepted |
 
 ### 4.2 水系 L02
 
@@ -196,9 +196,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble **窄直线**速度随机+破裂小泡 | Bubble Load | 密泡 | Accepted |
 | Bite/咬住 | L02_F02,4 | BiteArc | `BiteArcProj` | cookbook | 尖牙 | Accepted |
 | Whirlpool/潮旋 | L02_F02 Ult | DoTBind | MouseVortex Cyclone 蓝 | Typhoon 蓝染 / `Assets/Fx/Cyclone` | 可见涡 | Implemented |
-| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中不穿透+渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Implemented |
+| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中不穿透+渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
 | SkullBash/火箭头锤 | L02_F03,7 | Charge→Lunge | Lunge 长 use | — | OK | Accepted |
-| HydroCannon/加农水炮 | L02_F03 Ult | Beam | `WaterJet` cannon：穿透+每3击爆 | 同水炮加粗+流动 | 粗柱 | Implemented |
+| HydroCannon/加农水炮 | L02_F03 Ult | Beam | `WaterJet` cannon：穿透+每3击爆 | 同水炮加粗+流动 | 粗柱 | Accepted |
 
 ### 4.3 草系 L03
 
@@ -209,9 +209,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | RazorLeaf/飞叶快刀 | L03_F02,4 | Spread×5 | LeafSpread **New Leaf** | Leaf 206 | 标杆 | Accepted |
 | Bite/咬住 | L03_F02,4 | BiteArc | BiteArc | cookbook | OK | Accepted |
 | SeedBomb/种子炸弹 | L03_F02 Ult | Bolt/AoE | SeedBomb | Seed+爆 | OK | Accepted |
-| SludgeBomb/污泥炸弹 | L03_F03,7 | Bolt+Poison | SludgeBolt←ToxicBubble | ToxicBubble | 可见 | Accepted |
-| PetalDance/花瓣舞 | L03_F03,7 | AoEBurst | 半径 **15格** FlowerPetal 壳环 | FlowerPetal Load | 可见瓣 | Implemented |
-| SolarBeam/日光束 | L03_F03 Ult | ChargeBeam | 蓄力→`SolarPrismBeam` **~100tick** 跟鼠标会聚 | **LastPrism 金光** | 持续金棱 | Implemented |
+| SludgeBomb/污泥炸弹 | L03_F03,7 | Bolt+Poison | SludgeBolt + 毒气瓶 ToxicCloud 簇 | ToxicBubble→ToxicCloud | 毒云DoT | Accepted |
+| PetalDance/花瓣舞 | L03_F03,7 | AoEBurst | 半径 **15格** FlowerPetal 壳环 | FlowerPetal Load | 可见瓣 | Accepted |
+| SolarBeam/日光束 | L03_F03 Ult | ChargeBeam | 蓄力→`SolarPrismBeam` **~100tick** 跟鼠标会聚 | **LastPrism 金光** | 持续金棱 | Accepted |
 
 ### 4.4 电系 L04
 
@@ -229,7 +229,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 |------------|---------------|-----------|---------|-------------|------|--------|
 | RockTomb/岩石封锁 | L05_F01,3 | Cross×4 | RockTomb* Boulder | Boulder | 可见石 | Accepted |
 | CrossChop/十字劈 | L05_F01 Ult | Melee | CrossChopArc/Dash | SwordBeam 系 | 尘+冲 | Accepted |
-| RockSlide/岩崩 | L05_F02,6 | AoEBurst | 3石微偏（`|vx|≤8`）+落地**1格**爆 | Boulder+RockShatter | 微偏落地爆 | Accepted |
+| RockSlide/岩崩 | L05_F02,6 | AoEBurst | 3石微偏（`|vx|≤8`）+落地1格爆**无金光** | Boulder+RockShatter | 微偏落地爆 | Accepted |
 | BrickBreak/劈瓦 | L05_F02,6 | MeleeArc | **20格**线 + HitJagged/Flash **帧** | BoxingGlove+冲击 | 可见 | Accepted |
 | DynamicPunch/爆裂拳 | L05_F02 Ult | Melee+Stun | **巨大拳套前挥**+石碎+半径**20格**爆（不冲刺） | BoxingGlove+RockShatterBurst | 拳爆 | Accepted |
 | StoneEdge/尖石攻击 | L05_F03,9 | Bolt | StoneEdgeBolt Boulder | Boulder 尖 | OK偏 | NeedsUpgrade |
@@ -243,7 +243,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | ShadowBall/暗影球 | L06_F01,8 | Bolt | BigShadowBall+SoftGlow | ShadowBeam 贴图 | 可见 | Implemented |
 | Lick/舌舔 | L06_F01,8 | Melee+Stun | LickFan LightShot 弧 | — | 可见弧 | Implemented |
 | Hypnosis/催眠术 | L06_F01 Ult | Sleep | HypnosisWave SoftGlow 环 | — | 可见环 | Implemented |
-| SludgeBomb | L06_F02,10 | Bolt | SludgeBolt | ToxicBubble | OK | Accepted |
+| SludgeBomb | L06_F02,10 | Bolt | 同污泥+ToxicCloud 簇 | ToxicCloud | 毒云 | Accepted |
 | ShadowClaw/暗影爪 | L06_F02,10 | Slash | GenericSlash+HitJagged | — | 可见爪 | Implemented |
 | DarkPulse/恶之波动 | L06_F02 Ult | Beam/Spread | ShadowBeam+LightShot 锥 | ShadowBeam 锥 | 可见锥 | Implemented |
 
@@ -256,7 +256,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | DragonRage/龙之怒 | L07_F01 Ult / L15_F01 S1 | Barrage | `DragonRageBarrage` 技能12/大招32 抖动球 | SoftGlow≈1.5格（晕抬亮#2108ad/芯#e7ce39）+5格爆 | 球体连射 | Implemented |
 | DragonPulse | L07_F02,8 | Nebula×10 | NebulaPulse | cookbook | OK | Accepted |
 | DragonTail/龙尾 | L07_F02,8 | Melee | GenericSlash+HitJagged | — | 可见 | Implemented |
-| Hurricane/暴风 | L07_F02 Ult 等 | AoE/Stun | Typhoon+Cyclone | Typhoon / `Cyclone` | 可见涡 | Implemented |
+| Hurricane/暴风 | L07_F02 Ult | Bolt+Orbit | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆 | WeatherPainShot | 大招风团 | Accepted |
+| Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Bolt+Orbit | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋） | WeatherPainShot | 天候棒 | Accepted |
 | DragonDive/龙之俯冲 | L07_F03,11 | Lunge | Lunge SoftGlow 残影 | 残影 | 可见 | Implemented |
 | Outrage/逆鳞 | L07_F03 Ult | Barrage | Outrage→GenericSlash jagged | 多爪可见 | 可见 | Implemented |
 
@@ -271,7 +272,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | HyperBeam/破坏光线 | L08_F02 / L09_F02 Ult | Beam | `SustainedBeam` DeathLaser 跟鼠标 | DeathLaser/粗壳；**非**日光束金棱 | 持续粗束 | Implemented |
 | Splash/跃起 | L09_F01,1 | StrikeFall | StrikeFall Water | — | 低伤 | Accepted |
 | Flail/抓狂 | L09_F01 Ult | Barrage | FlailBarrage **15格三线爪** 宽判+抓尘 | 多爪环身 | 可见多段 | Accepted |
-| HydroPump | L09_F02,9 | Beam | `WaterJetProj` | 同水箭龟水柱 | 水柱 | Implemented |
+| HydroPump | L09_F02,9 | Beam | `WaterJetProj` | 同水箭龟水柱 | 水柱 | Accepted |
 | Crunch/咬碎 | L09_F02 / L15_F02 / L17 | BiteArc | BiteArc size↑ | cookbook | OK | Accepted |
 | MudSlap/掷泥 | L10_F01,3 | Bolt+Slow | MudSlap←DirtBall | DirtBall | OK | Accepted |
 | Dig/挖洞 | L10_F02 S2 | DigLunge | `DigLungeProj` 冲20格+镐力走廊 | 土尘 SoftGlow | 挖进突 | Implemented |
@@ -279,14 +280,15 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | Earthquake/地裂 | L10_F02 Ult | AoE/Field | QuakeWave 小 Boulder 波前 | 裂纹+石 | 可见波 | Implemented |
 | Gust/起风 | L11_F01,2 | GroundCyclone | Typhoon 深蓝 | cookbook | OK | Accepted |
 | Peck/啄 | L11_F01,2 | Cone | PeckCone | — | 尘锥 | Accepted |
-| AerialAce/燕返 | L11_* | Lunge | Lunge SoftGlow | — | OK | Accepted |
-| BraveBird/勇鸟猛攻 | L11_F02 Ult | Lunge+Recoil | Lunge SoftGlow | — | OK | Accepted |
+| AerialAce/燕返 | L11_F01 Ult | Lunge | Lunge SoftGlow | — | OK | Accepted |
+| AerialAce/燕返 | L11_F02 S2 | BlinkSlash | `AerialAceBlink` 双切回起点+双弧羽径 | 禁 Electric 尘 | 往返弧 | Implemented |
+| BraveBird/勇鸟猛攻 | L11_F02 Ult | Lunge+Recoil | `BraveBirdLunge` 白拖尾梭形冲+交叉 Raven | 闪焰式加速 | 梭形鸟群 | Implemented |
 | ZenHeadbutt/意念头锤 | L12_* / L14 | StrikeFall | ZenHammer←Paladin锤 | PaladinsHammer | 较好 | Accepted |
 | Psychic scatter Ult | L12_F01 Ult | Scatter | Barrage Rainbow | RainbowRod | OK | Accepted |
 | FocusPunch/真气拳 | L12_F02 S2 | Charge Melee | DynamicPunch 挥拳+半径8格石爆 | 同爆裂拳缩小版 | 可见 | Implemented |
 | FutureSight/预知未来 | L12_F02 Ult | ChargeBeam | SoftGlow 圈→`SustainedBeam` Hyper | 紫蓄力圈+粗束 | 可见 | Implemented |
 | RockTomb | L13_F01,5 | RockTomb | Boulder | cookbook | OK | Accepted |
-| RockSlide | L13_F01 Ult / L13_F02 S1 | RockSlide* | 大招**12**石±12格微偏（`|vx|≤8`）+落地1格爆；技能3石同偏 | Boulder+RockShatter | 宽密落地爆 | Accepted |
+| RockSlide | L13_F01 Ult / L13_F02 S1 | RockSlide* | 大招**12**石±12格微偏+落地1格爆**无金光**；技能3石同偏 | Boulder+RockShatter | 宽密落地爆 | Accepted |
 | IronTail/铁尾 | L13_F02,9 | Slash | GenericSlash+HitJagged | — | 可见 | Implemented |
 | Aeroblast 等 | L16_F01 | AirBurst/Hurricane | DiffusionCircle+Cyclone | Typhoon / Cyclone | 可见 | Implemented |
 | SkyAttack/神鸟猛击 | L16_F01 | Lunge | Lunge SoftGlow | — | 可见 | Implemented |
@@ -312,10 +314,10 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 | 项 | 现役 |
 |----|------|
-| **Target visual** | 指针区上方棕石先后砸下；轨迹微偏鼠标（`|vx|≤8`）；着地碎裂 + **半径 1 格**范围伤（`ai0=1`→`RockShatterBurst`）；可晕 |
+| **Target visual** | 指针区上方棕石先后砸下；轨迹微偏鼠标（`|vx|≤8`）；着地碎裂 + **半径 1 格**范围伤；**无 FlashImpact 金光**（仅石色扩散+尘） |
 | **数量/宽** | 豪力/大钢蛇技能 **3**、半宽 ±80px；大岩蛇大招 **12**、半宽 ±192px（约 ±12 格） |
-| **实现** | `RockSlideDirectorProj`：`ai1`=count，`ai2`=半宽；寿命随 count 拉长；落石 `FallingBoulderProj` |
-| **Forbidden** | 纯垂直雨；仅 Invisible Quake 盒 |
+| **实现** | `RockSlideDirectorProj`：`ai1`=count，`ai2`=半宽；落石 `FallingBoulderProj` ai0=1→小半径 `RockShatterBurst` |
+| **Forbidden** | 纯垂直雨；仅 Invisible Quake 盒；岩崩落地对角金闪 |
 | **Files** | `Wave2MoveProjs.cs`；`FormItemUtil.RockSlideX`；Machoke / Onix / Steelix |
 
 #### BrickBreak（劈瓦）Skill2
@@ -538,6 +540,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 泡沫/种子连发 | `RedesignedMoveProjs.cs` |
 | 天雷 | `SkyBoltLightning.cs` |
 | Leaf/Nebula/Bite/Stage6 弱招 | `Wave2MoveProjs.cs` |
+| 大比鸟暴风/燕返/勇鸟 | `PidgeotMoveProjs.cs` |
 | Lunge/Dig/Slash 共享 | `SharedMoveProjs.cs` |
 | 火花 | `EmberBoltProj.cs` |
 | 爪痕 | `ScratchSlashProj.cs` |
@@ -565,6 +568,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 1.2 Living | 2026-09-06 | 全局 Rule `tml-api-docs.mdc`：设计须参考 tModLoader stable 类表 |
 | 1.3 Living | 2026-09-06 | Stage6 修：岩崩微偏+大岩蛇12石±12格；爆裂拳巨大拳套前挥+20格石爆（不冲刺）；流沙保 Typhoon+压蓝+高A琥珀叠层 |
 | 1.4 Living | 2026-09-06 | Stage6 **Accepted**：岩崩 `|vx|≤8` + 落地1格爆；整波验收回写 |
+| 1.5 Living | 2026-09-06 | 岩崩落地去金光；污泥 ToxicCloud；大比鸟天候棒暴风/燕返双弧/勇鸟梭形+交叉鸟；金属怪+御三家终阶 Accepted |
+| 1.6 Living | 2026-09-06 | 暴风直立帧（禁自旋）；哈克龙大招/快龙技能改 WeatherPain；大招主+4伴随、穿透牵引；洁癖对齐 |
+| 1.7 Living | 2026-09-06 | 大比鸟/哈克龙/快龙暴风 **Accepted** |
 
 ---
 

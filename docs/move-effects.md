@@ -121,7 +121,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L03_F01 | 妙蛙种子 | **茂盛**：HP&lt;50% 时草系招式伤害 +20% | 藤鞭 Whip（皮鞭级草尘鞭） | 撞击 Lunge+撞击爆 | 种子机关枪 Barrage×64+EasyCrit | 耗 100 | 草/叶绿尘鞭身；Seed 束状连发 | Low |
 | L03_F02 | 妙蛙草 | **茂盛**：同上 +20% | 飞叶快刀 Spread×5（吹叶机 Leaf） | 咬住 BiteArc 尖牙 | 种子炸弹 Bolt/AoEBurst+EasyCrit（落点小爆） | 耗 100 | 真 Leaf + 绿尘；咬合尖牙 | Low | Done |
-| L03_F03 | 妙蛙花 | **叶绿素**：白天移速 +35% | 污泥炸弹 Bolt+Poison | 花瓣舞 AoEBurst；释放后自身短混乱（1.5s 轻失控或伤害反噬 debuff） | 日光束 ChargeBeam（蓄力 ~0.8s 后强光束） | 耗 100；蓄力前摇 | 污泥：毒尘；花瓣：半径 **15 格**壳环；日光束：蓄力→`SolarPrismBeam` 持续金棱 **~100 tick** 跟鼠标 | Medium | Done |
+| L03_F03 | 妙蛙花 | **叶绿素**：白天移速 +35% | 污泥炸弹 Bolt+Poison | 花瓣舞 AoEBurst；释放后自身短混乱（1.5s 轻失控或伤害反噬 debuff） | 日光束 ChargeBeam（蓄力 ~0.8s 后强光束） | 耗 100；蓄力前摇 | 污泥炸后毒气瓶 ToxicCloud 簇 DoT；花瓣半径15格；日棱金束 | Medium | Done |
 
 ### 4.3 水系链 L02
 
@@ -143,14 +143,14 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L07_F01 | 迷你龙 | **蜕皮**：每 5s 约 15% 概率清除自身 1 个可清除 debuff | 龙息 Spread/Bolt+Stun（概率短僵） | 咬住 MeleeArc | 龙之怒 Barrage（12/32 抖动球+5格爆） | 耗 100 | 龙息：**128 格** Fire 帧线；怒：`DragonRageBarrage` SoftGlow 球 | Low | Done |
-| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 MeleeArc（高击退） | 暴风 Spread/AoEBurst+Stun | 耗 100 | 同火恐龙龙波；紫染；龙尾 HitJagged；暴风 Typhoon+Cyclone | Medium | Done |
-| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 AoEBurst+Stun | 龙之俯冲 Lunge+Stun | 逆鳞 Barrage/MeleeArc 连段；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 俯冲 SoftGlow 残影；逆鳞 GenericSlash+HitJagged | Medium | Done |
+| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 MeleeArc（高击退） | 暴风 Spread/AoEBurst+Stun | 耗 100 | 龙波；龙尾 HitJagged；暴风 WeatherPain 主+**4伴随**穿透牵引 | Medium | Done |
+| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 AoEBurst+Stun | 龙之俯冲 Lunge+Stun | 逆鳞 Barrage/MeleeArc 连段；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 暴风 WeatherPain 技能档；俯冲 SoftGlow；逆鳞 HitJagged | Medium | Done |
 
 ### 4.6 钢/超能链 L08（Excel：铁哑铃→金属怪）
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 Lunge+Recoil（自损约 25% 造成伤害） | 耗 100；Recoil | 念力同凯西波动链；金属撞击火花尘 | Low |
+| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 Lunge+Recoil（自损约 25% 造成伤害） | 耗 100；Recoil | 念力同凯西波动链；金属撞击火花尘 | Low | Done |
 | L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 Bolt+DefDown | 彗星拳 MeleeArc；命中概率 SelfBuff 攻击 +10%（叠最多 2 层，8s） | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | 彗星拳 HitJagged **帧**；破灭：`SustainedBeam` DeathLaser 粗柱跟鼠标 | Medium | Done |
 
 ### 4.7 龙/地链 L15
@@ -187,7 +187,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（原版 Typhoon **单帧**深蓝贴地；盒随帧） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime；与撞击共用突进 CD） | 耗 100 | 单团贴地旋风；尖角尘锥 | Medium |
-| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 AoEBurst+Stun | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 暴风 Typhoon+Cyclone；Lunge SoftGlow 残影 | Medium | Done |
+| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 AoEBurst+Stun | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 暴风 WeatherPain 直立帧+穿透牵引（技能档）；燕返双弧；勇鸟梭形+交叉鸟 | Medium | Done |
 
 ### 4.12 电系链 L04
 
@@ -246,3 +246,6 @@
 | 1.8 | 2026-09-06 | Wave1 落地并验收：抓狂15格三线爪；火焰牙两对弧牙；闪焰32格多线火径+收尾减速；泡沫窄直线+破裂；念力 ShadowBeam 索敌弹射×2+命中紫环；龙波直线 |
 | 1.9 | 2026-09-06 | Stage6 修：大岩蛇岩崩12石±12格微偏；豪力岩崩微偏；爆裂拳挥拳+20格石爆；流沙保Typhoon+琥珀叠层 |
 | 1.10 | 2026-09-06 | Stage6 验收：岩崩加大微偏（`|vx|≤8`）+落地1格范围伤；整波 Accepted |
+| 1.11 | 2026-09-06 | 岩崩落地去金光；污泥毒气瓶毒云；大比鸟三招重做；金属怪+喷火龙/妙蛙花/水箭龟 Accepted |
+| 1.12 | 2026-09-06 | 暴风直立帧；哈克龙大招/快龙技能 WeatherPain；大招主+4伴随穿透牵引 |
+| 1.13 | 2026-09-06 | 大比鸟/哈克龙/快龙暴风验收 Accepted |

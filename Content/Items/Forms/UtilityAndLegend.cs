@@ -73,9 +73,9 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L11_F02", 27, "Mods.PokemonHenshin.Items.PidgeotForce.DisplayName", PokemonType.Flying, 7, "L11_F01", FormPassiveKind.KeenEye, secondary: PokemonType.Normal, role: FormRole.Utility);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.HurricaneField("Mods.PokemonHenshin.Moves.Hurricane", 1.6f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.BlinkStrike("Mods.PokemonHenshin.Moves.AerialAce", 1.6f, 16);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.BraveBird", 3.8f, 28, DustID.Cloud, recoil: true, key: KeyConflictLevel.ModKeybind);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.WeatherPainHurricane("Mods.PokemonHenshin.Moves.Hurricane", 1.6f);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.AerialAceBlink("Mods.PokemonHenshin.Moves.AerialAce", 1.6f, 16);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.BraveBirdUlt("Mods.PokemonHenshin.Moves.BraveBird", 3.8f);
 	}
 
 	public class AbraForce : HenshinForceItem
