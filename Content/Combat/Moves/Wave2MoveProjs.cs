@@ -1674,7 +1674,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>咬住/咬碎：身前两段咬合；尖牙用 destination Rectangle 画三角（禁 MagicPixel 无源矩形缩放，易拉成通天黑条）。ai0=体型倍率。</summary>
+	/// <summary>咬住/咬碎：身前两段咬合；尖牙用 destination Rectangle 画三角（MagicPixel 须封顶宽高，忌无源矩形通天缩放）。ai0=体型倍率。</summary>
 	public class BiteArcProj : HenshinMoveProj
 	{
 		private const int Lifetime = 18;

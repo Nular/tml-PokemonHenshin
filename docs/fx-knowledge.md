@@ -17,7 +17,7 @@
 
 1. **禁止 CWR 运行时依赖**（`build.txt` 不得 `modReferences` 大修；禁止 `GetMod("CalamityOverhaul")`）。
 2. **允许**把 CWR 贴图**拷贝**进本模 `Assets/Fx/`（见 §7；2026-09-06 已扩拷一批）。
-3. **禁止擅自降级：** MagicPixel 通天粗条、跳过原版自管 AI 只留爆炸、`BlendState.Additive` + `color.A = 0`「假发光」等，未经用户确认不得当作成品。
+3. **禁止擅自降级：** 跳过原版自管 AI 只留爆炸、`BlendState.Additive` + `color.A = 0`「假发光」、纯尘冒充成品等，未经用户确认不得当作成品。MagicPixel **可用**（须控制 destination/scale；无封顶通天拉伸易白屏，属实现错误而非禁令）。
 4. **懒加载贴图：** 壳弹只画原版图、从不 `NewProjectile` 该 type 时，必须 `Main.instance.LoadProjectile` / `ProjectileBorrow.RequestProjectileTexture`（见 Bubble 踩坑）。
 5. **优先**原版 `NewProjectile` 真弹，或壳弹 + `LoadProjectile` 画同贴图 + 自管 AI；**禁止**生成灾厄弹。
 6. **Sprite sheet：** `Fire`（4×4）、`Flashimpact`（4×2）、`HitJagged01`（1×2）禁止整图 `DrawAdditiveCentered`；用 `HenshinFxDraw.Draw*Frame` / `SheetFrame`，帧=`AgeFrame(lifetime,timeLeft,ticksPerFrame,total)`。SoftGlow/Cyclone/Fog/DiffusionCircle/LightShot/LightBeam/TearFlame 可整图。
@@ -41,7 +41,7 @@
 | **形态** | `L03_F02` 妙蛙草 Skill1 |
 | **手法** | Director 扇出 5 枚；`ProjectileBorrow.ItemShoot(ItemID.LeafBlower)` 回退 `ProjectileID.Leaf`（**206**）；`RetargetAsHenshin` |
 | **为何 Accepted** | 真生成会顺带加载贴图；与吹叶机同外观 |
-| **勿做** | MagicPixel 条 / 只刷 `DustID.Grass` |
+| **勿做** | 只刷 `DustID.Grass` 当成品；有伤无叶 |
 
 ### 2.2 泡沫光线 — `LoadProjectile(Bubble)` + `BorrowedVisualBoltProj`
 
@@ -71,7 +71,7 @@
 | **形态** | 皮卡丘大招；雷丘大招（`ai0=1` 落雷、更粗） |
 | **手法** | 折线多段 trail；**Additive 时保留 `Color.A`**；黑底白电图在 Additive 下黑变透明 |
 | **CWR** | 只读抄路径/包络；贴图已拷贝，无运行时依赖 |
-| **勿做** | `A=0`；MagicPixel 竖条；依赖大修 `CWRAsset` |
+| **勿做** | `A=0`；依赖大修 `CWRAsset` |
 
 ### 2.5 Typhoon 壳 — 火焰漩涡 / 贴地旋风
 
@@ -304,7 +304,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ## 5. Stage 6 SpecReady（可施工规格 — 已落地，保留作规格档案）
 
-仅覆盖计划点名的 **代码 `Stage==6`** 形态招式。原则：留玩法管线，换可见外壳；禁 MagicPixel 天条；禁把 LastPrism 金光给龙之怒。
+仅覆盖计划点名的 **代码 `Stage==6`** 形态招式。原则：留玩法管线，换可见外壳；禁把 LastPrism 金光给龙之怒。
 
 ### 5.1 `L05_F02` 豪力 — RockSlide / BrickBreak / DynamicPunch
 
@@ -325,7 +325,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | **Target visual** | 身前短距「手刀/瓦碎」：可见冲击弧或拳印一帧 + 碎瓦尘；高防 +25% 逻辑保留 |
 | **ProjectileID** | `BoxingGlove` **271** 或 `GolemFist` **262**：**Shell+Load**；或短距 `SwordBeam` **116**。碰撞仍用短命中盒。冲击可用已拷 `Assets/Fx/HitJagged01` / `Flashimpact` |
 | **Tint/scale** | 冷白/浅金冲击；scale≈1.2；寿命 10～14 tick |
-| **Forbidden** | **MagicPixel 通天竖条**；`PreDraw=>false` 仅 Blood 尘当成品 |
+| **Forbidden** | `PreDraw=>false` 仅 Blood 尘当成品；无封顶通天拉伸当「光线」 |
 | **Files** | `BrickBreakProj`；可选新 `MeleeImpactShellProj`；`FormItemUtil.BrickBreak` |
 
 #### DynamicPunch（爆裂拳）Ultimate
@@ -335,7 +335,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | **Target visual** | 短突进后命中点**可见爆炸拳**：冲击环 + 烟/火尘；短硬直保留 |
 | **ProjectileID** | 冲击环：`InfernoFriendlyBlast` **296** Frag（短时、无持续火海）或壳画 `Flashimpact`/`DiffusionCircle`；拳本体 Shell `BoxingGlove`/`GolemFist`；突进可留现 Lunge 逻辑 |
 | **Tint/scale** | 橙白爆点；环 scale 1.5～2；勿整屏白闪 |
-| **Forbidden** | 无图突进；MagicPixel 天条；跳过冲击只 Confused |
+| **Forbidden** | 无图突进；跳过冲击只 Confused |
 | **Files** | `DynamicPunchProj`；`FormItemUtil.DynamicPunchUlt`；可复用缩小版 `MouseAoEBurst` 挂命中点 |
 
 ---
@@ -369,7 +369,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | **Target visual** | 技能 **12** / 大招 **32** 发 SoftGlow 球体（直径 **≈1.5 格**），沿瞄准直线前进并垂直抖动；外晕蓝紫 + 金芯 `#e7ce39`；尘粒为两色插值；命中直径 **5 格** 小爆 |
 | **实现** | `DragonRageBarrageProj` + `DragonRageOrbProj`；`FormItemUtil.DragonRage`；**非**光束、**非** LastPrism |
 | **色** | 边 `#2108ad`（Additive 光晕须抬亮 `DragonHaloLit`）；芯 `#e7ce39`；粒子 `Color.Lerp` |
-| **Forbidden** | 金色棱镜当主视觉；MagicPixel 束；DiffusionCircle 裸大 scale |
+| **Forbidden** | 金色棱镜当主视觉；DiffusionCircle 裸大 scale |
 | **Files** | `Wave2MoveProjs.cs`；Dratini Ultimate / Gible Skill1 |
 
 ---
@@ -478,7 +478,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ### DrawContinuousBeam（防白屏 / 防虚线）
 
-- **禁止** MagicPixel 通天拉伸。SoftGlow 沿路径 **拉长 + 密叠**（spacing≈戳记长度×0.22），厚度允许到约 3 格。
+- SoftGlow 沿路径 **拉长 + 密叠**（spacing≈戳记长度×0.22），厚度允许到约 3 格。`MagicPixel` 亦可用，但须封顶宽高；无界拉伸易白屏。
 - `ScaleForWorldDiameter`：DiffusionCircle（360px）等大图必须按世界直径换算，禁止裸 `scale=1.7`（会画出超大圈）。
 - **Additive 暗色：** `#2108ad` 作 SoftGlow 色几乎不可见 → 光晕用抬亮同色相。
 
@@ -559,8 +559,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 0.4 Living | 2026-09-06 | Owner 审阅：花瓣禁真生成失控 AI；精神击破紫环；火焰牙改 BiteArc+OnFire；挖洞大招土环 |
 | 0.5 Living | 2026-09-06 | Sheet 帧修复：Fire 4×4 / Flash 4×2 / HitJagged 1×2；SustainedBeam / WaterJet / DigLunge；射程同步 |
 | 0.6 Living | 2026-09-06 | **SpawnAtMouse**：`FireMove` 后 `Center=MouseWorld`；大 AoE 改尺寸须保中心。**DrawBeamChain**：长束步进短段均匀 Alpha（`DrawBeamSegment`>120px 自动转链）。水柱渐进伸长；日棱开扇再会聚；龙怒蓝金双色+Skill 弱档；挖洞无预算/平移 |
-| 0.8 Living | 2026-09-06 | **禁 MagicPixel 白屏**：`DrawContinuousBeam` SoftGlow 拉长密叠；水柱流动+命中渐缩；龙之怒 12/32 球 |
-| 0.9 Living | 2026-09-06 | 光束宽度对齐格数；虚线修复（拉长戳记）；龙息 56 段密铺；DiffusionCircle `ScaleForWorldDiameter`；龙怒球 1.5 格+抬亮蓝晕+两色尘；洁癖对齐 AGENTS/README |
+| 0.8 Living | 2026-09-06 | 连续束 SoftGlow 拉长密叠（修复无界拉伸白屏/虚线）；水柱流动+命中渐缩；龙之怒 12/32 球 |
+| 0.9 Living | 2026-09-06 | 光束宽度对齐格数；龙息密铺；DiffusionCircle 世界直径；龙怒 1.5 格+抬亮蓝晕；洁癖对齐 |
+| 1.0 Living | 2026-09-06 | 澄清：`MagicPixel` 可用（忌无界拉伸）；新增项目 Skill `henshin-moves` |
 
 ---
 

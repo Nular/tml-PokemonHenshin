@@ -135,8 +135,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 
 		/// <summary>
-		/// 连续光束：SoftGlow 沿路径拉长密叠（禁止 MagicPixel）。
+		/// 连续光束：SoftGlow 沿路径拉长密叠。
 		/// width 为世界像素厚度；SoftGlow 软边按 ~0.55 有效直径换算。
+		/// MagicPixel 亦可用（须封顶尺寸）；本路径默认 SoftGlow 以免无界拉伸白屏。
 		/// </summary>
 		public static void DrawContinuousBeam(Vector2 from, Vector2 to, Color coreColor, Color glowColor, float coreWidth, float glowWidth)
 		{
@@ -259,7 +260,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
-		/// <summary>短距可贴图拉伸；过长走 SoftGlow 连续束（禁 MagicPixel 通天）。</summary>
+		/// <summary>短距可贴图拉伸；过长走 SoftGlow 连续束（或可控 MagicPixel）。</summary>
 		public static void DrawBeamSegment(Texture2D tex, Vector2 from, Vector2 to, Color colorWithAlpha, float width)
 		{
 			if (colorWithAlpha.A == 0)

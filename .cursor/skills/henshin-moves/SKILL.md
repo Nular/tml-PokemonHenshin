@@ -1,0 +1,78 @@
+---
+name: henshin-moves
+description: >-
+  Iterates Pokemon Henshin move/skill/ultimate combat logic and VFX for this
+  Terraria+tModLoader+Calamity mod. Use when designing or changing skills,
+  ultimates, FormItemUtil factories, Wave2/Shared/Redesigned move projectiles,
+  HenshinFxDraw, move FX polish, or when the user asks to improve a move's feel
+  or visuals. Read Pokemon move meaning and Terraria projectile IDs first, propose
+  an expected-effect design for user confirmation, then implement.
+---
+
+# Henshin Moves — 招式迭代
+
+启发用工作流：先想清「玩家应看见/感到什么」，再选泰拉积木实现。不规定唯一写法；鼓励举一反三。
+
+## 现役真相（短指针，勿复制成第二套表）
+
+| 权威 | 管什么 |
+|------|--------|
+| `docs/requirements.md` | 产品规则 |
+| `docs/move-effects.md` | 招式玩法语义 / 接线状态 |
+| `docs/fx-knowledge.md` | FX cookbook、本模已用手法、贴图与踩坑 |
+| `AGENTS.md` | 构建、目录、硬约束入口 |
+
+改特效或招式前先扫一眼上表对应行；缺项就地补进权威文档，不要只写在聊天里。
+
+## 外链与只读参考（需要时再打开）
+
+- 原版射弹 ID：https://terraria.wiki.gg/zh/wiki/%E5%B0%84%E5%BC%B9_ID  
+  按候选 ID **有目的**查外观/AI，不要整表灌进上下文。
+- 宝可梦招式含义：https://wiki.52poke.com/wiki/%E6%8B%9B%E5%BC%8F%E5%88%97%E8%A1%A8  
+  做某招时打开**该招式页**，抓住「在对战里意味着什么」，再泰拉化。
+- 特效学习与贴图：`../CalamityOverhaul`（相对本仓库）  
+  **只读**抄逻辑 / **拷贝**贴图进 `Assets/Fx/`；**禁止** `modReferences` 大修、禁止运行时依赖 CWR、禁止改 CWR 源码。
+
+## 开工前必做（确认门）
+
+在写/改实现代码之前：
+
+1. **读语义**：52poke 该招式页（类型、类别、效果叙述、主题意象）。
+2. **找积木**：射弹 ID 表 + `docs/fx-knowledge.md` 速查 +（可选）CWR 同类特效路径；想几种「真生成 / 壳弹+Load / 本模自绘」组合，择优或组合。
+3. **写设计方案（最终预期效果）**：用玩家主观语言描述，同时当作验收标准。建议覆盖：
+   - 一眼能认出是哪招（形、色、节奏）
+   - 空间尺度（约几格宽/长/半径）
+   - 时间感（蓄力 / 持续 / 命中消散）
+   - 命中反馈（粒子、爆炸、是否穿透）
+   - 明确「不要长成什么样」（例如别做成另一招的金棱镜）
+4. **向用户确认**该描述是否符合预期；**未确认不开工**。用户改口则以新描述为准。
+
+不确定语义、候选射弹或是否「降级」时：**先问用户**，不要擅自定案。
+
+## 设计理念（举一反三）
+
+- **语义先行，泰拉落地**：52poke 给「这招是什么」；泰拉给「用什么弹、什么绘制、什么手感」。不要机械 1:1 复刻回合制数值。
+- **优先可辨认的积木**：原版真弹或已验收 cookbook（Leaf / Bubble Load / Nebula 壳 / ThunderTrail…）往往比从零 Dust 更稳；CWR 是学习样本，不是依赖。
+- **尺度用「格」说话**：宽、长、半径用物块直觉描述，再换成像素（×16）。
+- **Additive 与颜色**：保留 `Color.A`；过暗的色（如深靛蓝）在 Additive 下几乎不可见 → 光晕可抬亮同色相。
+- **MagicPixel 可用**：合法工具。失控的通天 `scale`/无界拉伸会造成白屏或黑条——用 destination 矩形、封顶宽高，或 SoftGlow 密叠等可控画法。失败案例不等于禁用工具。
+- **大贴图按世界直径缩放**：如 `DiffusionCircle`（360px）用「目标直径 / 贴图边长」，禁止凭感觉裸 `scale`。
+- **Sheet 按帧采**：`Fire` / `Flashimpact` / `HitJagged01` 禁止整表当一帧画。
+- **生成点**：`NewProjectile` 坐标是左上角；大 hitbox 事后设 `Center`（含 `SpawnAtMouse`）。
+
+## 红线（写死）
+
+1. **禁止擅自降级**：用户点名的效果或已确认的预期描述，不得用「有伤无光 / 纯尘占位 / 跳过自管 AI 只留爆炸 / A=0 假 Additive」等顶替成品；要改须再确认。
+2. **禁止 CWR 运行时依赖**；贴图只拷贝进本模。
+3. **禁止生成灾厄弹**当本模伤害载体（进度反射除外，见 AGENTS）。
+4. **壳弹贴图必须 `LoadProjectile`**（或等价 Request），勿赌玩家先用过原版武器。
+5. **玩法数值冲突以 `requirements` / `move-effects` 为准**；本 Skill 只管迭代方法，不另立数值表。
+
+## 实现落点（启发，非强制结构）
+
+常见改动面：`FormItemUtil` / 各 `*Force` 形态类、`Content/Combat/Moves/*`、`HenshinFxDraw`、`Assets/Fx/`。新手法验证后，把「可复用结论」写回 `docs/fx-knowledge.md`（一行速查或 cookbook），方便下次 Agent。
+
+## 验收
+
+- **主观**：对照开工前用户确认的「最终预期效果」描述。
+- **客观习惯**：游戏运行中 → 游戏内 Build + Reload（TML003）；大招默认 Mouse3。

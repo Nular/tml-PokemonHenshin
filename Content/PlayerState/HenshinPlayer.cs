@@ -421,6 +421,33 @@ namespace PokemonHenshin.Content.PlayerState
 			UpdateFlight();
 			TryProcessUltimateKey();
 			TryProcessDashInput();
+			TrySpawnFullChargeDust();
+		}
+
+		/// <summary>大招满充：角色周围稀疏金色发散尘，路径约 1 格，整体向上，营造「充满电」感。</summary>
+		private void TrySpawnFullChargeDust()
+		{
+			if (Main.dedServ || !UltimateReady)
+				return;
+			// 约每 10 tick 一粒，数量克制
+			if (!Main.rand.NextBool(10))
+				return;
+
+			Vector2 origin = Player.Center + Main.rand.NextVector2Circular(Player.width * 0.55f, Player.height * 0.45f);
+			Vector2 outward = (origin - Player.Center).SafeNormalize(-Vector2.UnitY);
+			// 轻微外散 + 主导向上；|vel|≈0.9、无重力短火花 ≈ 1 格行程
+			Vector2 vel = outward * Main.rand.NextFloat(0.2f, 0.45f)
+				+ new Vector2(Main.rand.NextFloat(-0.15f, 0.15f), Main.rand.NextFloat(-1.05f, -0.7f));
+			Dust d = Dust.NewDustPerfect(
+				origin,
+				DustID.GoldCoin,
+				vel,
+				100,
+				new Color(255, 220, 90),
+				Main.rand.NextFloat(0.7f, 1.05f));
+			d.noGravity = true;
+			d.fadeIn = 0.4f;
+			d.velocity = vel;
 		}
 
 		private void TryProcessUltimateKey()
