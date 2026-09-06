@@ -180,9 +180,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | Ember/火花 | L01_F01,1 | Bolt+OnFire | `EmberBoltProj`←BallofFire | BallofFire Shell | 可用 | Accepted |
 | Scratch/抓 | L01_F01,1 | MeleeArc | `ScratchSlashProj` | 自绘爪痕 | 平行爪 | Accepted |
 | FireSpin/火焰漩涡 | L01_F01 Ult | HomingLock | `FlareBoltUltProj` Typhoon | Typhoon Shell | 可见涡 | Accepted |
-| DragonPulse/龙之波动 | L01_F02,4 | Bolt×10 | NebulaPulse* | Nebula 617/620 | 紫炸 | Accepted |
-| FireFang/火焰牙 | L01_F02,4 | MeleeArc+OnFire | BiteArc+OnFire 橙尖牙 | BiteArc cookbook | 火焰牙 | Implemented |
-| FlareBlitz/闪焰冲锋 | L01_F02,4 | Lunge+Recoil | `LungeProj` | 火尘残影 | 功能够 | Accepted |
+| DragonPulse/龙之波动 | L01_F02,4 | Bolt×10 | NebulaPulse* **直线连发** | Nebula 617/620 | 紫炸 | Accepted |
+| FireFang/火焰牙 | L01_F02,4 | MeleeArc+OnFire | BiteArc **两对大弧牙**+OnFire | BiteArc cookbook | 火焰牙 | Accepted |
+| FlareBlitz/闪焰冲锋 | L01_F02,4 | Lunge+Recoil | `LungeProj` **32格** 多线火径+包裹焰+收尾减速 | 火尘残影 | 可见冲锋 | Accepted |
 | Flamethrower/喷射火焰 | L01_F03,7 | FlameCone | 真 Flames + **Fire 帧**（枪口小 TearFlame） | **Flames(85)** 真焰柱 | 喷火柱 | Implemented |
 | DragonClaw/龙爪 | L01_F03,7 | Scratch | ScratchSlash **20格** + HitJagged **帧** | — | 远爪 | Implemented |
 | Overheat/过热 | L01_F03 Ult | MouseAoE | 半径15格、5脉冲；Fire/Flash **帧** | InfernoFriendlyBlast | 可见火环 | Implemented |
@@ -193,7 +193,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 |------------|---------------|-----------|---------|-------------|------|--------|
 | WaterGun/水枪 | L02_F01,1 | Aqua | AquaScepter←WaterStream | WaterStream Shell | OK | Accepted |
 | Tackle/撞击 | 多形态 | Lunge | `LungeProj` SoftGlow 残影 | — | 2s CD | Accepted |
-| BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble | Bubble Load | OK | Accepted |
+| BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble **窄直线**速度随机+破裂小泡 | Bubble Load | 密泡 | Accepted |
 | Bite/咬住 | L02_F02,4 | BiteArc | `BiteArcProj` | cookbook | 尖牙 | Accepted |
 | Whirlpool/潮旋 | L02_F02 Ult | DoTBind | MouseVortex Cyclone 蓝 | Typhoon 蓝染 / `Assets/Fx/Cyclone` | 可见涡 | Implemented |
 | HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中不穿透+渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Implemented |
@@ -264,13 +264,13 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 | MoveKey/CN | Forms (Stage) | Playstyle | Current | Recommended | Feel | Status |
 |------------|---------------|-----------|---------|-------------|------|--------|
-| Confusion/念力 | L08_F01 / L12_F01 | Bolt+Stun | ShadowBallHenshin | RainbowRod | 偏影 | NeedsUpgrade |
+| Confusion/念力 | L08_F01 / L12_F01 | Bolt+Stun | `PsychicWaveBolt` 32格索敌弹射×2 + **命中紫环1格** | ShadowBeam 294 | 波动链 | Accepted |
 | TakeDown/猛撞 | L08_F01 Ult 等 | Lunge+Recoil | Lunge SoftGlow | — | OK | Accepted |
 | Psychic/精神强念 | L08_F02 / L12* / L14 | Bolt+DefDown | StrongPsychic←RainbowRod | RainbowRod | 可见 | Accepted |
 | MeteorMash/彗星拳 | L08_F02,10 | Melee | GenericSlash+HitJagged | BoxingGlove | 可见 | Implemented |
 | HyperBeam/破坏光线 | L08_F02 / L09_F02 Ult | Beam | `SustainedBeam` DeathLaser 跟鼠标 | DeathLaser/粗壳；**非**日光束金棱 | 持续粗束 | Implemented |
 | Splash/跃起 | L09_F01,1 | StrikeFall | StrikeFall Water | — | 低伤 | Accepted |
-| Flail/抓狂 | L09_F01 Ult | Barrage | FlailBarrage | — | 尘 | NeedsUpgrade |
+| Flail/抓狂 | L09_F01 Ult | Barrage | FlailBarrage **15格三线爪** 宽判+抓尘 | 多爪环身 | 可见多段 | Accepted |
 | HydroPump | L09_F02,9 | Beam | `WaterJetProj` | 同水箭龟水柱 | 水柱 | Implemented |
 | Crunch/咬碎 | L09_F02 / L15_F02 / L17 | BiteArc | BiteArc size↑ | cookbook | OK | Accepted |
 | MudSlap/掷泥 | L10_F01,3 | Bolt+Slow | MudSlap←DirtBall | DirtBall | OK | Accepted |
@@ -298,7 +298,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | DragonAscent/画龙点睛 | L17 Ult | Lunge | Lunge SoftGlow+IgnoreDef | 加强残影 | 可见残影 | Implemented |
 | DragonPulse | L17 / L15_F02 | Nebula | NebulaPulse | cookbook | OK | Accepted |
 
-> **注：** Stage 6–12 本轮触及招式已标 Implemented（含火焰牙 BiteArc、精神击破紫环、挖洞大招土环）。少数未深改项（Flail/DracoMeteor 等）仍可后续微调。
+> **注：** Stage 6–12 本轮触及招式已标 Implemented（含火焰牙 BiteArc、精神击破紫环、挖洞大招土环）。**Wave1 已验收 Accepted**（抓狂/火焰牙/闪焰/泡沫/念力；龙波直线）。少数未深改项（DracoMeteor/`StoneEdge` 等）仍可后续微调。
 
 ---
 
@@ -562,6 +562,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 0.8 Living | 2026-09-06 | 连续束 SoftGlow 拉长密叠（修复无界拉伸白屏/虚线）；水柱流动+命中渐缩；龙之怒 12/32 球 |
 | 0.9 Living | 2026-09-06 | 光束宽度对齐格数；龙息密铺；DiffusionCircle 世界直径；龙怒 1.5 格+抬亮蓝晕；洁癖对齐 |
 | 1.0 Living | 2026-09-06 | 澄清：`MagicPixel` 可用（忌无界拉伸）；新增项目 Skill `henshin-moves` |
+| 1.1 Living | 2026-09-06 | Wave1 手感落地并**验收 Accepted**：抓狂三线爪宽判；火焰牙张口；闪焰多线火径+包裹+收尾减速；泡沫窄直线+破裂；念力索敌弹射+命中紫环；龙波直线 |
+| 1.2 Living | 2026-09-06 | 全局 Rule `tml-api-docs.mdc`：设计须参考 tModLoader stable 类表 |
 
 ---
 

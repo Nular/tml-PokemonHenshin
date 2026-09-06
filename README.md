@@ -12,6 +12,7 @@
 | [docs/fx-knowledge.md](docs/fx-knowledge.md) | Stage 6+ FX 目录 / cookbook / 踩坑（Living） |
 | [AGENTS.md](AGENTS.md) | AI Agent 项目入口 |
 | [`.cursor/skills/henshin-moves`](.cursor/skills/henshin-moves/SKILL.md) | 招式/特效迭代 Skill（预期效果确认门） |
+| [`.cursor/rules/tml-api-docs.mdc`](.cursor/rules/tml-api-docs.mdc) | **alwaysApply**：设计须查 [tModLoader API 类表](https://docs.tmodloader.net/docs/stable/annotated.html) |
 
 ## 状态
 

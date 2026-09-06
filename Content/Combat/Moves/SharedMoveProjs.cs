@@ -237,6 +237,204 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
+	/// <summary>
+	/// 念力：ShadowBeamFriendly 壳弹。32 格索敌；命中后弹射下一目标，最多 2 击；短 Confused。
+	/// </summary>
+	public class PsychicWaveBoltProj : HenshinMoveProj
+	{
+		private const float SeekTiles = 32f;
+		private const int MaxHits = 2;
+		private const float FlightSpeed = 20f;
+
+		private int _hitCount;
+		private int _hitA = -1;
+		private int _hitB = -1;
+		private int _lockNpc = -1;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.ShadowBeamFriendly;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 14;
+			Projectile.height = 14;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.penetrate = MaxHits;
+			Projectile.timeLeft = 90;
+			Projectile.tileCollide = false;
+			Projectile.extraUpdates = 2;
+			Projectile.usesLocalNPCImmunity = true;
+			Projectile.localNPCHitCooldown = -1;
+		}
+
+		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
+		{
+			Main.instance.LoadProjectile(ProjectileID.ShadowBeamFriendly);
+			if (Projectile.velocity.LengthSquared() < 0.01f)
+				Projectile.velocity = Vector2.UnitX * FlightSpeed;
+			else
+				Projectile.velocity = Vector2.Normalize(Projectile.velocity) * FlightSpeed;
+
+			_lockNpc = FindTarget(Projectile.Center, excludeA: -1, excludeB: -1);
+			if (_lockNpc >= 0)
+			{
+				Vector2 to = Main.npc[_lockNpc].Center - Projectile.Center;
+				if (to.LengthSquared() > 0.01f)
+					Projectile.velocity = Vector2.Normalize(to) * FlightSpeed;
+			}
+		}
+
+		public override void AI()
+		{
+			if (_lockNpc < 0 || !IsValidTarget(_lockNpc))
+				_lockNpc = FindTarget(Projectile.Center, _hitA, _hitB);
+
+			if (_lockNpc >= 0)
+			{
+				Vector2 desired = Main.npc[_lockNpc].Center - Projectile.Center;
+				if (desired.LengthSquared() > 0.01f)
+				{
+					desired.Normalize();
+					Vector2 cur = Projectile.velocity.LengthSquared() > 0.01f
+						? Vector2.Normalize(Projectile.velocity)
+						: desired;
+					Projectile.velocity = Vector2.Normalize(Vector2.Lerp(cur, desired, 0.35f)) * FlightSpeed;
+				}
+			}
+			else if (Projectile.velocity.LengthSquared() < 0.01f)
+				Projectile.velocity = Vector2.UnitX * FlightSpeed;
+
+			Projectile.rotation = Projectile.velocity.ToRotation();
+			Lighting.AddLight(Projectile.Center, 0.55f, 0.25f, 0.85f);
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			if (_hitCount == 0)
+				_hitA = target.whoAmI;
+			else
+				_hitB = target.whoAmI;
+			_hitCount++;
+
+			target.AddBuff(BuffID.Confused, 40);
+
+			if (Projectile.owner == Main.myPlayer)
+			{
+				int ring = Projectile.NewProjectile(Projectile.GetSource_FromThis(), target.Center, Vector2.Zero,
+					ModContent.ProjectileType<PsychicHitRingProj>(), 0, 0f, Projectile.owner);
+				if (ring >= 0)
+					Main.projectile[ring].Center = target.Center;
+			}
+
+			if (_hitCount >= MaxHits)
+			{
+				Projectile.Kill();
+				return;
+			}
+
+			_lockNpc = FindTarget(Projectile.Center, _hitA, _hitB);
+			if (_lockNpc < 0)
+			{
+				Projectile.Kill();
+				return;
+			}
+
+			Vector2 to = Main.npc[_lockNpc].Center - Projectile.Center;
+			if (to.LengthSquared() > 0.01f)
+				Projectile.velocity = Vector2.Normalize(to) * FlightSpeed;
+			Projectile.timeLeft = System.Math.Max(Projectile.timeLeft, 45);
+		}
+
+		private static bool IsValidTarget(int who)
+		{
+			if (who < 0 || who >= Main.maxNPCs)
+				return false;
+			NPC n = Main.npc[who];
+			return n.active && !n.friendly && n.life > 0 && n.CanBeChasedBy();
+		}
+
+		private static int FindTarget(Vector2 from, int excludeA, int excludeB)
+		{
+			float best = SeekTiles * 16f * SeekTiles * 16f;
+			int found = -1;
+			for (int i = 0; i < Main.maxNPCs; i++)
+			{
+				if (i == excludeA || i == excludeB)
+					continue;
+				NPC n = Main.npc[i];
+				if (!n.active || n.friendly || n.life <= 0 || !n.CanBeChasedBy())
+					continue;
+				float d = Vector2.DistanceSquared(from, n.Center);
+				if (d < best)
+				{
+					best = d;
+					found = i;
+				}
+			}
+			return found;
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.ShadowBeamFriendly);
+			Rectangle frame = tex.Frame();
+			Vector2 origin = frame.Size() * 0.5f;
+			float rot = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame,
+				new Color(210, 160, 255), rot, origin, 1.15f, SpriteEffects.None, 0);
+
+			HenshinFxDraw.BeginAdditive();
+			Vector2 back = Projectile.velocity.LengthSquared() > 0.01f
+				? Vector2.Normalize(Projectile.velocity) : Vector2.UnitX;
+			for (int i = 1; i <= 4; i++)
+			{
+				Vector2 pos = Projectile.Center - back * (i * 10f);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, pos,
+					HenshinFxDraw.WithAlpha(new Color(180, 100, 255), 0.45f * (1f - i * 0.12f)), 0.28f);
+			}
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(220, 160, 255), 0.55f), 0.4f);
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
+	}
+
+	/// <summary>念力命中光圈：半径 1 格紫环，快速渐隐。</summary>
+	public class PsychicHitRingProj : HenshinMoveProj
+	{
+		private const int Life = 12;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 16;
+			Projectile.height = 16;
+			Projectile.friendly = false;
+			Projectile.hostile = false;
+			Projectile.timeLeft = Life;
+			Projectile.tileCollide = false;
+			Projectile.penetrate = -1;
+			Projectile.damage = 0;
+		}
+
+		public override bool? CanDamage() => false;
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			float fade = Projectile.timeLeft / (float)Life;
+			float diam = 16f; // 1 格
+			HenshinFxDraw.BeginAdditive();
+			float scale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(190, 90, 255), 0.85f * fade), scale);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(220, 140, 255), 0.7f * fade), 0.45f);
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
+	}
+
 	public class RainFieldProj : HenshinMoveProj
 	{
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
@@ -540,10 +738,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>突进伤害盒：全程维持含竖直方向的速度；SoftGlow 残影 + 尘迹。</summary>
+	/// <summary>突进伤害盒：全程维持含竖直方向的速度；SoftGlow 残影 + 尘迹。闪焰冲锋：多线火径+包裹焰+收尾减速。</summary>
 	public class LungeProj : HenshinMoveProj
 	{
+		private const int BrakeTicks = 10;
+
 		private Vector2 _dir;
+		private int _dashLife = 16;
+		private int _lifetime = 16;
+		private float _speed = 8.5f;
+		private bool _flare;
+		private Vector2 _lastTrail;
+		private float _cruiseSpeed;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
@@ -559,6 +765,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 16;
 		}
+
+		private bool InBrake => _flare && Projectile.timeLeft <= BrakeTicks;
 
 		public override void AI()
 		{
@@ -576,24 +784,93 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (_dir == Vector2.Zero)
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();
+
+				_flare = Projectile.ai[0] == DustID.Torch || Projectile.ai[2] >= 1f;
+				float reachTiles = Projectile.ai[2] > 0.5f ? Projectile.ai[2] : 0f;
+				if (reachTiles >= 1f)
+				{
+					_dashLife = System.Math.Clamp((int)(reachTiles * 0.75f), 18, 40);
+					float reachPx = reachTiles * 16f;
+					_speed = reachPx / _dashLife;
+					_lifetime = _flare ? _dashLife + BrakeTicks : _dashLife;
+					Projectile.timeLeft = _lifetime;
+					Projectile.localNPCHitCooldown = _dashLife;
+				}
+				else
+				{
+					_dashLife = 16;
+					_lifetime = 16;
+				}
+				_cruiseSpeed = System.Math.Max(p.maxRunSpeed, 6f);
+				_lastTrail = p.Center;
 			}
 
-			// 每帧重写速度，避免重力吃掉竖直分量（速度/距离约为原 50%）
 			if (Projectile.owner == Main.myPlayer)
-				p.velocity = _dir * 8.5f;
+			{
+				if (InBrake)
+				{
+					// 较快平滑回到巡航速度（类克盾收尾），避免冲完长距离滑行
+					float t = 1f - Projectile.timeLeft / (float)BrakeTicks;
+					float targetSpd = MathHelper.Lerp(_speed, _cruiseSpeed, MathHelper.SmoothStep(0f, 1f, t));
+					p.velocity = Vector2.Lerp(p.velocity, _dir * targetSpd, 0.35f);
+				}
+				else
+					p.velocity = _dir * _speed;
+			}
 
 			Projectile.Center = p.Center;
 			int dust = Projectile.ai[0] > 0 ? (int)Projectile.ai[0] : DustID.Cloud;
-			Dust.NewDustPerfect(p.Center, dust, -p.velocity * 0.2f, 100, default, 1.2f).noGravity = true;
-			Dust.NewDustPerfect(p.Center - _dir * 12f, dust, -_dir * 2f, 120, default, 1.0f).noGravity = true;
 
-			// 突进前段短无敌
-			if (Projectile.timeLeft >= 10 && Projectile.owner == Main.myPlayer)
+			if (_flare && !InBrake)
+			{
+				Vector2 perp = new Vector2(-_dir.Y, _dir.X);
+				// 贴身包裹火焰
+				for (int i = 0; i < 5; i++)
+				{
+					Vector2 wrap = p.Center + Main.rand.NextVector2Circular(22f, 26f);
+					Dust d = Dust.NewDustPerfect(wrap, DustID.Torch,
+						-_dir * Main.rand.NextFloat(0.5f, 2.5f) + Main.rand.NextVector2Circular(1.2f, 1.2f),
+						50, default, Main.rand.NextFloat(1.3f, 1.9f));
+					d.noGravity = true;
+				}
+				// 错落多线火径
+				if (Vector2.DistanceSquared(_lastTrail, p.Center) > 18f * 18f)
+				{
+					_lastTrail = p.Center;
+					for (int lane = -2; lane <= 2; lane++)
+					{
+						float side = lane * 10f + Main.rand.NextFloat(-2f, 2f);
+						Vector2 basePos = p.Center + perp * side;
+						for (int i = 0; i < 3; i++)
+						{
+							Dust trail = Dust.NewDustPerfect(basePos - _dir * (i * 7f), DustID.Torch,
+								-_dir * Main.rand.NextFloat(0.4f, 1.2f) + perp * Main.rand.NextFloat(-0.4f, 0.4f),
+								70, default, Main.rand.NextFloat(1.1f, 1.55f));
+							trail.noGravity = true;
+							trail.fadeIn = 1.05f;
+						}
+					}
+				}
+			}
+			else if (!_flare)
+			{
+				Dust.NewDustPerfect(p.Center, dust, -p.velocity * 0.2f, 100, default, 1.2f).noGravity = true;
+				Dust.NewDustPerfect(p.Center - _dir * 12f, dust, -_dir * 2f, 120, default, 1.0f).noGravity = true;
+			}
+			else if (InBrake && Main.rand.NextBool(2))
+			{
+				Dust.NewDustPerfect(p.Center, DustID.Torch, -_dir * 1.5f + Main.rand.NextVector2Circular(2f, 2f), 100, default, 1.2f).noGravity = true;
+			}
+
+			int immuneGate = BrakeTicks + System.Math.Max(8, _dashLife * 5 / 8);
+			if (Projectile.timeLeft >= immuneGate && Projectile.owner == Main.myPlayer)
 			{
 				p.immune = true;
 				p.immuneTime = System.Math.Max(p.immuneTime, 15);
 			}
 		}
+
+		public override bool? CanDamage() => InBrake ? false : null;
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
@@ -615,18 +892,71 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
+		public override void OnKill(int timeLeft)
+		{
+			if (!_flare || Projectile.owner != Main.myPlayer)
+				return;
+			Player p = Main.player[Projectile.owner];
+			if (!p.active)
+				return;
+			// 最终贴回巡航量级，避免残留冲刺速度
+			float spd = p.velocity.Length();
+			if (spd > _cruiseSpeed * 1.15f)
+				p.velocity = Vector2.Normalize(p.velocity) * _cruiseSpeed;
+		}
+
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float life = Projectile.timeLeft / 16f;
+			float life = InBrake
+				? Projectile.timeLeft / (float)BrakeTicks * 0.45f
+				: System.Math.Min(1f, Projectile.timeLeft / (float)System.Math.Max(1, _dashLife));
 			HenshinFxDraw.BeginAdditive();
-			for (int i = 1; i <= 3; i++)
+			if (_flare)
 			{
-				Vector2 pos = Projectile.Center - _dir * (i * 14f);
-				Color c = HenshinFxDraw.WithAlpha(new Color(220, 230, 255), 0.45f * life * (1f - i * 0.2f));
-				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, pos, c, 0.28f);
+				int fireFrame = HenshinFxDraw.AgeFrame(_lifetime, Projectile.timeLeft, 2, HenshinFxDraw.FireFrames);
+				Vector2 perp = new Vector2(-_dir.Y, _dir.X);
+				// 贴身包裹：多层 Fire + SoftGlow，持续到冲撞段结束（刹车段渐弱）
+				for (int ring = 0; ring < 4; ring++)
+				{
+					float ang = ring * MathHelper.PiOver2 + Projectile.timeLeft * 0.18f;
+					Vector2 wrap = Projectile.Center + new Vector2((float)System.Math.Cos(ang), (float)System.Math.Sin(ang)) * (14f + ring * 3f);
+					HenshinFxDraw.DrawFireFrame(wrap,
+						HenshinFxDraw.WithAlpha(new Color(255, 160, 50), 0.7f * life),
+						0.42f + ring * 0.05f, ang, (fireFrame + ring) % HenshinFxDraw.FireFrames);
+				}
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(255, 120, 30), 0.7f * life), 0.85f);
+				HenshinFxDraw.DrawFireFrame(Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(255, 200, 80), 0.85f * life), 0.7f, _dir.ToRotation(), fireFrame);
+
+				if (!InBrake)
+				{
+					// 错落多条火径线
+					for (int lane = -2; lane <= 2; lane++)
+					{
+						for (int i = 1; i <= 4; i++)
+						{
+							Vector2 pos = Projectile.Center - _dir * (i * 16f) + perp * (lane * 9f);
+							Color c = HenshinFxDraw.WithAlpha(new Color(255, 140, 40), 0.5f * life * (1f - i * 0.1f));
+							HenshinFxDraw.DrawFireFrame(pos, c, 0.32f + i * 0.03f, _dir.ToRotation(),
+								(fireFrame + i + lane + 2) % HenshinFxDraw.FireFrames);
+							HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, pos,
+								HenshinFxDraw.WithAlpha(new Color(255, 90, 20), 0.28f * life), 0.26f);
+						}
+					}
+				}
 			}
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(Color.White, 0.55f * life), 0.4f);
+			else
+			{
+				for (int i = 1; i <= 3; i++)
+				{
+					Vector2 pos = Projectile.Center - _dir * (i * 14f);
+					Color c = HenshinFxDraw.WithAlpha(new Color(220, 230, 255), 0.45f * life * (1f - i * 0.2f));
+					HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, pos, c, 0.28f);
+				}
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+					HenshinFxDraw.WithAlpha(Color.White, 0.55f * life), 0.4f);
+			}
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}

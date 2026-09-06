@@ -1631,23 +1631,39 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>抓狂：残血加伤乱打。</summary>
+	/// <summary>抓狂：以玩家为圆心半径 15 格，短时刷出杂乱交错爪痕多段伤害；已损 HP% 提伤。</summary>
 	public class FlailBarrageProj : HenshinMoveProj
 	{
-		private int _hits;
+		private const int Lifetime = 40;
+		private const float RadiusTiles = 15f;
+		private const int MaxScratches = 18;
+		private const float LineWidth = 40f;
+		private const float LineSpacing = 14f;
+
+		private struct Scratch
+		{
+			public Vector2 Mid;
+			public float Rot;
+			public float Len;
+			public int Birth;
+		}
+
+		private readonly Scratch[] _scratches = new Scratch[MaxScratches];
+		private int _count;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 48;
-			Projectile.height = 48;
+			Projectile.width = (int)(RadiusTiles * 16f * 2f);
+			Projectile.height = (int)(RadiusTiles * 16f * 2f);
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 40;
+			Projectile.timeLeft = Lifetime;
 			Projectile.tileCollide = false;
 			Projectile.penetrate = -1;
 			Projectile.usesLocalNPCImmunity = true;
-			Projectile.localNPCHitCooldown = 6;
+			Projectile.localNPCHitCooldown = 4;
 		}
 
 		public override void AI()
@@ -1658,12 +1674,71 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Kill();
 				return;
 			}
-			Projectile.Center = p.Center + new Vector2(p.direction * 28f, 0f);
+			Projectile.Center = p.Center;
 			float missing = 1f - p.statLife / (float)System.Math.Max(1, p.statLifeMax2);
 			Projectile.localAI[1] = 1f + missing * 0.8f;
-			Dust.NewDustPerfect(Projectile.Center, DustID.Water, Main.rand.NextVector2Circular(3f, 3f), 100, default, 1.2f).noGravity = true;
-			if (Projectile.timeLeft % 5 == 0)
-				_hits++;
+
+			int age = Lifetime - Projectile.timeLeft;
+			if (age % 2 == 0 && _count < MaxScratches)
+			{
+				float radius = RadiusTiles * 16f;
+				Vector2 mid = p.Center + Main.rand.NextVector2Circular(radius * 0.92f, radius * 0.92f);
+				float rot = Main.rand.NextFloat(MathHelper.TwoPi);
+				float len = Main.rand.NextFloat(3.5f, 5.5f) * 16f;
+				_scratches[_count++] = new Scratch
+				{
+					Mid = mid,
+					Rot = rot,
+					Len = len,
+					Birth = age
+				};
+				SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.4f, Pitch = Main.rand.NextFloat(-0.4f, 0.2f) }, mid);
+				// 「抓」尘：沿三道平行爪痕刷烟/血
+				Vector2 dir = new Vector2((float)System.Math.Cos(rot), (float)System.Math.Sin(rot));
+				Vector2 perp = new Vector2(-dir.Y, dir.X);
+				for (int line = -1; line <= 1; line++)
+				{
+					for (int seg = 0; seg < 4; seg++)
+					{
+						Vector2 pos = mid + dir * ((seg / 3f - 0.5f) * len) + perp * (line * LineSpacing);
+						Dust.NewDustPerfect(pos, DustID.Smoke, dir * 2.2f, 80, Color.White, 1.3f).noGravity = true;
+						if (Main.rand.NextBool())
+							Dust.NewDustPerfect(pos, DustID.Blood, dir * 1.5f + Main.rand.NextVector2Circular(1f, 1f), 90, default, 1.1f);
+					}
+				}
+			}
+		}
+
+		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+		{
+			Player p = Main.player[Projectile.owner];
+			float maxR = RadiusTiles * 16f;
+			Vector2 targetCenter = targetHitbox.Center.ToVector2();
+			if (Vector2.DistanceSquared(p.Center, targetCenter) > (maxR + 64f) * (maxR + 64f))
+				return false;
+			int age = Lifetime - Projectile.timeLeft;
+			for (int i = 0; i < _count; i++)
+			{
+				ref Scratch s = ref _scratches[i];
+				// 爪痕存活期内保持较宽命中（比视觉略宽）
+				if (age - s.Birth > 14)
+					continue;
+				Vector2 dir = new Vector2((float)System.Math.Cos(s.Rot), (float)System.Math.Sin(s.Rot));
+				Vector2 perp = new Vector2(-dir.Y, dir.X);
+				Vector2 half = dir * (s.Len * 0.5f);
+				for (int line = -1; line <= 1; line++)
+				{
+					Vector2 o = s.Mid + perp * (line * LineSpacing) - half;
+					Vector2 e = s.Mid + perp * (line * LineSpacing) + half;
+					float point = 0f;
+					if (Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), o, e, LineWidth, ref point))
+						return true;
+				}
+				// 爪痕中心附近额外圆判，提高命中率
+				if (Vector2.DistanceSquared(s.Mid, targetCenter) < 36f * 36f)
+					return true;
+			}
+			return false;
 		}
 
 		public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
@@ -1671,7 +1746,42 @@ namespace PokemonHenshin.Content.Combat.Moves
 			modifiers.FinalDamage *= Projectile.localAI[1] > 0 ? Projectile.localAI[1] : 1f;
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			for (int i = 0; i < 8; i++)
+				Dust.NewDustPerfect(target.Center, DustID.Blood, Main.rand.NextVector2Circular(3.5f, 3.5f), 80, default, 1.25f);
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			int age = Lifetime - Projectile.timeLeft;
+			HenshinFxDraw.BeginAdditive();
+			for (int i = 0; i < _count; i++)
+			{
+				ref Scratch s = ref _scratches[i];
+				int life = age - s.Birth;
+				if (life < 0 || life > 14)
+					continue;
+				float fade = 1f - life / 14f;
+				int frame = HenshinFxDraw.AgeFrame(14, 14 - life, 3, HenshinFxDraw.HitJaggedFrames);
+				Vector2 dir = new Vector2((float)System.Math.Cos(s.Rot), (float)System.Math.Sin(s.Rot));
+				Vector2 perp = new Vector2(-dir.Y, dir.X);
+				// 三道平行爪痕（同「抓」）
+				for (int line = -1; line <= 1; line++)
+				{
+					for (int seg = 0; seg < 3; seg++)
+					{
+						float u = (seg + 0.5f) / 3f - 0.5f;
+						Vector2 pos = s.Mid + dir * (u * s.Len) + perp * (line * LineSpacing);
+						HenshinFxDraw.DrawHitJaggedFrame(pos,
+							HenshinFxDraw.WithAlpha(new Color(255, 210, 190), 0.8f * fade),
+							0.65f + seg * 0.08f, s.Rot + MathHelper.Pi, (frame + seg + line + 1) % HenshinFxDraw.HitJaggedFrames);
+					}
+				}
+			}
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
 	}
 
 	/// <summary>咬住/咬碎：身前两段咬合；尖牙用 destination Rectangle 画三角（MagicPixel 须封顶宽高，忌无源矩形通天缩放）。ai0=体型倍率。</summary>
@@ -1747,38 +1857,56 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float t = 1f - Projectile.timeLeft / (float)Lifetime;
 			float close = t < 0.45f ? t / 0.45f : 1f - (t - 0.45f) * 0.35f;
 			close = MathHelper.Clamp(close, 0f, 1f);
-			float openGap = MathHelper.Lerp(18f, 2f, close) * _size;
 			bool fireFang = Projectile.ai[2] > 0;
+			float openGap = MathHelper.Lerp(fireFang ? 46f : 18f, fireFang ? 6f : 2f, close) * _size;
 			Color fang = fireFang ? new Color(40, 18, 12, 240) : new Color(18, 18, 22, 240);
 			Color edge = fireFang ? new Color(255, 120, 40, 220) : new Color(55, 55, 62, 220);
 
 			Vector2 origin = Projectile.Center - Main.screenPosition;
-			int teeth = _size >= 1.35f ? 6 : 5;
-			float span = 44f * _size;
-			for (int i = 0; i < teeth; i++)
+			if (fireFang)
 			{
-				float u = (i + 0.5f) / teeth - 0.5f;
-				float x = u * span;
-				float toothW = (6f + (i % 2 == 0 ? 2f : 0f)) * _size;
-				float toothH = (12f + (i % 2 == 0 ? 3f : 0f)) * _size;
-				// 上牙尖向下
-				DrawToothTri(pixel, src, origin + new Vector2(x, -openGap), toothW, toothH, fang, edge, tipDown: true);
-				// 下牙尖向上
-				DrawToothTri(pixel, src, origin + new Vector2(x, openGap), toothW, toothH, fang, edge, tipDown: false);
+				// 两对大弧牙：上下各两颗，左右错开
+				float span = 36f * _size;
+				float[] xs = { -span * 0.5f, span * 0.5f };
+				for (int i = 0; i < xs.Length; i++)
+				{
+					float x = xs[i];
+					float toothW = 18f * _size;
+					float toothH = 28f * _size;
+					DrawToothTri(pixel, src, origin + new Vector2(x, -openGap), toothW, toothH, fang, edge, tipDown: true, fireFang: true);
+					DrawToothTri(pixel, src, origin + new Vector2(x, openGap), toothW, toothH, fang, edge, tipDown: false, fireFang: true);
+				}
+			}
+			else
+			{
+				int teeth = _size >= 1.35f ? 6 : 5;
+				float span = 44f * _size;
+				for (int i = 0; i < teeth; i++)
+				{
+					float u = (i + 0.5f) / teeth - 0.5f;
+					float x = u * span;
+					float toothW = (6f + (i % 2 == 0 ? 2f : 0f)) * _size;
+					float toothH = (12f + (i % 2 == 0 ? 3f : 0f)) * _size;
+					DrawToothTri(pixel, src, origin + new Vector2(x, -openGap), toothW, toothH, fang, edge, tipDown: true);
+					DrawToothTri(pixel, src, origin + new Vector2(x, openGap), toothW, toothH, fang, edge, tipDown: false);
+				}
 			}
 			return false;
 		}
 
 		/// <summary>用多层 destination Rectangle 叠成小三角尖牙（像素尺寸硬封顶，避免通天拉伸）。</summary>
-		private static void DrawToothTri(Texture2D pixel, Rectangle src, Vector2 baseCenter, float w, float h, Color fill, Color edge, bool tipDown)
+		private static void DrawToothTri(Texture2D pixel, Rectangle src, Vector2 baseCenter, float w, float h, Color fill, Color edge, bool tipDown, bool fireFang = false)
 		{
-			w = MathHelper.Clamp(w, 3f, 28f);
-			h = MathHelper.Clamp(h, 6f, 36f);
+			w = MathHelper.Clamp(w, 3f, fireFang ? 40f : 28f);
+			h = MathHelper.Clamp(h, 6f, fireFang ? 48f : 36f);
 			const int layers = 5;
 			for (int layer = 0; layer < layers; layer++)
 			{
 				float k = layer / (float)(layers - 1);
-				float layerW = MathHelper.Lerp(w, 1.5f, k);
+				// 火焰牙：中段更宽再收尖，略呈圆弧牙廓
+				float layerW = fireFang
+					? MathHelper.Lerp(w, 2f, k * k)
+					: MathHelper.Lerp(w, 1.5f, k);
 				float y = tipDown ? baseCenter.Y + k * h : baseCenter.Y - k * h - 1f;
 				int rw = System.Math.Max(1, (int)System.Math.Round(layerW));
 				int rh = System.Math.Max(1, (int)System.Math.Round(h / layers + 0.6f));
@@ -1830,10 +1958,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (dir.LengthSquared() < 1f)
 				dir = new Vector2(owner.direction, 0f);
 			dir.Normalize();
-			float spread = (fired - (Total - 1) * 0.5f) * 0.06f;
-			Vector2 vel = dir.RotatedBy(spread) * 12f;
+			// 直线连发：同向速度，仅出生点轻微错落（不转角度）
+			Vector2 perp = new Vector2(-dir.Y, dir.X);
+			Vector2 spawn = owner.MountedCenter + dir * 12f + perp * ((fired - (Total - 1) * 0.5f) * 3.5f);
+			Vector2 vel = dir * 12f;
 			int per = System.Math.Max(1, Projectile.damage / 4);
-			int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter + dir * 12f, vel,
+			int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, vel,
 				ModContent.ProjectileType<NebulaPulseShardProj>(), per, Projectile.knockBack, Projectile.owner);
 			if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
 				tagged.EasyCrit = EasyCrit;

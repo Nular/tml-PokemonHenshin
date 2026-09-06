@@ -594,4 +594,7 @@ Projectiles: {
 	WaterJetProj.DisplayName: Water Jet Proj
 	DragonRageOrbProj.DisplayName: Dragon Rage Orb Proj
 	DragonRageBarrageProj.DisplayName: Dragon Rage Barrage Proj
+	PsychicWaveBoltProj.DisplayName: Psychic Wave Bolt Proj
+	BubblePopVisualProj.DisplayName: Bubble Pop Visual Proj
+	PsychicHitRingProj.DisplayName: Psychic Hit Ring Proj
 }

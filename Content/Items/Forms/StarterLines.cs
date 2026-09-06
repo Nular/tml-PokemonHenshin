@@ -905,7 +905,22 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> SustainedBeam(nameKey, mult, DustID.PurpleTorch, SustainedBeamProj.ModeHyperBeam, aftermath: true, selfStun: 120, ult: true);
 
 		public static MoveSpec FlareBlitzUlt(string nameKey, float mult = 3.2f)
-			=> Lunge(nameKey, mult, 36, DustID.Torch, recoil: true, recoilFrac: 0.25f, onHitBuff: BuffID.OnFire, key: KeyConflictLevel.ModKeybind);
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<LungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 36,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				Ai0 = DustID.Torch,
+				Ai1 = BuffID.OnFire,
+				Ai2 = 32f, // 突进约 32 格
+				RecoilSelf = true,
+				RecoilFraction = 0.25f,
+				RequiresLungeCooldown = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
 
 		public static int StageDamage(int stage) => 8 + stage * 6;
 	}
@@ -951,7 +966,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F02", 5, "Mods.PokemonHenshin.Items.WartortleForce.DisplayName", PokemonType.Water, 4, "L02_F01", FormPassiveKind.Torrent);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 24, 2.4f, 28);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 32, 2.4f, 28);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseVortex("Mods.PokemonHenshin.Moves.Whirlpool", 3.2f, DustID.Water);
 	}

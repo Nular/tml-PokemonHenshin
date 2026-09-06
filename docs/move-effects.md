@@ -112,7 +112,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk | Code |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|------|
 | L01_F01 | 小火龙 | **猛火**：HP&lt;50% 时火系招式伤害 +20% | 火花 Bolt+OnFire | 抓 MeleeArc（三道**平行**爪痕+扩盒） | 火焰漩涡 HomingLock：自玩家射出，原版 Typhoon 橙红染色，锁定首敌 | 耗 100；无额外后摇 | 三平行爪痕尘；台风染色火矢（不生成灾厄弹） | Low | Done |
-| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Nebula×10（0.7/不追踪/碰炸紫） | 火焰牙 BiteArc+OnFire | 闪焰冲锋 Lunge+Recoil25%+OnFire | 耗 100；Recoil | 星云奥秘外观连发；紫染爆炸碎片；火焰牙尖牙+着火 | Medium | Done |
+| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Nebula×10（0.7/不追踪/碰炸紫） | 火焰牙 BiteArc+OnFire | 闪焰冲锋 Lunge+Recoil25%+OnFire | 耗 100；Recoil | 星云奥秘外观连发；紫染爆炸碎片；火焰牙**两对大弧牙**；闪焰冲锋 **32 格** Fire 帧环绕+火径 | Medium | Done |
 | L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +25%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 FlameCone×10 | 龙爪 Scratch火（**20 格**） | 过热 MouseAoE+OnFire；**5s 伤×0.5** | 耗 100；5s 伤害减半 | 喷射：真 Flames + **Fire 帧**；龙爪 HitJagged **帧**；过热：半径 **15 格**、5 段脉冲 + Fire/FlashImpact **帧** | Medium | Done |
 
 ### 4.2 草系链 L03
@@ -127,15 +127,15 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L02_F01 | 杰尼龟 | **激流**：HP&lt;50% 时水系招式伤害 +20% | 水枪 AquaScepter | 撞击 Lunge+撞击爆 | 泡沫光线 Barrage×64 束状高速 | 耗 100 | 海蓝权杖水流；泡泡枪密集连发 | Low |
-| L02_F02 | 卡咪龟 | **激流**：同上 +20% | 泡沫光线 Barrage（壳弹+Load Bubble） | 咬住 BiteArc | 潮旋 DoTBind（水漩涡缠绕） | 耗 100 | 须 `LoadProjectile(Bubble)`，勿等玩家先用泡泡枪 | Low | Done |
+| L02_F01 | 杰尼龟 | **激流**：HP&lt;50% 时水系招式伤害 +20% | 水枪 AquaScepter | 撞击 Lunge+撞击爆 | 泡沫光线 Barrage×64 束状高速 | 耗 100 | 海蓝权杖水流；泡泡**错落密束**+破裂小泡（少蓝水尘） | Low |
+| L02_F02 | 卡咪龟 | **激流**：同上 +20% | 泡沫光线 Barrage（壳弹+Load Bubble） | 咬住 BiteArc | 潮旋 DoTBind（水漩涡缠绕） | 耗 100 | 须 `LoadProjectile(Bubble)`；错落密束+破裂；勿等玩家先用泡泡枪 | Low | Done |
 | L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每秒回 2 HP | 水炮 Beam（强水柱） | 火箭头锤 Charge→Lunge（短蓄力后头槌） | 加农水炮 Beam；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | `WaterJetProj`：枪口渐进；水炮命中渐缩；加农穿透+每3击爆 | Medium | Done |
 
 ### 4.4 超能链 L12
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，约 ×5 面板） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗 100 | 放大幽灵锤；粉紫弹+延迟追踪 | Medium |
+| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，约 ×5 面板） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗 100 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
 | L12_F02 | 胡地 | **同步**：同上 | 精神强念 Bolt+DefDown | 真气拳 Charge→MeleeArc（蓄力拳） | 预知未来 ChargeBeam+IgnoreDef（蓄力后无视防御一击） | 耗 100；长蓄力 | SoftGlow 紫蓄力圈→`SustainedBeam` HyperBeam（IgnoreDef） | Medium | Done |
 
 ### 4.5 龙系链 L07
@@ -150,7 +150,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 Lunge+Recoil（自损约 25% 造成伤害） | 耗 100；Recoil | 金属撞击火花尘 | Low |
+| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 Lunge+Recoil（自损约 25% 造成伤害） | 耗 100；Recoil | 念力同凯西波动链；金属撞击火花尘 | Low |
 | L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 Bolt+DefDown | 彗星拳 MeleeArc；命中概率 SelfBuff 攻击 +10%（叠最多 2 层，8s） | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | 彗星拳 HitJagged **帧**；破灭：`SustainedBeam` DeathLaser 粗柱跟鼠标 | Medium | Done |
 
 ### 4.7 龙/地链 L15
@@ -171,7 +171,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L09_F01 | 鲤鱼王 | **优游自如**：雨天或夜晚移速 +25% | 跃起 StrikeFall（高跳砸地，低伤） | 撞击 Lunge | 抓狂 Barrage；伤害随 **已损失 HP%** 提高（最高约 +80%） | 耗 100 | 水花跃起；抓狂乱打尘 | Low |
+| L09_F01 | 鲤鱼王 | **优游自如**：雨天或夜晚移速 +25% | 跃起 StrikeFall（高跳砸地，低伤） | 撞击 Lunge | 抓狂 Barrage；伤害随 **已损失 HP%** 提高（最高约 +80%） | 耗 100 | 水花跃起；抓狂：身周半径 **15 格** 杂乱交错爪痕多段 | Low |
 | L09_F02 | 暴鲤龙 | **自信过度**：击杀叠攻 +20%/层，最多 2 层，每层 12s | 水炮 Beam | 咬碎 MeleeArc+DefDown | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | `WaterJet` 跟鼠标；破灭 `SustainedBeam`（方向跟鼠标） | Medium | Done |
 
 ### 4.10 格斗链 L05
@@ -243,3 +243,4 @@
 | 1.5 | 2026-09-06 | Sheet 帧修复 + 射程/持续束：`SustainedBeam`/`WaterJet`/`DigLunge`；Fire/Flash/HitJagged 按帧 |
 | 1.6 | 2026-09-06 | 水柱宽度/渐缩/流动；日光束约 2 格；龙之怒改球体连射（非光束）；见 `docs/fx-knowledge.md` 0.9 |
 | 1.7 | 2026-09-06 | 大招能量条改角色脚下（非右下角）；满充金色向上发散尘约 1 格 |
+| 1.8 | 2026-09-06 | Wave1 落地并验收：抓狂15格三线爪；火焰牙两对弧牙；闪焰32格多线火径+收尾减速；泡沫窄直线+破裂；念力 ShadowBeam 索敌弹射×2+命中紫环；龙波直线 |

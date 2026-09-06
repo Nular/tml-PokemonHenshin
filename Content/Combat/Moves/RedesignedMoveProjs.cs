@@ -73,8 +73,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			Projectile.Center = owner.MountedCenter;
 			bool scatter = Projectile.ai[0] == ModeResonance;
-			int duration = scatter ? 36 : 48;
+			bool bubble = Projectile.ai[0] == ModeBubble;
+			int duration = scatter ? 36 : (bubble ? 36 : 48);
 			int perTick = System.Math.Max(1, (_total + duration - 1) / duration);
+			if (bubble)
+				perTick = System.Math.Max(perTick, 2);
 
 			if (Projectile.owner == Main.myPlayer && _fired < _total)
 			{
@@ -87,6 +90,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 					{
 						spawn = Main.MouseWorld + Main.rand.NextVector2Circular(48f, 48f);
 						vel = Main.rand.NextVector2Circular(2.5f, 2.5f);
+					}
+					else if (bubble)
+					{
+						// 窄直线束：速度随机，横向几乎不散开；飞行保持直线（子弹无摆动）
+						float speedJitter = _speed * Main.rand.NextFloat(0.75f, 1.2f);
+						vel = _dir * speedJitter;
+						Vector2 perp = new Vector2(-_dir.Y, _dir.X);
+						spawn = owner.MountedCenter + _dir * 16f
+							+ perp * Main.rand.NextFloat(-4f, 4f);
 					}
 					else
 					{
@@ -129,11 +141,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>借用原版/灾厄贴图与基础运动的伤害弹。ai0=贴图用 Projectile type。</summary>
+	/// <summary>借用原版贴图与基础运动的伤害弹。ai0=贴图用 Projectile type。</summary>
 	public class BorrowedVisualBoltProj : HenshinMoveProj
 	{
 		private int _texType;
 		private Color _tint = Color.White;
+		private Vector2 _baseVel;
+		private bool _popped;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.WoodenArrowFriendly;
 
@@ -165,6 +179,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				_texType = ProjectileID.Bubble;
 				Main.instance.LoadProjectile(ProjectileID.Bubble);
+				Projectile.scale = Main.rand.NextFloat(0.85f, 1.25f);
 			}
 			else
 				Main.instance.LoadProjectile(_texType);
@@ -179,6 +194,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.scale = 1.35f;
 				Projectile.timeLeft = 180;
 			}
+			_baseVel = Projectile.velocity;
 		}
 
 		public void SetTint(Color c) => _tint = c;
@@ -190,6 +206,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.tileCollide = true;
 			else if (_texType != ProjectileID.RainbowRodBullet)
 				Projectile.tileCollide = false;
+
+			if (_texType == ProjectileID.Bubble)
+				Projectile.localAI[0]++; // 拖尾摆动相位用
 
 			// 共鸣弹：生成 0.5s 后开始追踪
 			if (Projectile.ai[2] > 0.5f)
@@ -207,21 +226,54 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			HenshinProjUtil.HomingAI(Projectile, Homing, HomingTurnRate);
 
-			int dust = _texType switch
+			if (_texType == ProjectileID.Bubble)
 			{
-				_ when _texType == ProjectileID.Seed => DustID.Grass,
-				_ when _texType == ProjectileID.Bubble => DustID.Water,
-				_ when _texType == ProjectileID.RainbowRodBullet => DustID.PinkTorch,
-				_ when _texType == ProjectileID.Typhoon => DustID.Torch,
-				_ => DustID.Smoke
-			};
-			if (Main.rand.NextBool(2) || _texType == ProjectileID.RainbowRodBullet)
+				// 不再刷蓝水尘；小泡拖尾在 PreDraw 画
+			}
+			else
 			{
-				Dust d = Dust.NewDustPerfect(Projectile.Center, dust, Projectile.velocity * 0.1f, 100, _tint, _texType == ProjectileID.RainbowRodBullet ? 1.4f : 1.15f);
-				d.noGravity = true;
+				int dust = _texType switch
+				{
+					_ when _texType == ProjectileID.Seed => DustID.Grass,
+					_ when _texType == ProjectileID.RainbowRodBullet => DustID.PinkTorch,
+					_ when _texType == ProjectileID.Typhoon => DustID.Torch,
+					_ => DustID.Smoke
+				};
+				if (Main.rand.NextBool(2) || _texType == ProjectileID.RainbowRodBullet)
+				{
+					Dust d = Dust.NewDustPerfect(Projectile.Center, dust, Projectile.velocity * 0.1f, 100, _tint, _texType == ProjectileID.RainbowRodBullet ? 1.4f : 1.15f);
+					d.noGravity = true;
+				}
 			}
 			Lighting.AddLight(Projectile.Center, _tint.ToVector3() * 0.35f);
 		}
+
+		private void PopBubbles()
+		{
+			if (_popped || _texType != ProjectileID.Bubble)
+				return;
+			_popped = true;
+			SoundEngine.PlaySound(SoundID.Item54 with { Volume = 0.55f, Pitch = Main.rand.NextFloat(-0.15f, 0.25f) }, Projectile.Center);
+			if (Projectile.owner != Main.myPlayer)
+				return;
+			for (int i = 0; i < 4; i++)
+			{
+				Vector2 v = Main.rand.NextVector2Circular(3.5f, 3.5f);
+				Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, v,
+					ModContent.ProjectileType<BubblePopVisualProj>(), 0, 0f, Projectile.owner,
+					Main.rand.NextFloat(0.25f, 0.55f), 14f);
+			}
+		}
+
+		public override void OnKill(int timeLeft) => PopBubbles();
+
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			PopBubbles();
+			return true;
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone) => PopBubbles();
 
 		public override bool PreDraw(ref Color lightColor)
 		{
@@ -231,7 +283,66 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(drawId);
 			Rectangle frame = tex.Frame();
 			Vector2 origin = frame.Size() * 0.5f;
+			if (_texType == ProjectileID.Bubble)
+			{
+				// 身后两枚缩小泡当粒子（确定性偏移，避免 PreDraw 闪烁）
+				Vector2 back = Projectile.velocity.LengthSquared() > 0.01f
+					? Vector2.Normalize(Projectile.velocity) : Vector2.UnitX;
+				Vector2 perp = new Vector2(-back.Y, back.X);
+				for (int i = 1; i <= 2; i++)
+				{
+					float sway = (float)System.Math.Sin(Projectile.localAI[0] * 0.15f + i) * 3f;
+					Vector2 pos = Projectile.Center - back * (10f * i) + perp * sway;
+					float s = Projectile.scale * (0.35f - i * 0.08f);
+					Color c = Color.White * (0.55f / i);
+					Main.EntitySpriteDraw(tex, pos - Main.screenPosition, frame, c, 0f, origin, s, SpriteEffects.None, 0);
+				}
+			}
 			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, _tint, Projectile.rotation, origin, Projectile.scale, SpriteEffects.None, 0);
+			return false;
+		}
+	}
+
+	/// <summary>无伤小泡视觉（拖尾粒子 / 破裂散片）。ai0=scale，ai1=寿命。</summary>
+	public class BubblePopVisualProj : HenshinMoveProj
+	{
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Bubble;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 8;
+			Projectile.height = 8;
+			Projectile.friendly = false;
+			Projectile.hostile = false;
+			Projectile.timeLeft = 14;
+			Projectile.tileCollide = false;
+			Projectile.penetrate = -1;
+			Projectile.damage = 0;
+		}
+
+		public override void OnSpawn(IEntitySource source)
+		{
+			Main.instance.LoadProjectile(ProjectileID.Bubble);
+			float life = Projectile.ai[1] > 1f ? Projectile.ai[1] : 14f;
+			Projectile.timeLeft = (int)life;
+			Projectile.scale = Projectile.ai[0] > 0.05f ? Projectile.ai[0] : 0.4f;
+		}
+
+		public override void AI()
+		{
+			Projectile.velocity *= 0.92f;
+			Projectile.alpha = (int)(255 * (1f - Projectile.timeLeft / (float)System.Math.Max(1, Projectile.ai[1] > 1f ? Projectile.ai[1] : 14f)));
+		}
+
+		public override bool? CanDamage() => false;
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.Bubble);
+			Rectangle frame = tex.Frame();
+			float fade = 1f - Projectile.alpha / 255f;
+			Color c = Color.White * fade;
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, c, 0f, frame.Size() * 0.5f, Projectile.scale, SpriteEffects.None, 0);
 			return false;
 		}
 	}

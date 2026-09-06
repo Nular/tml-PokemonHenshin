@@ -10,7 +10,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L08_F01", 20, "Mods.PokemonHenshin.Items.MetangForce.DisplayName", PokemonType.Steel, 7, null, FormPassiveKind.ClearBody, secondary: PokemonType.Psychic);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.Confusion", ModContent.ProjectileType<ShadowBallHenshinProj>(), 1.2f, 22, 8f);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.Confusion", ModContent.ProjectileType<PsychicWaveBoltProj>(), 1.2f, 22, 20f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.Tackle", 1.2f, 16, DustID.Iron);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.TakeDown", 3.2f, 30, DustID.Iron, recoil: true, recoilFrac: 0.25f, key: KeyConflictLevel.ModKeybind);
 	}
@@ -82,7 +82,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L12_F01", 28, "Mods.PokemonHenshin.Items.AbraForce.DisplayName", PokemonType.Psychic, 4, null, FormPassiveKind.Synchronize);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.Confusion", ModContent.ProjectileType<ShadowBallHenshinProj>(), 1.1f, 22, 8f);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.Confusion", ModContent.ProjectileType<PsychicWaveBoltProj>(), 1.1f, 22, 20f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.ZenHammer("Mods.PokemonHenshin.Moves.ZenHeadbutt");
 		protected override MoveSpec CreateUltimate() => FormItemUtil.ResonanceScatterUlt("Mods.PokemonHenshin.Moves.Psychic");
 	}

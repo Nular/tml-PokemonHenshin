@@ -21,6 +21,7 @@ description: >-
 | `docs/move-effects.md` | 招式玩法语义 / 接线状态 |
 | `docs/fx-knowledge.md` | FX cookbook、本模已用手法、贴图与踩坑 |
 | `AGENTS.md` | 构建、目录、硬约束入口 |
+| `.cursor/rules/tml-api-docs.mdc` | **全局 alwaysApply**：tModLoader stable API（类表入口见下） |
 
 改特效或招式前先扫一眼上表对应行；缺项就地补进权威文档，不要只写在聊天里。
 
@@ -30,6 +31,8 @@ description: >-
   按候选 ID **有目的**查外观/AI，不要整表灌进上下文。
 - 宝可梦招式含义：https://wiki.52poke.com/wiki/%E6%8B%9B%E5%BC%8F%E5%88%97%E8%A1%A8  
   做某招时打开**该招式页**，抓住「在对战里意味着什么」，再泰拉化。
+- tModLoader API（stable 类表导航）：https://docs.tmodloader.net/docs/stable/annotated.html  
+  **全局规范**见 `.cursor/rules/tml-api-docs.mdc`（alwaysApply）。设计/实现挂钩、字段、生命周期时查此站；从类表点进具体页（如同目录下 `class_mod_projectile.html`、`class_projectile.html`、`class_mod_item.html`、`class_mod_player.html`）。**有目的**打开当前用到的类，勿整表灌进上下文。
 - 特效学习与贴图：`../CalamityOverhaul`（相对本仓库）  
   **只读**抄逻辑 / **拷贝**贴图进 `Assets/Fx/`；**禁止** `modReferences` 大修、禁止运行时依赖 CWR、禁止改 CWR 源码。
 
@@ -38,7 +41,7 @@ description: >-
 在写/改实现代码之前：
 
 1. **读语义**：52poke 该招式页（类型、类别、效果叙述、主题意象）。
-2. **找积木**：射弹 ID 表 + `docs/fx-knowledge.md` 速查 +（可选）CWR 同类特效路径；想几种「真生成 / 壳弹+Load / 本模自绘」组合，择优或组合。
+2. **找积木**：射弹 ID 表 + `docs/fx-knowledge.md` 速查 +（可选）CWR 同类特效；API 行为不确定时查 tModLoader 对应类页；想几种「真生成 / 壳弹+Load / 本模自绘」组合，择优或组合。
 3. **写设计方案（最终预期效果）**：用玩家主观语言描述，同时当作验收标准。建议覆盖：
    - 一眼能认出是哪招（形、色、节奏）
    - 空间尺度（约几格宽/长/半径）
