@@ -45,9 +45,10 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 ## 当前状态与下一步
 
-- **代码（2026-09-06）：** 全 36 形态接线；能量 UI；Stage 6+ FX 主路径已落地：`WaterJet`（渐进/渐缩/流动）、`SolarPrismBeam`、`SustainedBeam`（破灭）、`DragonRageBarrage`（12/32 发抖动球+5格爆）、龙息密 Fire、挖洞突刺等。详见 `docs/fx-knowledge.md`。
+- **代码（2026-09-06）：** 全 36 形态接线；**脚下**大招能量条（`UltimateEnergyUI`，无右下角 HUD）+ 满充金色上飘尘；Stage 6+ FX 主路径已落地：`WaterJet` / `SolarPrismBeam` / `SustainedBeam` / `DragonRageBarrage` / 龙息密 Fire / 挖洞等。详见 `docs/fx-knowledge.md`、`docs/move-effects.md` §2 UI。
 - **已验收基线（Stage≤5）：** 天雷 / 泡沫 Load / 飞叶 Leaf / 咬合尖牙 / 龙波 Nebula。
-- **待游戏内验收：** Stage 6～7 手感收尾（水柱宽度/连续感、日光束、龙怒球晕、龙息密度等本轮已改，须 Reload 确认）；再联机/DPS。
+- **已验收（能量 UI）：** 脚下条 + 满充金尘（2026-09-06 手感确认）。
+- **待游戏内验收：** Stage 6～7 手感收尾（水柱/日光束/龙怒球晕/龙息密度等须 Reload）；再联机/DPS。
 - **进化：** UIState；**ProgressStage 上升时**弹出；`/henshin evolve` 可补弹。
 - **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending。
 - **验证：** 游戏运行中用游戏内 Build + Reload（TML003）；大招默认 **Mouse3**。

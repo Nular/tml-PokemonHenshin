@@ -242,3 +242,4 @@
 | 1.4 | 2026-09-06 | Stage 6+ FX 分批抛光：ThickBeam 模式/日光束金棱/花瓣壳环/Cyclone 涡等；见 `docs/fx-knowledge.md` |
 | 1.5 | 2026-09-06 | Sheet 帧修复 + 射程/持续束：`SustainedBeam`/`WaterJet`/`DigLunge`；Fire/Flash/HitJagged 按帧 |
 | 1.6 | 2026-09-06 | 水柱宽度/渐缩/流动；日光束约 2 格；龙之怒改球体连射（非光束）；见 `docs/fx-knowledge.md` 0.9 |
+| 1.7 | 2026-09-06 | 大招能量条改角色脚下（非右下角）；满充金色向上发散尘约 1 格 |
