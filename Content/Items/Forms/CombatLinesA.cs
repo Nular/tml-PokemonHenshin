@@ -75,7 +75,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L07_F01", 17, "Mods.PokemonHenshin.Items.DratiniForce.DisplayName", PokemonType.Dragon, 6, null, FormPassiveKind.ShedSkin);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonBreath("Mods.PokemonHenshin.Moves.DragonBreath", 1.25f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.15f);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.DragonRage", 3.0f, DustID.Torch);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.DragonRage("Mods.PokemonHenshin.Moves.DragonRage", 3.0f, ult: true);
 	}
 
 	public class DragonairForce : HenshinForceItem

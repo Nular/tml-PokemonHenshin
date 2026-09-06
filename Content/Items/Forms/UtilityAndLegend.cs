@@ -37,7 +37,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(9);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L09_F02", 23, "Mods.PokemonHenshin.Items.GyaradosForce.DisplayName", PokemonType.Water, 9, "L09_F01", FormPassiveKind.Moxie, secondary: PokemonType.Flying);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.HydroPump", 1.6f, DustID.Water, ult: false);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroPump", 1.6f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.5f, brokenArmorTicks: 180, size: 1.45f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.HyperBeamUlt("Mods.PokemonHenshin.Moves.HyperBeam", 4.0f);
 	}
@@ -127,7 +127,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(6);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L15_F01", 33, "Mods.PokemonHenshin.Items.GibleForce.DisplayName", PokemonType.Dragon, 6, null, FormPassiveKind.RoughSkin, secondary: PokemonType.Ground);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.DragonRage", 1.4f, DustID.Torch, ult: false);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonRage("Mods.PokemonHenshin.Moves.DragonRage", 1.4f, ult: false);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.Tackle", 1.3f, 16, DustID.Dirt);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseVortex("Mods.PokemonHenshin.Moves.SandTomb", 3.2f, DustID.Sand);
 	}

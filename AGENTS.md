@@ -21,34 +21,34 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | 路径 | 角色 |
 |------|------|
 | `docs/requirements.md` | **产品唯一真相**（v1.3） |
-| `docs/move-effects.md` | 招式/被动/大招泰拉适配表（v1.3 全形态已接线） |
+| `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
 | `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
+| `docs/fx-knowledge.md` | FX 目录 / cookbook / 踩坑（Living；特效改动先查这里） |
 | `Assets/Forms/` · `Assets/Accessories/` | 36 形态 + 饰品图（非 FX；A13+ 暂复用旧图） |
-| `Assets/Fx/` | 从 CWR **拷贝**的 trail 贴图（`ThunderTrail`/`SoftGlow`/`LightShot`）；无 CWR 运行时依赖 |
-| `Content/Core/` | FormDefinition / Registry / ProgressStage / Keybinds / 反射适配 |
-| `Content/PlayerState/` | HenshinPlayer（能量分存、突进 CD、饰品标志）+ StarterGrant |
-| `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态；`SkyBoltLightning` / `RedesignedMoveProjs` / `Wave2MoveProjs` |
-| `Content/Visual/` | UltimateEnergyUI（右下角能量条） |
-| `Content/Accessories/` · `Items/Accessories/` | 仅变身生效饰品 A01～A21 |
-| `Content/Affinity/` · `Evolution/` · `WeatherField/` · `TerrainEdit/` · `Loot/` · `Net/` | 被动 / 进化 / 天气 / 挖掘 / 获取 / NetOp |
-| `tools/fetch_assets.py` | 从 52poke 拉图（buildIgnore） |
-| 特效 | **优先**原版 `LoadProjectile` / `NewProjectile` 复用；CWR 只读抄逻辑，贴图可拷入 `Assets/Fx`；**禁止**运行时依赖 CWR / 生成灾厄弹；**禁止擅自降级**（见下） |
-| 本地化 | HJSON 含引号/`\n` 须用 `"..."` 或 `'''...'''` |
+| `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame |
+| `Content/Combat/Moves/HenshinFxDraw.cs` | Additive 绘制：`DrawContinuousBeam` / SheetFrame / `ScaleForWorldDiameter` |
+| `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态；`Wave2MoveProjs`（水柱/日棱/龙怒球/破灭等） |
+| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 能量 UI / 饰品 / 被动进化天气挖掘 Net |
 
 ## 特效踩坑与禁止降级（必读）
 
-1. **禁止擅自降级：** 用户点名的参考效果（如神匠霹雳天雷、星云奥秘、吹叶机叶）必须按规格落地。MagicPixel 粗条、跳过原版 AI、A=0「假 Additive」等简化，**未经用户确认不得当作成品**。
-2. **懒加载贴图：** `TextureAssets.Projectile[id]` 未触达前是 1×1 占位。壳弹只画 `Bubble`、从不 `NewProjectile(Bubble)` → 首次无图；用过泡泡枪后才亮。飞叶因真生成 `Leaf` 故正常。壳弹必须 `Main.instance.LoadProjectile` / `ProjectileBorrow.RequestProjectileTexture`。
-3. **Additive + A=0 = 全透明：** XNA `BlendState.Additive` 常用 SourceAlpha；`color.A = 0` 会「有伤无光」。天雷须保留 Alpha，并用本模 `Assets/Fx/ThunderTrail`（黑底白电，Additive 下黑变透明）。
-4. **勿硬套会自管位移的原版 AI：** 跳过 `NebulaArcanum` AI 会导致不飞/不画、只剩远处爆炸碎片。应对：自管壳弹 + 原版贴图/`LoadProjectile`，亡时再生成原版爆炸碎片并紫染色。
-5. **CWR：** 只读参考路径/包络/宽度；贴图拷入 `Assets/Fx`；`build.txt` **不得** `modReferences` 大修。
+1. **禁止擅自降级：** 用户点名参考效果必须按规格落地；MagicPixel 通天条、跳过原版 AI、A=0「假 Additive」等，**未经确认不得当作成品**。
+2. **懒加载贴图：** 壳弹只画不真生成 → 须 `LoadProjectile` / `ProjectileBorrow`（Bubble 踩坑）。
+3. **Additive 保 Alpha；暗色抬亮：** `A=0` 全透明。`#2108ad` 等深色在 Additive 下几乎不可见 → 光晕用抬亮同色相（如 `DragonHaloLit`）。
+4. **连续光束：** 禁止 MagicPixel 通天拉伸（白屏）。用 `DrawContinuousBeam`：SoftGlow **沿路径拉长 + 密叠**；厚度以格为单位（水炮≈1.25、加农≈2.5、日光束≈2）。间距过大 → 虚线。
+5. **大图按世界直径缩放：** `DiffusionCircle` 360px 等须 `ScaleForWorldDiameter(tex, diameterPx)`；裸 `scale=1.7` / `width/96` 会画出超大圈。
+6. **Sprite sheet：** Fire / Flashimpact / HitJagged **禁止整图绘制**，用 `HenshinFxDraw.Draw*Frame`。
+7. **SpawnAtMouse：** `NewProjectile` 坐标是左上角；大 hitbox 须事后 `Center = MouseWorld`；改尺寸先存 Center。
+8. **CWR：** 只读抄逻辑；贴图拷入 `Assets/Fx`；`build.txt` **不得** `modReferences` 大修。
+9. **勿硬套自管位移原版 AI**（Nebula 等）：壳弹自管飞行，亡时再真生成爆炸碎片。
 
 ## 当前状态与下一步
 
-- **代码（2026-09-05）：** 被动+技能1/2+能量大招；全 36 形态接线；能量 UI；撞击/电光一闪 2s CD + 0.25s 无敌。
-- **本轮特效修补：** 皮卡丘/雷丘天雷（`SkyBoltLightning` + `Assets/Fx`）；泡沫 `LoadProjectile(Bubble)`；飞叶=`Leaf`；咬住/咬碎尖牙 Rectangle；龙之波动=星云外观×10（0.7、不追踪）+ 紫染爆炸。
-- **进化：** UIState 确认框；**ProgressStage 上升时**弹出；`/henshin evolve` 可补弹。
-- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；游戏内手感/联机/DPS 验收 pending。
-- **验证：** 御三家二阶看 **史莱姆神/鹿角怪**；大招默认 **Mouse3**；游戏运行中用游戏内 Build + Reload。
-- **下一步：** 验收清单、联机双端、DPS 对标、Rage/肾上腺素。
+- **代码（2026-09-06）：** 全 36 形态接线；能量 UI；Stage 6+ FX 主路径已落地：`WaterJet`（渐进/渐缩/流动）、`SolarPrismBeam`、`SustainedBeam`（破灭）、`DragonRageBarrage`（12/32 发抖动球+5格爆）、龙息密 Fire、挖洞突刺等。详见 `docs/fx-knowledge.md`。
+- **已验收基线（Stage≤5）：** 天雷 / 泡沫 Load / 飞叶 Leaf / 咬合尖牙 / 龙波 Nebula。
+- **待游戏内验收：** Stage 6～7 手感收尾（水柱宽度/连续感、日光束、龙怒球晕、龙息密度等本轮已改，须 Reload 确认）；再联机/DPS。
+- **进化：** UIState；**ProgressStage 上升时**弹出；`/henshin evolve` 可补弹。
+- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending。
+- **验证：** 游戏运行中用游戏内 Build + Reload（TML003）；大招默认 **Mouse3**。
+- **下一步：** 游戏内验收 → 联机双端 → DPS 对标 → Rage/肾上腺素。
 - 新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

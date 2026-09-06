@@ -1,8 +1,11 @@
+using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Damage;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -95,7 +98,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override bool PreDraw(ref Color lightColor)
+		{
+			// ai2>0 或默认：朝向玩家朝向的 HitJagged 帧闪光（DragonTail/IronTail/ShadowClaw/MeteorMash）
+			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
+			float life = Projectile.timeLeft / (float)Lifetime;
+			float rot = dir > 0 ? 0.35f : MathHelper.Pi - 0.35f;
+			int frame = HenshinFxDraw.AgeFrame(Lifetime, Projectile.timeLeft, 3, HenshinFxDraw.HitJaggedFrames);
+			HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.DrawHitJaggedFrame(Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(255, 230, 210), 0.8f * life),
+				0.75f + (Projectile.ai[2] > 0.5f ? 0.2f : 0f), rot, frame);
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
 	}
 
 	public class GenericBoltProj : HenshinMoveProj
@@ -289,7 +305,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class DigBurstProj : HenshinMoveProj
 	{
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.DirtBall;
 
 		public override void SetDefaults()
 		{
@@ -316,11 +332,137 @@ namespace PokemonHenshin.Content.Combat.Moves
 				int tx = (int)(Projectile.Center.X / 16f);
 				int ty = (int)(Projectile.Center.Y / 16f);
 				p.GetModPlayer<TerrainEdit.TerrainBudgetPlayer>().TryMineTile(tx, ty);
+
+				// 出土小 Boulder 装饰（低伤）
+				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, new Vector2(0f, -3f),
+					ModContent.ProjectileType<FallingBoulderProj>(), Math.Max(1, Projectile.damage / 6), 1f, Projectile.owner);
+				if (id >= 0)
+				{
+					Main.projectile[id].scale = 0.25f;
+					Main.projectile[id].timeLeft = 30;
+				}
 			}
-			Dust.NewDustPerfect(Projectile.Center, DustID.Dirt, Main.rand.NextVector2Circular(2f, 2f), 100, default, 1.2f).noGravity = true;
+			for (int i = 0; i < 4; i++)
+				Dust.NewDustPerfect(Projectile.Center, DustID.Dirt, Main.rand.NextVector2Circular(3f, 3f), 100, default, 1.35f).noGravity = true;
+			Dust.NewDustPerfect(Projectile.Center, DustID.Stone, Main.rand.NextVector2Circular(2f, 2f), 100, new Color(160, 110, 70), 1.1f);
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Main.instance.LoadProjectile(ProjectileID.DirtBall);
+			Texture2D dirt = ProjectileBorrow.RequestProjectileTexture(ProjectileID.DirtBall);
+			for (int i = 0; i < 5; i++)
+			{
+				Vector2 off = Main.rand.NextVector2Circular(12f, 12f);
+				Main.EntitySpriteDraw(dirt, Projectile.Center + off - Main.screenPosition, null,
+					new Color(160, 110, 70, 200), Main.rand.NextFloat(MathHelper.TwoPi), dirt.Size() * 0.5f, 0.7f, SpriteEffects.None);
+			}
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// 三地鼠挖洞突进：朝鼠标冲 20 格，从第 3 格起清 5 格宽走廊（玩家镐力；无预算）。
+	/// 直接平移玩家，避免 velocity 顶墙中止。
+	/// </summary>
+	public class DigLungeProj : HenshinMoveProj
+	{
+		private const int Life = 24;
+		private const float DashTiles = 20f;
+		private Vector2 _dir;
+		private Vector2 _startCenter;
+		private float _speed;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 40;
+			Projectile.height = 40;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.timeLeft = Life;
+			Projectile.tileCollide = false;
+			Projectile.penetrate = -1;
+			Projectile.usesLocalNPCImmunity = true;
+			Projectile.localNPCHitCooldown = 8;
+		}
+
+		public override void AI()
+		{
+			Player p = Main.player[Projectile.owner];
+			if (!p.active || p.dead)
+			{
+				Projectile.Kill();
+				return;
+			}
+
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				_dir = Main.MouseWorld - p.Center;
+				if (_dir.LengthSquared() < 1f)
+					_dir = new Vector2(p.direction, 0f);
+				_dir.Normalize();
+				_speed = DashTiles * 16f / Life;
+				_startCenter = p.Center;
+				SoundEngine.PlaySound(SoundID.Item14 with { Pitch = -0.35f }, p.Center);
+			}
+
+			if (Projectile.owner == Main.myPlayer)
+			{
+				// 不用 velocity 顶墙（会中止突进）；直接平移 + 清零速度
+				p.velocity = Vector2.Zero;
+				p.Center += _dir * _speed;
+				p.fallStart = (int)(p.position.Y / 16f);
+				p.immune = true;
+				p.immuneTime = System.Math.Max(p.immuneTime, 12);
+
+				Vector2 perp = new Vector2(-_dir.Y, _dir.X);
+				var budget = p.GetModPlayer<TerrainEdit.TerrainBudgetPlayer>();
+
+				void MineCorridorAt(Vector2 sample)
+				{
+					for (int o = -2; o <= 2; o++)
+					{
+						Vector2 off = perp * (o * 16f);
+						int tx = (int)((sample.X + off.X) / 16f);
+						int ty = (int)((sample.Y + off.Y) / 16f);
+						budget.TryMineWithPlayerPick(tx, ty, maxReachTiles: 22);
+					}
+				}
+
+				// 从挖掘方向第 3 格起清整条走廊，避免贴脸墙立刻卡住
+				for (float dist = 3f * 16f; dist <= DashTiles * 16f; dist += 8f)
+					MineCorridorAt(_startCenter + _dir * dist);
+
+				// 每帧再清身前一小段
+				for (float ahead = 3f * 16f; ahead <= 48f; ahead += 8f)
+					MineCorridorAt(p.Center + _dir * ahead);
+			}
+
+			Projectile.Center = p.Center;
+			Dust.NewDustPerfect(p.Center, DustID.Dirt, -_dir * 3f + Main.rand.NextVector2Circular(2f, 2f), 80, default, 1.4f).noGravity = true;
+			Dust.NewDustPerfect(p.Center, DustID.Sand, Main.rand.NextVector2Circular(3f, 3f), 100, new Color(200, 170, 90), 1.2f).noGravity = true;
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			SoundEngine.PlaySound(SoundID.Item14, target.Center);
+			for (int i = 0; i < 10; i++)
+				Dust.NewDustPerfect(target.Center, DustID.Dirt, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.4f);
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(200, 160, 80), 0.55f), 0.65f);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(180, 140, 70), 0.35f), 0.9f);
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
 	}
 
 	/// <summary>落雷 / 定点打击。</summary>
@@ -398,7 +540,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>突进伤害盒：全程维持含竖直方向的速度。</summary>
+	/// <summary>突进伤害盒：全程维持含竖直方向的速度；SoftGlow 残影 + 尘迹。</summary>
 	public class LungeProj : HenshinMoveProj
 	{
 		private Vector2 _dir;
@@ -443,6 +585,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = p.Center;
 			int dust = Projectile.ai[0] > 0 ? (int)Projectile.ai[0] : DustID.Cloud;
 			Dust.NewDustPerfect(p.Center, dust, -p.velocity * 0.2f, 100, default, 1.2f).noGravity = true;
+			Dust.NewDustPerfect(p.Center - _dir * 12f, dust, -_dir * 2f, 120, default, 1.0f).noGravity = true;
 
 			// 突进前段短无敌
 			if (Projectile.timeLeft >= 10 && Projectile.owner == Main.myPlayer)
@@ -472,7 +615,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override bool PreDraw(ref Color lightColor)
+		{
+			float life = Projectile.timeLeft / 16f;
+			HenshinFxDraw.BeginAdditive();
+			for (int i = 1; i <= 3; i++)
+			{
+				Vector2 pos = Projectile.Center - _dir * (i * 14f);
+				Color c = HenshinFxDraw.WithAlpha(new Color(220, 230, 255), 0.45f * life * (1f - i * 0.2f));
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, pos, c, 0.28f);
+			}
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(Color.White, 0.55f * life), 0.4f);
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
 	}
 
 	public class BeamBoltProj : HenshinMoveProj

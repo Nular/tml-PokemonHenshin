@@ -9,11 +9,12 @@
 | [docs/requirements.md](docs/requirements.md) | 需求规格（权威，**v1.3**） |
 | [docs/move-effects.md](docs/move-effects.md) | 招式 / 被动 / 大招泰拉适配表 |
 | [docs/dev-plan.md](docs/dev-plan.md) | 开发计划（冲突以需求为准） |
+| [docs/fx-knowledge.md](docs/fx-knowledge.md) | Stage 6+ FX 目录 / cookbook / 踩坑（Living） |
 | [AGENTS.md](AGENTS.md) | AI Agent 项目入口 |
 
 ## 状态
 
-**现役代码（2026-09-05）：** 36 形态 + **A01～A21**；被动+技能1/2+能量大招（默认 Mouse3）；能量 UI；全形态招式接线；本轮修补天雷/`Assets/Fx`、泡沫懒加载、飞叶 Leaf、龙波星云紫炸、尖牙；进化 UIState（档位提升弹窗，`/henshin evolve` 可补）。
+**现役代码（2026-09-06）：** 36 形态 + **A01～A21**；被动+技能1/2+能量大招（默认 Mouse3）；能量 UI；全形态招式接线；Stage 6+ FX 抛光（水柱/日棱/破灭/龙怒球体/龙息/挖洞等，见 `docs/fx-knowledge.md`）；进化 UIState（档位提升弹窗，`/henshin evolve` 可补）。
 
 **待游戏内验收：** Build + Reload 后验手感/特效/联机；调试 `/henshin stage`、`/henshin evolve`。  
 **注意：** 御三家二阶进度看 **史莱姆神 / 鹿角怪**，不是史莱姆王。

@@ -182,11 +182,13 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<DigBurstProj>(),
+				ProjectileType = ModContent.ProjectileType<DigLungeProj>(),
 				DamageMultiplier = mult,
 				UseTime = use,
 				ShootSpeed = 0f,
-				KeyConflict = KeyConflictLevel.RightClick
+				RequiresLungeCooldown = true,
+				KeyConflict = KeyConflictLevel.RightClick,
+				NetRisk = NetRisk.High
 			};
 
 		public static MoveSpec Sleep(string nameKey)
@@ -212,7 +214,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
-		public static MoveSpec Scratch(string nameKey, float mult = 1f, int use = 18)
+		public static MoveSpec Scratch(string nameKey, float mult = 1f, int use = 18, float reachTiles = 3.5f)
 			=> new()
 			{
 				NameKey = nameKey,
@@ -221,6 +223,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = use,
 				ShootSpeed = 0f,
 				Knockback = 3f,
+				Ai0 = reachTiles,
 				NetRisk = NetRisk.Low,
 				Collision = CollisionTier.A
 			};
@@ -412,7 +415,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				CountsAsWaterMove = true
 			};
 
-		public static MoveSpec ThickBeam(string nameKey, float mult, int dust, bool aftermath = false, int selfStun = 0, int onHitBuff = 0, bool ignoreDef = false, bool ult = true)
+		public static MoveSpec ThickBeam(string nameKey, float mult, int dust, bool aftermath = false, int selfStun = 0, int onHitBuff = 0, bool ignoreDef = false, bool ult = true, int beamMode = 0)
 			=> new()
 			{
 				NameKey = nameKey,
@@ -423,12 +426,69 @@ namespace PokemonHenshin.Content.Items.Forms
 				Knockback = 2.5f,
 				Ai0 = dust,
 				Ai1 = onHitBuff,
+				Ai2 = beamMode,
 				IsRangedProjectile = true,
 				IgnoreDefensePartial = ignoreDef,
 				AftermathDamagePenaltyTicks = aftermath ? 180 : 0,
 				AftermathDamagePenalty = aftermath ? 0.5f : 1f,
 				SelfStunTicks = selfStun > 0 ? selfStun : (aftermath ? 90 : 0),
 				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+			};
+
+		/// <summary>持续瞄准光束：破坏光线等。ShootSpeed=0，AI 跟鼠标。龙之怒请用 <see cref="DragonRage"/>。</summary>
+		public static MoveSpec SustainedBeam(string nameKey, float mult, int dust, int beamMode, bool aftermath = false, int selfStun = 0, bool ignoreDef = false, bool ult = true)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<SustainedBeamProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult ? 48 : 28,
+				ShootSpeed = 0f,
+				Knockback = 2.5f,
+				Ai0 = dust,
+				Ai2 = beamMode,
+				IsRangedProjectile = true,
+				IgnoreDefensePartial = ignoreDef,
+				AftermathDamagePenaltyTicks = aftermath ? 180 : 0,
+				AftermathDamagePenalty = aftermath ? 0.5f : 1f,
+				SelfStunTicks = selfStun > 0 ? selfStun : (aftermath ? 120 : 0),
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+			};
+
+		/// <summary>龙之怒：技能 12 / 大招 32 发抖动球体，命中 5 格爆。ai2：0 技能 / 1 大招。</summary>
+		public static MoveSpec DragonRage(string nameKey, float mult, bool ult = true)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DragonRageBarrageProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult ? 48 : 28,
+				ShootSpeed = 0f,
+				Knockback = 2.2f,
+				Ai0 = DustID.DungeonWater,
+				Ai2 = ult ? DragonRageBarrageProj.ModeUlt : DragonRageBarrageProj.ModeSkill,
+				IsRangedProjectile = true,
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+			};
+
+		/// <summary>水柱：ai2=0 水炮（不穿透、命中渐缩）；ai2=1 加农水炮（穿透+每3击爆）。</summary>
+		public static MoveSpec WaterJet(string nameKey, float mult, bool cannon = false, bool aftermath = false, int selfStun = 0, bool ult = false)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<WaterJetProj>(),
+				DamageMultiplier = mult,
+				UseTime = ult || cannon ? 48 : 26,
+				ShootSpeed = 0f,
+				Knockback = 2.2f,
+				Ai0 = DustID.Water,
+				Ai2 = cannon ? WaterJetProj.ModeCannon : WaterJetProj.ModePump,
+				IsRangedProjectile = true,
+				CountsAsWaterMove = true,
+				AftermathDamagePenaltyTicks = aftermath ? 180 : 0,
+				AftermathDamagePenalty = aftermath ? 0.5f : 1f,
+				SelfStunTicks = selfStun > 0 ? selfStun : (aftermath ? 90 : 0),
+				KeyConflict = ult || cannon ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
 			};
 
 		public static MoveSpec MouseAoE(string nameKey, float mult, int dust, int buff = 0, bool aftermath = false, bool ignoreDef = false)
@@ -457,7 +517,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				DamageMultiplier = mult,
 				UseTime = 55,
 				ShootSpeed = 0f,
-				Ai0 = DustID.ChlorophyteWeapon,
+				Ai0 = DustID.GoldFlame,
 				CountsAsGrassMove = true,
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
@@ -612,7 +672,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
-		public static MoveSpec BiteArc(string nameKey, float mult = 1.25f, int brokenArmorTicks = 0, float size = 1f)
+		public static MoveSpec BiteArc(string nameKey, float mult = 1.25f, int brokenArmorTicks = 0, float size = 1f, int onFireTicks = 0)
 			=> new()
 			{
 				NameKey = nameKey,
@@ -622,7 +682,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				ShootSpeed = 0f,
 				Knockback = 3.5f,
 				Ai0 = size,
-				Ai1 = brokenArmorTicks
+				Ai1 = brokenArmorTicks,
+				Ai2 = onFireTicks
 			};
 
 		/// <summary>龙之波动：10 枚星云奥秘同款弹（70%、不穿透、不追踪、碰撞爆炸）。</summary>
@@ -841,7 +902,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			};
 
 		public static MoveSpec HyperBeamUlt(string nameKey, float mult = 4.2f)
-			=> ThickBeam(nameKey, mult, DustID.PurpleTorch, aftermath: true, selfStun: 120);
+			=> SustainedBeam(nameKey, mult, DustID.PurpleTorch, SustainedBeamProj.ModeHyperBeam, aftermath: true, selfStun: 120, ult: true);
 
 		public static MoveSpec FlareBlitzUlt(string nameKey, float mult = 3.2f)
 			=> Lunge(nameKey, mult, 36, DustID.Torch, recoil: true, recoilFrac: 0.25f, onHitBuff: BuffID.OnFire, key: KeyConflictLevel.ModKeybind);
@@ -864,7 +925,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F02", 2, "Mods.PokemonHenshin.Items.CharmeleonForce.DisplayName", PokemonType.Fire, 4, "L01_F01", FormPassiveKind.Blaze);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.35f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Slash("Mods.PokemonHenshin.Moves.FireFang", 1.3f, 20, DustID.Torch);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.FireFang", 1.3f, onFireTicks: 180);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.FlareBlitzUlt("Mods.PokemonHenshin.Moves.FlareBlitz");
 	}
 
@@ -873,7 +934,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F03", 3, "Mods.PokemonHenshin.Items.CharizardForce.DisplayName", PokemonType.Fire, 7, "L01_F02", FormPassiveKind.SolarPower, secondary: PokemonType.Flying);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.FlameCone("Mods.PokemonHenshin.Moves.Flamethrower", 1.55f, 10);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Scratch("Mods.PokemonHenshin.Moves.DragonClaw", 1.4f, 16);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.Scratch("Mods.PokemonHenshin.Moves.DragonClaw", 1.4f, 16, reachTiles: 20f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseAoE("Mods.PokemonHenshin.Moves.Overheat", 4.0f, DustID.Torch, BuffID.OnFire, aftermath: true);
 	}
 
@@ -899,9 +960,9 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F03", 6, "Mods.PokemonHenshin.Items.BlastoiseForce.DisplayName", PokemonType.Water, 7, "L02_F02", FormPassiveKind.RainDish);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.HydroPump", 1.7f, DustID.Water, ult: false);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroPump", 1.7f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.SkullBash", 1.6f, 34, DustID.Water);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.ThickBeam("Mods.PokemonHenshin.Moves.HydroCannon", 4.0f, DustID.Water, aftermath: true, selfStun: 90);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroCannon", 4.0f, cannon: true, aftermath: true, selfStun: 90, ult: true);
 	}
 
 	public class BulbasaurForce : HenshinForceItem

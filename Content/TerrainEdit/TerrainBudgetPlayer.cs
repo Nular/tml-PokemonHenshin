@@ -75,6 +75,40 @@ namespace PokemonHenshin.Content.TerrainEdit
 			return true;
 		}
 
+		/// <summary>
+		/// 挖洞突进专用：按玩家镐力挖砖。无秒/分预算限制（走廊需连续清砖）；
+		/// 仍受黑名单、镐力、InWorld、maxReachTiles 约束。通用 <see cref="TryMineTile"/> 仍走预算。
+		/// </summary>
+		public bool TryMineWithPlayerPick(int x, int y, int maxReachTiles = 22)
+		{
+			HenshinPlayer hp = Player.GetModPlayer<HenshinPlayer>();
+			if (hp.IsPhasing)
+				return false;
+
+			if (IsBlacklisted(x, y))
+				return false;
+
+			int px = (int)(Player.Center.X / 16f);
+			int py = (int)(Player.Center.Y / 16f);
+			if (System.Math.Abs(x - px) > maxReachTiles || System.Math.Abs(y - py) > maxReachTiles)
+				return false;
+
+			if (!WorldGen.InWorld(x, y) || Main.tile[x, y] == null || !Main.tile[x, y].HasTile)
+				return false;
+
+			Item pickItem = Player.GetBestPickaxe();
+			int pickPower = pickItem != null ? pickItem.pick : 1;
+			if (pickPower < 1)
+				pickPower = 1;
+
+			bool hadTile = Main.tile[x, y].HasTile;
+			Player.PickTile(x, y, pickPower);
+			if (!hadTile)
+				return false;
+
+			return !Main.tile[x, y].HasTile;
+		}
+
 		private bool Reject()
 		{
 			if (Main.netMode == NetmodeID.Server)

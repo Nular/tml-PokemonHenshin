@@ -203,6 +203,9 @@ namespace PokemonHenshin.Content.Combat
 			}
 
 			int id = Projectile.NewProjectile(source, spawn, shootVel, move.ProjectileType, damage, knockback, player.whoAmI, move.Ai0, move.Ai1, move.Ai2);
+			// NewProjectile 的 position 是左上角；大 AoE 若不校正会偏到鼠标右下。
+			if (id >= 0 && id < Main.maxProjectiles && move.SpawnAtMouse)
+				Main.projectile[id].Center = Main.MouseWorld;
 			if (id >= 0 && id < Main.maxProjectiles && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
 			{
 				tagged.EasyCrit = move.EasyCrit;

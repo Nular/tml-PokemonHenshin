@@ -587,4 +587,11 @@ Projectiles: {
 	SkyBoltRainUltProj.DisplayName: Sky Bolt Rain Ult Proj
 	NebulaPulseDirectorProj.DisplayName: Nebula Pulse Director Proj
 	NebulaPulseShardProj.DisplayName: Nebula Pulse Shard Proj
+	GroundSpikeStabProj.DisplayName: Ground Spike Stab Proj
+	SolarPrismBeamProj.DisplayName: Solar Prism Beam Proj
+	DigLungeProj.DisplayName: Dig Lunge Proj
+	SustainedBeamProj.DisplayName: Sustained Beam Proj
+	WaterJetProj.DisplayName: Water Jet Proj
+	DragonRageOrbProj.DisplayName: Dragon Rage Orb Proj
+	DragonRageBarrageProj.DisplayName: Dragon Rage Barrage Proj
 }

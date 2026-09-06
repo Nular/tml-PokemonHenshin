@@ -112,8 +112,8 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk | Code |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|------|
 | L01_F01 | 小火龙 | **猛火**：HP&lt;50% 时火系招式伤害 +20% | 火花 Bolt+OnFire | 抓 MeleeArc（三道**平行**爪痕+扩盒） | 火焰漩涡 HomingLock：自玩家射出，原版 Typhoon 橙红染色，锁定首敌 | 耗 100；无额外后摇 | 三平行爪痕尘；台风染色火矢（不生成灾厄弹） | Low | Done |
-| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Nebula×10（0.7/不追踪/碰炸紫） | 火焰牙 MeleeArc+OnFire | 闪焰冲锋 Lunge+Recoil25%+OnFire | 耗 100；Recoil | 星云奥秘外观连发；紫染爆炸碎片 | Medium | Done |
-| L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +25%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 FlameCone×10 | 龙爪 Scratch火 | 过热 MouseAoE+OnFire；**5s 伤×0.5** | 耗 100；5s 伤害减半 | 指针大环火爆 | Medium | Done |
+| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Nebula×10（0.7/不追踪/碰炸紫） | 火焰牙 BiteArc+OnFire | 闪焰冲锋 Lunge+Recoil25%+OnFire | 耗 100；Recoil | 星云奥秘外观连发；紫染爆炸碎片；火焰牙尖牙+着火 | Medium | Done |
+| L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +25%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 FlameCone×10 | 龙爪 Scratch火（**20 格**） | 过热 MouseAoE+OnFire；**5s 伤×0.5** | 耗 100；5s 伤害减半 | 喷射：真 Flames + **Fire 帧**；龙爪 HitJagged **帧**；过热：半径 **15 格**、5 段脉冲 + Fire/FlashImpact **帧** | Medium | Done |
 
 ### 4.2 草系链 L03
 
@@ -121,7 +121,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L03_F01 | 妙蛙种子 | **茂盛**：HP&lt;50% 时草系招式伤害 +20% | 藤鞭 Whip（皮鞭级草尘鞭） | 撞击 Lunge+撞击爆 | 种子机关枪 Barrage×64+EasyCrit | 耗 100 | 草/叶绿尘鞭身；Seed 束状连发 | Low |
 | L03_F02 | 妙蛙草 | **茂盛**：同上 +20% | 飞叶快刀 Spread×5（吹叶机 Leaf） | 咬住 BiteArc 尖牙 | 种子炸弹 Bolt/AoEBurst+EasyCrit（落点小爆） | 耗 100 | 真 Leaf + 绿尘；咬合尖牙 | Low | Done |
-| L03_F03 | 妙蛙花 | **叶绿素**：白天移速 +35% | 污泥炸弹 Bolt+Poison | 花瓣舞 AoEBurst；释放后自身短混乱（1.5s 轻失控或伤害反噬 debuff） | 日光束 ChargeBeam（蓄力 ~0.8s 后强光束） | 耗 100；蓄力前摇 | 污泥：毒尘；花瓣：粉尘环；日光束：原版叶绿光束类尘线 | Medium |
+| L03_F03 | 妙蛙花 | **叶绿素**：白天移速 +35% | 污泥炸弹 Bolt+Poison | 花瓣舞 AoEBurst；释放后自身短混乱（1.5s 轻失控或伤害反噬 debuff） | 日光束 ChargeBeam（蓄力 ~0.8s 后强光束） | 耗 100；蓄力前摇 | 污泥：毒尘；花瓣：半径 **15 格**壳环；日光束：蓄力→`SolarPrismBeam` 持续金棱 **~100 tick** 跟鼠标 | Medium | Done |
 
 ### 4.3 水系链 L02
 
@@ -129,65 +129,65 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L02_F01 | 杰尼龟 | **激流**：HP&lt;50% 时水系招式伤害 +20% | 水枪 AquaScepter | 撞击 Lunge+撞击爆 | 泡沫光线 Barrage×64 束状高速 | 耗 100 | 海蓝权杖水流；泡泡枪密集连发 | Low |
 | L02_F02 | 卡咪龟 | **激流**：同上 +20% | 泡沫光线 Barrage（壳弹+Load Bubble） | 咬住 BiteArc | 潮旋 DoTBind（水漩涡缠绕） | 耗 100 | 须 `LoadProjectile(Bubble)`，勿等玩家先用泡泡枪 | Low | Done |
-| L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每秒回 2 HP | 水炮 Beam（强水柱） | 火箭头锤 Charge→Lunge（短蓄力后头槌） | 加农水炮 Beam；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | 水炮粗柱；加农：更大水柱+冲击尘 | Medium |
+| L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每秒回 2 HP | 水炮 Beam（强水柱） | 火箭头锤 Charge→Lunge（短蓄力后头槌） | 加农水炮 Beam；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | `WaterJetProj`：枪口渐进；水炮命中渐缩；加农穿透+每3击爆 | Medium | Done |
 
 ### 4.4 超能链 L12
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，约 ×5 面板） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗 100 | 放大幽灵锤；粉紫弹+延迟追踪 | Medium |
-| L12_F02 | 胡地 | **同步**：同上 | 精神强念 Bolt+DefDown | 真气拳 Charge→MeleeArc（蓄力拳） | 预知未来 ChargeBeam+IgnoreDef（蓄力后无视防御一击） | 耗 100；长蓄力 | 蓄力圈尘→爆发紫光 | Medium |
+| L12_F02 | 胡地 | **同步**：同上 | 精神强念 Bolt+DefDown | 真气拳 Charge→MeleeArc（蓄力拳） | 预知未来 ChargeBeam+IgnoreDef（蓄力后无视防御一击） | 耗 100；长蓄力 | SoftGlow 紫蓄力圈→`SustainedBeam` HyperBeam（IgnoreDef） | Medium | Done |
 
 ### 4.5 龙系链 L07
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L07_F01 | 迷你龙 | **蜕皮**：每 5s 约 15% 概率清除自身 1 个可清除 debuff | 龙息 Spread/Bolt+Stun（概率短僵） | 咬住 MeleeArc | 龙之怒 Beam（固定主题冲击波，中等伤） | 耗 100 | 龙息雾尘；怒波直线尘 | Low |
-| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 MeleeArc（高击退） | 暴风 Spread/AoEBurst+Stun | 耗 100 | 同火恐龙龙波；紫染 | Medium | Done |
-| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 AoEBurst+Stun | 龙之俯冲 Lunge+Stun | 逆鳞 Barrage/MeleeArc 连段；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 俯冲残影；逆鳞多段爪+火/龙尘 | Medium |
+| L07_F01 | 迷你龙 | **蜕皮**：每 5s 约 15% 概率清除自身 1 个可清除 debuff | 龙息 Spread/Bolt+Stun（概率短僵） | 咬住 MeleeArc | 龙之怒 Barrage（12/32 抖动球+5格爆） | 耗 100 | 龙息：**128 格** Fire 帧线；怒：`DragonRageBarrage` SoftGlow 球 | Low | Done |
+| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 MeleeArc（高击退） | 暴风 Spread/AoEBurst+Stun | 耗 100 | 同火恐龙龙波；紫染；龙尾 HitJagged；暴风 Typhoon+Cyclone | Medium | Done |
+| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 AoEBurst+Stun | 龙之俯冲 Lunge+Stun | 逆鳞 Barrage/MeleeArc 连段；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 俯冲 SoftGlow 残影；逆鳞 GenericSlash+HitJagged | Medium | Done |
 
 ### 4.6 钢/超能链 L08（Excel：铁哑铃→金属怪）
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 Lunge+Recoil（自损约 25% 造成伤害） | 耗 100；Recoil | 金属撞击火花尘 | Low |
-| L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 Bolt+DefDown | 彗星拳 MeleeArc；命中概率 SelfBuff 攻击 +10%（叠最多 2 层，8s） | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | 彗星拳光拳尘；破灭光线粗束 | Medium |
+| L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 Bolt+DefDown | 彗星拳 MeleeArc；命中概率 SelfBuff 攻击 +10%（叠最多 2 层，8s） | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | 彗星拳 HitJagged **帧**；破灭：`SustainedBeam` DeathLaser 粗柱跟鼠标 | Medium | Done |
 
 ### 4.7 龙/地链 L15
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Beam | 撞击 Lunge | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | 沙尘环；龙怒冲击波 | Medium |
+| L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Barrage | 撞击 Lunge | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | 龙怒 `DragonRageBarrage` 技能12发；流沙直径 **16 格** Cyclone+Fog 沙黄 | Medium | Done |
 | L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（更大） | 流星群 Barrage/AoEBurst；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | 同龙波；紫染爆炸 | Medium | Done |
 
 ### 4.8 幽灵链 L06
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L06_F01 | 鬼斯通 | **飘浮**：飞行能量视为强化（默认池 ×2.5 或近似无限飞，仍禁坐骑）；**不**给永久穿墙；**无 Phase 招式** | 暗影球 Bolt+DefDown | 舌舔 MeleeArc+Stun（短硬直，**非**穿障） | 催眠术 Sleep（对普通怪强；Boss 改为强 Slow ~2s） | 耗 100 | 影球暗影尘；舌舔近距；催眠：催眠符号尘/暗影 | Medium |
-| L06_F02 | 耿鬼 | **飘浮**：同上强化飞 | 污泥炸弹 Bolt+Poison | 暗影爪 MeleeArc+EasyCrit | 恶之波动 Beam/Spread+EasyCrit | 耗 100 | 毒污泥；暗影爪；暗波动紫色锥形尘 | Medium |
+| L06_F01 | 鬼斯通 | **飘浮**：飞行能量视为强化（默认池 ×2.5 或近似无限飞，仍禁坐骑）；**不**给永久穿墙；**无 Phase 招式** | 暗影球 Bolt+DefDown | 舌舔 MeleeArc+Stun（短硬直，**非**穿障） | 催眠术 Sleep（对普通怪强；Boss 改为强 Slow ~2s） | 耗 100 | 暗影球 SoftGlow；舌舔短弧；催眠 SoftGlow 环 | Medium | Done |
+| L06_F02 | 耿鬼 | **飘浮**：同上强化飞 | 污泥炸弹 Bolt+Poison | 暗影爪 MeleeArc+EasyCrit | 恶之波动 Beam/Spread+EasyCrit | 耗 100 | 毒污泥；暗影爪 HitJagged；恶波动 ShadowBeam+LightShot 锥 | Medium | Done |
 
 ### 4.9 水/飞鱼链 L09
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L09_F01 | 鲤鱼王 | **优游自如**：雨天或夜晚移速 +25% | 跃起 StrikeFall（高跳砸地，低伤） | 撞击 Lunge | 抓狂 Barrage；伤害随 **已损失 HP%** 提高（最高约 +80%） | 耗 100 | 水花跃起；抓狂乱打尘 | Low |
-| L09_F02 | 暴鲤龙 | **自信过度**：击杀叠攻 +20%/层，最多 2 层，每层 12s | 水炮 Beam | 咬碎 MeleeArc+DefDown | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | 水炮；破灭光线 | Medium |
+| L09_F02 | 暴鲤龙 | **自信过度**：击杀叠攻 +20%/层，最多 2 层，每层 12s | 水炮 Beam | 咬碎 MeleeArc+DefDown | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | `WaterJet` 跟鼠标；破灭 `SustainedBeam`（方向跟鼠标） | Medium | Done |
 
 ### 4.10 格斗链 L05
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +30% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 撞击 Lunge（2s CD + 0.25s 无敌；速/距约半） | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | 可见四石；X 尘 + 前冲残影 | Medium |
-| L05_F02 | 豪力 | **毅力**：同上 +30% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 落石；手刀；爆拳冲击波尘 | Medium |
-| L05_F03 | 怪力 | **毅力**：同上 +30% | 尖石攻击 Bolt+EasyCrit | 十字劈 MeleeArc+EasyCrit | 近身战 Barrage/MeleeArc；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 尖石；连殴近战尘 | Medium |
+| L05_F02 | 豪力 | **毅力**：同上 +30% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 落石 SoftGlow；劈瓦 **20 格**线斩 + HitJagged/FlashImpact **帧**；爆拳 FlashImpact **帧** | Medium | Done |
+| L05_F03 | 怪力 | **毅力**：同上 +30% | 尖石攻击 Bolt+EasyCrit | 十字劈 MeleeArc+EasyCrit | 近身战 Barrage/MeleeArc；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 尖石；十字劈 X LightShot；近身战 HitJagged 多段 | Medium | Done |
 
 ### 4.11 飞行链 L11
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（原版 Typhoon **单帧**深蓝贴地；盒随帧） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime；与撞击共用突进 CD） | 耗 100 | 单团贴地旋风；尖角尘锥 | Medium |
-| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 AoEBurst+Stun | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 强风场尘；全身能量撞 | Medium |
+| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 AoEBurst+Stun | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 暴风 Typhoon+Cyclone；Lunge SoftGlow 残影 | Medium | Done |
 
 ### 4.12 电系链 L04
 
@@ -201,13 +201,13 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 撞击 Lunge | 岩崩 AoEBurst+Stun | 耗 100 | 岩石弹与落石尘 | Low |
-| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 铁尾 MeleeArc+DefDown | 舍身冲撞 Lunge+Recoil（本被动免自伤） | 耗 100；Recoil 被被动抵消 | 铁尾金属火花；全力冲撞 | Medium |
+| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 铁尾 MeleeArc+DefDown | 舍身冲撞 Lunge+Recoil（本被动免自伤） | 耗 100；Recoil 被被动抵消 | 铁尾 HitJagged；冲撞 SoftGlow 残影 | Medium | Done |
 
 ### 4.14 传说 L16 / L14 / L17
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 ×1.5 | 空气爆炸 Bolt/AoEBurst+EasyCrit | 神鸟猛击 Charge→Lunge | 气旋攻击 AoEBurst/Field+DefDown（必降防） | 耗 100 | 气压爆；蓄力猛击；龙卷风尘柱 | High |
+| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 ×1.5 | 空气爆炸 Bolt/AoEBurst+EasyCrit | 神鸟猛击 Charge→Lunge | 气旋攻击 AoEBurst/Field+DefDown（必降防） | 耗 100 | 空气爆 DiffusionCircle+Fog；Lunge SoftGlow；气旋 Typhoon+Cyclone | High | Done |
 | L14_F01 | 超梦 | **压迫感**：×1.5 | 精神强念 Bolt+DefDown | 意念头锤 MeleeArc+Stun | 精神击破 Beam/AoEBurst+IgnoreDef | 耗 100 | 强念紫爆；实体化念力刃/球 | High |
 | L17_F01 | 烈空坐 | **气闸**：无视天气/昼夜，全招式伤害 ×1.7 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 Lunge/Beam+IgnoreDef；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 同龙波；终局一击另见大招 | High | Done |
 
@@ -216,7 +216,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L10_F01 | 地鼠 | **沙隐**（补全）：地下/洞穴移速 +20%；挖速 +30% | 掷泥 Bolt+Slow（泥浆降命中感→减速） | 撞击 Lunge | 挖洞爆发 Dig→AoEBurst（短潜行出土爆炸；吃挖掘预算） | 耗 100；挖砖需服务端校验 | 泥尘；出土碎屑 KillTile 尘 | High |
-| L10_F02 | 三地鼠 | **沙隐**：同上 | 三连刺 Barrage/MeleeArc（三连戳） | 挖洞 Dig（短位移潜地，可接出土） | 地裂 AoEBurst/Field（地面裂伤波；可轻改地形须预算） | 耗 100；地形变更 High 同步 | 三刺；挖洞；地裂纹石尘 | High |
+| L10_F02 | 三地鼠 | **沙隐**：同上 | 三连刺 Barrage/MeleeArc（三连戳） | 挖洞 Dig（短位移潜地，可接出土） | 地裂 AoEBurst/Field（地面裂伤波；可轻改地形须预算） | 耗 100；地形变更 High 同步 | 三连刺 **8 格**；挖洞 `DigLungeProj` 冲 **20 格**+镐力走廊挖砖；地裂波前小石 | High | Done |
 
 ---
 
@@ -239,3 +239,6 @@
 | 1.0 | 2026-09-04 | 初版：Excel 全表泰拉适配 + 地鼠补全；Status=Design |
 | 1.2 | 2026-09-05 | 点名 7 形态手感落地；能量 UI C |
 | 1.3 | 2026-09-05 | 全 36 形态招式/大招按 Redesigned+Wave2 积木接线；Code 列 Done |
+| 1.4 | 2026-09-06 | Stage 6+ FX 分批抛光：ThickBeam 模式/日光束金棱/花瓣壳环/Cyclone 涡等；见 `docs/fx-knowledge.md` |
+| 1.5 | 2026-09-06 | Sheet 帧修复 + 射程/持续束：`SustainedBeam`/`WaterJet`/`DigLunge`；Fire/Flash/HitJagged 按帧 |
+| 1.6 | 2026-09-06 | 水柱宽度/渐缩/流动；日光束约 2 格；龙之怒改球体连射（非光束）；见 `docs/fx-knowledge.md` 0.9 |
