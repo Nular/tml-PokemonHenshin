@@ -933,6 +933,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>落石导演：ai1=数量，落在鼠标附近。</summary>
+	/// <summary>岩崩导演：ai1=数量，ai2=水平半宽（像素，0→80）。落点在指针区，下落微偏指针。</summary>
 	public class RockSlideDirectorProj : HenshinMoveProj
 	{
 		private int _spawned;
@@ -955,6 +956,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.owner != Main.myPlayer)
 				return;
 			int total = (int)System.Math.Max(1, Projectile.ai[1]);
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				// 每 4 tick 一石；留余量避免未发完就结束
+				Projectile.timeLeft = System.Math.Max(Projectile.timeLeft, total * 4 + 8);
+			}
 			if (_spawned >= total)
 			{
 				Projectile.Kill();
@@ -962,10 +969,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			if (Projectile.timeLeft % 4 == 0)
 			{
-				Vector2 spawn = Projectile.Center + new Vector2(Main.rand.NextFloat(-80f, 80f), -180f - Main.rand.NextFloat(40f));
-				Vector2 vel = new Vector2(Main.rand.NextFloat(-1.5f, 1.5f), 12f);
+				float halfW = Projectile.ai[2] > 1f ? Projectile.ai[2] : 80f;
+				Vector2 target = Projectile.Center + new Vector2(Main.rand.NextFloat(-halfW, halfW), Main.rand.NextFloat(-24f, 24f));
+				Vector2 spawn = target + new Vector2(Main.rand.NextFloat(-halfW * 0.25f, halfW * 0.25f), -180f - Main.rand.NextFloat(40f));
+				Vector2 toTarget = target - spawn;
+				if (toTarget.Y < 8f)
+					toTarget.Y = 8f;
+				Vector2 vel = toTarget.SafeNormalize(Vector2.UnitY) * 15f;
+				vel.X = MathHelper.Clamp(vel.X, -8f, 8f);
+				vel.Y = Math.Max(10f, vel.Y);
+				// ai0=1：落地触发 1 格半径范围伤
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, vel,
-					ModContent.ProjectileType<FallingBoulderProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+					ModContent.ProjectileType<FallingBoulderProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner, 1f);
 				if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
 					tagged.EasyCrit = EasyCrit;
 				_spawned++;
@@ -976,6 +991,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
+	/// <summary>下落棕石。ai0&gt;0.5：着地/死亡时生成半径 1 格范围伤（岩崩）。</summary>
 	public class FallingBoulderProj : HenshinMoveProj
 	{
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Boulder;
@@ -1006,6 +1022,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Dust.NewDustPerfect(Projectile.Center, DustID.Stone, Main.rand.NextVector2Circular(5f, 5f), 80, new Color(160, 110, 70), 1.3f);
 			for (int i = 0; i < 6; i++)
 				Dust.NewDustPerfect(Projectile.Center, DustID.Smoke, Main.rand.NextVector2Circular(3f, 3f), 100, default, 1.2f).noGravity = true;
+
+			if (Projectile.ai[0] > 0.5f && Projectile.owner == Main.myPlayer)
+			{
+				Vector2 at = Projectile.Center;
+				int aoe = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at, Vector2.Zero,
+					ModContent.ProjectileType<RockShatterBurstProj>(), Projectile.damage, Projectile.knockBack * 0.85f, Projectile.owner, 1f);
+				if (aoe >= 0)
+				{
+					Main.projectile[aoe].Center = at;
+					if (Main.projectile[aoe].ModProjectile is IHenshinMoveProj tagged)
+						tagged.EasyCrit = EasyCrit;
+				}
+			}
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -2617,55 +2646,85 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			bool sand = IsSand;
-			Color tint = sand
-				? HenshinFxDraw.WithAlpha(new Color(220, 190, 90), 0.85f)
-				: HenshinFxDraw.WithAlpha(new Color(60, 140, 255), 0.85f);
-			Color fogC = sand
-				? HenshinFxDraw.WithAlpha(new Color(210, 175, 85), 0.5f)
-				: HenshinFxDraw.WithAlpha(new Color(100, 180, 255), 0.4f);
+			const float sandDiamPx = 16f * 16f;
 
 			Texture2D typhoon = ProjectileBorrow.RequestProjectileTexture(ProjectileID.Typhoon);
 			int frames = Math.Max(1, Main.projFrames[ProjectileID.Typhoon]);
 			Rectangle frame = typhoon.Frame(1, frames, 0, (int)(Main.GameUpdateCount / 4) % frames);
-			Color shell = sand ? new Color(220, 190, 90, 200) : new Color(70, 130, 230, 200);
-			float shellScale = sand ? 2.4f : 1.25f;
-			Main.EntitySpriteDraw(typhoon, Projectile.Center - Main.screenPosition, frame, shell,
-				Projectile.rotation, frame.Size() * 0.5f, shellScale, SpriteEffects.None);
+
+			if (sand)
+			{
+				// 保留 Typhoon 涡旋结构：压蓝（B≈0）+ 降低壳 Alpha，少贡献色相
+				Color shell = new Color(200, 120, 20, 110);
+				float shellScale = sandDiamPx / Math.Max(1, frame.Width);
+				Main.EntitySpriteDraw(typhoon, Projectile.Center - Main.screenPosition, frame, shell,
+					Projectile.rotation, frame.Size() * 0.5f, shellScale, SpriteEffects.None);
+
+				// 高不透明琥珀叠层主导色相
+				Color core = HenshinFxDraw.WithAlpha(new Color(255, 170, 40), 0.92f);
+				Color outer = HenshinFxDraw.WithAlpha(new Color(200, 120, 20), 0.88f);
+				Color fogC = HenshinFxDraw.WithAlpha(new Color(230, 150, 30), 0.75f);
+				float cycScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.Cyclone, sandDiamPx);
+				float fogScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.Fog, sandDiamPx * 0.95f);
+				float glowScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, sandDiamPx * 0.55f);
+
+				HenshinFxDraw.BeginAdditive();
+				HenshinFxDraw.DrawCyclone(Projectile.Center, outer, cycScale * 1.05f, -Projectile.rotation);
+				HenshinFxDraw.DrawCyclone(Projectile.Center, core, cycScale * 0.92f, Projectile.rotation * 0.85f);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, Projectile.Center, fogC, fogScale, Projectile.rotation * 0.5f);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(255, 190, 50), 0.7f), glowScale);
+				HenshinFxDraw.EndAdditive();
+				return false;
+			}
+
+			Color tint = HenshinFxDraw.WithAlpha(new Color(60, 140, 255), 0.85f);
+			Color waterFog = HenshinFxDraw.WithAlpha(new Color(100, 180, 255), 0.4f);
+			Color waterShell = new Color(70, 130, 230, 200);
+			float waterShellScale = 1.25f;
+			Main.EntitySpriteDraw(typhoon, Projectile.Center - Main.screenPosition, frame, waterShell,
+				Projectile.rotation, frame.Size() * 0.5f, waterShellScale, SpriteEffects.None);
 
 			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawCyclone(Projectile.Center, tint, sand ? 2.6f : 1.35f, -Projectile.rotation);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, Projectile.Center, fogC, sand ? 2.0f : 1.0f, Projectile.rotation * 0.5f);
+			HenshinFxDraw.DrawCyclone(Projectile.Center, tint, 1.35f, -Projectile.rotation);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, Projectile.Center, waterFog, 1.0f, Projectile.rotation * 0.5f);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
 	}
 
-	/// <summary>爆裂拳：SoftGlow 拳光；命中 Flashimpact + DiffusionCircle；Confused 保留。</summary>
+	/// <summary>爆裂拳：朝指针挥出巨大拳套（不冲刺）；终点岩石碎裂 + ai0 半径格数 AoE。</summary>
 	public class DynamicPunchProj : HenshinMoveProj
 	{
+		private const int Lifetime = 18;
+		private const float Reach = 14f * 16f;
+		private const float GloveScale = 3.5f;
 		private Vector2 _dir;
-		private Vector2 _hitPos;
-		private int _hitFlash;
+		private Vector2 _origin;
+		private bool _burstSpawned;
 
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.BoxingGlove;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 40;
-			Projectile.height = 40;
+			Projectile.width = 72;
+			Projectile.height = 72;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 14;
+			Projectile.timeLeft = Lifetime;
 			Projectile.tileCollide = false;
 			Projectile.penetrate = -1;
 			Projectile.usesLocalNPCImmunity = true;
-			Projectile.localNPCHitCooldown = 14;
+			Projectile.localNPCHitCooldown = Lifetime;
+			Projectile.ownerHitCheck = false;
 		}
+
+		private float Progress => 1f - Projectile.timeLeft / (float)Lifetime;
 
 		public override void AI()
 		{
-			Player p = Main.player[Projectile.owner];
-			if (!p.active)
+			Player owner = Main.player[Projectile.owner];
+			if (!owner.active)
 			{
 				Projectile.Kill();
 				return;
@@ -2673,49 +2732,154 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - p.Center;
-				if (_dir == Vector2.Zero) _dir = new Vector2(p.direction, 0f);
+				Main.instance.LoadProjectile(ProjectileID.BoxingGlove);
+				_dir = Main.MouseWorld - owner.MountedCenter;
+				if (_dir.LengthSquared() < 1f)
+					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();
+				_origin = owner.MountedCenter;
+				SoundEngine.PlaySound(SoundID.Item1, owner.Center);
 			}
-			if (Projectile.owner == Main.myPlayer)
-			{
-				p.velocity = _dir * 12f;
-				if (Projectile.timeLeft >= 8)
-				{
-					p.immune = true;
-					p.immuneTime = System.Math.Max(p.immuneTime, 12);
-				}
-			}
-			Projectile.Center = p.Center;
-			Dust.NewDustPerfect(p.Center, DustID.Blood, -_dir * 2f, 80, default, 1.3f).noGravity = true;
-			if (_hitFlash > 0)
-				_hitFlash--;
+			// 沿瞄准方向挥出，不推动玩家
+			float u = MathHelper.SmoothStep(0f, 1f, Progress);
+			Projectile.Center = _origin + _dir * (48f + Reach * u);
+			Dust.NewDustPerfect(Projectile.Center, DustID.Stone, _dir * 2f + Main.rand.NextVector2Circular(1.5f, 1.5f), 80, new Color(180, 130, 80), 1.2f).noGravity = true;
+			if (Main.rand.NextBool())
+				Dust.NewDustPerfect(Projectile.Center, DustID.Smoke, -_dir * 1.5f, 100, default, 1.1f).noGravity = true;
+
+			if (!_burstSpawned && Projectile.timeLeft <= 4)
+				SpawnRockBurst(Projectile.Center);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.Confused, 45);
 			target.velocity *= 0.15f;
-			SoundEngine.PlaySound(SoundID.Item14, target.Center);
-			for (int i = 0; i < 16; i++)
-				Dust.NewDustPerfect(target.Center, DustID.Smoke, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.4f).noGravity = true;
-			_hitPos = target.Center;
-			_hitFlash = 10;
+			if (!_burstSpawned)
+				SpawnRockBurst(target.Center);
+		}
+
+		public override void OnKill(int timeLeft)
+		{
+			if (!_burstSpawned)
+				SpawnRockBurst(Projectile.Center);
+		}
+
+		private void SpawnRockBurst(Vector2 at)
+		{
+			if (_burstSpawned || Projectile.owner != Main.myPlayer)
+				return;
+			_burstSpawned = true;
+			float radiusTiles = Projectile.ai[0] > 0.5f ? Projectile.ai[0] : 20f;
+			SoundEngine.PlaySound(SoundID.Item14, at);
+			for (int i = 0; i < 36; i++)
+				Dust.NewDustPerfect(at, DustID.Stone, Main.rand.NextVector2Circular(8f, 8f), 60, new Color(160, 110, 70), 1.6f);
+			for (int i = 0; i < 14; i++)
+				Dust.NewDustPerfect(at, DustID.Smoke, Main.rand.NextVector2Circular(6f, 6f), 80, default, 1.5f).noGravity = true;
+
+			int aoe = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at, Vector2.Zero,
+				ModContent.ProjectileType<RockShatterBurstProj>(), Projectile.damage, Projectile.knockBack * 1.2f, Projectile.owner, radiusTiles);
+			if (aoe >= 0)
+			{
+				Main.projectile[aoe].Center = at;
+				if (Main.projectile[aoe].ModProjectile is IHenshinMoveProj tagged)
+					tagged.EasyCrit = EasyCrit;
+			}
+			for (int i = 0; i < 5; i++)
+			{
+				Vector2 shardVel = Main.rand.NextVector2Circular(4f, 4f);
+				shardVel.Y -= 3f;
+				int sid = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at, shardVel,
+					ModContent.ProjectileType<FallingBoulderProj>(), Math.Max(1, Projectile.damage / 5), 2f, Projectile.owner);
+				if (sid >= 0 && Main.projectile[sid].ModProjectile is IHenshinMoveProj st)
+					st.EasyCrit = EasyCrit;
+			}
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
+			float rot = _dir.ToRotation();
+			Texture2D glove = ProjectileBorrow.RequestProjectileTexture(ProjectileID.BoxingGlove);
+			Main.EntitySpriteDraw(glove, Projectile.Center - Main.screenPosition, null, Color.White,
+				rot + MathHelper.PiOver2, glove.Size() * 0.5f, GloveScale, SpriteEffects.None);
+
+			float life = Projectile.timeLeft / (float)Lifetime;
 			HenshinFxDraw.BeginAdditive();
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 180, 100), 0.75f), 0.55f);
-			if (_hitFlash > 0)
+				HenshinFxDraw.WithAlpha(new Color(255, 180, 100), 0.85f * life), 1.4f);
+			if (_burstSpawned || Projectile.timeLeft <= 6)
 			{
-				float a = _hitFlash / 10f;
-				int flashFrame = HenshinFxDraw.AgeFrame(10, _hitFlash, 2, HenshinFxDraw.FlashImpactFrames);
-				HenshinFxDraw.DrawFlashImpactFrame(_hitPos, HenshinFxDraw.WithAlpha(new Color(255, 220, 160), 0.9f * a), 0.55f, 0f, flashFrame);
-				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, _hitPos,
-					HenshinFxDraw.WithAlpha(new Color(255, 160, 60), 0.7f * a), 1.2f + (1f - a) * 0.4f);
+				int flash = HenshinFxDraw.AgeFrame(Lifetime, Projectile.timeLeft, 2, HenshinFxDraw.FlashImpactFrames);
+				HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center, HenshinFxDraw.WithAlpha(new Color(255, 220, 160), 0.85f), 0.9f, rot, flash);
 			}
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
+	}
+
+	/// <summary>爆裂拳终点石爆：ai0=半径格数；短命范围伤 + 碎石视觉。</summary>
+	public class RockShatterBurstProj : HenshinMoveProj
+	{
+		private const int Life = 16;
+		private float _radiusPx;
+		private int _lifetime;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 64;
+			Projectile.height = 64;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.timeLeft = Life;
+			Projectile.tileCollide = false;
+			Projectile.penetrate = -1;
+			Projectile.usesLocalNPCImmunity = true;
+			Projectile.localNPCHitCooldown = Life;
+		}
+
+		public override void AI()
+		{
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				_lifetime = Life;
+				float tiles = Projectile.ai[0] > 0.5f ? Projectile.ai[0] : 20f;
+				_radiusPx = tiles * 16f;
+				int size = (int)(_radiusPx * 2f);
+				Vector2 c = Projectile.Center;
+				Projectile.width = size;
+				Projectile.height = size;
+				Projectile.Center = c;
+			}
+			float edge = _radiusPx * 0.9f;
+			for (int i = 0; i < 8; i++)
+			{
+				Vector2 o = Main.rand.NextVector2CircularEdge(edge, edge);
+				Dust.NewDustPerfect(Projectile.Center + o * Main.rand.NextFloat(0.2f, 1f), DustID.Stone,
+					o.SafeNormalize(Vector2.Zero) * 2.5f, 70, new Color(170, 120, 70), 1.4f).noGravity = true;
+			}
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			target.AddBuff(BuffID.Confused, 40);
+			target.velocity *= 0.2f;
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			float a = Projectile.timeLeft / (float)_lifetime;
+			float diam = _radiusPx * 2f * (0.85f + (1f - a) * 0.25f);
+			HenshinFxDraw.BeginAdditive();
+			float circScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(255, 170, 70), 0.75f * a), circScale);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(255, 200, 110), 0.55f * a), circScale * 0.55f);
+			int flash = HenshinFxDraw.AgeFrame(_lifetime, Projectile.timeLeft, 2, HenshinFxDraw.FlashImpactFrames);
+			HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center, HenshinFxDraw.WithAlpha(new Color(255, 230, 180), 0.7f * a), 1.1f, 0f, flash);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}

@@ -229,9 +229,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 |------------|---------------|-----------|---------|-------------|------|--------|
 | RockTomb/岩石封锁 | L05_F01,3 | Cross×4 | RockTomb* Boulder | Boulder | 可见石 | Accepted |
 | CrossChop/十字劈 | L05_F01 Ult | Melee | CrossChopArc/Dash | SwordBeam 系 | 尘+冲 | Accepted |
-| RockSlide/岩崩 | L05_F02,6 | AoEBurst | RockSlide+FallingBoulder+SoftGlow | Boulder 下落 | 有石 | Implemented |
-| BrickBreak/劈瓦 | L05_F02,6 | MeleeArc | **20格**线 + HitJagged/Flash **帧** | BoxingGlove+冲击 | 可见 | Implemented |
-| DynamicPunch/爆裂拳 | L05_F02 Ult | Melee+Stun | SoftGlow+Flashimpact 环 | BoxingGlove/GolemFist+爆 | 可见爆 | Implemented |
+| RockSlide/岩崩 | L05_F02,6 | AoEBurst | 3石微偏（`|vx|≤8`）+落地**1格**爆 | Boulder+RockShatter | 微偏落地爆 | Accepted |
+| BrickBreak/劈瓦 | L05_F02,6 | MeleeArc | **20格**线 + HitJagged/Flash **帧** | BoxingGlove+冲击 | 可见 | Accepted |
+| DynamicPunch/爆裂拳 | L05_F02 Ult | Melee+Stun | **巨大拳套前挥**+石碎+半径**20格**爆（不冲刺） | BoxingGlove+RockShatterBurst | 拳爆 | Accepted |
 | StoneEdge/尖石攻击 | L05_F03,9 | Bolt | StoneEdgeBolt Boulder | Boulder 尖 | OK偏 | NeedsUpgrade |
 | CrossChop(短) | L05_F03,9 | Melee | CrossChopShort X LightShot | — | 可见 X | Implemented |
 | CloseCombat/近身战 | L05_F03 Ult | Barrage | CloseCombat+GenericSlash jagged | 多段可见拳 | 可见 | Implemented |
@@ -283,22 +283,22 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | BraveBird/勇鸟猛攻 | L11_F02 Ult | Lunge+Recoil | Lunge SoftGlow | — | OK | Accepted |
 | ZenHeadbutt/意念头锤 | L12_* / L14 | StrikeFall | ZenHammer←Paladin锤 | PaladinsHammer | 较好 | Accepted |
 | Psychic scatter Ult | L12_F01 Ult | Scatter | Barrage Rainbow | RainbowRod | OK | Accepted |
-| FocusPunch/真气拳 | L12_F02 S2 | Charge Melee | DynamicPunch SoftGlow+爆 | 同爆裂拳升级 | 可见 | Implemented |
+| FocusPunch/真气拳 | L12_F02 S2 | Charge Melee | DynamicPunch 挥拳+半径8格石爆 | 同爆裂拳缩小版 | 可见 | Implemented |
 | FutureSight/预知未来 | L12_F02 Ult | ChargeBeam | SoftGlow 圈→`SustainedBeam` Hyper | 紫蓄力圈+粗束 | 可见 | Implemented |
 | RockTomb | L13_F01,5 | RockTomb | Boulder | cookbook | OK | Accepted |
-| RockSlide | L13_F01 Ult / L13_F02 S1 | RockSlide* | Boulder+SoftGlow | — | OK | Implemented |
+| RockSlide | L13_F01 Ult / L13_F02 S1 | RockSlide* | 大招**12**石±12格微偏（`|vx|≤8`）+落地1格爆；技能3石同偏 | Boulder+RockShatter | 宽密落地爆 | Accepted |
 | IronTail/铁尾 | L13_F02,9 | Slash | GenericSlash+HitJagged | — | 可见 | Implemented |
 | Aeroblast 等 | L16_F01 | AirBurst/Hurricane | DiffusionCircle+Cyclone | Typhoon / Cyclone | 可见 | Implemented |
 | SkyAttack/神鸟猛击 | L16_F01 | Lunge | Lunge SoftGlow | — | 可见 | Implemented |
 | Psystrike/精神击破 | L14 Ult | MouseAoE | MouseAoE Purple+DiffusionCircle 念力环 | SoftGlow/Flashimpact | 可见紫环 | Implemented |
 | DragonRage | L15_F01,6 | Barrage | `DragonRageBarrage` mode=skill 12发 | SoftGlow 抖动球+5格爆 | 可见 | Implemented |
 | Tackle | L15_F01,6 | Lunge | Lunge Dirt SoftGlow | — | OK | Accepted |
-| SandTomb/流沙地狱 | L15_F01 Ult | DoTBind | 直径 **16格** Cyclone+Fog 沙黄 | **可见沙涡** Typhoon/`Assets/Fx/Cyclone` | 可见涡 | Implemented |
+| SandTomb/流沙地狱 | L15_F01 Ult | DoTBind | 直径**16格** Typhoon壳压蓝 + 高不透明琥珀 Cyclone/Fog | Typhoon+Cyclone 深沙黄 | 琥珀涡 | Accepted |
 | DracoMeteor/流星群 | L15_F02 Ult | Barrage | MeteorBarrage BallofFire | BallofFire/陨石 | OK偏 | NeedsUpgrade |
 | DragonAscent/画龙点睛 | L17 Ult | Lunge | Lunge SoftGlow+IgnoreDef | 加强残影 | 可见残影 | Implemented |
 | DragonPulse | L17 / L15_F02 | Nebula | NebulaPulse | cookbook | OK | Accepted |
 
-> **注：** Stage 6–12 本轮触及招式已标 Implemented（含火焰牙 BiteArc、精神击破紫环、挖洞大招土环）。**Wave1 已验收 Accepted**（抓狂/火焰牙/闪焰/泡沫/念力；龙波直线）。少数未深改项（DracoMeteor/`StoneEdge` 等）仍可后续微调。
+> **注：** **Stage 6 已验收 Accepted**（豪力/迷你龙/三地鼠/圆陆鲨；含岩崩微偏+落地1格爆、爆裂拳挥拳石爆、流沙保 Typhoon+琥珀）。`StoneEdge`/`DracoMeteor` 仍 NeedsUpgrade。
 
 ---
 
@@ -308,15 +308,15 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ### 5.1 `L05_F02` 豪力 — RockSlide / BrickBreak / DynamicPunch
 
-#### RockSlide（岩崩）Skill1
+#### RockSlide（岩崩）Skill1 / 大岩蛇大招共享
 
-| 项 | 规格 |
+| 项 | 现役 |
 |----|------|
-| **Target visual** | 鼠标上方 3～5 块棕石先后砸下，着地碎裂尘+轻震感；可晕 |
-| **ProjectileID** | `Boulder` **99**：**Shell**（已有 `FallingBoulderProj`）；优先壳弹控伤 |
-| **Tint/scale** | 棕灰 `Color(180,160,140)`；scale 0.85～1.1 错落 |
-| **Forbidden** | 仅扩大 Invisible `Quake` 盒；无石块 |
-| **Files** | `Wave2MoveProjs.cs`（`RockSlideDirectorProj`/`FallingBoulderProj`）；`FormItemUtil.RockSlideX`；`CombatLinesA.cs` Machoke |
+| **Target visual** | 指针区上方棕石先后砸下；轨迹微偏鼠标（`|vx|≤8`）；着地碎裂 + **半径 1 格**范围伤（`ai0=1`→`RockShatterBurst`）；可晕 |
+| **数量/宽** | 豪力/大钢蛇技能 **3**、半宽 ±80px；大岩蛇大招 **12**、半宽 ±192px（约 ±12 格） |
+| **实现** | `RockSlideDirectorProj`：`ai1`=count，`ai2`=半宽；寿命随 count 拉长；落石 `FallingBoulderProj` |
+| **Forbidden** | 纯垂直雨；仅 Invisible Quake 盒 |
+| **Files** | `Wave2MoveProjs.cs`；`FormItemUtil.RockSlideX`；Machoke / Onix / Steelix |
 
 #### BrickBreak（劈瓦）Skill2
 
@@ -328,15 +328,14 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | **Forbidden** | `PreDraw=>false` 仅 Blood 尘当成品；无封顶通天拉伸当「光线」 |
 | **Files** | `BrickBreakProj`；可选新 `MeleeImpactShellProj`；`FormItemUtil.BrickBreak` |
 
-#### DynamicPunch（爆裂拳）Ultimate
+#### DynamicPunch（爆裂拳）Ultimate — **Implemented**
 
-| 项 | 规格 |
+| 项 | 现役 |
 |----|------|
-| **Target visual** | 短突进后命中点**可见爆炸拳**：冲击环 + 烟/火尘；短硬直保留 |
-| **ProjectileID** | 冲击环：`InfernoFriendlyBlast` **296** Frag（短时、无持续火海）或壳画 `Flashimpact`/`DiffusionCircle`；拳本体 Shell `BoxingGlove`/`GolemFist`；突进可留现 Lunge 逻辑 |
-| **Tint/scale** | 橙白爆点；环 scale 1.5～2；勿整屏白闪 |
-| **Forbidden** | 无图突进；跳过冲击只 Confused |
-| **Files** | `DynamicPunchProj`；`FormItemUtil.DynamicPunchUlt`；可复用缩小版 `MouseAoEBurst` 挂命中点 |
+| **Target visual** | **不冲刺**；朝指针挥出巨大 `BoxingGlove`（scale≈3.5，约 14 格）；终点石屑碎裂 + `RockShatterBurstProj` 范围爆；Confused 保留 |
+| **AoE** | 大招半径 **20 格**（`Ai0=20`）；真气拳技能半径 **8** |
+| **Forbidden** | 推玩家 velocity 当成品；无拳无石只 Confused |
+| **Files** | `DynamicPunchProj`；`RockShatterBurstProj`；`FormItemUtil.DynamicPunchUlt` |
 
 ---
 
@@ -429,15 +428,14 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | **Forbidden** | — |
 | **Files** | 通常保持；非本轮强制 |
 
-#### SandTomb（流沙地狱）Ultimate
+#### SandTomb（流沙地狱）Ultimate — **Implemented**
 
-| 项 | 规格 |
+| 项 | 现役 |
 |----|------|
-| **Target visual** | 指针处**可见沙色漩涡**（旋转壳 + 沙尘），DoT+Slow；绝不能「有伤无涡」 |
-| **ProjectileID** | `Typhoon` **409** Shell，沙黄染色 `Color(220,180,90)`；或自绘已拷 `Assets/Fx/Cyclone.png`（辅 `Fog` / `DustID.Sand`） |
-| **Tint/scale** | scale≈1.3～1.6；寿命约 3s（对齐现 180 tick） |
-| **Forbidden** | `MouseVortexProj` 仅沙尘无贴图当成品；Invisible 72×72 |
-| **Files** | `MouseVortexProj`（按 dust 分支画 Typhoon/Cyclone）或 `SandTombVortexProj`；`FormItemUtil.MouseVortex`；Gible Ultimate |
+| **Target visual** | 指针处**可见沙涡**：保留 **Typhoon 壳**（压蓝 B≈0、壳 Alpha≈110）+ 高不透明琥珀 Cyclone/Fog/SoftGlow；直径 **16 格** |
+| **踩坑** | Typhoon 蓝底 × 黄 tint → 绿；勿只加深黄乘色。须压壳蓝贡献 + 上层高 A 琥珀主导色相（调低上层 Alpha 会更露蓝） |
+| **Forbidden** | 仅沙尘无贴图；删 Typhoon 壳当「改色捷径」；Invisible 72×72 |
+| **Files** | `MouseVortexProj` 沙分支；`FormItemUtil.MouseVortex`；Gible Ultimate |
 
 ---
 
@@ -481,6 +479,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 - SoftGlow 沿路径 **拉长 + 密叠**（spacing≈戳记长度×0.22），厚度允许到约 3 格。`MagicPixel` 亦可用，但须封顶宽高；无界拉伸易白屏。
 - `ScaleForWorldDiameter`：DiffusionCircle（360px）等大图必须按世界直径换算，禁止裸 `scale=1.7`（会画出超大圈）。
 - **Additive 暗色：** `#2108ad` 作 SoftGlow 色几乎不可见 → 光晕用抬亮同色相。
+- **Typhoon 改沙黄：** 蓝贴图乘黄 → 绿；保壳时压蓝（B≈0）+ 降壳 Alpha，再用高不透明琥珀 Cyclone/Fog 盖色。
 
 ### SpawnAtMouse 中心校正（踩坑）
 
@@ -564,6 +563,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 1.0 Living | 2026-09-06 | 澄清：`MagicPixel` 可用（忌无界拉伸）；新增项目 Skill `henshin-moves` |
 | 1.1 Living | 2026-09-06 | Wave1 手感落地并**验收 Accepted**：抓狂三线爪宽判；火焰牙张口；闪焰多线火径+包裹+收尾减速；泡沫窄直线+破裂；念力索敌弹射+命中紫环；龙波直线 |
 | 1.2 Living | 2026-09-06 | 全局 Rule `tml-api-docs.mdc`：设计须参考 tModLoader stable 类表 |
+| 1.3 Living | 2026-09-06 | Stage6 修：岩崩微偏+大岩蛇12石±12格；爆裂拳巨大拳套前挥+20格石爆（不冲刺）；流沙保 Typhoon+压蓝+高A琥珀叠层 |
+| 1.4 Living | 2026-09-06 | Stage6 **Accepted**：岩崩 `|vx|≤8` + 落地1格爆；整波验收回写 |
 
 ---
 

@@ -533,6 +533,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				Knockback = 4f,
 				SpawnAtMouse = true,
 				Ai1 = count,
+				Ai2 = ult ? 192f : 80f,
 				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
 			};
 
@@ -784,7 +785,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				DamageMultiplier = mult,
 				UseTime = ult ? 32 : 36,
 				ShootSpeed = 0f,
-				RequiresLungeCooldown = true,
+				Ai0 = ult ? 20f : 8f,
 				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.RightClick
 			};
 

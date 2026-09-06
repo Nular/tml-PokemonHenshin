@@ -557,6 +557,7 @@ Projectiles: {
 	DigUltBurstProj.DisplayName: Dig Ult Burst Proj
 	DragonBreathConeProj.DisplayName: Dragon Breath Cone Proj
 	DynamicPunchProj.DisplayName: Dynamic Punch Proj
+	RockShatterBurstProj.DisplayName: Rock Shatter Burst
 	FallingBoulderProj.DisplayName: Falling Boulder Proj
 	FlailBarrageProj.DisplayName: Flail Barrage Proj
 	FlameConeDirectorProj.DisplayName: Flame Cone Director Proj

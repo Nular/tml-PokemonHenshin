@@ -52,9 +52,10 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 - **已验收基线（Stage≤5 cookbook）：** 天雷 / 泡沫 Load / 飞叶 Leaf / 咬合尖牙 / 龙波 Nebula（直线连发）。
 - **已验收（能量 UI）：** 脚下条 + 满充金尘（2026-09-06）。
 - **已验收（Wave1 手感，2026-09-06）：** 抓狂（15 格三线爪）/ 火焰牙（两对大弧牙）/ 闪焰冲锋（32 格多线火径+包裹焰+收尾减速）/ 泡沫光线（窄直线+破裂）/ 念力（ShadowBeam 索敌弹射×2+命中紫环）。
-- **待游戏内验收：** 验收队列余项按 Stage 升序（下一优先 **Stage 6**：豪力 / 迷你龙 / 三地鼠 / 圆陆鲨）；再联机/DPS。
+- **已验收（Stage 6，2026-09-06）：** 豪力（岩崩微偏+落地1格爆 / 劈瓦 / 爆裂拳挥拳石爆）/ 迷你龙 / 三地鼠 / 圆陆鲨（含流沙 Typhoon+琥珀）；大岩蛇岩崩 12 石±12 格。
+- **待游戏内验收：** Stage 7+ → 联机/DPS。
 - **进化：** UIState；**ProgressStage 上升时**弹出；`/henshin evolve` 可补弹。
 - **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending；`StoneEdge` / `DracoMeteor` 等仍 NeedsUpgrade。
 - **验证：** 游戏运行中用游戏内 Build + Reload（TML003）；大招默认 **Mouse3**。
-- **下一步：** Stage 6 形态逐只验收完善 → Stage 7+ → 联机双端 → DPS 对标 → Rage/肾上腺素。
+- **下一步：** Stage 7+ → 联机双端 → DPS 对标 → Rage/肾上腺素。
 - 新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

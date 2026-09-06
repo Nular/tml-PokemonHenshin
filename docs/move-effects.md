@@ -157,7 +157,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Barrage | 撞击 Lunge | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | 龙怒 `DragonRageBarrage` 技能12发；流沙直径 **16 格** Cyclone+Fog 沙黄 | Medium | Done |
+| L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Barrage | 撞击 Lunge | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | 龙怒 `DragonRageBarrage` 技能12发；流沙直径 **16 格** Typhoon压蓝壳+琥珀 Cyclone/Fog | Medium | Done |
 | L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（更大） | 流星群 Barrage/AoEBurst；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | 同龙波；紫染爆炸 | Medium | Done |
 
 ### 4.8 幽灵链 L06
@@ -179,7 +179,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +30% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 撞击 Lunge（2s CD + 0.25s 无敌；速/距约半） | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | 可见四石；X 尘 + 前冲残影 | Medium |
-| L05_F02 | 豪力 | **毅力**：同上 +30% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 落石 SoftGlow；劈瓦 **20 格**线斩 + HitJagged/FlashImpact **帧**；爆拳 FlashImpact **帧** | Medium | Done |
+| L05_F02 | 豪力 | **毅力**：同上 +30% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 岩崩3石微偏（`|vx|≤8`）+落地**1格**爆；劈瓦 **20 格**线斩；爆拳巨大拳套前挥+半径**20格**石爆 | Medium | Done |
 | L05_F03 | 怪力 | **毅力**：同上 +30% | 尖石攻击 Bolt+EasyCrit | 十字劈 MeleeArc+EasyCrit | 近身战 Barrage/MeleeArc；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 尖石；十字劈 X LightShot；近身战 HitJagged 多段 | Medium | Done |
 
 ### 4.11 飞行链 L11
@@ -200,7 +200,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 撞击 Lunge | 岩崩 AoEBurst+Stun | 耗 100 | 岩石弹与落石尘 | Low |
+| L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 撞击 Lunge | 岩崩 AoEBurst+Stun | 耗 100 | 大招岩崩 **12** 石、±12格、微偏（`|vx|≤8`）+落地1格爆 | Low | Done |
 | L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 铁尾 MeleeArc+DefDown | 舍身冲撞 Lunge+Recoil（本被动免自伤） | 耗 100；Recoil 被被动抵消 | 铁尾 HitJagged；冲撞 SoftGlow 残影 | Medium | Done |
 
 ### 4.14 传说 L16 / L14 / L17
@@ -244,3 +244,5 @@
 | 1.6 | 2026-09-06 | 水柱宽度/渐缩/流动；日光束约 2 格；龙之怒改球体连射（非光束）；见 `docs/fx-knowledge.md` 0.9 |
 | 1.7 | 2026-09-06 | 大招能量条改角色脚下（非右下角）；满充金色向上发散尘约 1 格 |
 | 1.8 | 2026-09-06 | Wave1 落地并验收：抓狂15格三线爪；火焰牙两对弧牙；闪焰32格多线火径+收尾减速；泡沫窄直线+破裂；念力 ShadowBeam 索敌弹射×2+命中紫环；龙波直线 |
+| 1.9 | 2026-09-06 | Stage6 修：大岩蛇岩崩12石±12格微偏；豪力岩崩微偏；爆裂拳挥拳+20格石爆；流沙保Typhoon+琥珀叠层 |
+| 1.10 | 2026-09-06 | Stage6 验收：岩崩加大微偏（`|vx|≤8`）+落地1格范围伤；整波 Accepted |

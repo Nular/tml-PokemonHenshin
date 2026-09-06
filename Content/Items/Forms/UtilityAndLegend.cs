@@ -102,7 +102,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L13_F01", 30, "Mods.PokemonHenshin.Items.OnixForce.DisplayName", PokemonType.Rock, 5, null, FormPassiveKind.RockHead, secondary: PokemonType.Ground);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.RockTomb("Mods.PokemonHenshin.Moves.RockTomb");
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.Tackle", 1.15f, 18, DustID.Stone);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.RockSlideX("Mods.PokemonHenshin.Moves.RockSlide", 6, 3.2f, ult: true);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.RockSlideX("Mods.PokemonHenshin.Moves.RockSlide", 12, 3.2f, ult: true);
 	}
 
 	public class SteelixForce : HenshinForceItem
