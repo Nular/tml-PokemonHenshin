@@ -583,12 +583,12 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<MeteorBarrageDirectorProj>(),
+				ProjectileType = ModContent.ProjectileType<DracoMeteorDirectorProj>(),
 				DamageMultiplier = mult,
 				UseTime = 48,
 				ShootSpeed = 0f,
 				SpawnAtMouse = true,
-				Ai1 = count,
+				Ai1 = count, // 导演内部固定 64；保留 Ai1 兼容
 				AftermathDamagePenaltyTicks = 300,
 				AftermathDamagePenalty = 0.85f,
 				KeyConflict = KeyConflictLevel.ModKeybind
@@ -657,7 +657,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<CloseCombatDirectorProj>(),
+				ProjectileType = ModContent.ProjectileType<CloseCombatFuryProj>(),
 				DamageMultiplier = mult,
 				UseTime = 48,
 				ShootSpeed = 0f,
@@ -672,7 +672,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<OutrageDirectorProj>(),
 				DamageMultiplier = mult,
-				UseTime = 50,
+				UseTime = 190,
 				ShootSpeed = 0f,
 				AftermathDamagePenaltyTicks = 120,
 				AftermathDamagePenalty = 0.7f,
@@ -683,11 +683,10 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<FutureSightProj>(),
+				ProjectileType = ModContent.ProjectileType<FutureSightMarkDirectorProj>(),
 				DamageMultiplier = mult,
 				UseTime = 50,
 				ShootSpeed = 0f,
-				SpawnAtMouse = true,
 				IgnoreDefensePartial = true,
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
@@ -696,7 +695,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<DarkPulseConeProj>(),
+				ProjectileType = ModContent.ProjectileType<DarkPulseBarrageProj>(),
 				DamageMultiplier = mult,
 				UseTime = 30,
 				ShootSpeed = 0f,
@@ -778,7 +777,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<CrossChopShortProj>(),
+				ProjectileType = ModContent.ProjectileType<CrossChopArcXProj>(),
 				DamageMultiplier = mult,
 				UseTime = 18,
 				ShootSpeed = 0f,
@@ -879,7 +878,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<LickFanProj>(),
+				ProjectileType = ModContent.ProjectileType<LickTongueProj>(),
 				DamageMultiplier = mult,
 				UseTime = 22,
 				ShootSpeed = 0f
@@ -901,12 +900,162 @@ namespace PokemonHenshin.Content.Items.Forms
 			=> new()
 			{
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<StoneEdgeBoltProj>(),
+				ProjectileType = ModContent.ProjectileType<StoneEdgeDirectorProj>(),
 				DamageMultiplier = mult,
 				UseTime = 18,
-				ShootSpeed = 12f,
-				IsRangedProjectile = true,
+				ShootSpeed = 0f,
 				EasyCrit = true
+			};
+
+		public static MoveSpec DragonTailWhip(string nameKey, float mult = 1.35f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DragonTailWhipProj>(),
+				DamageMultiplier = mult,
+				UseTime = 18,
+				ShootSpeed = 0f,
+				Ai0 = DustID.Cloud
+			};
+
+		public static MoveSpec IronTailWhip(string nameKey, float mult = 1.6f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DragonTailWhipProj>(),
+				DamageMultiplier = mult,
+				UseTime = 18,
+				ShootSpeed = 0f,
+				Ai0 = DustID.Iron,
+				Ai1 = 1f // 铁色遮罩
+			};
+
+		public static MoveSpec TakeDownUlt(string nameKey, float mult = 3.2f, float reachTiles = 28f, float recoilFrac = 0.25f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<TakeDownLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 32,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				Ai0 = DustID.Iron,
+				Ai2 = reachTiles,
+				RecoilSelf = true,
+				RecoilFraction = recoilFrac,
+				RequiresLungeCooldown = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec ShadowClawSlash(string nameKey, float mult = 1.55f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<ShadowClawSlashProj>(),
+				DamageMultiplier = mult,
+				UseTime = 16,
+				ShootSpeed = 0f,
+				Knockback = 3f,
+				EasyCrit = true
+			};
+
+		public static MoveSpec CometPunch(string nameKey, float mult = 1.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<CometPunchProj>(),
+				DamageMultiplier = mult,
+				UseTime = 28,
+				ShootSpeed = 0f
+			};
+
+		public static MoveSpec DragonDive(string nameKey, float mult = 1.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<StardustPathLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 28,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				Ai2 = 0f,
+				RequiresLungeCooldown = true
+			};
+
+		public static MoveSpec DragonAscentUlt(string nameKey, float mult = 5.0f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<StardustPathLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 36,
+				ShootSpeed = 0f,
+				Knockback = 5f,
+				Ai2 = 1f,
+				RequiresLungeCooldown = true,
+				IgnoreDefensePartial = true,
+				AftermathDamagePenaltyTicks = 300,
+				AftermathDamagePenalty = 0.8f,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec SkyAttack(string nameKey, float mult = 1.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<SkyAttackLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 34,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				RequiresLungeCooldown = true
+			};
+
+		public static MoveSpec AlakazamPsychic(string nameKey, float mult = 1.7f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<AlakazamPsychicDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 28,
+				ShootSpeed = 0f,
+				SpawnAtMouse = true
+			};
+
+		public static MoveSpec MewtwoPsychic(string nameKey, float mult = 1.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<AlakazamPsychicDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 28,
+				ShootSpeed = 0f,
+				SpawnAtMouse = true,
+				Ai0 = 6f,
+				Ai1 = 1f // 穿墙
+			};
+
+		public static MoveSpec MewtwoPsystrikeUlt(string nameKey, float mult = 4.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<MewtwoPsystrikeDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 48,
+				ShootSpeed = 0f,
+				SpawnAtMouse = true,
+				IgnoreDefensePartial = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		public static MoveSpec FocusPunch(string nameKey, float mult = 1.8f)
+			=> new()
+			{
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<FocusPunchProj>(),
+				DamageMultiplier = mult,
+				UseTime = 28,
+				ShootSpeed = 0f
 			};
 
 		public static MoveSpec DigUlt(string nameKey, float mult = 3f)

@@ -28,6 +28,13 @@ Accessories: {
 	InactiveTag: "[Henshin only - inactive]"
 }
 
+Buffs: {
+	HenshinSleepDebuff: {
+		DisplayName: Sleep
+		Description: Immobilized; cannot deal contact damage. Next hit taken deals double damage and wakes the target.
+	}
+}
+
 Terrain.BudgetReject: Terrain edit over budget or protected
 
 Moves: {
@@ -94,6 +101,7 @@ Moves: {
 	Barrier: Barrier
 	SandField: Sandstorm
 	Aeroblast: Aeroblast
+	CycloneAttack: Cyclone Attack
 	DragonAscent: Dragon Ascent
 	FireSpin: Fire Spin
 	FireFang: Fire Fang
@@ -553,7 +561,7 @@ Projectiles: {
 	BlinkStrikeBurstProj.DisplayName: Blink Strike Burst Proj
 	CrossChopDashProj.DisplayName: Cross Chop Dash Proj
 	AirBurstProj.DisplayName: Air Burst Proj
-	BigShadowBallProj.DisplayName: Big Shadow Ball Proj
+	BigShadowBallProj.DisplayName: Shadow Ball
 	BiteArcProj.DisplayName: Bite Arc Proj
 	BrickBreakProj.DisplayName: Brick Break Proj
 	ChargeBeamDirectorProj.DisplayName: Charge Beam Director Proj
@@ -569,9 +577,19 @@ Projectiles: {
 	FlameConeDirectorProj.DisplayName: Flame Cone Director Proj
 	FutureSightProj.DisplayName: Future Sight Proj
 	HurricaneFieldProj.DisplayName: Hurricane Field Proj
-	HypnosisWaveProj.DisplayName: Hypnosis Wave Proj
+	HypnosisWaveProj.DisplayName: Hypnosis
 	LeafSpreadProj.DisplayName: Leaf Spread Proj
-	LickFanProj.DisplayName: Lick Fan Proj
+	LickTongueProj.DisplayName: Lick
+	StoneEdgeDirectorProj.DisplayName: Stone Edge
+	StoneEdgeSpikeProj.DisplayName: Stone Spike
+	CrossChopArcXProj.DisplayName: Cross Chop
+	CloseCombatFuryProj.DisplayName: Close Combat
+	DragonTailWhipProj.DisplayName: Dragon Tail
+	AlakazamPsychicDirectorProj.DisplayName: Psychic
+	AlakazamPsychicBoltProj.DisplayName: Psychic Bolt
+	FutureSightMarkDirectorProj.DisplayName: Future Sight
+	FutureSightNightglowBoltProj.DisplayName: Future Sight Bolt
+	FocusPunchProj.DisplayName: Focus Punch
 	MeteorBarrageDirectorProj.DisplayName: Meteor Barrage Director Proj
 	MeteorShardProj.DisplayName: Meteor Shard Proj
 	MidThunderBeamProj.DisplayName: Mid Thunder Beam Proj
@@ -604,4 +622,20 @@ Projectiles: {
 	PsychicWaveBoltProj.DisplayName: Psychic Wave Bolt Proj
 	BubblePopVisualProj.DisplayName: Bubble Pop Visual Proj
 	PsychicHitRingProj.DisplayName: Psychic Hit Ring Proj
+	CometPunchProj.DisplayName: Comet Punch Proj
+	CometStarFallProj.DisplayName: Comet Star Fall Proj
+	DarkPulseBarrageProj.DisplayName: Dark Pulse Barrage Proj
+	DarkPulseBurstAoEProj.DisplayName: Dark Pulse Burst Ao E Proj
+	DarkPulseHomingBallProj.DisplayName: Dark Pulse Homing Ball Proj
+	DracoMeteorDirectorProj.DisplayName: Draco Meteor Director Proj
+	DracoStarWrathProj.DisplayName: Draco Star Wrath Proj
+	GraySolarBurstVfxProj.DisplayName: Gray Solar Burst Vfx Proj
+	OutrageFireballProj.DisplayName: Outrage Fireball Proj
+	OutrageFireBurstAoEProj.DisplayName: Outrage Fire Burst Ao E Proj
+	ShadowClawSlashProj.DisplayName: Shadow Claw Slash Proj
+	SkyAttackLungeProj.DisplayName: Sky Attack Lunge Proj
+	StardustPathLungeProj.DisplayName: Stardust Path Lunge Proj
+	TakeDownLungeProj.DisplayName: Take Down Lunge Proj
+	MewtwoPsystrikeDirectorProj.DisplayName: Mewtwo Psystrike Director Proj
+	MewtwoPsystrikeOrbProj.DisplayName: Mewtwo Psystrike Orb Proj
 }

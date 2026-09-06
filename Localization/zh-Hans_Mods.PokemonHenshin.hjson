@@ -28,6 +28,13 @@ Accessories: {
 	InactiveTag: 【仅变身生效·当前未生效】
 }
 
+Buffs: {
+	HenshinSleepDebuff: {
+		DisplayName: 睡眠
+		Description: 完全无法行动且无法接触伤害；下次受到的伤害翻倍并醒来
+	}
+}
+
 Terrain.BudgetReject: 地形改造超出预算或目标受保护
 
 Moves: {
@@ -94,6 +101,7 @@ Moves: {
 	Barrier: 屏障
 	SandField: 沙暴场
 	Aeroblast: 空气爆炸
+	CycloneAttack: 气旋攻击
 	DragonAscent: 画龙点睛
 	FireSpin: 火焰漩涡
 	FireFang: 火焰牙
@@ -553,7 +561,7 @@ Projectiles: {
 	// BlinkStrikeBurstProj.DisplayName: Blink Strike Burst Proj
 	// CrossChopDashProj.DisplayName: Cross Chop Dash Proj
 	// AirBurstProj.DisplayName: Air Burst Proj
-	// BigShadowBallProj.DisplayName: Big Shadow Ball Proj
+	BigShadowBallProj.DisplayName: 暗影球
 	// BiteArcProj.DisplayName: Bite Arc Proj
 	// BrickBreakProj.DisplayName: Brick Break Proj
 	// ChargeBeamDirectorProj.DisplayName: Charge Beam Director Proj
@@ -569,9 +577,19 @@ Projectiles: {
 	// FlameConeDirectorProj.DisplayName: Flame Cone Director Proj
 	// FutureSightProj.DisplayName: Future Sight Proj
 	// HurricaneFieldProj.DisplayName: Hurricane Field Proj
-	// HypnosisWaveProj.DisplayName: Hypnosis Wave Proj
+	HypnosisWaveProj.DisplayName: 催眠术
 	// LeafSpreadProj.DisplayName: Leaf Spread Proj
-	// LickFanProj.DisplayName: Lick Fan Proj
+	LickTongueProj.DisplayName: 舌舔
+	StoneEdgeDirectorProj.DisplayName: 尖石攻击
+	StoneEdgeSpikeProj.DisplayName: 尖石
+	CrossChopArcXProj.DisplayName: 十字劈
+	CloseCombatFuryProj.DisplayName: 近身战
+	DragonTailWhipProj.DisplayName: 龙尾
+	AlakazamPsychicDirectorProj.DisplayName: 精神强念
+	AlakazamPsychicBoltProj.DisplayName: 精神强念弹
+	FutureSightMarkDirectorProj.DisplayName: 预知未来
+	FutureSightNightglowBoltProj.DisplayName: 预知未来光弹
+	FocusPunchProj.DisplayName: 真气拳
 	// MeteorBarrageDirectorProj.DisplayName: Meteor Barrage Director Proj
 	// MeteorShardProj.DisplayName: Meteor Shard Proj
 	// MidThunderBeamProj.DisplayName: Mid Thunder Beam Proj
@@ -604,4 +622,20 @@ Projectiles: {
 	// PsychicWaveBoltProj.DisplayName: Psychic Wave Bolt Proj
 	// BubblePopVisualProj.DisplayName: Bubble Pop Visual Proj
 	// PsychicHitRingProj.DisplayName: Psychic Hit Ring Proj
+	// CometPunchProj.DisplayName: Comet Punch Proj
+	// CometStarFallProj.DisplayName: Comet Star Fall Proj
+	// DarkPulseBarrageProj.DisplayName: Dark Pulse Barrage Proj
+	// DarkPulseBurstAoEProj.DisplayName: Dark Pulse Burst Ao E Proj
+	// DarkPulseHomingBallProj.DisplayName: Dark Pulse Homing Ball Proj
+	// DracoMeteorDirectorProj.DisplayName: Draco Meteor Director Proj
+	// DracoStarWrathProj.DisplayName: Draco Star Wrath Proj
+	// GraySolarBurstVfxProj.DisplayName: Gray Solar Burst Vfx Proj
+	// OutrageFireballProj.DisplayName: Outrage Fireball Proj
+	// OutrageFireBurstAoEProj.DisplayName: Outrage Fire Burst Ao E Proj
+	// ShadowClawSlashProj.DisplayName: Shadow Claw Slash Proj
+	// SkyAttackLungeProj.DisplayName: Sky Attack Lunge Proj
+	// StardustPathLungeProj.DisplayName: Stardust Path Lunge Proj
+	// TakeDownLungeProj.DisplayName: Take Down Lunge Proj
+	// MewtwoPsystrikeDirectorProj.DisplayName: Mewtwo Psystrike Director Proj
+	// MewtwoPsystrikeOrbProj.DisplayName: Mewtwo Psystrike Orb Proj
 }

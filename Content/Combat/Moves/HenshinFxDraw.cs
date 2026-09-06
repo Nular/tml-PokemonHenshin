@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Combat.Moves
@@ -47,6 +48,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static Texture2D Fog => Ensure(ref _fog, "Fog");
 		public static Texture2D DiffusionCircle => Ensure(ref _diffusionCircle, "DiffusionCircle");
 		public static Texture2D ThunderTrail => Ensure(ref _thunderTrail, "ThunderTrail");
+		public static Texture2D Extra98 => Ensure(ref _extra98, "Extra98");
+
+		private static Asset<Texture2D> _extra98;
 
 		private static Texture2D Ensure(ref Asset<Texture2D> asset, string name)
 		{
@@ -107,13 +111,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			DrawAdditiveSheet(tex, columns, rows, frameIndex, worldPos, colorWithAlpha, new Vector2(scale), rotation);
 		}
 
-		public static void DrawAdditiveSheet(Texture2D tex, int columns, int rows, int frameIndex, Vector2 worldPos, Color colorWithAlpha, Vector2 scale, float rotation = 0f)
+		public static void DrawAdditiveSheet(Texture2D tex, int columns, int rows, int frameIndex, Vector2 worldPos, Color colorWithAlpha, Vector2 scale, float rotation = 0f, SpriteEffects effects = SpriteEffects.None)
 		{
 			if (tex == null || colorWithAlpha.A == 0)
 				return;
 			Rectangle src = SheetFrame(tex, columns, rows, frameIndex);
 			Vector2 origin = new Vector2(src.Width * 0.5f, src.Height * 0.5f);
-			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, src, colorWithAlpha, rotation, origin, scale, SpriteEffects.None, 0f);
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, src, colorWithAlpha, rotation, origin, scale, effects, 0f);
 		}
 
 		public static void DrawFireFrame(Vector2 pos, Color c, float scale, float rot, int frame)
@@ -122,8 +126,25 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static void DrawFlashImpactFrame(Vector2 pos, Color c, float scale, float rot, int frame)
 			=> DrawAdditiveSheet(FlashImpact, FlashImpactColumns, FlashImpactRows, frame, pos, c, scale, rot);
 
-		public static void DrawHitJaggedFrame(Vector2 pos, Color c, float scale, float rot, int frame)
-			=> DrawAdditiveSheet(HitJagged, HitJaggedColumns, HitJaggedRows, frame, pos, c, scale, rot);
+		public static void DrawHitJaggedFrame(Vector2 pos, Color c, float scale, float rot, int frame, SpriteEffects effects = SpriteEffects.None)
+			=> DrawAdditiveSheet(HitJagged, HitJaggedColumns, HitJaggedRows, frame, pos, c, new Vector2(scale), rot, effects);
+
+		/// <summary>
+		/// 不透明实心圆 + 描边（须在 AlphaBlend 批次下调用；深紫禁止 Additive）。
+		/// 用 DiffusionCircle 按世界直径缩放，fill/border 的 A 应接近 255。
+		/// </summary>
+		public static void DrawOpaqueDisk(Vector2 worldPos, float diameterPx, Color fillOpaque, Color borderOpaque)
+		{
+			Texture2D tex = DiffusionCircle;
+			if (tex == null)
+				return;
+			float scale = ScaleForWorldDiameter(tex, diameterPx);
+			float borderScale = ScaleForWorldDiameter(tex, diameterPx + 4f);
+			Vector2 origin = tex.Size() * 0.5f;
+			Vector2 pos = worldPos - Main.screenPosition;
+			Main.spriteBatch.Draw(tex, pos, null, borderOpaque, 0f, origin, borderScale, SpriteEffects.None, 0f);
+			Main.spriteBatch.Draw(tex, pos, null, fillOpaque, 0f, origin, scale, SpriteEffects.None, 0f);
+		}
 
 		/// <summary>按弹龄取帧：<c>(lifetime - timeLeft) / ticksPerFrame % totalFrames</c>。</summary>
 		public static int AgeFrame(int lifetime, int timeLeft, int ticksPerFrame, int totalFrames)

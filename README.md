@@ -16,9 +16,9 @@
 
 ## 状态
 
-**现役代码（2026-09-06）：** 36 形态 + A01～A21；被动+技能1/2+能量大招（默认 Mouse3）；脚下能量条 + 满充金尘；Stage 6+ FX；大比鸟/哈克龙/快龙天候棒暴风等见 `docs/fx-knowledge.md`；进化 UIState。
+**现役代码（2026-09-07）：** 36 形态 + A01～A21；被动+技能1/2+能量大招（默认 Mouse3）；脚下能量条；Stage 6+ / Wave3 / **Stage7+ 已验收**；见 `docs/fx-knowledge.md`；进化 UIState。
 
-**待游戏内点验：** 大比鸟燕返 / 勇鸟猛攻；其后 Stage 7+ / 联机 / DPS。调试 `/henshin stage`、`/henshin evolve`。  
+**下一步：** 联机 / DPS。调试 `/henshin stage`、`/henshin evolve`。  
 **注意：** 御三家二阶进度看 **史莱姆神 / 鹿角怪**，不是史莱姆王。
 
 后置：联机双端实测、DPS 对标、Rage/肾上腺素、M5 发布打磨。

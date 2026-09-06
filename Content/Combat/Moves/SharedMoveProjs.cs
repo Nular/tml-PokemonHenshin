@@ -87,7 +87,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.ai[1] == 0f)
 				Projectile.ai[1] = owner.direction;
 			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
-			Projectile.Center = owner.MountedCenter + new Vector2(dir * Reach, -4f);
+
+			// ai2>=1.5：近身战子斩，钉在生成点；否则贴玩家前方
+			if (Projectile.ai[2] > 1.5f)
+			{
+				if (Projectile.localAI[0] == 0f)
+				{
+					Projectile.localAI[0] = 1f;
+					Projectile.localAI[1] = Projectile.Center.X;
+					Projectile.localAI[2] = Projectile.Center.Y;
+					if (Projectile.velocity.LengthSquared() > 0.00001f)
+						Projectile.rotation = Projectile.velocity.ToRotation();
+					else
+						Projectile.rotation = dir > 0 ? 0f : MathHelper.Pi;
+				}
+				Projectile.Center = new Vector2(Projectile.localAI[1], Projectile.localAI[2]);
+			}
+			else
+				Projectile.Center = owner.MountedCenter + new Vector2(dir * Reach, -4f);
 			Projectile.velocity = Vector2.Zero;
 
 			int dust = Projectile.ai[0] > 0 ? (int)Projectile.ai[0] : DustID.Smoke;
@@ -100,15 +117,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			// ai2>0 或默认：朝向玩家朝向的 HitJagged 帧闪光（DragonTail/IronTail/ShadowClaw/MeteorMash）
 			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
 			float life = Projectile.timeLeft / (float)Lifetime;
-			float rot = dir > 0 ? 0.35f : MathHelper.Pi - 0.35f;
+			// HitJagged01 rot=0 尖端朝左；朝右攻击需 +Pi
+			float rot;
+			if (Projectile.ai[2] > 1.5f)
+				rot = Projectile.rotation + MathHelper.Pi;
+			else
+				rot = dir > 0 ? MathHelper.Pi + 0.35f : -0.35f;
 			int frame = HenshinFxDraw.AgeFrame(Lifetime, Projectile.timeLeft, 3, HenshinFxDraw.HitJaggedFrames);
+			float scale = 0.75f + (Projectile.ai[2] > 0.5f ? 0.25f : 0f);
 			HenshinFxDraw.BeginAdditive();
 			HenshinFxDraw.DrawHitJaggedFrame(Projectile.Center,
 				HenshinFxDraw.WithAlpha(new Color(255, 230, 210), 0.8f * life),
-				0.75f + (Projectile.ai[2] > 0.5f ? 0.2f : 0f), rot, frame);
+				scale, rot, frame, SpriteEffects.None);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
@@ -766,7 +788,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = 16;
 		}
 
-		private bool InBrake => _flare && Projectile.timeLeft <= BrakeTicks;
+		private bool ExtendedDash => Projectile.ai[2] > 0.5f;
+		private bool InBrake => ExtendedDash && Projectile.timeLeft <= BrakeTicks;
 
 		public override void AI()
 		{
@@ -785,14 +808,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();
 
-				_flare = Projectile.ai[0] == DustID.Torch || Projectile.ai[2] >= 1f;
+				// 火特效仅 Torch；ai2 只控射程。长距冲刺一律带刹车（闪焰/猛撞式）。
+				_flare = Projectile.ai[0] == DustID.Torch;
 				float reachTiles = Projectile.ai[2] > 0.5f ? Projectile.ai[2] : 0f;
 				if (reachTiles >= 1f)
 				{
 					_dashLife = System.Math.Clamp((int)(reachTiles * 0.75f), 18, 40);
 					float reachPx = reachTiles * 16f;
 					_speed = reachPx / _dashLife;
-					_lifetime = _flare ? _dashLife + BrakeTicks : _dashLife;
+					_lifetime = _dashLife + BrakeTicks;
 					Projectile.timeLeft = _lifetime;
 					Projectile.localNPCHitCooldown = _dashLife;
 				}
@@ -894,7 +918,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnKill(int timeLeft)
 		{
-			if (!_flare || Projectile.owner != Main.myPlayer)
+			if (!ExtendedDash || Projectile.owner != Main.myPlayer)
 				return;
 			Player p = Main.player[Projectile.owner];
 			if (!p.active)

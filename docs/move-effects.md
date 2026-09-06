@@ -1,7 +1,7 @@
 # 招式泰拉适配表（权威）
 
-**Status：** Implemented（全形态招式/大招按 v1.3 接线；待游戏内验收）  
-**版本：** 1.3（2026-09-05）  
+**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**（见变更记录 / `docs/fx-knowledge.md`）  
+**版本：** 1.3（表结构）；变更记录至 **1.14（2026-09-07 Wave3 Accepted）**  
 **冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
@@ -136,36 +136,36 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，约 ×5 面板） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗 100 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
-| L12_F02 | 胡地 | **同步**：同上 | 精神强念 Bolt+DefDown | 真气拳 Charge→MeleeArc（蓄力拳） | 预知未来 ChargeBeam+IgnoreDef（蓄力后无视防御一击） | 耗 100；长蓄力 | SoftGlow 紫蓄力圈→`SustainedBeam` HyperBeam（IgnoreDef） | Medium | Done |
+| L12_F02 | 胡地 | **同步**：同上 | 精神强念 鼠位×3 延迟追（不可穿墙/穿怪） | 真气拳 白气上扬无爆 | 预知未来 屏内夜光标记 1s 显形后追爆（IgnoreDef） | 耗 100 | 彩虹杖×3；FocusPunch；FairyQueenMagicItemShot | Medium | Accepted |
 
 ### 4.5 龙系链 L07
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L07_F01 | 迷你龙 | **蜕皮**：每 5s 约 15% 概率清除自身 1 个可清除 debuff | 龙息 Spread/Bolt+Stun（概率短僵） | 咬住 MeleeArc | 龙之怒 Barrage（12/32 抖动球+5格爆） | 耗 100 | 龙息：**128 格** Fire 帧线；怒：`DragonRageBarrage` SoftGlow 球 | Low | Done |
-| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 MeleeArc（高击退） | 暴风 Spread/AoEBurst+Stun | 耗 100 | 龙波；龙尾 HitJagged；暴风 WeatherPain 主+**4伴随**穿透牵引 | Medium | Done |
-| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 AoEBurst+Stun | 龙之俯冲 Lunge+Stun | 逆鳞 Barrage/MeleeArc 连段；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 暴风 WeatherPain 技能档；俯冲 SoftGlow；逆鳞 HitJagged | Medium | Done |
+| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 星尘龙鞭 15格极强击退 | 暴风 Spread/AoEBurst+Stun | 耗 100 | 龙波；`DragonTailWhip`；暴风 WeatherPain 主+**4伴随**穿透牵引 | Medium | Accepted |
+| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 AoEBurst+Stun | 龙之俯冲 星尘龙路径冲 | 逆鳞 3s 身周火球；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 暴风 WeatherPain 技能档；`StardustPathLunge`；逆鳞 CultistBossFireBall 壳 | Medium | Accepted |
 
 ### 4.6 钢/超能链 L08（Excel：铁哑铃→金属怪）
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 Lunge+Recoil（自损约 25% 造成伤害） | 耗 100；Recoil | 念力同凯西波动链；金属撞击火花尘 | Low | Done |
-| L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 Bolt+DefDown | 彗星拳 MeleeArc；命中概率 SelfBuff 攻击 +10%（叠最多 2 层，8s） | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | 彗星拳 HitJagged **帧**；破灭：`SustainedBeam` DeathLaser 粗柱跟鼠标 | Medium | Done |
+| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 闪焰式冲+灰日耀VFX+Recoil25% | 耗 100；Recoil | 念力同凯西；`TakeDownLunge` + SolarWhipSwordExplosion 0伤 | Low | Accepted |
+| L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 胡地式鼠位×3 | 彗星拳 真气拳式+3×StarWrath | 破坏光线 Beam 自缓加粗；释放后 **休整 ~2s** | 耗 100；休整 | `AlakazamPsychic`；`CometPunch`+StarWrath；`SustainedBeam` 粗 | Medium | Accepted |
 
 ### 4.7 龙/地链 L15
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Barrage | 撞击 Lunge | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | 龙怒 `DragonRageBarrage` 技能12发；流沙直径 **16 格** Typhoon压蓝壳+琥珀 Cyclone/Fog | Medium | Done |
-| L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（更大） | 流星群 Barrage/AoEBurst；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | 同龙波；紫染爆炸 | Medium | Done |
+| L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（更大） | 流星群 64×StarWrath；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | `DracoMeteorDirector` 狂星之怒壳+金粉爆 | Medium | Accepted |
 
 ### 4.8 幽灵链 L06
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L06_F01 | 鬼斯通 | **飘浮**：飞行能量视为强化（默认池 ×2.5 或近似无限飞，仍禁坐骑）；**不**给永久穿墙；**无 Phase 招式** | 暗影球 Bolt+DefDown | 舌舔 MeleeArc+Stun（短硬直，**非**穿障） | 催眠术 Sleep（对普通怪强；Boss 改为强 Slow ~2s） | 耗 100 | 暗影球 SoftGlow；舌舔短弧；催眠 SoftGlow 环 | Medium | Done |
-| L06_F02 | 耿鬼 | **飘浮**：同上强化飞 | 污泥炸弹 Bolt+Poison | 暗影爪 MeleeArc+EasyCrit | 恶之波动 Beam/Spread+EasyCrit | 耗 100 | 毒污泥；暗影爪 HitJagged；恶波动 ShadowBeam+LightShot 锥 | Medium | Done |
+| L06_F01 | 鬼斯通 | **飘浮**：飞行能量视为强化（默认池 ×2.5 或近似无限飞，仍禁坐骑）；**不**给永久穿墙；**无 Phase 招式** | 暗影球 Bolt+DefDown（BrokenArmor） | 舌舔 20格线+Stun（短硬直，**非**穿障） | 催眠术 `HenshinSleepDebuff` 5s（屏内；Boss 改 Slow ~2s） | 耗 100 | 暗影球不透明紫盘链；舌舔 Extra98；睡眠 `DrawEffects(255,255,255,100)`+zzZ | Medium | Accepted |
+| L06_F02 | 耿鬼 | **飘浮**：同上强化飞 | 污泥炸弹 Bolt+Poison | 暗影抓 紫龙爪20格+ShadowFlame | 恶之波动 32暗影球穿墙追踪爆 | 耗 100 | `ShadowClawSlash`；`DarkPulseBarrage`×32 | Medium | Accepted |
 
 ### 4.9 水/飞鱼链 L09
 
@@ -180,7 +180,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +30% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 撞击 Lunge（2s CD + 0.25s 无敌；速/距约半） | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | 可见四石；X 尘 + 前冲残影 | Medium |
 | L05_F02 | 豪力 | **毅力**：同上 +30% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 岩崩3石微偏（`|vx|≤8`）+落地**1格**爆；劈瓦 **20 格**线斩；爆拳巨大拳套前挥+半径**20格**石爆 | Medium | Done |
-| L05_F03 | 怪力 | **毅力**：同上 +30% | 尖石攻击 Bolt+EasyCrit | 十字劈 MeleeArc+EasyCrit | 近身战 Barrage/MeleeArc；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 尖石；十字劈 X LightShot；近身战 HitJagged 多段 | Medium | Done |
+| L05_F03 | 怪力 | **毅力**：同上 +30% | 尖石攻击 三角三刺穿透+命中爆 | 十字劈 360°弧形X | 近身战 高频+全程无敌+跟随；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 三角 Boulder；贝塞尔弧 X；HitJagged 纠向 | Medium | Accepted |
 
 ### 4.11 飞行链 L11
 
@@ -201,15 +201,15 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 撞击 Lunge | 岩崩 AoEBurst+Stun | 耗 100 | 大招岩崩 **12** 石、±12格、微偏（`|vx|≤8`）+落地1格爆 | Low | Done |
-| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 铁尾 MeleeArc+DefDown | 舍身冲撞 Lunge+Recoil（本被动免自伤） | 耗 100；Recoil 被被动抵消 | 铁尾 HitJagged；冲撞 SoftGlow 残影 | Medium | Done |
+| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 钢尾 龙尾式+铁色遮罩 | 猛撞 闪焰式冲+灰日耀（被动免 Recoil） | 耗 100；Recoil 被被动抵消 | `IronTailWhip`；`TakeDownLunge` | Medium | Accepted |
 
 ### 4.14 传说 L16 / L14 / L17
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 ×1.5 | 空气爆炸 Bolt/AoEBurst+EasyCrit | 神鸟猛击 Charge→Lunge | 气旋攻击 AoEBurst/Field+DefDown（必降防） | 耗 100 | 空气爆 DiffusionCircle+Fog；Lunge SoftGlow；气旋 Typhoon+Cyclone | High | Done |
-| L14_F01 | 超梦 | **压迫感**：×1.5 | 精神强念 Bolt+DefDown | 意念头锤 MeleeArc+Stun | 精神击破 Beam/AoEBurst+IgnoreDef | 耗 100 | 强念紫爆；实体化念力刃/球 | High |
-| L17_F01 | 烈空坐 | **气闸**：无视天气/昼夜，全招式伤害 ×1.7 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 Lunge/Beam+IgnoreDef；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 同龙波；终局一击另见大招 | High | Done |
+| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 ×1.5 | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 0.5s 无敌吟唱后冲+6鸟 | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst`；`SkyAttackLunge`；`HurricaneField` 名键 `CycloneAttack` | High | Accepted |
+| L14_F01 | 超梦 | **压迫感**：×1.5 | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗 100 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
+| L17_F01 | 烈空坐 | **气闸**：无视天气/昼夜，全招式伤害 ×1.7 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
 
 ### 4.15 地鼠链 L10（Excel 外补全）
 
@@ -249,3 +249,6 @@
 | 1.11 | 2026-09-06 | 岩崩落地去金光；污泥毒气瓶毒云；大比鸟三招重做；金属怪+喷火龙/妙蛙花/水箭龟 Accepted |
 | 1.12 | 2026-09-06 | 暴风直立帧；哈克龙大招/快龙技能 WeatherPain；大招主+4伴随穿透牵引 |
 | 1.13 | 2026-09-06 | 大比鸟/哈克龙/快龙暴风验收 Accepted |
+| 1.14 | 2026-09-07 | Wave3 验收 Accepted：鬼斯通（含睡眠白 DrawEffects 255,255,255,100+zzZ）/怪力/哈克龙龙尾/胡地 |
+| 1.15 | 2026-09-07 | Stage7+ 改版落地：钢尾/猛撞/暗影抓/恶波动/彗星拳/破灭自缓加粗/巨金怪强念=胡地/龙俯冲与画龙点睛星尘龙/逆鳞火球/流星群64 StarWrath/空气爆三段/神鸟吟唱/气旋32格 |
+| 1.16 | 2026-09-07 | Stage7+ **Accepted**；画龙点睛纯黑；`CycloneAttack` 名键；超梦强念×6穿墙+精神击破64暗影球 |
