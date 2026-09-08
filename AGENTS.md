@@ -22,11 +22,12 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 | 路径 | 角色 |
 |------|------|
-| `docs/requirements.md` | **产品唯一真相**（v1.3） |
+| `docs/requirements.md` | **产品唯一真相**（v1.4：含等级/攻防/能量/进化双条件） |
+| `docs/balance-stats.md` | **数值真源表**（等级带、经验、MidAtk/Def、种族 Mod、MoveRefRate；设计已定、代码未实现） |
 | `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
 | `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
 | `docs/fx-knowledge.md` | FX 目录 / cookbook / 踩坑（Living；特效改动先查这里） |
-| `.cursor/skills/henshin-moves/` | 招式迭代 Skill：语义→预期效果确认→实现 |
+| `.cursor/skills/henshin-moves/` | 招式迭代 Skill：语义→**数值门**→预期效果确认→实现 |
 | `.cursor/rules/tml-api-docs.mdc` | **alwaysApply**：设计须查 tModLoader stable API |
 | `Assets/Forms/` · `Assets/Accessories/` | 36 形态 + 饰品图（非 FX；A13+ 暂复用旧图） |
 | `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame / Extra98 |
@@ -57,8 +58,9 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 - **已验收（暴风 + 大比鸟，2026-09-06）：** 大比鸟三招 / 哈克龙·快龙暴风。
 - **已验收（Wave3，2026-09-07）：** 鬼斯通 / 哈克龙龙尾 / 怪力 / 胡地。
 - **已验收（Stage7+，2026-09-07）：** 钢尾（`0,0,16,80` 罩）/ 猛撞灰日耀 / 暗影抓+影炎 / 恶波动×32 / 彗星拳+StarWrath / 破灭自缓加粗 / 巨金怪强念=胡地 / 龙俯冲·画龙点睛纯黑星尘龙 / 逆鳞火球 / 流星群64 / 空气爆三段 / 神鸟吟唱 / 气旋32格（`CycloneAttack`）/ 超梦强念×6穿墙·精神击破64球。
-- **进化：** UIState；ProgressStage 上升弹窗；`/henshin evolve` 可补弹。
-- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending。
+- **进化：** UIState；ProgressStage 上升弹窗；`/henshin evolve` 可补弹。**v1.4 设计：** 进化须 `ProgressStage >= next.Stage` **且** `Level >= BandMin[next.Stage]`（代码未实现双条件/等级）。
+- **数值设计（2026-09-09）：** `docs/requirements.md` v1.4 + `docs/balance-stats.md` 已定稿（物品等级/经验、攻防、能量池 1000、招式 MoveRefRate）；**代码仍为旧 StageDamage/EnergyMax=100**，实现另开。
+- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending；**等级攻防未实装**。
 - **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3。
-- **下一步：** 联机 → DPS → Rage。
+- **下一步：** 实装 v1.4 数值体系 → 联机 → DPS 抽检 → Rage。
 - 新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

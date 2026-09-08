@@ -6,7 +6,8 @@
 
 | 文档 | 说明 |
 |------|------|
-| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，**v1.3**） |
+| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，**v1.4**） |
+| [docs/balance-stats.md](docs/balance-stats.md) | 等级/攻防/经验/招式数值真源（设计定稿，代码未实现） |
 | [docs/move-effects.md](docs/move-effects.md) | 招式 / 被动 / 大招泰拉适配表 |
 | [docs/dev-plan.md](docs/dev-plan.md) | 开发计划（冲突以需求为准） |
 | [docs/fx-knowledge.md](docs/fx-knowledge.md) | Stage 6+ FX 目录 / cookbook / 踩坑（Living） |
@@ -18,8 +19,10 @@
 
 **现役代码（2026-09-07）：** 36 形态 + A01～A21；被动+技能1/2+能量大招（默认 Mouse3）；脚下能量条；Stage 6+ / Wave3 / **Stage7+ 已验收**；见 `docs/fx-knowledge.md`；进化 UIState。
 
-**下一步：** 联机 / DPS。调试 `/henshin stage`、`/henshin evolve`。  
-**注意：** 御三家二阶进度看 **史莱姆神 / 鹿角怪**，不是史莱姆王。
+**数值设计（2026-09-09 / requirements v1.4）：** 物品等级经验、攻防、能量池、进化双条件已写入 `docs/balance-stats.md`；**代码未实装**。
+
+**下一步：** 实装 v1.4 数值 → 联机 / DPS。调试 `/henshin stage`、`/henshin evolve`。  
+**注意：** 御三家二阶进度看 **史莱姆神 / 鹿角怪**，不是史莱姆王；进化还须等级进入下一段 `BandMin`。
 
 后置：联机双端实测、DPS 对标、Rage/肾上腺素、M5 发布打磨。
 

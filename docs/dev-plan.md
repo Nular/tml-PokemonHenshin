@@ -2,11 +2,11 @@
 
 | 项 | 内容 |
 |----|------|
-| 版本 | 1.3 |
-| 对齐需求 | `docs/requirements.md` **v1.3** |
-| 状态 | **战斗模型 v1.3 已落地**；Wave1/Stage6/御三家终阶+金属怪 **已验收**；大比鸟三招+哈克龙/快龙暴风 **已验收**；**Wave3 已验收**；**Stage7+ 已验收（2026-09-07）**；联机 / DPS / M5 后置 |
+| 版本 | 1.4 |
+| 对齐需求 | `docs/requirements.md` **v1.4**（数值表 `docs/balance-stats.md`） |
+| 状态 | **战斗模型 v1.3 已落地并验收**；**v1.4 等级/攻防/能量/进化双条件 = 设计定稿、代码未实现**；联机 / DPS 抽检 / M5 后置 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
-| 产出约束 | 本文件对齐现役代码；冲突以 `docs/requirements.md` 为准 |
+| 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
 **产品真相唯一来源：** `docs/requirements.md`。本计划冲突时以需求文档为准。
 
@@ -33,10 +33,10 @@
 - **取消持握**同 tick 清除本模全部相关效果
 - 持握期间**禁止坐骑**
 - 独立伤害类型 `HenshinDamage`，职业专精按 **k = 0.35** 折算
-- 随 `ProgressStage` 进化（物品替换，保留前缀与收藏）
+- 随 `ProgressStage` **与物品等级双条件**进化（需求 v1.4；**代码仍仅 ProgressStage**）
 - 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01～A21 饰品**
-- **联机必须一致**（形态、能量、伤害、进化、天气场伤害侧、地形变更）
-- 招式泰拉适配权威表：`docs/move-effects.md`
+- **联机必须一致**（形态、能量、伤害、进化、天气场伤害侧、地形变更；v1.4 另含 level/xp）
+- 招式泰拉适配：`docs/move-effects.md`；数值真源：`docs/balance-stats.md`（设计已定、代码未切）
 
 ### 1.2 里程碑（对齐需求 §13）
 
@@ -631,7 +631,7 @@ TryEditTile(player, action) →
 
 ## 10. Agent 开工检查清单（M0 第一天；已执行完毕，保留作后续里程碑开工范式）
 
-1. 通读 `docs/requirements.md` **v1.3**（尤其 §1.4～1.5、§2.5、§8、§12、§13）与 `docs/move-effects.md`
+1. 通读 `docs/requirements.md` **v1.4**（尤其 §1.4～1.5、§2.5～2.7、§4.3、§4.6、§8、§12）与 `docs/balance-stats.md`、`docs/move-effects.md`
 2. 只读浏览大修：`Content/DamageModify/*`、`WraithNet.cs`、`CrabulonPlayer` 下马、`MarbleShieldLayer`、`GhostRain*`、`CWRRef` Downed 段、`build.txt`
 3. **不修改** CalamityOverhaul；**不新增**任何 FX 图片到本仓库
 4. 创建 PokemonHenshin 模组工程（本计划 §2）
@@ -645,10 +645,10 @@ TryEditTile(player, action) →
 
 | 维度 | 结论 |
 |------|------|
-| 与 requirements **v1.3** 对齐 | **通过**：含禁自制 FX、52poke 取图、持握变身、禁坐骑、被动+技能1/2+能量大招、进化、御三家、传说线、A01～A21、联机与 M0～M5 |
+| 与 requirements **v1.4** 对齐 | **规则层通过**；**代码仍停在 v1.3 战斗模型**：`StageDamage`、`EnergyMax=100`、`EnergyOnHit=4`、进化仅 `MeetsStage`（无 Level/Xp） |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
-| 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
-| 总评 | **v1.3 战斗/饰品已落地；待游戏内验收与 M5；现役穿障形态为 0（Excel 取消鬼斯通穿障）** |
+| 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检；⑤ **v1.4 数值体系未实装** |
+| 总评 | **v1.3 战斗/饰品已落地验收；v1.4 设计已入 docs；下一步优先实装等级攻防能量；现役穿障形态为 0** |
 
 ---
 
@@ -666,3 +666,4 @@ TryEditTile(player, action) →
 | **1.3.0** | 战斗改为被动+技能1/2+能量大招；A13～A21；move-effects.md；获取 Tooltip；旧饰品修复 |
 | 1.3.1 | 洁癖：页眉/目标/总评与 README·AGENTS 对齐 v1.3；注明现役无穿障形态 |
 | 1.3.2 | 洁癖：M1.3 对齐 UIState + ProgressStage 上升弹窗；去掉「每 tick 扫」过期说法 |
+| **1.4.0** | 洁癖：对齐 requirements v1.4 / balance-stats；标明数值设计已定、代码未实现；下一步=实装等级攻防 |
