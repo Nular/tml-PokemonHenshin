@@ -1,5 +1,6 @@
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
+using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -22,6 +23,8 @@ namespace PokemonHenshin.Content.Evolution
 
 		public static bool MeetsTrigger(Player player, FormDefinition current, Item item)
 		{
+			if (player?.GetModPlayer<HenshinPlayer>().EverstoneBlock == true)
+				return false;
 			if (current == null)
 				return false;
 			FormDefinition next = FormRegistry.FindEvolutionOf(current.FormId);
@@ -83,14 +86,14 @@ namespace PokemonHenshin.Content.Evolution
 			int selected = player.selectedItem;
 			if (selected >= 0 && selected < HenshinPlayerHotbar.Size)
 			{
-				if (TrySlot(player.inventory[selected], selected, false, out current, out next))
+				if (TrySlot(player, player.inventory[selected], selected, false, out current, out next))
 				{
 					slot = selected;
 					return true;
 				}
 			}
 
-			if (!Main.mouseItem.IsAir && TrySlot(Main.mouseItem, -1, true, out current, out next))
+			if (!Main.mouseItem.IsAir && TrySlot(player, Main.mouseItem, -1, true, out current, out next))
 			{
 				isMouse = true;
 				return true;
@@ -100,7 +103,7 @@ namespace PokemonHenshin.Content.Evolution
 			{
 				if (i == selected)
 					continue;
-				if (TrySlot(player.inventory[i], i, false, out current, out next))
+				if (TrySlot(player, player.inventory[i], i, false, out current, out next))
 				{
 					slot = i;
 					return true;
@@ -110,7 +113,7 @@ namespace PokemonHenshin.Content.Evolution
 			return false;
 		}
 
-		private static bool TrySlot(Item item, int slot, bool isMouse, out FormDefinition current, out FormDefinition next)
+		private static bool TrySlot(Player player, Item item, int slot, bool isMouse, out FormDefinition current, out FormDefinition next)
 		{
 			current = null;
 			next = null;
@@ -122,7 +125,7 @@ namespace PokemonHenshin.Content.Evolution
 			next = FormRegistry.FindEvolutionOf(current.FormId);
 			if (next == null)
 				return false;
-			return MeetsTrigger(null, current, item);
+			return MeetsTrigger(player, current, item);
 		}
 
 		public static Item GetItemRef(Player player, int slot, bool isMouse)

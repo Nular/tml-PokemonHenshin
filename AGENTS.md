@@ -63,6 +63,6 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 - **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
 - **数值（2026-09-09）：** v1.4 已接线。击杀 XP × 世界档（1～3→300～900）；`ExpNeeded` × 物品等级带。`LEVEL UP!` / `EXP +X` 世界字。游戏内 DPS 抽检仍待本地。
-- **已知缺口：** 联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。未接线代码见 `docs/requirements.md` §12.1。
+- **已知缺口：** 联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。饰品 28 家族碎片线已接线（游戏内验收待本地）。未接线代码见 `docs/requirements.md` §12.1。
 - **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`；`tools/HenshinStatVerify`。
-- **下一步：** 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。
+- **下一步：** 游戏内验饰品 → 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

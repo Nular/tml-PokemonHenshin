@@ -48,6 +48,8 @@ namespace PokemonHenshin.Content.Core
 		/// <summary>写入弹幕 ai[2]：扩展。</summary>
 		public float Ai2 { get; init; }
 
+		public MoveDelivery Delivery { get; init; }
+		/// <summary>历史字段。广角镜追踪改看 <see cref="Delivery"/>，不要再用本字段决定 Homing。</summary>
 		public bool IsRangedProjectile { get; init; }
 		/// <summary>在鼠标世界坐标生成（落点技 / 指针大招）。</summary>
 		public bool SpawnAtMouse { get; init; }

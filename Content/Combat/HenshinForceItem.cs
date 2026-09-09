@@ -208,7 +208,7 @@ namespace PokemonHenshin.Content.Combat
 		private MoveSpec CurrentMove(Player player)
 		{
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
-			if (hp.AccChoiceBand)
+			if (hp.ChoiceLockSkill2)
 				return Move1;
 			return player.altFunctionUse == 2 ? Move2 : Move1;
 		}
@@ -216,7 +216,7 @@ namespace PokemonHenshin.Content.Combat
 		public override bool CanUseItem(Player player)
 		{
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
-			if (hp.AccChoiceBand && player.altFunctionUse == 2)
+			if (hp.ChoiceLockSkill2 && player.altFunctionUse == 2)
 				return false;
 
 			MoveSpec move = CurrentMove(player);
@@ -241,8 +241,17 @@ namespace PokemonHenshin.Content.Combat
 		{
 			// HenshinDamageFactor 已计入 Item.damage = FinalAttack，这里只叠饰品乘区。
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
-			if (hp.IsTransformed && hp.HenshinDamageFactorBonus != 0f)
-				damage *= 1f + hp.HenshinDamageFactorBonus;
+			if (hp.IsTransformed)
+			{
+				if (hp.HenshinDamageBonus != 0f)
+					damage *= 1f + hp.HenshinDamageBonus;
+				if (hp.HenshinDamageFactorBonus != 0f)
+					damage *= 1f + hp.HenshinDamageFactorBonus;
+				if (hp.ChoiceDamage != 0f)
+					damage *= 1f + hp.ChoiceDamage;
+				if (hp.LifeOrbDamage != 0f)
+					damage *= 1f + hp.LifeOrbDamage;
+			}
 		}
 
 		public override void ModifyShootStats(Player player, ref Vector2 position, ref Vector2 velocity, ref int type, ref int damage, ref float knockback)
@@ -264,7 +273,7 @@ namespace PokemonHenshin.Content.Combat
 		public bool TryFireUltimate(Player player)
 		{
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
-			if (!hp.IsTransformed || hp.AccChoiceBand || Ultimate == null)
+			if (!hp.IsTransformed || hp.ChoiceLockUlt || Ultimate == null)
 				return false;
 			if (!hp.TryConsumeUltimate())
 				return false;
@@ -305,9 +314,8 @@ namespace PokemonHenshin.Content.Combat
 				if (!hp.CanLunge)
 					return;
 				hp.StartLungeCooldown(120); // 2s
-				// 0.25s 无敌帧
 				player.immune = true;
-				player.immuneTime = Math.Max(player.immuneTime, 15);
+				player.immuneTime = Math.Max(player.immuneTime, 15 + hp.LungeIFrameBonus);
 			}
 
 			if (move.GrantsPhasing)
@@ -339,10 +347,14 @@ namespace PokemonHenshin.Content.Combat
 				Main.projectile[id].Center = Main.MouseWorld;
 			if (id >= 0 && id < Main.maxProjectiles && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
 			{
+				tagged.Delivery = move.Delivery;
 				tagged.EasyCrit = move.EasyCrit;
-				tagged.Homing = move.IsRangedProjectile && hp.AccWideLens;
-				tagged.HomingTurnRate = hp.HomingTurnRate;
 				tagged.IgnoreDefensePartial = move.IgnoreDefensePartial;
+				if (hp.ShouldHoming(move.Delivery))
+				{
+					tagged.Homing = true;
+					tagged.HomingTurnRate = Math.Max(tagged.HomingTurnRate, hp.HomingTurn);
+				}
 			}
 
 			if (move.RecoilSelf && !ReferenceEquals(move, Ultimate))
@@ -395,12 +407,44 @@ namespace PokemonHenshin.Content.Combat
 					"Mods.PokemonHenshin.Common.ForceXp", Xp, need)));
 			}
 
+			int shownAtk = ComputeFinalAttack();
+			int shownDef = ComputeFinalDefense();
+			Player local = Main.LocalPlayer;
+			HenshinPlayer hp = null;
+			if (local != null && local.active)
+			{
+				hp = local.GetModPlayer<HenshinPlayer>();
+				shownAtk = local.GetWeaponDamage(Item);
+				if (hp.IsTransformed && hp.EvioliteDefMul > 0f
+					&& FormRegistry.FindEvolutionOf(Definition?.FormId) != null)
+					shownDef = (int)Math.Round(shownDef * (1f + hp.EvioliteDefMul));
+			}
+
 			tooltips.Add(new TooltipLine(Mod, "HenshinStats", Language.GetTextValue(
-				"Mods.PokemonHenshin.Common.ForceStats", ComputeFinalAttack(), ComputeFinalDefense())));
+				"Mods.PokemonHenshin.Common.ForceStats", shownAtk, shownDef)));
 			tooltips.Add(new TooltipLine(Mod, "HenshinDefenseNote", Language.GetTextValue("Mods.PokemonHenshin.Common.ForceDefenseNote"))
 			{
 				OverrideColor = new Color(200, 210, 230)
 			});
+			if (hp != null && hp.IsTransformed)
+			{
+				if (hp.MeleeDeliveryDamage > 0f)
+				{
+					tooltips.Add(new TooltipLine(Mod, "HenshinMeleeAcc", Language.GetTextValue(
+						"Mods.PokemonHenshin.Common.ForceMeleeBonus", (int)Math.Round(hp.MeleeDeliveryDamage * 100f)))
+					{
+						OverrideColor = new Color(220, 200, 160)
+					});
+				}
+				if (hp.BossDamageBonus > 0f)
+				{
+					tooltips.Add(new TooltipLine(Mod, "HenshinBossAcc", Language.GetTextValue(
+						"Mods.PokemonHenshin.Common.ForceBossBonus", (int)Math.Round(hp.BossDamageBonus * 100f)))
+					{
+						OverrideColor = new Color(220, 200, 160)
+					});
+				}
+			}
 
 			if (Move1 != null && Move2 != null && Ultimate != null)
 			{
@@ -411,10 +455,9 @@ namespace PokemonHenshin.Content.Combat
 					Language.GetTextValue(Ultimate.NameKey))));
 			}
 
-			Player local = Main.LocalPlayer;
 			if (local != null && local.active)
 			{
-				HenshinPlayer hp = local.GetModPlayer<HenshinPlayer>();
+				hp ??= local.GetModPlayer<HenshinPlayer>();
 				float max = Definition.EnergyMax;
 				float cur = hp.GetStoredEnergy(Definition.FormId, max);
 				int curI = (int)Math.Round(cur);
@@ -467,5 +510,6 @@ namespace PokemonHenshin.Content.Combat
 		bool Homing { get; set; }
 		float HomingTurnRate { get; set; }
 		bool IgnoreDefensePartial { get; set; }
+		MoveDelivery Delivery { get; set; }
 	}
 }

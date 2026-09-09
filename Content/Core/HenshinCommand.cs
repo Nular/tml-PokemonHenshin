@@ -1,6 +1,8 @@
 using Microsoft.Xna.Framework;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Evolution;
+using PokemonHenshin.Content.PlayerState;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Core
@@ -24,6 +26,11 @@ namespace PokemonHenshin.Content.Core
 
 			if (args[0].Equals("evolve", System.StringComparison.OrdinalIgnoreCase))
 			{
+				if (caller.Player.GetModPlayer<HenshinPlayer>().EverstoneBlock)
+				{
+					caller.Reply(Language.GetTextValue("Mods.PokemonHenshin.Common.EverstoneBlocked"), Color.Orange);
+					return;
+				}
 				if (EvolutionService.TryFindEvolvable(caller.Player, out int slot, out bool isMouse, out FormDefinition current, out FormDefinition next))
 				{
 					EvolutionConfirmSystem.Instance?.Open(slot, isMouse, current, next);

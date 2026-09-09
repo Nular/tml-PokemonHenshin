@@ -10,6 +10,9 @@ Common: {
 	ForceLevelCapped: Level {0} (capped at {1}, world stage {2})
 	ForceXp: XP {0} / {1}
 	ForceStats: Form attack {0}  Form defense {1}
+	ForceMeleeBonus: Melee moves +{0}%
+	ForceBossBonus: Boss hit +{0}%
+	EverstoneBlocked: Everstone is blocking evolution
 	ForceDefenseNote: Form defense replaces armor defense while transformed; accessory defense still applies
 	ForceEvolveNeed: Evolve to {0} requires stage {1} and level >= {2}
 	ForceEvolveReady: Ready to evolve into {0}
@@ -32,6 +35,9 @@ Evolution: {
 Accessories: {
 	ActiveTag: "[Henshin only - ACTIVE]"
 	InactiveTag: "[Henshin only - inactive]"
+	AlwaysActiveTag: "[Always on - ACTIVE]"
+	AlwaysInactiveTag: "[Always on - inactive]"
+	ShardTag: Shard {0}/6
 }
 
 Buffs: {
@@ -372,155 +378,2216 @@ Items: {
 	}
 
 	A01AbilityCapsuleBelt: {
-		DisplayName: Ability Capsule Belt
+		DisplayName: Ability Capsule
 		Tooltip:
 			'''
-			A capsule that switches Abilities - remade as a belt.
-			Henshin only: move cooldown x0.95
+			A capsule that switches a Pokémon's Ability.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A01AbilityCapsuleBelt_S1: {
+		DisplayName: Ability Capsule Shard I
+		Tooltip:
+			'''
+			A capsule that switches a Pokémon's Ability.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A01AbilityCapsuleBelt_S2: {
+		DisplayName: Ability Capsule Shard II
+		Tooltip:
+			'''
+			A capsule that switches a Pokémon's Ability.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A01AbilityCapsuleBelt_S3: {
+		DisplayName: Ability Capsule Shard III
+		Tooltip:
+			'''
+			A capsule that switches a Pokémon's Ability.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A01AbilityCapsuleBelt_S4: {
+		DisplayName: Ability Capsule Shard IV
+		Tooltip:
+			'''
+			A capsule that switches a Pokémon's Ability.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A01AbilityCapsuleBelt_S5: {
+		DisplayName: Ability Capsule Shard V
+		Tooltip:
+			'''
+			A capsule that switches a Pokémon's Ability.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A01AbilityCapsuleBelt_S6: {
+		DisplayName: Ability Capsule Shard VI
+		Tooltip:
+			'''
+			A capsule that switches a Pokémon's Ability.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A01AbilityCapsuleBelt_Super: {
+		DisplayName: Super Ability Capsule
+		Tooltip:
+			'''
+			A capsule that switches a Pokémon's Ability.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A02MuscleBand: {
-		DisplayName: Focus Headband
+		DisplayName: Muscle Band
 		Tooltip:
 			'''
-			An exhilarating band that slightly boosts physical moves.
-			Henshin only: +6% henshin damage
+			An exciting band that slightly boosts physical moves.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A02MuscleBand_S1: {
+		DisplayName: Muscle Band Shard I
+		Tooltip:
+			'''
+			An exciting band that slightly boosts physical moves.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A02MuscleBand_S2: {
+		DisplayName: Muscle Band Shard II
+		Tooltip:
+			'''
+			An exciting band that slightly boosts physical moves.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A02MuscleBand_S3: {
+		DisplayName: Muscle Band Shard III
+		Tooltip:
+			'''
+			An exciting band that slightly boosts physical moves.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A02MuscleBand_S4: {
+		DisplayName: Muscle Band Shard IV
+		Tooltip:
+			'''
+			An exciting band that slightly boosts physical moves.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A02MuscleBand_S5: {
+		DisplayName: Muscle Band Shard V
+		Tooltip:
+			'''
+			An exciting band that slightly boosts physical moves.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A02MuscleBand_S6: {
+		DisplayName: Muscle Band Shard VI
+		Tooltip:
+			'''
+			An exciting band that slightly boosts physical moves.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A02MuscleBand_Super: {
+		DisplayName: Super Muscle Band
+		Tooltip:
+			'''
+			An exciting band that slightly boosts physical moves.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A03SoulDewPendant: {
-		DisplayName: Aura Pendant
+		DisplayName: Soul Dew
 		Tooltip:
 			'''
-			A wondrous orb that powers Psychic and Dragon moves for Latios/Latias.
-			Henshin only: affinity amplitude +20%
+			A wondrous orb that powers Psychic and Dragon moves.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A03SoulDewPendant_S1: {
+		DisplayName: Soul Dew Shard I
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A03SoulDewPendant_S2: {
+		DisplayName: Soul Dew Shard II
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A03SoulDewPendant_S3: {
+		DisplayName: Soul Dew Shard III
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A03SoulDewPendant_S4: {
+		DisplayName: Soul Dew Shard IV
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A03SoulDewPendant_S5: {
+		DisplayName: Soul Dew Shard V
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A03SoulDewPendant_S6: {
+		DisplayName: Soul Dew Shard VI
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A03SoulDewPendant_Super: {
+		DisplayName: Super Soul Dew
+		Tooltip:
+			'''
+			A wondrous orb that powers Psychic and Dragon moves.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A04FloatStoneAnklet: {
-		DisplayName: Light Anklet
+		DisplayName: Float Stone
 		Tooltip:
 			'''
 			An extremely light stone that reduces weight.
-			Henshin only: flight energy +1s; move speed +5%
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A04FloatStoneAnklet_S1: {
+		DisplayName: Float Stone Shard I
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A04FloatStoneAnklet_S2: {
+		DisplayName: Float Stone Shard II
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A04FloatStoneAnklet_S3: {
+		DisplayName: Float Stone Shard III
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A04FloatStoneAnklet_S4: {
+		DisplayName: Float Stone Shard IV
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A04FloatStoneAnklet_S5: {
+		DisplayName: Float Stone Shard V
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A04FloatStoneAnklet_S6: {
+		DisplayName: Float Stone Shard VI
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A04FloatStoneAnklet_Super: {
+		DisplayName: Super Float Stone
+		Tooltip:
+			'''
+			An extremely light stone that reduces weight.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A05FocusSashBadge: {
-		DisplayName: Guard Badge
+		DisplayName: Focus Band
 		Tooltip:
 			'''
-			Survives a would-be KO at full HP once.
-			Henshin only: damage taken x0.94
+			An item that may allow the holder to endure a potential KO.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A05FocusSashBadge_S1: {
+		DisplayName: Focus Band Shard I
+		Tooltip:
+			'''
+			An item that may allow the holder to endure a potential KO.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A05FocusSashBadge_S2: {
+		DisplayName: Focus Band Shard II
+		Tooltip:
+			'''
+			An item that may allow the holder to endure a potential KO.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A05FocusSashBadge_S3: {
+		DisplayName: Focus Band Shard III
+		Tooltip:
+			'''
+			An item that may allow the holder to endure a potential KO.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A05FocusSashBadge_S4: {
+		DisplayName: Focus Band Shard IV
+		Tooltip:
+			'''
+			An item that may allow the holder to endure a potential KO.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A05FocusSashBadge_S5: {
+		DisplayName: Focus Band Shard V
+		Tooltip:
+			'''
+			An item that may allow the holder to endure a potential KO.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A05FocusSashBadge_S6: {
+		DisplayName: Focus Band Shard VI
+		Tooltip:
+			'''
+			An item that may allow the holder to endure a potential KO.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A05FocusSashBadge_Super: {
+		DisplayName: Super Focus Band
+		Tooltip:
+			'''
+			An item that may allow the holder to endure a potential KO.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A06LifeOrbCore: {
-		DisplayName: Calamity Core
+		DisplayName: Expert Belt
 		Tooltip:
 			'''
-			Powers moves at a cost of HP.
-			Henshin only: HenshinDamageFactor +0.05
+			A well-worn belt that boosts super-effective moves.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A06LifeOrbCore_S1: {
+		DisplayName: Expert Belt Shard I
+		Tooltip:
+			'''
+			A well-worn belt that boosts super-effective moves.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A06LifeOrbCore_S2: {
+		DisplayName: Expert Belt Shard II
+		Tooltip:
+			'''
+			A well-worn belt that boosts super-effective moves.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A06LifeOrbCore_S3: {
+		DisplayName: Expert Belt Shard III
+		Tooltip:
+			'''
+			A well-worn belt that boosts super-effective moves.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A06LifeOrbCore_S4: {
+		DisplayName: Expert Belt Shard IV
+		Tooltip:
+			'''
+			A well-worn belt that boosts super-effective moves.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A06LifeOrbCore_S5: {
+		DisplayName: Expert Belt Shard V
+		Tooltip:
+			'''
+			A well-worn belt that boosts super-effective moves.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A06LifeOrbCore_S6: {
+		DisplayName: Expert Belt Shard VI
+		Tooltip:
+			'''
+			A well-worn belt that boosts super-effective moves.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A06LifeOrbCore_Super: {
+		DisplayName: Super Expert Belt
+		Tooltip:
+			'''
+			A well-worn belt that boosts super-effective moves.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A07CharcoalBag: {
-		DisplayName: Charcoal Pouch
+		DisplayName: Charcoal
 		Tooltip:
 			'''
-			Fuel that powers Fire moves.
-			Fire resonance: +8% vs burning targets
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A07CharcoalBag_S1: {
+		DisplayName: Charcoal Shard I
+		Tooltip:
+			'''
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A07CharcoalBag_S2: {
+		DisplayName: Charcoal Shard II
+		Tooltip:
+			'''
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A07CharcoalBag_S3: {
+		DisplayName: Charcoal Shard III
+		Tooltip:
+			'''
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A07CharcoalBag_S4: {
+		DisplayName: Charcoal Shard IV
+		Tooltip:
+			'''
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A07CharcoalBag_S5: {
+		DisplayName: Charcoal Shard V
+		Tooltip:
+			'''
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A07CharcoalBag_S6: {
+		DisplayName: Charcoal Shard VI
+		Tooltip:
+			'''
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A07CharcoalBag_Super: {
+		DisplayName: Super Charcoal
+		Tooltip:
+			'''
+			Fuel that boosts Fire-type moves. Fire resonance.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A08MysticWaterPouch: {
-		DisplayName: Water Bladder
+		DisplayName: Mystic Water
 		Tooltip:
 			'''
-			A teardrop gem that powers Water moves.
-			Water resonance: +10% swim speed
+			A teardrop gem that boosts Water-type moves.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A08MysticWaterPouch_S1: {
+		DisplayName: Mystic Water Shard I
+		Tooltip:
+			'''
+			A teardrop gem that boosts Water-type moves.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A08MysticWaterPouch_S2: {
+		DisplayName: Mystic Water Shard II
+		Tooltip:
+			'''
+			A teardrop gem that boosts Water-type moves.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A08MysticWaterPouch_S3: {
+		DisplayName: Mystic Water Shard III
+		Tooltip:
+			'''
+			A teardrop gem that boosts Water-type moves.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A08MysticWaterPouch_S4: {
+		DisplayName: Mystic Water Shard IV
+		Tooltip:
+			'''
+			A teardrop gem that boosts Water-type moves.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A08MysticWaterPouch_S5: {
+		DisplayName: Mystic Water Shard V
+		Tooltip:
+			'''
+			A teardrop gem that boosts Water-type moves.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A08MysticWaterPouch_S6: {
+		DisplayName: Mystic Water Shard VI
+		Tooltip:
+			'''
+			A teardrop gem that boosts Water-type moves.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A08MysticWaterPouch_Super: {
+		DisplayName: Super Mystic Water
+		Tooltip:
+			'''
+			A teardrop gem that boosts Water-type moves.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A09MagnetChip: {
-		DisplayName: Battery Chip
+		DisplayName: Magnet
 		Tooltip:
 			'''
-			A powerful magnet that powers Electric moves.
-			Electric resonance: dash cooldown x0.85
+			A powerful magnet that boosts Electric-type moves.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A09MagnetChip_S1: {
+		DisplayName: Magnet Shard I
+		Tooltip:
+			'''
+			A powerful magnet that boosts Electric-type moves.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A09MagnetChip_S2: {
+		DisplayName: Magnet Shard II
+		Tooltip:
+			'''
+			A powerful magnet that boosts Electric-type moves.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A09MagnetChip_S3: {
+		DisplayName: Magnet Shard III
+		Tooltip:
+			'''
+			A powerful magnet that boosts Electric-type moves.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A09MagnetChip_S4: {
+		DisplayName: Magnet Shard IV
+		Tooltip:
+			'''
+			A powerful magnet that boosts Electric-type moves.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A09MagnetChip_S5: {
+		DisplayName: Magnet Shard V
+		Tooltip:
+			'''
+			A powerful magnet that boosts Electric-type moves.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A09MagnetChip_S6: {
+		DisplayName: Magnet Shard VI
+		Tooltip:
+			'''
+			A powerful magnet that boosts Electric-type moves.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A09MagnetChip_Super: {
+		DisplayName: Super Magnet
+		Tooltip:
+			'''
+			A powerful magnet that boosts Electric-type moves.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A10SharpBeakMembrane: {
-		DisplayName: Wing Membrane
+		DisplayName: Sharp Beak
 		Tooltip:
 			'''
-			A long, sharp beak that powers Flying moves.
-			Flying resonance: fall reduction to 75%
+			A long, sharp beak that boosts Flying-type moves.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A10SharpBeakMembrane_S1: {
+		DisplayName: Sharp Beak Shard I
+		Tooltip:
+			'''
+			A long, sharp beak that boosts Flying-type moves.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A10SharpBeakMembrane_S2: {
+		DisplayName: Sharp Beak Shard II
+		Tooltip:
+			'''
+			A long, sharp beak that boosts Flying-type moves.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A10SharpBeakMembrane_S3: {
+		DisplayName: Sharp Beak Shard III
+		Tooltip:
+			'''
+			A long, sharp beak that boosts Flying-type moves.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A10SharpBeakMembrane_S4: {
+		DisplayName: Sharp Beak Shard IV
+		Tooltip:
+			'''
+			A long, sharp beak that boosts Flying-type moves.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A10SharpBeakMembrane_S5: {
+		DisplayName: Sharp Beak Shard V
+		Tooltip:
+			'''
+			A long, sharp beak that boosts Flying-type moves.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A10SharpBeakMembrane_S6: {
+		DisplayName: Sharp Beak Shard VI
+		Tooltip:
+			'''
+			A long, sharp beak that boosts Flying-type moves.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A10SharpBeakMembrane_Super: {
+		DisplayName: Super Sharp Beak
+		Tooltip:
+			'''
+			A long, sharp beak that boosts Flying-type moves.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A11SpellTagCloth: {
-		DisplayName: Spell Cloth
+		DisplayName: Spell Tag
 		Tooltip:
 			'''
-			An eerie tag that powers Ghost moves.
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A11SpellTagCloth_S1: {
+		DisplayName: Spell Tag Shard I
+		Tooltip:
+			'''
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A11SpellTagCloth_S2: {
+		DisplayName: Spell Tag Shard II
+		Tooltip:
+			'''
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A11SpellTagCloth_S3: {
+		DisplayName: Spell Tag Shard III
+		Tooltip:
+			'''
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A11SpellTagCloth_S4: {
+		DisplayName: Spell Tag Shard IV
+		Tooltip:
+			'''
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A11SpellTagCloth_S5: {
+		DisplayName: Spell Tag Shard V
+		Tooltip:
+			'''
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A11SpellTagCloth_S6: {
+		DisplayName: Spell Tag Shard VI
+		Tooltip:
+			'''
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A11SpellTagCloth_Super: {
+		DisplayName: Super Spell Tag
+		Tooltip:
+			'''
+			A sinister tag. Ghost resonance: selected projectiles pierce tiles.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A12DragonFangCharm: {
-		DisplayName: Dragon Fang Charm
+		DisplayName: Dragon Fang
 		Tooltip:
 			'''
-			A hard, sharp fang that powers Dragon moves.
-			Dragon resonance: +6% vs bosses
+			A hard, sharp fang that boosts Dragon-type moves.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
 			'''
 	}
 
+	A12DragonFangCharm_S1: {
+		DisplayName: Dragon Fang Shard I
+		Tooltip:
+			'''
+			A hard, sharp fang that boosts Dragon-type moves.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A12DragonFangCharm_S2: {
+		DisplayName: Dragon Fang Shard II
+		Tooltip:
+			'''
+			A hard, sharp fang that boosts Dragon-type moves.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A12DragonFangCharm_S3: {
+		DisplayName: Dragon Fang Shard III
+		Tooltip:
+			'''
+			A hard, sharp fang that boosts Dragon-type moves.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A12DragonFangCharm_S4: {
+		DisplayName: Dragon Fang Shard IV
+		Tooltip:
+			'''
+			A hard, sharp fang that boosts Dragon-type moves.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A12DragonFangCharm_S5: {
+		DisplayName: Dragon Fang Shard V
+		Tooltip:
+			'''
+			A hard, sharp fang that boosts Dragon-type moves.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A12DragonFangCharm_S6: {
+		DisplayName: Dragon Fang Shard VI
+		Tooltip:
+			'''
+			A hard, sharp fang that boosts Dragon-type moves.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A12DragonFangCharm_Super: {
+		DisplayName: Super Dragon Fang
+		Tooltip:
+			'''
+			A hard, sharp fang that boosts Dragon-type moves.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A13WideLens: {
 		DisplayName: Wide Lens
-		Tooltip: Henshin only: ranged projectiles gain angular homing
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A13WideLens_S1: {
+		DisplayName: Wide Lens Shard I
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A13WideLens_S2: {
+		DisplayName: Wide Lens Shard II
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A13WideLens_S3: {
+		DisplayName: Wide Lens Shard III
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A13WideLens_S4: {
+		DisplayName: Wide Lens Shard IV
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A13WideLens_S5: {
+		DisplayName: Wide Lens Shard V
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A13WideLens_S6: {
+		DisplayName: Wide Lens Shard VI
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A13WideLens_Super: {
+		DisplayName: Super Wide Lens
+		Tooltip:
+			'''
+			A lens for spotting distant things. Grants homing on Bolt/Spread/Barrage/DoTBind (not Beam).
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A14ChoiceBand: {
 		DisplayName: Choice Band
-		Tooltip: Henshin only: Skill1 only (no Skill2/Ult); +50% henshin damage
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A14ChoiceBand_S1: {
+		DisplayName: Choice Band Shard I
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A14ChoiceBand_S2: {
+		DisplayName: Choice Band Shard II
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A14ChoiceBand_S3: {
+		DisplayName: Choice Band Shard III
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A14ChoiceBand_S4: {
+		DisplayName: Choice Band Shard IV
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A14ChoiceBand_S5: {
+		DisplayName: Choice Band Shard V
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A14ChoiceBand_S6: {
+		DisplayName: Choice Band Shard VI
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A14ChoiceBand_Super: {
+		DisplayName: Super Choice Band
+		Tooltip:
+			'''
+			Boosts attack but locks other combat slots depending on the piece.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A15ScopeLens: {
 		DisplayName: Scope Lens
-		Tooltip: Henshin only: 10% crit-tier upgrade (miss→crit; crit→×4 hypercrit)
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A15ScopeLens_S1: {
+		DisplayName: Scope Lens Shard I
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A15ScopeLens_S2: {
+		DisplayName: Scope Lens Shard II
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A15ScopeLens_S3: {
+		DisplayName: Scope Lens Shard III
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A15ScopeLens_S4: {
+		DisplayName: Scope Lens Shard IV
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A15ScopeLens_S5: {
+		DisplayName: Scope Lens Shard V
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A15ScopeLens_S6: {
+		DisplayName: Scope Lens Shard VI
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A15ScopeLens_Super: {
+		DisplayName: Super Scope Lens
+		Tooltip:
+			'''
+			A lens for spotting weak points. Raises crit-tier upgrade chance.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A16LifeOrb: {
 		DisplayName: Life Orb
-		Tooltip: Henshin only: -1 HP on move hit; +20% damage
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A16LifeOrb_S1: {
+		DisplayName: Life Orb Shard I
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A16LifeOrb_S2: {
+		DisplayName: Life Orb Shard II
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A16LifeOrb_S3: {
+		DisplayName: Life Orb Shard III
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A16LifeOrb_S4: {
+		DisplayName: Life Orb Shard IV
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A16LifeOrb_S5: {
+		DisplayName: Life Orb Shard V
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A16LifeOrb_S6: {
+		DisplayName: Life Orb Shard VI
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A16LifeOrb_Super: {
+		DisplayName: Super Life Orb
+		Tooltip:
+			'''
+			Boosts move power at the cost of some HP.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A17ShellBell: {
 		DisplayName: Shell Bell
-		Tooltip: Henshin only: heal 2 HP on hit (short CD like Calamity lifesteal)
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A17ShellBell_S1: {
+		DisplayName: Shell Bell Shard I
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A17ShellBell_S2: {
+		DisplayName: Shell Bell Shard II
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A17ShellBell_S3: {
+		DisplayName: Shell Bell Shard III
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A17ShellBell_S4: {
+		DisplayName: Shell Bell Shard IV
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A17ShellBell_S5: {
+		DisplayName: Shell Bell Shard V
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A17ShellBell_S6: {
+		DisplayName: Shell Bell Shard VI
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A17ShellBell_Super: {
+		DisplayName: Super Shell Bell
+		Tooltip:
+			'''
+			A soothing seashell. Recovers HP when attacks hit.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A18RockyHelmet: {
 		DisplayName: Rocky Helmet
-		Tooltip: Henshin only: on hurt, damage nearby foes for 1.0× henshin base damage
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A18RockyHelmet_S1: {
+		DisplayName: Rocky Helmet Shard I
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A18RockyHelmet_S2: {
+		DisplayName: Rocky Helmet Shard II
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A18RockyHelmet_S3: {
+		DisplayName: Rocky Helmet Shard III
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A18RockyHelmet_S4: {
+		DisplayName: Rocky Helmet Shard IV
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A18RockyHelmet_S5: {
+		DisplayName: Rocky Helmet Shard V
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A18RockyHelmet_S6: {
+		DisplayName: Rocky Helmet Shard VI
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A18RockyHelmet_Super: {
+		DisplayName: Super Rocky Helmet
+		Tooltip:
+			'''
+			Hurts attackers that make contact.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A19ChargeBelt: {
-		DisplayName: Charge Belt
-		Tooltip: Henshin only: +30% ultimate energy on hit
+		DisplayName: Cell Battery
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A19ChargeBelt_S1: {
+		DisplayName: Cell Battery Shard I
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A19ChargeBelt_S2: {
+		DisplayName: Cell Battery Shard II
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A19ChargeBelt_S3: {
+		DisplayName: Cell Battery Shard III
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A19ChargeBelt_S4: {
+		DisplayName: Cell Battery Shard IV
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A19ChargeBelt_S5: {
+		DisplayName: Cell Battery Shard V
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A19ChargeBelt_S6: {
+		DisplayName: Cell Battery Shard VI
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A19ChargeBelt_Super: {
+		DisplayName: Super Cell Battery
+		Tooltip:
+			'''
+			A charged battery. Increases energy gained from combat.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A20EchoPendant: {
-		DisplayName: Echo Pendant
-		Tooltip: Henshin only: keep 20% energy after ultimate
+		DisplayName: Light Clay
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 
+	A20EchoPendant_S1: {
+		DisplayName: Light Clay Shard I
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A20EchoPendant_S2: {
+		DisplayName: Light Clay Shard II
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A20EchoPendant_S3: {
+		DisplayName: Light Clay Shard III
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A20EchoPendant_S4: {
+		DisplayName: Light Clay Shard IV
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A20EchoPendant_S5: {
+		DisplayName: Light Clay Shard V
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A20EchoPendant_S6: {
+		DisplayName: Light Clay Shard VI
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A20EchoPendant_Super: {
+		DisplayName: Super Light Clay
+		Tooltip:
+			'''
+			Strange clay that extends lingering effects. Keeps some ultimate energy.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
 	A21BurstArmband: {
-		DisplayName: Burst Armband
-		Tooltip: Henshin only: +25% ultimate damage; -20% energy gain
+		DisplayName: Weakness Policy
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A21BurstArmband_S1: {
+		DisplayName: Weakness Policy Shard I
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A21BurstArmband_S2: {
+		DisplayName: Weakness Policy Shard II
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A21BurstArmband_S3: {
+		DisplayName: Weakness Policy Shard III
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A21BurstArmband_S4: {
+		DisplayName: Weakness Policy Shard IV
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A21BurstArmband_S5: {
+		DisplayName: Weakness Policy Shard V
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A21BurstArmband_S6: {
+		DisplayName: Weakness Policy Shard VI
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A21BurstArmband_Super: {
+		DisplayName: Super Weakness Policy
+		Tooltip:
+			'''
+			Raises ultimate damage at the cost of energy gain.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+	A22ExpShare: {
+		DisplayName: Exp. Share
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A22ExpShare_S1: {
+		DisplayName: Exp. Share Shard I
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A22ExpShare_S2: {
+		DisplayName: Exp. Share Shard II
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A22ExpShare_S3: {
+		DisplayName: Exp. Share Shard III
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A22ExpShare_S4: {
+		DisplayName: Exp. Share Shard IV
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A22ExpShare_S5: {
+		DisplayName: Exp. Share Shard V
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A22ExpShare_S6: {
+		DisplayName: Exp. Share Shard VI
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A22ExpShare_Super: {
+		DisplayName: Super Exp. Share
+		Tooltip:
+			'''
+			Shares a copy of XP to other force items on hotbar slots 0-9.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+	A23LuckyEgg: {
+		DisplayName: Lucky Egg
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A23LuckyEgg_S1: {
+		DisplayName: Lucky Egg Shard I
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A23LuckyEgg_S2: {
+		DisplayName: Lucky Egg Shard II
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A23LuckyEgg_S3: {
+		DisplayName: Lucky Egg Shard III
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A23LuckyEgg_S4: {
+		DisplayName: Lucky Egg Shard IV
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A23LuckyEgg_S5: {
+		DisplayName: Lucky Egg Shard V
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A23LuckyEgg_S6: {
+		DisplayName: Lucky Egg Shard VI
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A23LuckyEgg_Super: {
+		DisplayName: Super Lucky Egg
+		Tooltip:
+			'''
+			A lucky egg that increases XP gained by the held force.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+	A24Everstone: {
+		DisplayName: Everstone
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A24Everstone_S1: {
+		DisplayName: Everstone Shard I
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A24Everstone_S2: {
+		DisplayName: Everstone Shard II
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A24Everstone_S3: {
+		DisplayName: Everstone Shard III
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A24Everstone_S4: {
+		DisplayName: Everstone Shard IV
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A24Everstone_S5: {
+		DisplayName: Everstone Shard V
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A24Everstone_S6: {
+		DisplayName: Everstone Shard VI
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A24Everstone_Super: {
+		DisplayName: Super Everstone
+		Tooltip:
+			'''
+			A stone that prevents evolution while worn, even untransformed.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+	A25BlackBelt: {
+		DisplayName: Black Belt
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A25BlackBelt_S1: {
+		DisplayName: Black Belt Shard I
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A25BlackBelt_S2: {
+		DisplayName: Black Belt Shard II
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A25BlackBelt_S3: {
+		DisplayName: Black Belt Shard III
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A25BlackBelt_S4: {
+		DisplayName: Black Belt Shard IV
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A25BlackBelt_S5: {
+		DisplayName: Black Belt Shard V
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A25BlackBelt_S6: {
+		DisplayName: Black Belt Shard VI
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A25BlackBelt_Super: {
+		DisplayName: Super Black Belt
+		Tooltip:
+			'''
+			A belt that powers short-range melee deliveries (no Fighting resonance).
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+	A26Leftovers: {
+		DisplayName: Leftovers
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A26Leftovers_S1: {
+		DisplayName: Leftovers Shard I
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A26Leftovers_S2: {
+		DisplayName: Leftovers Shard II
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A26Leftovers_S3: {
+		DisplayName: Leftovers Shard III
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A26Leftovers_S4: {
+		DisplayName: Leftovers Shard IV
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A26Leftovers_S5: {
+		DisplayName: Leftovers Shard V
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A26Leftovers_S6: {
+		DisplayName: Leftovers Shard VI
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A26Leftovers_Super: {
+		DisplayName: Super Leftovers
+		Tooltip:
+			'''
+			Leftovers that slowly restore HP in battle.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+	A27FocusSash: {
+		DisplayName: Focus Sash
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A27FocusSash_S1: {
+		DisplayName: Focus Sash Shard I
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A27FocusSash_S2: {
+		DisplayName: Focus Sash Shard II
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A27FocusSash_S3: {
+		DisplayName: Focus Sash Shard III
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A27FocusSash_S4: {
+		DisplayName: Focus Sash Shard IV
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A27FocusSash_S5: {
+		DisplayName: Focus Sash Shard V
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A27FocusSash_S6: {
+		DisplayName: Focus Sash Shard VI
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A27FocusSash_Super: {
+		DisplayName: Super Focus Sash
+		Tooltip:
+			'''
+			Endures a would-be KO if HP is above a threshold, then cools down.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+	A28Eviolite: {
+		DisplayName: Eviolite
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Finished accessory.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A28Eviolite_S1: {
+		DisplayName: Eviolite Shard I
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Shard I: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A28Eviolite_S2: {
+		DisplayName: Eviolite Shard II
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Shard II: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A28Eviolite_S3: {
+		DisplayName: Eviolite Shard III
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Shard III: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A28Eviolite_S4: {
+		DisplayName: Eviolite Shard IV
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Shard IV: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A28Eviolite_S5: {
+		DisplayName: Eviolite Shard V
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Shard V: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A28Eviolite_S6: {
+		DisplayName: Eviolite Shard VI
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Shard VI: equippable, about 1/4 of the finished item.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
+	}
+
+	A28Eviolite_Super: {
+		DisplayName: Super Eviolite
+		Tooltip:
+			'''
+			Raises defense of forms that can still evolve.
+			Super form; effects doubled.
+			Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted).
+			'''
 	}
 }
 
