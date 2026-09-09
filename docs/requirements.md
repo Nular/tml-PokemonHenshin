@@ -352,16 +352,18 @@ Tooltip 须说明：形态防御取代盔甲防御；饰品防御仍生效。
 当前等级 `L` 升到 `L+1`：
 
 ```
-若 L <= 50:  ExpNeeded = 50 + 15 * (L - 1)
-若 L > 50:   ExpNeeded = 785 + 40 * (L - 50) + 0.8 * (L - 50)^2.2
+若 L <= 50:  BaseExpNeeded = 50 + 15 * (L - 1)
+若 L > 50:   BaseExpNeeded = 785 + 40 * (L - 50) + 0.8 * (L - 50)^2.2
+StageXpScale(S) = 1 + (S - 1) * 299 / 11     // 档 1 = 1，档 12 = 300
+ExpNeeded(L) = round(BaseExpNeeded(L) * StageXpScale(BandForLevel(L)))
 ```
 
-满级 100 后不再获得经验。
+需求跟**物品等级带**放大，不跟世界档。满级 100 后不再获得经验。
 
 #### 4.6.4 经验获取
 
-- **小怪 / 非 Boss：** 持握本模之力且击杀归属为本模招式（含弹幕）时，`XP += Random(1..3)`。  
-- **Boss：** 动态公式（兼容原版 / 灾厄 / 大修）；多节 Boss 仅在最终击杀结算一次：
+- **小怪 / 非 Boss：** 持握本模之力且击杀归属为本模招式（含弹幕）时，`XP += Random(round(1×Scale)..round(3×Scale))`，`Scale = StageXpScale(GetProgressStage())`。档 1 为 1～3，档 12 为 300～900。  
+- **Boss：** 动态公式得出 `BossXP` 后再 `× StageXpScale(世界档)`（与小怪同一系数，相对比例不变）；多节 Boss 仅在最终击杀结算一次：
 
 ```
 lifeTerm = (max(lifeMax,1) / 2000)^0.45
@@ -370,7 +372,7 @@ stageMul = 0.75 + 0.12 * GetProgressStage()
 BossXP   = Clamp(round(14 * lifeTerm * defTerm * stageMul), StageMin, StageMax)
 ```
 
-史莱姆王锚点约 **20 XP**；各档夹子与校准见 `docs/balance-stats.md`。个别异常 Boss 允许白名单覆写。
+史莱姆王锚点约 **20 XP**（×世界 Scale 前）；各档夹子与校准见 `docs/balance-stats.md`。个别异常 Boss 允许白名单覆写。世界字提示：击杀处 `EXP +X`，玩家处连升连弹 `LEVEL UP!`，Boss 更大并描边闪光。
 
 #### 4.6.5 攻击与防御
 

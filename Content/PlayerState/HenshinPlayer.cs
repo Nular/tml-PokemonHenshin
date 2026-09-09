@@ -697,34 +697,35 @@ namespace PokemonHenshin.Content.PlayerState
 
 		private void GrantKillExperience(HenshinForceItem force, NPC target)
 		{
+			int world = ProgressStageService.GetProgressStage();
 			int amount;
-			if (IsBossForXp(target))
+			bool boss = IsBossForXp(target);
+			if (boss)
 			{
-				int world = ProgressStageService.GetProgressStage();
 				int? over = HenshinBossXpOverrides.TryGet(target);
-				amount = HenshinStatService.ComputeBossXp(target.lifeMax, target.defense, world, over);
+				amount = HenshinStatService.ScaleWorldXp(
+					HenshinStatService.ComputeBossXp(target.lifeMax, target.defense, world, over),
+					world);
 			}
 			else
-				amount = Main.rand.Next(1, 4);
+			{
+				int lo = HenshinStatService.MinionXpMin(world);
+				int hi = HenshinStatService.MinionXpMax(world);
+				amount = Main.rand.Next(lo, hi + 1);
+			}
 
+			Vector2 popupAt = target.Center;
 			int oldLevel = force.Level;
 			force.TryAddExperience(Player, amount, out int levelsGained, out _);
 			if (Main.netMode != NetmodeID.SinglePlayer)
 				HenshinNet.SendEnergy(this);
-			if (Player.whoAmI == Main.myPlayer && (IsBossForXp(target) || levelsGained > 0 || force.Level > oldLevel))
-			{
-				if (levelsGained > 0)
-				{
-					Main.NewText(Language.GetTextValue(
-						"Mods.PokemonHenshin.Common.LevelUp",
-						Language.GetTextValue(force.Definition.DisplayNameKey),
-						force.Level), Microsoft.Xna.Framework.Color.LightGreen);
-				}
-				else if (IsBossForXp(target))
-				{
-					Main.NewText(Language.GetTextValue("Mods.PokemonHenshin.Common.GainedXp", amount), Microsoft.Xna.Framework.Color.SkyBlue);
-				}
-			}
+
+			if (Player.whoAmI != Main.myPlayer)
+				return;
+
+			HenshinXpPopupSystem.ShowExp(popupAt, amount, boss);
+			if (levelsGained > 0 || force.Level > oldLevel)
+				HenshinXpPopupSystem.ShowLevelUps(Player, System.Math.Max(levelsGained, force.Level - oldLevel));
 		}
 
 		public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)

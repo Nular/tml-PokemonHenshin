@@ -39,22 +39,27 @@
 
 ## 2. 升级所需经验
 
+基础量（档 1 / 物品等级带 1 时就是面板需求）：
+
 ```
-ExpNeeded(L) =   // L = 当前等级，升到 L+1
+BaseExpNeeded(L) =   // L = 当前等级，升到 L+1
   L <= 50:  50 + 15 * (L - 1)
   L >  50:  785 + 40 * (L - 50) + 0.8 * pow(L - 50, 2.2)
+
+StageXpScale(S) = 1 + (S - 1) * 299 / 11    // 档 1 → 1，档 12 → 300
+ExpNeeded(L) = round(BaseExpNeeded(L) * StageXpScale(BandForLevel(L)))
 ```
 
+需求跟**物品所在等级带**走，不跟世界档。1～5 级仍是新手那档（50、65…）；90 级需求按终局带 ×300。
 
-| L（当前） | ExpNeeded（约）          |
-| ----- | --------------------- |
-| 1     | 50                    |
-| 10    | 185                   |
-| 25    | 410                   |
-| 50    | 785                   |
-| 51    | 826                   |
-| 75    | ~2890                 |
-| 100   | ~6610（升至 101 不发生；满级停） |
+| L（当前） | BaseExpNeeded（约） | ExpNeeded 在带 1 |
+| ----- | --------------------- | --- |
+| 1     | 50                    | 50 |
+| 10    | 185                   | 带 2：×Scale(2) |
+| 25    | 410                   | 带 4 |
+| 50    | 785                   | 带 7 |
+| 51    | 826                   | 带 7 |
+| 100   | 0（满级停） | — |
 
 
 不做：首杀加成、卡顶/满级溢出转能量。
@@ -63,9 +68,17 @@ ExpNeeded(L) =   // L = 当前等级，升到 L+1
 
 ## 3. 经验获取
 
+击杀经验乘**世界** `StageXpScale(GetProgressStage())`（与需求用的带乘数公式相同、自变量不同）。
+
 ### 3.1 小怪
 
-`XP += Random.Shared 均匀 1..3`（持握 + 本模招式击杀）。
+`XP += Random 均匀 MinionXpMin..Max`，其中 `Min=round(1×Scale)`、`Max=round(3×Scale)`。  
+档 1：1～3；档 12：300～900。持握 + 本模招式击杀。
+
+世界已经很难、物品仍在低带：给的是终局大数字，需求仍是 50、65… → 一只怪可连升。  
+物品已到终局带：给与需求同阶放大 → 又变回「打不少才升一级」。
+
+过档**不**折算当前 `Xp`（需求不跟世界档，进度条不会突然变空）。
 
 ### 3.2 Boss 动态公式
 
@@ -75,6 +88,7 @@ defTerm  = 1.0 + npc.defense / 100.0
 stageMul = 0.75 + 0.12 * GetProgressStage()
 raw      = 14.0 * lifeTerm * defTerm * stageMul
 BossXP   = Clamp(round(raw), BossXpMin[S], BossXpMax[S])
+Granted  = round(BossXP * StageXpScale(S))    // 与小怪同一世界档系数
 ```
 
 判定：`npc.boss` 或灾厄/大修 Boss 启发式；多节 Boss **仅最终击杀一次**。
@@ -96,7 +110,7 @@ BossXP   = Clamp(round(raw), BossXpMin[S], BossXpMax[S])
 | 12              | 400       | 800       | 犽戎 / 星流 / 至尊 |
 
 
-个别离谱 `lifeMax` 用白名单覆写（实现时维护短表即可）。
+个别离谱 `lifeMax` 用白名单覆写（实现时维护短表即可）。表内夹子是 **×世界 Scale 之前** 的公式值；发放再乘 `StageXpScale(S)`（档 1 史莱姆王仍约 20，档 12 约 ×300）。
 
 ---
 
@@ -279,5 +293,6 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 | **1.4** | 初版：等级带、经验公式、Boss 动态 XP、比目鱼对齐 MidAtk/Def、36 种族 Mod、能量 1000、MoveRefRate 门禁 |
 | 1.4.1 | 招式门禁：段数慎改；MoveRefRate 为参考；按命中难度/距离/风险柔性偏置倍率；能量手感目标对齐 25～40s |
 | 1.4.2 | 代码接线：攻防 `S` 用 Level 所在带；§7.1 皮卡丘大招 4.8、意念头锤技能槽 2.0 |
+| 1.4.3 | 击杀 XP × 世界档（1～3 → 300～900）；ExpNeeded × 物品等级带；LEVEL UP / EXP 世界字 |
 
 

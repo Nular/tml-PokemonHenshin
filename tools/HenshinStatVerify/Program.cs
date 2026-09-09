@@ -47,13 +47,29 @@ internal static class Program
 
 	private static void Main()
 	{
-		Expect(50, HenshinStatService.ExpNeeded(1), "ExpNeeded(1)");
-		Expect(185, HenshinStatService.ExpNeeded(10), "ExpNeeded(10)");
-		Expect(410, HenshinStatService.ExpNeeded(25), "ExpNeeded(25)");
-		Expect(785, HenshinStatService.ExpNeeded(50), "ExpNeeded(50)");
-		Expect(826, HenshinStatService.ExpNeeded(51), "ExpNeeded(51)");
-		Expect((int)Math.Round(785.0 + 40.0 * 25 + 0.8 * Math.Pow(25, 2.2)), HenshinStatService.ExpNeeded(75), "ExpNeeded(75)");
-		Expect(0, HenshinStatService.ExpNeeded(100), "ExpNeeded(100)");
+		Expect(50, HenshinStatService.BaseExpNeeded(1), "BaseExpNeeded(1)");
+		Expect(185, HenshinStatService.BaseExpNeeded(10), "BaseExpNeeded(10)");
+		Expect(410, HenshinStatService.BaseExpNeeded(25), "BaseExpNeeded(25)");
+		Expect(785, HenshinStatService.BaseExpNeeded(50), "BaseExpNeeded(50)");
+		Expect(826, HenshinStatService.BaseExpNeeded(51), "BaseExpNeeded(51)");
+		Expect((int)Math.Round(785.0 + 40.0 * 25 + 0.8 * Math.Pow(25, 2.2)), HenshinStatService.BaseExpNeeded(75), "BaseExpNeeded(75)");
+		Expect(0, HenshinStatService.BaseExpNeeded(100), "BaseExpNeeded(100)");
+
+		Expect(50, HenshinStatService.ExpNeeded(1), "ExpNeeded L1 band1");
+		Expect(HenshinStatService.BaseExpNeeded(5), HenshinStatService.ExpNeeded(5), "ExpNeeded L5 still band1");
+		Expect((int)Math.Round(HenshinStatService.BaseExpNeeded(10) * (double)HenshinStatService.StageXpScale(2)), HenshinStatService.ExpNeeded(10), "ExpNeeded L10 × band2");
+		Expect((int)Math.Round(HenshinStatService.BaseExpNeeded(91) * 300.0), HenshinStatService.ExpNeeded(91), "ExpNeeded L91 × band12");
+
+		ExpectF(1f, HenshinStatService.StageXpScale(1), "gain scale S1");
+		ExpectF(300f, HenshinStatService.StageXpScale(12), "gain scale S12");
+		Expect(1, HenshinStatService.MinionXpMin(1), "minion min S1");
+		Expect(3, HenshinStatService.MinionXpMax(1), "minion max S1");
+		Expect(300, HenshinStatService.MinionXpMin(12), "minion min S12");
+		Expect(900, HenshinStatService.MinionXpMax(12), "minion max S12");
+
+		int ks15 = HenshinStatService.ComputeBossXp(2000, 10, 1);
+		Expect(15, HenshinStatService.ScaleWorldXp(ks15, 1), "KS formula × S1");
+		Expect(HenshinStatService.ScaleWorldXp(ks15, 1) * 300, HenshinStatService.ScaleWorldXp(ks15, 12), "boss ×300 same ratio");
 
 		Expect(1, HenshinStatService.BandForLevel(1), "band L1");
 		Expect(1, HenshinStatService.BandForLevel(5), "band L5");
@@ -81,6 +97,12 @@ internal static class Program
 		ForceProgress climb = HenshinStatService.AddExperience(1, 0, 50, 12, out int lv1);
 		Expect(2, climb.Level, "L1 +50 -> L2");
 		Expect(1, lv1, "gained 1");
+
+		// 世界档 12、物品仍在带 1：一只 300 经验能连升（需求未放大）。
+		ForceProgress catchUp = HenshinStatService.AddExperience(1, 0, 300, 12, out int catchLv);
+		Expect(5, catchUp.Level, "L1 +300 in S12 -> L5");
+		Expect(4, catchLv, "catch-up 4 levels");
+		Expect(10, catchUp.Xp, "catch-up leftover");
 
 		ForceProgress inherit = HenshinStatService.AddExperience(19, 40, 0, 12, out _);
 		Expect(19, inherit.Level, "evo inherit level");

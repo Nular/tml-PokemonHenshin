@@ -97,8 +97,29 @@ namespace PokemonHenshin.Content.Core
 
 		public static int StartingLevelForFormStage(int formStage) => BandMinOf(formStage);
 
-		/// <summary>当前等级 L 升到 L+1 所需经验。满级返回 0。</summary>
-		public static int ExpNeeded(int level)
+		/// <summary>
+		/// 击杀经验随<strong>世界档</strong>放大：档 1 = 1，档 12 = 300。
+		/// 小怪 1～3 → 300～900；Boss 结算后再乘同一系数。
+		/// </summary>
+		public static float StageXpScale(int stage)
+		{
+			int s = ClampStage(stage);
+			if (s <= 1)
+				return 1f;
+			return 1f + (s - 1) * (299f / 11f);
+		}
+
+		public static int ScaleWorldXp(int baseAmount, int worldStage)
+			=> Math.Max(1, (int)Math.Round(baseAmount * (double)StageXpScale(worldStage)));
+
+		public static int MinionXpMin(int worldStage)
+			=> Math.Max(1, (int)Math.Round(1.0 * StageXpScale(worldStage)));
+
+		public static int MinionXpMax(int worldStage)
+			=> Math.Max(MinionXpMin(worldStage), (int)Math.Round(3.0 * StageXpScale(worldStage)));
+
+		/// <summary>未乘等级带倍率的升级需求（档 1 数字；手算对照用）。</summary>
+		public static int BaseExpNeeded(int level)
 		{
 			if (level < MinLevel || level >= MaxLevel)
 				return 0;
@@ -108,6 +129,16 @@ namespace PokemonHenshin.Content.Core
 			double x = level - 50;
 			double raw = 785.0 + 40.0 * x + 0.8 * Math.Pow(x, 2.2);
 			return (int)Math.Round(raw);
+		}
+
+		/// <summary>当前等级 L 升到 L+1 所需经验。乘<strong>物品所在等级带</strong>的 StageXpScale。满级返回 0。</summary>
+		public static int ExpNeeded(int level)
+		{
+			int raw = BaseExpNeeded(level);
+			if (raw <= 0)
+				return 0;
+			int band = BandForLevel(level);
+			return Math.Max(1, (int)Math.Round(raw * (double)StageXpScale(band)));
 		}
 
 		public static ForceProgress TruncateToCap(int level, int xp, int worldStage)

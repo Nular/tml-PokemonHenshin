@@ -669,3 +669,4 @@ TryEditTile(player, action) →
 | **1.4.0** | 洁癖：对齐 requirements v1.4 / balance-stats；标明数值设计已定、代码未实现；下一步=实装等级攻防 |
 | **1.4.1** | 接线 v1.4 数值：Level/Xp、FinalAttack/Def、能量 1000、进化双条件、§7.1 点名倍率 |
 | **1.4.2** | 洁癖：去掉「数值未接线 / EnergyMax=100」现役说法；MoveRefRate 归一化窗与构建命令同源 |
+| **1.4.3** | 击杀 XP × 世界档；ExpNeeded × 物品带；LEVEL UP / EXP 世界字 |
