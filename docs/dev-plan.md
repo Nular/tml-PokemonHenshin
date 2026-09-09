@@ -76,12 +76,12 @@
 
 ### 2.1 解决方案 / 目录（M0 已定：扁平布局）
 
-**仓库根即 tML 模组根**（模组内部名 = 文件夹名 `PokemonHenshin`）。`ModSources\PokemonHenshin` 是指向本仓库的目录联接，供游戏内 Build + Reload；命令行在仓库根 `dotnet build` 会经 `tMLMod.targets` 自动调用 tML 打包（游戏运行且启用本模时打包会被 TML003 拒绝，只能游戏内 Build + Reload）。
+**仓库根即 tML 模组根**（模组内部名 = **文件夹名**）。目录必须叫 `PokemonHenshin`；Cloud 工作区名为 `workspace` 时用 `bash tools/build-mod.sh`。`ModSources\PokemonHenshin` 联接本仓库，供游戏内 Build + Reload。游戏运行且启用本模时命令行打包会 **TML003**。公式：`dotnet run --project tools/HenshinStatVerify`。
 
 ```
 PokemonHenshin/                # 仓库根 = 模组根
   docs/                        # requirements.md（产品真相）、dev-plan.md（本文件）；buildIgnore
-  tools/                       # 开发脚本（fetch_assets.py）；buildIgnore，不进 .tmod
+  tools/                       # cloud-agent-setup.sh、build-mod.sh、HenshinStatVerify、fetch_assets.py；buildIgnore
   PokemonHenshin.csproj
   build.txt                    # modReferences = CalamityMod；buildIgnore 含 docs、tools、*.md…
   description.txt / description_workshop.txt / icon.png
@@ -668,3 +668,4 @@ TryEditTile(player, action) →
 | 1.3.2 | 洁癖：M1.3 对齐 UIState + ProgressStage 上升弹窗；去掉「每 tick 扫」过期说法 |
 | **1.4.0** | 洁癖：对齐 requirements v1.4 / balance-stats；标明数值设计已定、代码未实现；下一步=实装等级攻防 |
 | **1.4.1** | 接线 v1.4 数值：Level/Xp、FinalAttack/Def、能量 1000、进化双条件、§7.1 点名倍率 |
+| **1.4.2** | 洁癖：去掉「数值未接线 / EnergyMax=100」现役说法；MoveRefRate 归一化窗与构建命令同源 |

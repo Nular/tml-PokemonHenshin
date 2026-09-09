@@ -139,7 +139,7 @@
 
 `MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease`
 
-标准技参考约 `0.85～1.15`；**MoveRefRate 为预算参考而非铁律**。段数同时影响伤害与手感，**优先调单段倍率/充能 Factor，谨慎改段数**。追踪易命中远程可偏低、短距近战高风险可偏高；细则见 `docs/balance-stats.md` §7 与 `.cursor/skills/henshin-moves`。
+标准技原始公式约为 **3.0**（3 APS）；表中 `0.85～1.15` 是相对该值的**归一化**窗（`MoveRefRate / 3`）。**MoveRefRate 为预算参考而非铁律**。段数同时影响伤害与手感，**优先调单段倍率/充能 Factor，谨慎改段数**。追踪易命中远程可偏低、短距近战高风险可偏高；细则见 `docs/balance-stats.md` §7 与 `.cursor/skills/henshin-moves`。
 
 **计入：** Generic 增伤/暴击/攻速；本模饰品与情境加成；盔甲/饰品上的 Generic 向；作用于 Generic 的药水；旗帜等目标侧修正；灾厄怒气 / 肾上腺素。
 

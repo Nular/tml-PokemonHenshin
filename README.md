@@ -17,11 +17,9 @@
 
 ## 状态
 
-**现役代码（2026-09-09）：** 36 形态 + A01～A21；被动+技能1/2+能量大招；**v1.4 物品等级/经验/FinalAttack·Defense/能量 1000/进化双条件已接线**。游戏内 DPS 抽检仍待本地。
+**现役代码（2026-09-09）：** 36 形态 + A01～A21；被动+技能1/2+能量大招；**v1.4 物品等级/经验/FinalAttack·Defense/能量 1000/进化双条件已接线**。游戏内 DPS 抽检、联机双端实测仍待本地。
 
 **下一步：** 联机双端实测、DPS 对标 PS7/9/12、Rage。调试 `/henshin stage`、`/henshin evolve`、`/henshin stats`、`/henshin setlevel`。
-
-后置：联机双端实测、DPS 对标、Rage/肾上腺素、M5 发布打磨。
 
 ## 构建
 
@@ -29,7 +27,8 @@
 |----|----|
 | tModLoader | 1.4.4.9 / **2026.07 stable**（net8.0） |
 | CalamityMod | **2.2.4**（强依赖，必须启用） |
-| 命令行 | 仓库根 `dotnet build` → `Documents\My Games\Terraria\tModLoader\Mods\PokemonHenshin.tmod` |
+| 命令行 | 源码目录名须为 `PokemonHenshin` 再 `dotnet build`。Cloud：`bash tools/build-mod.sh` |
+| 公式校验 | `dotnet run --project tools/HenshinStatVerify` |
 | 游戏运行中 | 会 TML003 → 改用游戏内 Develop Mods → Build + Reload |
 | 目录联接 | `ModSources\PokemonHenshin` → 本仓库 |
 

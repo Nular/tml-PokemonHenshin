@@ -8,7 +8,7 @@
 | 优先级 | 文件 | 管什么 |
 |--------|------|--------|
 | 1 | `docs/requirements.md` | 产品规则 |
-| 2 | `docs/move-effects.md` + 代码 | 招式玩法语义、伤害/能量/键位 |
+| 2 | `docs/move-effects.md` + `docs/balance-stats.md` + 代码 | 招式语义；数值数字权威；实现 |
 | 3 | **本文件 `docs/fx-knowledge.md`** | VFX 复用目录、手法 cookbook、升级规格 |
 
 本文件**不**改写玩法数值；迭代特效时优先查「当前实现 / Recommended / SpecReady / Locked」。
