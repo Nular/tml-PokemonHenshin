@@ -111,6 +111,7 @@ namespace PokemonHenshin.Content.Accessories
 			Player player = Main.LocalPlayer;
 			HenshinPlayer hp = player?.GetModPlayer<HenshinPlayer>();
 			AccFamilyDef def = Def;
+			HenshinAccStatTooltip.AddLines(tooltips, Mod, def, Piece);
 			bool transformed = hp != null && hp.IsTransformed;
 			bool resOk = def == null || def.Resonance == PokemonType.None
 				|| (hp?.CurrentForm != null && (hp.CurrentForm.Primary == def.Resonance || hp.CurrentForm.Secondary == def.Resonance));
@@ -238,14 +239,7 @@ namespace PokemonHenshin.Content.Accessories
 		}
 
 		private static string BuildTooltip(AccFamilyDef def, AccPiece piece)
-		{
-			string flavor = piece == AccPiece.Super
-				? def.OfficialZh + "的强化形态，效果加倍。"
-				: def.OfficialEn + ". " + (piece is >= AccPiece.S1 and <= AccPiece.S6
-					? "碎片：可装备，约成品四分之一强度。"
-					: "仅变身生效（不变之石除外）。");
-			return flavor + "\n" + "合成：Ⅰ–Ⅳ→成品；成品+Ⅴ+Ⅵ或Ⅰ–Ⅵ→超级";
-		}
+			=> def.OfficialZh;
 	}
 
 	public static class HenshinAccLoader

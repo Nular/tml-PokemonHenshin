@@ -209,6 +209,7 @@ namespace PokemonHenshin.Content.PlayerState
 		}
 
 		private float leftoversAcc;
+		private readonly HashSet<int> _killXpGranted = new();
 
 		public bool ShouldHoming(MoveDelivery d) => d switch
 		{
@@ -672,6 +673,7 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public override void PostUpdate()
 		{
+			CleanupKillXp();
 			if (!IsTransformed)
 				return;
 
@@ -869,6 +871,16 @@ namespace PokemonHenshin.Content.PlayerState
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+			=> ProcessHenshinNpcHit(target, damageDone);
+
+		public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			if (!CountsAsHenshinMoveHit(proj))
+				return;
+			ProcessHenshinNpcHit(target, damageDone);
+		}
+
+		private void ProcessHenshinNpcHit(NPC target, int damageDone)
 		{
 			if (!IsTransformed)
 				return;
@@ -883,7 +895,7 @@ namespace PokemonHenshin.Content.PlayerState
 
 			if (target.life <= 0)
 			{
-				if (ShouldGrantKillRewards(target))
+				if (ShouldGrantKillRewards(target) && TryClaimKillXp(target))
 				{
 					if (LastMoveSlot != MoveSlot.Ultimate)
 						AddCombatEnergy(EnergyOnKill * factor);
@@ -909,6 +921,27 @@ namespace PokemonHenshin.Content.PlayerState
 			}
 
 			return true;
+		}
+
+		private static int KillXpKey(NPC npc)
+		{
+			if (npc.realLife >= 0 && npc.realLife < Main.maxNPCs)
+				return npc.realLife;
+			return npc.whoAmI;
+		}
+
+		private bool TryClaimKillXp(NPC npc)
+		{
+			int key = KillXpKey(npc);
+			return _killXpGranted.Add(key);
+		}
+
+		private void CleanupKillXp()
+		{
+			if (_killXpGranted.Count == 0)
+				return;
+			_killXpGranted.RemoveWhere(id =>
+				id < 0 || id >= Main.maxNPCs || !Main.npc[id].active || Main.npc[id].life > 0);
 		}
 
 		private static bool IsBossForXp(NPC npc)
@@ -966,13 +999,6 @@ namespace PokemonHenshin.Content.PlayerState
 			HenshinXpPopupSystem.ShowExp(popupAt, held, boss);
 			if (levelsGained > 0 || force.Level > oldLevel)
 				HenshinXpPopupSystem.ShowLevelUps(Player, System.Math.Max(levelsGained, force.Level - oldLevel));
-		}
-
-		public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
-		{
-			if (!CountsAsHenshinMoveHit(proj))
-				return;
-			OnHitNPC(target, hit, damageDone);
 		}
 
 		/// <summary>持握 + 本模招式（含本模弹幕 / HenshinDamage）。原版壳碎片若未改 DamageType 则不计。</summary>

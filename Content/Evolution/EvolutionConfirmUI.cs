@@ -260,12 +260,42 @@ namespace PokemonHenshin.Content.Evolution
 			if (force == null)
 				return;
 
-			if (!EvolutionService.TryFindEvolvable(Player, out int slot, out bool isMouse, out FormDefinition current, out FormDefinition next))
+			if (!TryFindForceSlot(Player, force, out int slot, out bool isMouse, out FormDefinition current, out FormDefinition next))
 				return;
-			if (current == null || next == null)
+			if (!EvolutionService.MeetsTrigger(Player, current, EvolutionService.GetItemRef(Player, slot, isMouse)))
 				return;
 
 			EvolutionConfirmSystem.Instance.Open(slot, isMouse, current, next);
+		}
+
+		private static bool TryFindForceSlot(
+			Player player, HenshinForceItem force,
+			out int slot, out bool isMouse, out FormDefinition current, out FormDefinition next)
+		{
+			slot = -1;
+			isMouse = false;
+			current = force?.Definition;
+			next = current == null ? null : FormRegistry.FindEvolutionOf(current.FormId);
+			if (player == null || force == null || current == null || next == null)
+				return false;
+
+			if (!Main.mouseItem.IsAir && Main.mouseItem.ModItem == force)
+			{
+				isMouse = true;
+				return EvolutionService.CanAutoEvolveLocation(player, -1, true);
+			}
+
+			for (int i = 0; i < 50; i++)
+			{
+				if (player.inventory[i]?.ModItem != force)
+					continue;
+				if (!EvolutionService.CanAutoEvolveLocation(player, i, false))
+					return false;
+				slot = i;
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>下一形态 Stage 落在 (previousStage, newStage] 且物品在可自动进化位置。</summary>

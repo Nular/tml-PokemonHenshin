@@ -38,51 +38,45 @@ FAMILIES = [
 
 ZH_NUM = "一二三四五六"
 EN_NUM = ("I", "II", "III", "IV", "V", "VI")
-RECIPE_ZH = "合成：碎片一至四→成品；成品+五+六或一至六→超级。仅变身生效（不变之石除外）。"
-RECIPE_EN = "Craft: shards I-IV → item; item+V+VI or I-VI → Super. Henshin only (Everstone excepted)."
 
 
 def block_zh(legacy: str, zh: str, flavor: str) -> str:
 	parts = []
-	parts.append(item_zh(legacy, zh, flavor, "普通成品。"))
+	parts.append(item_zh(legacy, zh, flavor))
 	for i, n in enumerate(ZH_NUM, start=1):
-		parts.append(item_zh(f"{legacy}_S{i}", f"{zh}碎片{n}", flavor, f"碎片{n}：可装备，约成品四分之一强度。"))
-	parts.append(item_zh(f"{legacy}_Super", f"超级{zh}", flavor, "超级形态，效果加倍。"))
+		parts.append(item_zh(f"{legacy}_S{i}", f"{zh}碎片{n}", flavor))
+	parts.append(item_zh(f"{legacy}_Super", f"超级{zh}", flavor))
 	return "\n".join(parts)
 
 
 def block_en(legacy: str, en: str, flavor: str) -> str:
 	parts = []
-	parts.append(item_en(legacy, en, flavor, "Finished accessory."))
+	parts.append(item_en(legacy, en, flavor))
 	for i, n in enumerate(EN_NUM, start=1):
-		parts.append(item_en(f"{legacy}_S{i}", f"{en} Shard {n}", flavor, f"Shard {n}: equippable, about 1/4 of the finished item."))
-	parts.append(item_en(f"{legacy}_Super", f"Super {en}", flavor, "Super form; effects doubled."))
+		parts.append(item_en(f"{legacy}_S{i}", f"{en} Shard {n}", flavor))
+	parts.append(item_en(f"{legacy}_Super", f"Super {en}", flavor))
 	return "\n".join(parts)
 
 
-def item_zh(name: str, display: str, flavor: str, extra: str) -> str:
+def item_zh(name: str, display: str, flavor: str) -> str:
 	return (
 		f"\t{name}: {{\n"
 		f"\t\tDisplayName: {display}\n"
 		f"\t\tTooltip:\n"
 		f"\t\t\t'''\n"
 		f"\t\t\t{flavor}\n"
-		f"\t\t\t{extra}\n"
-		f"\t\t\t{RECIPE_ZH}\n"
 		f"\t\t\t'''\n"
 		f"\t}}\n"
 	)
 
 
-def item_en(name: str, display: str, flavor: str, extra: str) -> str:
+def item_en(name: str, display: str, flavor: str) -> str:
 	return (
 		f"\t{name}: {{\n"
 		f"\t\tDisplayName: {display}\n"
 		f"\t\tTooltip:\n"
 		f"\t\t\t'''\n"
 		f"\t\t\t{flavor}\n"
-		f"\t\t\t{extra}\n"
-		f"\t\t\t{RECIPE_EN}\n"
 		f"\t\t\t'''\n"
 		f"\t}}\n"
 	)
@@ -99,6 +93,156 @@ def splice(path: Path, lang: str) -> None:
 		blocks.append(block_zh(legacy, zh, flavor_zh) if lang == "zh" else block_en(legacy, en, flavor_en))
 	path.write_text(text[:start] + "".join(blocks) + text[end + 1 :], encoding="utf-8")
 	print("spliced", path, "families", len(FAMILIES))
+
+
+ACC_STATS_ZH = """
+	ResonanceLine: 共鸣：{0}
+	TypeFire: 火
+	TypeWater: 水
+	TypeElectric: 电
+	TypeFlying: 飞行
+	TypeGhost: 幽灵
+	TypeDragon: 龙
+	StatDamageBonus: 招式伤害 +{0}%
+	StatDamageFactorBonus: 变身伤害因子 +{0}%
+	StatMeleeDeliveryDamage: 近战招式 +{0}%
+	StatBossDamageBonus: 对Boss伤害 +{0}%
+	StatOnFireTargetBonus: 对燃烧目标 +{0}%
+	StatUltDamageBonus: 大招伤害 +{0}%
+	StatIncomingCut: 受到伤害 -{0}%
+	StatCooldownCut: 招式冷却 -{0}%
+	StatDashCooldownCut: 冲刺冷却 -{0}%
+	StatLungeCooldownCut: 撞击冷却 -{0}%
+	StatMoveSpeedBonus: 移动速度 +{0}%
+	StatWaterSpeedBonus: 水中移速 +{0}%
+	StatFlightEnergySec: 飞行能量 +{0} 秒
+	StatFallDmgTakenMul: 坠落承伤 ×{0}%
+	StatAffinityAmp: 属性克制幅度 +{0}%
+	StatEnergyGainAdd: 战斗能量获取 +{0}%
+	StatEnergyGainMul: 战斗能量获取 ×{0}%
+	StatUltRetain: 大招后保留能量 {0}%
+	StatXpHeldMul: 持握经验 +{0}%
+	StatXpHotbarShareMul: 热键栏其它之力复制经验 {0}%
+	StatHomingTurn: 追踪转向 {0}
+	StatHomingBolt: 追踪：单体飞行弹
+	StatHomingSpread: 追踪：扇形/锥
+	StatHomingBarrage: 追踪：连发弹幕
+	StatHomingDoTBind: 追踪：缠绕弹
+	StatTilePierceBolt: 穿墙：单体飞行弹
+	StatTilePierceSpread: 穿墙：扇形/锥
+	StatTilePierceBarrage: 穿墙：连发弹幕
+	StatTilePierceDoTBind: 穿墙：缠绕弹
+	StatTilePierceBeam: 穿墙：直线光束
+	StatPenetrateAdd: 穿透 +{0}
+	StatChoiceLockSkill2: 锁定技能2
+	StatChoiceLockUlt: 锁定大招
+	StatChoiceDamage: 招式伤害 +{0}%
+	StatLifeOrbDamage: 招式伤害 +{0}%
+	StatLifeOrbHpDrain: 攻击时扣除 1 HP
+	StatLifeOrbGateTicks: 扣血间隔 {0} 秒
+	StatShellBellHeal: 命中回复 {0} HP
+	StatShellBellCdTicks: 贝壳之铃冷却 {0} 秒
+	StatRockyHelmetScale: 受击反伤 {0}% 持握攻击
+	StatRockyHelmetCdTicks: 反伤冷却 {0} 秒
+	StatLeftoversHpPerSec: 每秒回复 {0} HP
+	StatLeftoversLowHpBonus: 半血以下额外每秒回复 {0} HP
+	StatFocusSash: 可抵一次致死伤害
+	StatFocusSashHpPct: 触发门槛：当前 HP ≥ {0}%
+	StatFocusSashCdSec: 气势披带冷却 {0} 秒
+	StatFocusSashImmuneTicks: 触发后无敌 {0} 秒
+	StatEvioliteDefMul: 还能进化时防御 +{0}%
+	StatEvioliteDamage: 还能进化时伤害 +{0}%
+	StatEverstoneBlock: 阻止进化
+	StatCritUpgradeChance: 暴击升级率 +{0}%
+	StatOnFireCritUpgrade: 对燃烧目标暴击升级 +{0}%
+	StatFireMoveDamage: 火招式 +{0}%
+	StatPassiveEnergyMul: 被动充能 +{0}%
+	StatDashSpeedBonus: 冲刺速度 +{0}
+	StatLungeIFrameBonus: 撞击无敌帧 +{0}
+	StatPsychicDragonDamage: 超能/龙招式 +{0}%
+	StatGuardCutTimer: 受击后 {0} 秒额外减伤
+"""
+
+ACC_STATS_EN = """
+	ResonanceLine: Resonance: {0}
+	TypeFire: Fire
+	TypeWater: Water
+	TypeElectric: Electric
+	TypeFlying: Flying
+	TypeGhost: Ghost
+	TypeDragon: Dragon
+	StatDamageBonus: Move damage +{0}%
+	StatDamageFactorBonus: Henshin damage factor +{0}%
+	StatMeleeDeliveryDamage: Melee moves +{0}%
+	StatBossDamageBonus: Boss damage +{0}%
+	StatOnFireTargetBonus: Vs burning targets +{0}%
+	StatUltDamageBonus: Ultimate damage +{0}%
+	StatIncomingCut: Damage taken -{0}%
+	StatCooldownCut: Move cooldown -{0}%
+	StatDashCooldownCut: Dash cooldown -{0}%
+	StatLungeCooldownCut: Lunge cooldown -{0}%
+	StatMoveSpeedBonus: Movement speed +{0}%
+	StatWaterSpeedBonus: Water speed +{0}%
+	StatFlightEnergySec: Flight energy +{0}s
+	StatFallDmgTakenMul: Fall damage taken ×{0}%
+	StatAffinityAmp: Type-match amplitude +{0}%
+	StatEnergyGainAdd: Combat energy gain +{0}%
+	StatEnergyGainMul: Combat energy gain ×{0}%
+	StatUltRetain: Keep {0}% ultimate energy
+	StatXpHeldMul: Held XP +{0}%
+	StatXpHotbarShareMul: Copy {0}% XP to other hotbar forces
+	StatHomingTurn: Homing turn {0}
+	StatHomingBolt: Homing: bolts
+	StatHomingSpread: Homing: spread
+	StatHomingBarrage: Homing: barrage
+	StatHomingDoTBind: Homing: bind shots
+	StatTilePierceBolt: Tile pierce: bolts
+	StatTilePierceSpread: Tile pierce: spread
+	StatTilePierceBarrage: Tile pierce: barrage
+	StatTilePierceDoTBind: Tile pierce: bind shots
+	StatTilePierceBeam: Tile pierce: beams
+	StatPenetrateAdd: Pierce +{0}
+	StatChoiceLockSkill2: Locks skill 2
+	StatChoiceLockUlt: Locks ultimate
+	StatChoiceDamage: Move damage +{0}%
+	StatLifeOrbDamage: Move damage +{0}%
+	StatLifeOrbHpDrain: Attacks cost 1 HP
+	StatLifeOrbGateTicks: HP drain interval {0}s
+	StatShellBellHeal: On-hit heal {0} HP
+	StatShellBellCdTicks: Shell Bell cooldown {0}s
+	StatRockyHelmetScale: On-hit thorns {0}% of held attack
+	StatRockyHelmetCdTicks: Thorns cooldown {0}s
+	StatLeftoversHpPerSec: Regen {0} HP/s
+	StatLeftoversLowHpBonus: Extra {0} HP/s below half HP
+	StatFocusSash: Endure a lethal hit
+	StatFocusSashHpPct: Endure if current HP ≥ {0}%
+	StatFocusSashCdSec: Focus Sash cooldown {0}s
+	StatFocusSashImmuneTicks: I-frames after trigger {0}s
+	StatEvioliteDefMul: Defense +{0}% if it can still evolve
+	StatEvioliteDamage: Damage +{0}% if it can still evolve
+	StatEverstoneBlock: Blocks evolution
+	StatCritUpgradeChance: Crit-upgrade chance +{0}%
+	StatOnFireCritUpgrade: Crit-upgrade vs burning +{0}%
+	StatFireMoveDamage: Fire moves +{0}%
+	StatPassiveEnergyMul: Passive energy +{0}%
+	StatDashSpeedBonus: Dash speed +{0}
+	StatLungeIFrameBonus: Lunge i-frames +{0}
+	StatPsychicDragonDamage: Psychic/Dragon moves +{0}%
+	StatGuardCutTimer: Extra damage cut for {0}s after being hit
+"""
+
+
+def patch_stats(path: Path, lang: str) -> None:
+	text = path.read_text(encoding="utf-8")
+	if "StatDamageBonus:" in text:
+		return
+	block = ACC_STATS_ZH if lang == "zh" else ACC_STATS_EN
+	needle = "\tShardTag: 碎片 {0}/6\n" if lang == "zh" else "\tShardTag: Shard {0}/6\n"
+	if needle not in text:
+		raise SystemExit(f"cannot patch stats in {path}")
+	text = text.replace(needle, needle + block, 1)
+	path.write_text(text, encoding="utf-8")
+	print("stats", path)
 
 
 def patch_common(path: Path, lang: str) -> None:
@@ -123,6 +267,7 @@ def patch_common(path: Path, lang: str) -> None:
 				'\tInactiveTag: "[Henshin only - inactive]"\n\tAlwaysActiveTag: "[Always on - ACTIVE]"\n\tAlwaysInactiveTag: "[Always on - inactive]"\n\tShardTag: Shard {0}/6',
 			)
 		path.write_text(text, encoding="utf-8")
+	patch_stats(path, lang)
 
 
 def main() -> None:

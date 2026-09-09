@@ -1,5 +1,6 @@
 using System;
 using PokemonHenshin.Content.Combat;
+using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.PlayerState;
 using Terraria;
@@ -8,7 +9,7 @@ using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Accessories
 {
-	/// <summary>子弹继承 Delivery/Homing；诅咒之符穿墙与穿透。</summary>
+	/// <summary>子弹继承 Delivery/Homing；诅咒之符穿墙与穿透；广角镜漏网弹在 PostAI 转向。</summary>
 	public sealed class HenshinAccGlobalProjectile : GlobalProjectile
 	{
 		public override void OnSpawn(Projectile projectile, IEntitySource source)
@@ -53,6 +54,17 @@ namespace PokemonHenshin.Content.Accessories
 
 			if (hp.PenetrateAdd > 0 && projectile.penetrate > 0)
 				projectile.penetrate += hp.PenetrateAdd;
+		}
+
+		public override void PostAI(Projectile projectile)
+		{
+			if (projectile.ModProjectile is not IHenshinMoveProj child || !child.Homing)
+				return;
+			if (projectile.ModProjectile is HenshinMoveProj self && self.HandlesOwnHoming)
+				return;
+			if (projectile.ModProjectile is ModProjectile mp && !mp.ShouldUpdatePosition())
+				return;
+			HenshinProjUtil.HomingAI(projectile, true, child.HomingTurnRate);
 		}
 	}
 }
