@@ -12,6 +12,16 @@
 - 游戏内：`ModSources\PokemonHenshin` 目录联接 → Workshop → Develop Mods → Build + Reload
 - 版本钉死：**tML 1.4.4.9 / 2026.07（net8.0）**，**CalamityMod 2.2.4**（必须启用）
 
+## Cursor Cloud specific instructions
+
+无头 Linux（Cloud Agent）环境下的构建与验证：
+
+- **环境准备（幂等）：** `bash tools/cloud-agent-setup.sh`。装 net8.0 SDK（`~/.dotnet`，软链到 `/usr/local/bin/dotnet`）、下载并解压 tModLoader `v2026.07.3.0`（`~/tModLoader`），并复刻 `ModSources` 开发布局：在 `~/Documents/My Games/Terraria/tModLoader/ModSources/` 生成 `tModLoader.targets` 并把 `PokemonHenshin` 软链指向本仓库。该脚本已配置为 environment.json 的 `install`。
+- **构建：** `bash tools/build-mod.sh`（等价 `dotnet build` 但走 `ModSources/PokemonHenshin` 软链）。**不要**在仓库根直接 `dotnet build`——tML 用**源码目录名**当模组内部名，直接在 `/workspace` 构建会产出错误的 `workspace.tmod`；走软链才得到 `PokemonHenshin.tmod`（输出到 `~/.local/share/Terraria/tModLoader/Mods/`）。
+- **CalamityMod 不阻断构建：** 代码只用**反射**访问灾厄，编译期无 `using CalamityMod`，故无灾厄也能编译打包成合法 `.tmod`。灾厄仅在**运行时**为强依赖。
+- **无头加载自检：** `dotnet ~/tModLoader/tModLoader.dll -server -nosteam` 会发现并尝试加载 `PokemonHenshin`，因缺 CalamityMod 报 `Missing mod: CalamityMod required by PokemonHenshin`（预期）——证明 `.tmod` 合法且依赖接线正确。
+- **无法在云端跑的部分：** 实际进游戏测试需图形 Terraria 客户端 + Steam 创意工坊的 CalamityMod 2.2.4，无头 VM 不具备；游戏内玩法/特效验收仍须本地。
+
 ## 技术栈
 
 C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `CalamityProgressAdapter`（**无需** Extract dll）。只读参考 `../CalamityOverhaul`（禁止改、**禁止运行时依赖**）。
