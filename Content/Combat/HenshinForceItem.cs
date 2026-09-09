@@ -1,22 +1,31 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
+using PokemonHenshin.Content.Evolution;
 using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.DataStructures;
-using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 
 namespace PokemonHenshin.Content.Combat
 {
 	public abstract class HenshinForceItem : ModItem
 	{
+		[CloneByReference]
 		private FormDefinition templateDefinition;
+
+		public int Level { get; private set; }
+		public int Xp { get; private set; }
+
+		protected override bool CloneNewInstances => true;
 
 		public FormDefinition Definition => FormRegistry.ByItemType(Type) ?? (templateDefinition ??= CreateDefinition());
 
@@ -24,7 +33,6 @@ namespace PokemonHenshin.Content.Combat
 		protected abstract MoveSpec CreateMoveA();
 		protected abstract MoveSpec CreateMoveB();
 		protected abstract MoveSpec CreateUltimate();
-		protected abstract int BaseDamage { get; }
 
 		public MoveSpec Move1 => Definition.Move1;
 		public MoveSpec Move2 => Definition.Move2;
@@ -55,7 +63,6 @@ namespace PokemonHenshin.Content.Combat
 			Item.noMelee = true;
 			Item.noUseGraphic = true;
 			Item.DamageType = HenshinDamage.Instance;
-			Item.damage = BaseDamage;
 			Item.knockBack = 2f;
 			Item.value = Item.sellPrice(silver: 50);
 			Item.rare = ItemRarityID.Blue;
@@ -63,7 +70,131 @@ namespace PokemonHenshin.Content.Combat
 			Item.maxStack = 1;
 			Item.shoot = ProjectileID.None;
 			Item.shootSpeed = 1f;
+			InitializeNewIfNeeded();
+			RefreshDamage();
 		}
+
+		public override ModItem Clone(Item newEntity)
+		{
+			HenshinForceItem clone = (HenshinForceItem)base.Clone(newEntity);
+			clone.Level = Level;
+			clone.Xp = Xp;
+			return clone;
+		}
+
+		public override void SaveData(TagCompound tag)
+		{
+			tag["level"] = Level;
+			tag["xp"] = Xp;
+		}
+
+		public override void LoadData(TagCompound tag)
+		{
+			if (tag.ContainsKey("level"))
+			{
+				Level = tag.GetInt("level");
+				Xp = tag.ContainsKey("xp") ? tag.GetInt("xp") : 0;
+			}
+
+			InitializeNewIfNeeded();
+			RefreshDamage();
+		}
+
+		public override void NetSend(BinaryWriter writer)
+		{
+			writer.Write(Level);
+			writer.Write(Xp);
+		}
+
+		public override void NetReceive(BinaryReader reader)
+		{
+			Level = reader.ReadInt32();
+			Xp = reader.ReadInt32();
+			RefreshDamage();
+		}
+
+		public void SetProgress(int level, int xp)
+		{
+			Level = Math.Clamp(level, HenshinStatService.MinLevel, HenshinStatService.MaxLevel);
+			Xp = Math.Max(0, xp);
+			RefreshDamage();
+		}
+
+		public void InitializeNewIfNeeded()
+		{
+			if (Level >= HenshinStatService.MinLevel)
+				return;
+			FormDefinition def = Definition;
+			int formStage = def?.Stage ?? 1;
+			Level = HenshinStatService.StartingLevelForFormStage(formStage);
+			Xp = 0;
+		}
+
+		public void RefreshDamage()
+		{
+			InitializeNewIfNeeded();
+			int world = SafeWorldStage();
+			ForceProgress capped = HenshinStatService.TruncateToCap(Level, Xp, world);
+			Level = capped.Level;
+			Xp = capped.Xp;
+			Item.damage = ComputeFinalAttack();
+		}
+
+		public int ComputeFinalAttack()
+		{
+			FormDefinition def = Definition;
+			float atkMod = def?.AttackMod ?? 1f;
+			float factor = def?.HenshinDamageFactor ?? 1f;
+			return HenshinStatService.FinalAttack(Level, atkMod, factor);
+		}
+
+		public int ComputeFinalDefense()
+		{
+			FormDefinition def = Definition;
+			float defMod = def?.DefenseMod ?? 1f;
+			return HenshinStatService.FinalDefense(Level, defMod);
+		}
+
+		public bool TryAddExperience(Player player, int amount, out int levelsGained, out bool crossedEvolveBand)
+		{
+			levelsGained = 0;
+			crossedEvolveBand = false;
+			if (amount <= 0)
+				return false;
+
+			InitializeNewIfNeeded();
+			int oldLevel = Level;
+			int world = SafeWorldStage();
+			ForceProgress next = HenshinStatService.AddExperience(Level, Xp, amount, world, out levelsGained);
+			Level = next.Level;
+			Xp = next.Xp;
+			RefreshDamage();
+
+			FormDefinition nextForm = FormRegistry.FindEvolutionOf(Definition?.FormId);
+			if (nextForm != null)
+				crossedEvolveBand = HenshinStatService.CrossedBandMin(oldLevel, Level, nextForm.Stage);
+
+			if (crossedEvolveBand && player != null && player.whoAmI == Main.myPlayer)
+				player.GetModPlayer<EvolutionOfferPlayer>().TryOfferAfterLevelUp(this);
+
+			return levelsGained > 0 || amount > 0;
+		}
+
+		private static int SafeWorldStage()
+		{
+			try
+			{
+				return ProgressStageService.GetProgressStage();
+			}
+			catch
+			{
+				return 1;
+			}
+		}
+
+		public override void UpdateInventory(Player player) => RefreshDamage();
+
+		public override void HoldItem(Player player) => RefreshDamage();
 
 		public override bool AltFunctionUse(Player player) => true;
 
@@ -95,7 +226,7 @@ namespace PokemonHenshin.Content.Combat
 				return false;
 
 			float cdMul = hp.IsTransformed ? hp.MoveCooldownMultiplier : 1f;
-			int use = (int)System.Math.Max(1, System.Math.Round(move.UseTime * cdMul));
+			int use = (int)Math.Max(1, Math.Round(move.UseTime * cdMul));
 			Item.useTime = use;
 			Item.useAnimation = use;
 			Item.shoot = move.ProjectileType;
@@ -108,7 +239,7 @@ namespace PokemonHenshin.Content.Combat
 
 		public override void ModifyWeaponDamage(Player player, ref StatModifier damage)
 		{
-			damage *= Definition.HenshinDamageFactor;
+			// HenshinDamageFactor 已计入 Item.damage = FinalAttack，这里只叠饰品乘区。
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
 			if (hp.IsTransformed && hp.HenshinDamageFactorBonus != 0f)
 				damage *= 1f + hp.HenshinDamageFactorBonus;
@@ -119,7 +250,7 @@ namespace PokemonHenshin.Content.Combat
 			MoveSpec move = CurrentMove(player);
 			if (move == null)
 				return;
-			damage = (int)System.Math.Max(1, System.Math.Round(damage * move.DamageMultiplier));
+			damage = (int)Math.Max(1, Math.Round(damage * move.DamageMultiplier));
 			if (move.ShootSpeed <= 0f)
 				velocity = Vector2.Zero;
 		}
@@ -150,7 +281,7 @@ namespace PokemonHenshin.Content.Combat
 			}
 
 			int damage = player.GetWeaponDamage(Item);
-			damage = (int)System.Math.Max(1, System.Math.Round(damage * Ultimate.DamageMultiplier));
+			damage = (int)Math.Max(1, Math.Round(damage * Ultimate.DamageMultiplier));
 			FireMove(player, source, Ultimate, player.MountedCenter, velocity, damage, Ultimate.Knockback);
 
 			if (Ultimate.RecoilSelf)
@@ -176,7 +307,7 @@ namespace PokemonHenshin.Content.Combat
 				hp.StartLungeCooldown(120); // 2s
 				// 0.25s 无敌帧
 				player.immune = true;
-				player.immuneTime = System.Math.Max(player.immuneTime, 15);
+				player.immuneTime = Math.Max(player.immuneTime, 15);
 			}
 
 			if (move.GrantsPhasing)
@@ -245,7 +376,32 @@ namespace PokemonHenshin.Content.Combat
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
 		{
+			RefreshDamage();
+			int world = SafeWorldStage();
+			int cap = HenshinStatService.LevelCap(world);
+			int need = HenshinStatService.ExpNeeded(Level);
+			bool capped = Level >= cap || Level >= HenshinStatService.MaxLevel;
+
 			tooltips.Add(new TooltipLine(Mod, "HenshinTransform", Language.GetTextValue("Mods.PokemonHenshin.Common.HoldToTransform")));
+			tooltips.Add(new TooltipLine(Mod, "HenshinLevel", Language.GetTextValue(
+				capped ? "Mods.PokemonHenshin.Common.ForceLevelCapped" : "Mods.PokemonHenshin.Common.ForceLevel",
+				Level, cap, world))
+			{
+				OverrideColor = capped ? new Color(255, 200, 80) : new Color(180, 230, 160)
+			});
+			if (!capped && need > 0)
+			{
+				tooltips.Add(new TooltipLine(Mod, "HenshinXp", Language.GetTextValue(
+					"Mods.PokemonHenshin.Common.ForceXp", Xp, need)));
+			}
+
+			tooltips.Add(new TooltipLine(Mod, "HenshinStats", Language.GetTextValue(
+				"Mods.PokemonHenshin.Common.ForceStats", ComputeFinalAttack(), ComputeFinalDefense())));
+			tooltips.Add(new TooltipLine(Mod, "HenshinDefenseNote", Language.GetTextValue("Mods.PokemonHenshin.Common.ForceDefenseNote"))
+			{
+				OverrideColor = new Color(200, 210, 230)
+			});
+
 			if (Move1 != null && Move2 != null && Ultimate != null)
 			{
 				tooltips.Add(new TooltipLine(Mod, "HenshinMoves", Language.GetTextValue(
@@ -261,13 +417,27 @@ namespace PokemonHenshin.Content.Combat
 				HenshinPlayer hp = local.GetModPlayer<HenshinPlayer>();
 				float max = Definition.EnergyMax;
 				float cur = hp.GetStoredEnergy(Definition.FormId, max);
-				int curI = (int)System.Math.Round(cur);
-				int maxI = (int)System.Math.Round(max);
+				int curI = (int)Math.Round(cur);
+				int maxI = (int)Math.Round(max);
 				bool ready = cur >= max - 0.01f;
 				tooltips.Add(new TooltipLine(Mod, "HenshinEnergy", Language.GetTextValue(
 					"Mods.PokemonHenshin.Common.UltimateEnergy", curI, maxI))
 				{
 					OverrideColor = ready ? new Color(255, 215, 80) : new Color(120, 180, 255)
+				});
+			}
+
+			FormDefinition next = FormRegistry.FindEvolutionOf(Definition?.FormId);
+			if (next != null)
+			{
+				int needLv = HenshinStatService.BandMinOf(next.Stage);
+				bool readyEvo = HenshinStatService.MeetsEvolution(world, Level, next.Stage);
+				string nextName = Language.GetTextValue(next.DisplayNameKey);
+				tooltips.Add(new TooltipLine(Mod, "HenshinEvolve", Language.GetTextValue(
+					readyEvo ? "Mods.PokemonHenshin.Common.ForceEvolveReady" : "Mods.PokemonHenshin.Common.ForceEvolveNeed",
+					nextName, next.Stage, needLv))
+				{
+					OverrideColor = readyEvo ? new Color(120, 255, 160) : new Color(255, 180, 120)
 				});
 			}
 
@@ -282,6 +452,12 @@ namespace PokemonHenshin.Content.Combat
 			{
 				OverrideColor = new Color(255, 170, 120)
 			});
+		}
+
+		public static bool TryGet(Item item, out HenshinForceItem force)
+		{
+			force = item?.ModItem as HenshinForceItem;
+			return force != null;
 		}
 	}
 

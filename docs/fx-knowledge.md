@@ -1,14 +1,14 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-06
+**版本日期：** 2026-09-09
 
 ## 1. 权威与硬约束
 
 | 优先级 | 文件 | 管什么 |
 |--------|------|--------|
 | 1 | `docs/requirements.md` | 产品规则 |
-| 2 | `docs/move-effects.md` + 代码 | 招式玩法语义、伤害/能量/键位 |
+| 2 | `docs/move-effects.md` + `docs/balance-stats.md` + 代码 | 招式语义；数值数字权威；实现 |
 | 3 | **本文件 `docs/fx-knowledge.md`** | VFX 复用目录、手法 cookbook、升级规格 |
 
 本文件**不**改写玩法数值；迭代特效时优先查「当前实现 / Recommended / SpecReady / Locked」。
@@ -309,6 +309,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 - `HenshinSleepDebuff` + `HenshinNpcGlobalNPC`：`PreAI=false` 定身、`CanHitPlayer=false`、首伤 `FinalDamage*=2` 后 DelBuff；**不清**已在飞敌弹。催眠施加端跳过 Boss。
 - 睡眠 VFX：`DrawEffects` 强制 `Color(255,255,255,100)` + 头顶 3 路 `z/Z/Zz`。
 - **禁止：** SoftGlow 几何罩；PostDraw 克隆贴图叠罩；弱 `Lerp→White` / `GetAlpha` 漂白（亮部不可见）。现役白即为用户确认规格。
+
+### 经验世界字（`HenshinXpPopupSystem`，2026-09-09）
+- `EXP +X` 钉击杀坐标；`LEVEL UP!` 跟玩家、连升连弹（错开 18 tick）。Boss 更厚描边+金白闪光。文案固定英文，不绑 buff、不绑已死 NPC。画法对齐睡眠 zzZ（`MouseText` + 描边）。
 
 ---
 

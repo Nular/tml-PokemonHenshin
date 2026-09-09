@@ -8,8 +8,9 @@
 
 仓库根即 tML 模组根（内部名 `PokemonHenshin`）。
 
-- 命令行：根目录 `dotnet build` → 打包到 `Documents\My Games\Terraria\tModLoader\Mods\PokemonHenshin.tmod`；游戏运行且启用本模时会 **TML003**，只能游戏内 Build + Reload
-- 游戏内：`ModSources\PokemonHenshin` 目录联接 → Workshop → Develop Mods → Build + Reload
+- **目录名必须是 `PokemonHenshin`**（tML 用源码目录名当内部名）。本地：`ModSources\PokemonHenshin` 联接本仓库后 `dotnet build`，或游戏内 Workshop → Develop Mods → Build + Reload（游戏运行且启用本模时命令行会 **TML003**）。
+- **Cloud：** `bash tools/build-mod.sh`（见下）。**不要**在名为 `workspace` 的根目录直接 `dotnet build`。
+- **公式校验：** `dotnet run --project tools/HenshinStatVerify`
 - 版本钉死：**tML 1.4.4.9 / 2026.07（net8.0）**，**CalamityMod 2.2.4**（必须启用）
 
 ## Cursor Cloud specific instructions
@@ -20,7 +21,7 @@
 - **构建：** `bash tools/build-mod.sh`（等价 `dotnet build` 但走 `ModSources/PokemonHenshin` 软链）。**不要**在仓库根直接 `dotnet build`——tML 用**源码目录名**当模组内部名，直接在 `/workspace` 构建会产出错误的 `workspace.tmod`；走软链才得到 `PokemonHenshin.tmod`（输出到 `~/.local/share/Terraria/tModLoader/Mods/`）。
 - **CalamityMod 不阻断构建：** 代码只用**反射**访问灾厄，编译期无 `using CalamityMod`，故无灾厄也能编译打包成合法 `.tmod`。灾厄仅在**运行时**为强依赖。
 - **无头加载自检：** `dotnet ~/tModLoader/tModLoader.dll -server -nosteam` 会发现并尝试加载 `PokemonHenshin`，因缺 CalamityMod 报 `Missing mod: CalamityMod required by PokemonHenshin`（预期）——证明 `.tmod` 合法且依赖接线正确。
-- **无法在云端跑的部分：** 实际进游戏测试需图形 Terraria 客户端 + Steam 创意工坊的 CalamityMod 2.2.4，无头 VM 不具备；游戏内玩法/特效验收仍须本地。
+- **无法在云端跑的部分：** 实际进游戏测试需图形 Terraria 客户端 + Steam 创意工坊的 CalamityMod 2.2.4，无头 VM 不具备；游戏内玩法/特效/DPS 验收仍须本地。公式可用 `tools/HenshinStatVerify`。
 
 ## 技术栈
 
@@ -32,8 +33,9 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 | 路径 | 角色 |
 |------|------|
-| `docs/requirements.md` | **产品唯一真相**（v1.4：含等级/攻防/能量/进化双条件） |
-| `docs/balance-stats.md` | **数值真源表**（等级带、经验、MidAtk/Def、种族 Mod、MoveRefRate；设计已定、代码未实现） |
+| `docs/requirements.md` | **产品唯一真相**（v1.4：含等级/攻防/能量/进化双条件/XP 缩放） |
+| `docs/balance-stats.md` | **数值数字权威**（等级带、经验、MidAtk/Def、种族 Mod、MoveRefRate） |
+| `Content/Core/HenshinStatService.cs` · `FormStatTable.cs` | 上表公式的代码入口（无 Terraria 依赖，供 `tools/HenshinStatVerify`） |
 | `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
 | `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
 | `docs/fx-knowledge.md` | FX 目录 / cookbook / 踩坑（Living；特效改动先查这里） |
@@ -43,7 +45,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame / Extra98 |
 | `Content/Combat/Moves/HenshinFxDraw.cs` | Additive 绘制：`DrawContinuousBeam` / SheetFrame / `ScaleForWorldDiameter` |
 | `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态；`Wave2MoveProjs`（水柱/日棱/龙怒球/破灭等） |
-| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 脚下能量条 UI / 饰品 / 被动进化天气挖掘 Net |
+| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 脚下能量条 + 经验世界字（`HenshinXpPopupSystem`）/ 饰品 / 被动进化天气挖掘 Net |
 
 ## 特效踩坑与禁止降级（必读）
 
@@ -59,18 +61,8 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 ## 当前状态与下一步
 
-- **代码（2026-09-07）：** 全 36 形态接线；脚下能量条；Stage 6+ FX；**Wave3 / Stage7+ 已验收**。详见 `docs/fx-knowledge.md`、`docs/move-effects.md`。
-- **已验收基线（Stage≤5 cookbook）：** 天雷 / 泡沫 Load / 飞叶 Leaf / 咬合尖牙 / 龙波 Nebula（直线连发）。
-- **已验收（能量 UI）：** 脚下条 + 满充金尘（2026-09-06）。
-- **已验收（Wave1，2026-09-06）：** 抓狂 / 火焰牙 / 闪焰 / 泡沫 / 念力。
-- **已验收（Stage 6，2026-09-06）：** 豪力 / 迷你龙 / 三地鼠 / 圆陆鲨；大岩蛇岩崩。
-- **已验收（御三家终阶+金属怪，2026-09-06）：** 喷火龙 / 妙蛙花 / 水箭龟 / 金属怪。
-- **已验收（暴风 + 大比鸟，2026-09-06）：** 大比鸟三招 / 哈克龙·快龙暴风。
-- **已验收（Wave3，2026-09-07）：** 鬼斯通 / 哈克龙龙尾 / 怪力 / 胡地。
-- **已验收（Stage7+，2026-09-07）：** 钢尾（`0,0,16,80` 罩）/ 猛撞灰日耀 / 暗影抓+影炎 / 恶波动×32 / 彗星拳+StarWrath / 破灭自缓加粗 / 巨金怪强念=胡地 / 龙俯冲·画龙点睛纯黑星尘龙 / 逆鳞火球 / 流星群64 / 空气爆三段 / 神鸟吟唱 / 气旋32格（`CycloneAttack`）/ 超梦强念×6穿墙·精神击破64球。
-- **进化：** UIState；ProgressStage 上升弹窗；`/henshin evolve` 可补弹。**v1.4 设计：** 进化须 `ProgressStage >= next.Stage` **且** `Level >= BandMin[next.Stage]`（代码未实现双条件/等级）。
-- **数值设计（2026-09-09）：** `docs/requirements.md` v1.4 + `docs/balance-stats.md` 已定稿（物品等级/经验、攻防、能量池 1000、招式 MoveRefRate）；**代码仍为旧 StageDamage/EnergyMax=100**，实现另开。
-- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending；**等级攻防未实装**。
-- **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3。
-- **下一步：** 实装 v1.4 数值体系 → 联机 → DPS 抽检 → Rage。
-- 新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。
+- **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
+- **数值（2026-09-09）：** v1.4 已接线。击杀 XP × 世界档（1～3→300～900）；`ExpNeeded` × 物品等级带。`LEVEL UP!` / `EXP +X` 世界字。游戏内 DPS 抽检仍待本地。
+- **已知缺口：** 无现役 `GrantsPhasing=true`（A11 加成穿障时长/CD，但无形态消费）；联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。
+- **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`；`tools/HenshinStatVerify`。
+- **下一步：** 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Net;
 using Terraria;
@@ -245,6 +246,23 @@ namespace PokemonHenshin.Content.Evolution
 			EvolutionConfirmSystem.Instance.Open(slot, isMouse, current, next);
 		}
 
+		public void TryOfferAfterLevelUp(HenshinForceItem force)
+		{
+			if (Player.whoAmI != Main.myPlayer)
+				return;
+			if (EvolutionConfirmSystem.Instance == null || EvolutionConfirmSystem.Instance.IsOpen)
+				return;
+			if (force == null)
+				return;
+
+			if (!EvolutionService.TryFindEvolvable(Player, out int slot, out bool isMouse, out FormDefinition current, out FormDefinition next))
+				return;
+			if (current == null || next == null)
+				return;
+
+			EvolutionConfirmSystem.Instance.Open(slot, isMouse, current, next);
+		}
+
 		/// <summary>下一形态 Stage 落在 (previousStage, newStage] 且物品在可自动进化位置。</summary>
 		private static bool TryFindNewlyUnlocked(
 			Player player, int previousStage, int newStage,
@@ -261,14 +279,14 @@ namespace PokemonHenshin.Content.Evolution
 			int selected = player.selectedItem;
 			if (selected >= 0 && selected < HenshinPlayerHotbar.Size)
 			{
-				if (TryNewlyUnlockedSlot(player.inventory[selected], previousStage, newStage, out current, out next))
+				if (TryNewlyUnlockedSlot(player, player.inventory[selected], previousStage, newStage, out current, out next))
 				{
 					slot = selected;
 					return true;
 				}
 			}
 
-			if (!Main.mouseItem.IsAir && TryNewlyUnlockedSlot(Main.mouseItem, previousStage, newStage, out current, out next))
+			if (!Main.mouseItem.IsAir && TryNewlyUnlockedSlot(player, Main.mouseItem, previousStage, newStage, out current, out next))
 			{
 				isMouse = true;
 				return true;
@@ -278,7 +296,7 @@ namespace PokemonHenshin.Content.Evolution
 			{
 				if (i == selected)
 					continue;
-				if (TryNewlyUnlockedSlot(player.inventory[i], previousStage, newStage, out current, out next))
+				if (TryNewlyUnlockedSlot(player, player.inventory[i], previousStage, newStage, out current, out next))
 				{
 					slot = i;
 					return true;
@@ -289,7 +307,7 @@ namespace PokemonHenshin.Content.Evolution
 		}
 
 		private static bool TryNewlyUnlockedSlot(
-			Item item, int previousStage, int newStage,
+			Player player, Item item, int previousStage, int newStage,
 			out FormDefinition current, out FormDefinition next)
 		{
 			current = null;
@@ -305,7 +323,7 @@ namespace PokemonHenshin.Content.Evolution
 			// 本档刚解锁：previous < next.Stage <= new
 			if (next.Stage <= previousStage || next.Stage > newStage)
 				return false;
-			return ProgressStageService.MeetsStage(next.Stage);
+			return EvolutionService.MeetsTrigger(player, current, item);
 		}
 
 		public void NotifyEvolved()

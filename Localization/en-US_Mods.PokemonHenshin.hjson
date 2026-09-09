@@ -1,12 +1,18 @@
 Common: {
 	HoldToTransform: Hold in your hotbar to transform; release to revert instantly
-	Moves: Left click: {0}   Right click: {1}
 	Moves3: Skill1: {0}   Skill2: {1}   Ult: {2} (hotkey when charged)
 	UltimateEnergy: Ultimate energy: {0}/{1}
 	NoMount: Mounts cannot be used while transformed
 	UltimateNotReady: Ultimate energy not ready
 	ChoiceBandLocked: Choice Band: Skill1 only
 	StageUp: Progress stage raised to {0} (starter mid-evo needs Slime God/Deerclops, not King Slime)
+	ForceLevel: Level {0} (cap {1}, world stage {2})
+	ForceLevelCapped: Level {0} (capped at {1}, world stage {2})
+	ForceXp: XP {0} / {1}
+	ForceStats: Form attack {0}  Form defense {1}
+	ForceDefenseNote: Form defense replaces armor defense while transformed; accessory defense still applies
+	ForceEvolveNeed: Evolve to {0} requires stage {1} and level >= {2}
+	ForceEvolveReady: Ready to evolve into {0}
 }
 
 Keybinds: {
@@ -18,7 +24,7 @@ Keybinds: {
 
 Evolution: {
 	ConfirmTitle: Form Evolution
-	ConfirmBody: Evolve {0} into {1}? Prefix and favorite are kept.
+	ConfirmBody: Evolve {0} into {1}? Prefix, favorite, level, and XP are kept.
 	ConfirmYes: Confirm
 	ConfirmNo: Cancel
 }

@@ -4,7 +4,7 @@
 |----|------|
 | 版本 | 1.4 |
 | 对齐需求 | `docs/requirements.md` **v1.4**（数值表 `docs/balance-stats.md`） |
-| 状态 | **战斗模型 v1.3 已落地并验收**；**v1.4 等级/攻防/能量/进化双条件 = 设计定稿、代码未实现**；联机 / DPS 抽检 / M5 后置 |
+| 状态 | **战斗模型 v1.3 已落地并验收**；**v1.4 等级/攻防/能量/进化双条件/XP 缩放已接线**（世界字 `LEVEL UP!`/`EXP +X`）；联机双端 / DPS 抽检 / 弹出验收 / M5 后置 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -33,10 +33,10 @@
 - **取消持握**同 tick 清除本模全部相关效果
 - 持握期间**禁止坐骑**
 - 独立伤害类型 `HenshinDamage`，职业专精按 **k = 0.35** 折算
-- 随 `ProgressStage` **与物品等级双条件**进化（需求 v1.4；**代码仍仅 ProgressStage**）
+- 随 `ProgressStage` **与物品等级双条件**进化（需求 v1.4；代码已接线）
 - 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01～A21 饰品**
 - **联机必须一致**（形态、能量、伤害、进化、天气场伤害侧、地形变更；v1.4 另含 level/xp）
-- 招式泰拉适配：`docs/move-effects.md`；数值真源：`docs/balance-stats.md`（设计已定、代码未切）
+- 招式泰拉适配：`docs/move-effects.md`；数值真源：`docs/balance-stats.md`（**已接线** `HenshinStatService` / `FormStatTable`）
 
 ### 1.2 里程碑（对齐需求 §13）
 
@@ -76,12 +76,12 @@
 
 ### 2.1 解决方案 / 目录（M0 已定：扁平布局）
 
-**仓库根即 tML 模组根**（模组内部名 = 文件夹名 `PokemonHenshin`）。`ModSources\PokemonHenshin` 是指向本仓库的目录联接，供游戏内 Build + Reload；命令行在仓库根 `dotnet build` 会经 `tMLMod.targets` 自动调用 tML 打包（游戏运行且启用本模时打包会被 TML003 拒绝，只能游戏内 Build + Reload）。
+**仓库根即 tML 模组根**（模组内部名 = **文件夹名**）。目录必须叫 `PokemonHenshin`；Cloud 工作区名为 `workspace` 时用 `bash tools/build-mod.sh`。`ModSources\PokemonHenshin` 联接本仓库，供游戏内 Build + Reload。游戏运行且启用本模时命令行打包会 **TML003**。公式：`dotnet run --project tools/HenshinStatVerify`。
 
 ```
 PokemonHenshin/                # 仓库根 = 模组根
   docs/                        # requirements.md（产品真相）、dev-plan.md（本文件）；buildIgnore
-  tools/                       # 开发脚本（fetch_assets.py）；buildIgnore，不进 .tmod
+  tools/                       # cloud-agent-setup.sh、build-mod.sh、HenshinStatVerify、fetch_assets.py；buildIgnore
   PokemonHenshin.csproj
   build.txt                    # modReferences = CalamityMod；buildIgnore 含 docs、tools、*.md…
   description.txt / description_workshop.txt / icon.png
@@ -645,10 +645,10 @@ TryEditTile(player, action) →
 
 | 维度 | 结论 |
 |------|------|
-| 与 requirements **v1.4** 对齐 | **规则层通过**；**代码仍停在 v1.3 战斗模型**：`StageDamage`、`EnergyMax=100`、`EnergyOnHit=4`、进化仅 `MeetsStage`（无 Level/Xp） |
+| 与 requirements **v1.4** 对齐 | **规则层通过**；**代码已接线**等级/Xp/`StageXpScale`/`FinalAttack`/`FinalDefense`/能量 1000/进化双条件/世界字（DPS 与弹出验收待本地） |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
-| 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检；⑤ **v1.4 数值体系未实装** |
-| 总评 | **v1.3 战斗/饰品已落地验收；v1.4 设计已入 docs；下一步优先实装等级攻防能量；现役穿障形态为 0** |
+| 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
+| 总评 | **v1.4 数值已接线**；下一步联机与 DPS 抽检；现役穿障形态为 0 |
 
 ---
 
@@ -667,3 +667,7 @@ TryEditTile(player, action) →
 | 1.3.1 | 洁癖：页眉/目标/总评与 README·AGENTS 对齐 v1.3；注明现役无穿障形态 |
 | 1.3.2 | 洁癖：M1.3 对齐 UIState + ProgressStage 上升弹窗；去掉「每 tick 扫」过期说法 |
 | **1.4.0** | 洁癖：对齐 requirements v1.4 / balance-stats；标明数值设计已定、代码未实现；下一步=实装等级攻防 |
+| **1.4.1** | 接线 v1.4 数值：Level/Xp、FinalAttack/Def、能量 1000、进化双条件、§7.1 点名倍率 |
+| **1.4.2** | 洁癖：去掉「数值未接线 / EnergyMax=100」现役说法；MoveRefRate 归一化窗与构建命令同源 |
+| **1.4.3** | 击杀 XP × 世界档；ExpNeeded × 物品带；LEVEL UP / EXP 世界字 |
+| **1.4.4** | 洁癖：页眉/对照表/README 对齐 XP 双自变量与世界字；去掉死 loc `GainedXp`/`LevelUp`/`Moves` |

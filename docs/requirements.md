@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | **1.4** |
-| 状态 | 现役开发基线（v1.3 战斗已落地；**v1.4 等级/攻防/能量数值设计已定稿，代码未实现**） |
+| 状态 | 现役开发基线（v1.3 战斗已落地；**v1.4 等级/攻防/能量/进化双条件/XP 缩放已接线**；游戏内 DPS 抽检与弹出验收待本地） |
 | 平台 | 泰拉瑞亚 + tModLoader + 灾厄（Calamity） |
 | 联机 | 必须支持多人 |
 | 读者 | 策划 / 程序 / 其他实现 Agent |
@@ -139,7 +139,7 @@
 
 `MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease`
 
-标准技参考约 `0.85～1.15`；**MoveRefRate 为预算参考而非铁律**。段数同时影响伤害与手感，**优先调单段倍率/充能 Factor，谨慎改段数**。追踪易命中远程可偏低、短距近战高风险可偏高；细则见 `docs/balance-stats.md` §7 与 `.cursor/skills/henshin-moves`。
+标准技原始公式约为 **3.0**（3 APS）；表中 `0.85～1.15` 是相对该值的**归一化**窗（`MoveRefRate / 3`）。**MoveRefRate 为预算参考而非铁律**。段数同时影响伤害与手感，**优先调单段倍率/充能 Factor，谨慎改段数**。追踪易命中远程可偏低、短距近战高风险可偏高；细则见 `docs/balance-stats.md` §7 与 `.cursor/skills/henshin-moves`。
 
 **计入：** Generic 增伤/暴击/攻速；本模饰品与情境加成；盔甲/饰品上的 Generic 向；作用于 Generic 的药水；旗帜等目标侧修正；灾厄怒气 / 肾上腺素。
 
@@ -352,16 +352,18 @@ Tooltip 须说明：形态防御取代盔甲防御；饰品防御仍生效。
 当前等级 `L` 升到 `L+1`：
 
 ```
-若 L <= 50:  ExpNeeded = 50 + 15 * (L - 1)
-若 L > 50:   ExpNeeded = 785 + 40 * (L - 50) + 0.8 * (L - 50)^2.2
+若 L <= 50:  BaseExpNeeded = 50 + 15 * (L - 1)
+若 L > 50:   BaseExpNeeded = 785 + 40 * (L - 50) + 0.8 * (L - 50)^2.2
+StageXpScale(S) = 1 + (S - 1) * 299 / 11     // 档 1 = 1，档 12 = 300
+ExpNeeded(L) = round(BaseExpNeeded(L) * StageXpScale(BandForLevel(L)))
 ```
 
-满级 100 后不再获得经验。
+需求跟**物品等级带**放大，不跟世界档。满级 100 后不再获得经验。
 
 #### 4.6.4 经验获取
 
-- **小怪 / 非 Boss：** 持握本模之力且击杀归属为本模招式（含弹幕）时，`XP += Random(1..3)`。  
-- **Boss：** 动态公式（兼容原版 / 灾厄 / 大修）；多节 Boss 仅在最终击杀结算一次：
+- **小怪 / 非 Boss：** 持握本模之力且击杀归属为本模招式（含弹幕）时，`XP += Random(round(1×Scale)..round(3×Scale))`，`Scale = StageXpScale(GetProgressStage())`。档 1 为 1～3，档 12 为 300～900。  
+- **Boss：** 动态公式得出 `BossXP` 后再 `× StageXpScale(世界档)`（与小怪同一系数，相对比例不变）；多节 Boss 仅在最终击杀结算一次：
 
 ```
 lifeTerm = (max(lifeMax,1) / 2000)^0.45
@@ -370,14 +372,14 @@ stageMul = 0.75 + 0.12 * GetProgressStage()
 BossXP   = Clamp(round(14 * lifeTerm * defTerm * stageMul), StageMin, StageMax)
 ```
 
-史莱姆王锚点约 **20 XP**；各档夹子与校准见 `docs/balance-stats.md`。个别异常 Boss 允许白名单覆写。
+史莱姆王锚点约 **20 XP**（×世界 Scale 前）；各档夹子与校准见 `docs/balance-stats.md`。个别异常 Boss 允许白名单覆写。世界字提示：击杀处 `EXP +X`，玩家处连升连弹 `LEVEL UP!`，Boss 更大并描边闪光。
 
 #### 4.6.5 攻击与防御
 
 旧 `StageDamage = 8 + stage * 6` **废弃**。阶段基准对齐灾厄大修比目鱼的**有效 DPS 成长形状**（只读参考，无运行时依赖），再按本模「标准技 UseTime 20 ≈ 3 APS、倍率 1.0」反推面板。
 
 ```
-S = GetProgressStage()
+S = BandForLevel(Level)   // 攻防插值用物品等级所在带；世界 GetProgressStage() 只做等级硬顶与进化进度条件
 t = (Level - BandMin[S]) / max(1, BandMax[S] - BandMin[S])
 tw = t ^ LevelCurve[S]
 StageAttack  = lerp(MidAtk[S]*FloorMult[S], MidAtk[S]*CeilMult[S], tw)
@@ -392,17 +394,16 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 种族值以第九世代为准（非超级进化）；36 形态 Mod 全表见 `docs/balance-stats.md`。段内升级收益刻意加大（约 +55%～+90% 视阶段），用于体感成长；更大跳变仍来自**推进阶段 / 进化新形态与新技能**。
 
-#### 4.6.6 实现指引（供下一 Agent，本版仅文档）
+#### 4.6.6 实现指引
 
-建议顺序：
-
-1. `FormStatTable`（或 `FormDefinition` 字段）：`AttackMod` / `DefenseMod`；`MoveSpec` 增加 `EnergyGainFactor`、`BalanceTag`  
-2. `HenshinForceItem`：`Level`/`Xp` 的 Save/Load；Tooltip；进化拷贝  
-3. `HenshinStatService`：`ExpNeeded`、Boss XP、Stage→Final 计算  
-4. 面板改用 `FinalAttack`；`HenshinPlayer` 盔甲防御剥离 + `FinalDefense`；击杀加经验  
-5. 能量池 1000 + 每秒软顶 + Factor；按 balance-stats 扫异常倍率  
-6. 进化双条件：`ProgressStage` + `Level >= BandMin[next.Stage]`  
-7. 联机同步 level/xp/energy；游戏内 DPS 抽检 PS7/9/12  
+1. `FormStatTable` + `MoveSpec.BalanceTag` / `EnergyGainFactor` — **已接线**
+2. `HenshinForceItem`：`Level`/`Xp` Save/Load/Net；Tooltip；进化拷贝 — **已接线**
+3. `HenshinStatService`：`ExpNeeded`（×物品带）、Boss XP、`StageXpScale`（击杀×世界档）、Stage→Final — **已接线**
+4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验；世界字 `EXP +X` / `LEVEL UP!` — **已接线**
+5. 能量池 1000 + 每秒软顶 + Factor — **已接线**
+6. 进化双条件 — **已接线**
+7. 联机同步 level/xp/energy — **SyncEnergy 含三项；服务端写入持握物品并 TruncateToCap**；双端实测 pending
+8. 游戏内 DPS 抽检 PS7/9/12 — pending  
 
 ---
 
@@ -633,7 +634,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 ## 15. 仍待实现期填写（不阻塞文档）
 
-- 各招式精确倍率按 `docs/balance-stats.md` §7 重标定后回写（代码实装时）  
+- 逐招精标定仍待游戏内 DPS 抽检后回写 `docs/move-effects.md`（§7.1 点名项代码已改）  
 - 对标武器的具体 ItemID（随灾厄版本）  
 - 饰品精确数值微调  
 - Boss XP 白名单（若动态公式对个别 Boss 偏差过大）  
@@ -654,3 +655,4 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 | 1.3.1 | 洁癖：§1.1/§14/状态栏与 README·AGENTS·dev-plan 对齐现役；注明无穿障形态 |
 | **1.4** | 物品实例等级/经验；分阶段等级硬顶；经验公式与 Boss 动态 XP；推翻 StageDamage，攻防对齐比目鱼有效 DPS；变身替换盔甲防御；能量池 1000+软顶；进化须进度+等级双条件；数值表见 `docs/balance-stats.md` |
 | 1.4.1 | 招式平衡：段数慎改；MoveRefRate 为参考；按命中难度/距离/风险柔性调倍率（见 balance-stats §7） |
+| 1.4.3 | 击杀 XP × 世界档；`ExpNeeded` × 物品带；世界字 `EXP +X` / `LEVEL UP!`（不跟世界档折算当前 Xp） |

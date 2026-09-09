@@ -18,8 +18,8 @@ description: >-
 
 | 权威                               | 管什么                                                  |
 | -------------------------------- | ---------------------------------------------------- |
-| `docs/requirements.md`           | 产品规则（含 v1.4 等级/攻防/能量/进化双条件）                          |
-| `docs/balance-stats.md`          | **数值真源**：等级带、经验、MidAtk/Def、种族 Mod、能量池、MoveRefRate 门禁 |
+| `docs/requirements.md`           | 产品规则（含 v1.4 等级/攻防/能量/进化双条件/XP 缩放）                          |
+| `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量、MoveRefRate |
 | `docs/move-effects.md`           | 招式玩法语义 / 接线状态                                        |
 | `docs/fx-knowledge.md`           | FX cookbook、本模已用手法、贴图与踩坑                             |
 | `AGENTS.md`                      | 构建、目录、硬约束入口                                          |
@@ -52,7 +52,7 @@ description: >-
   - **段数谨慎改动**（影响手感）；失衡时优先调单段 `DamageMultiplier` / `EnergyGainFactor`。
   - 填写拟定 `EnergyGainFactor`（大招槽为 0）。
   - **同一招式名**若出现在不同形态或技能/大招不同槽，必须分列倍率，禁止默认抄同一数字。
-  - 面板伤来自 `FinalAttack`（阶段×等级×种族），不要用旧 `StageDamage` 心算。
+  - 面板伤来自 `FinalAttack`（等级带基准 × 种族 `AttackMod` × `HenshinDamageFactor`）。§7 窗用 `MoveRefRateNormalized`。
 4. **写设计方案（最终预期效果）**：用玩家主观语言描述，同时当作验收标准。建议覆盖：
   - 一眼能认出是哪招（形、色、节奏）
   - 空间尺度（约几格宽/长/半径）

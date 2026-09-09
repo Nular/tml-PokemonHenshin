@@ -1,7 +1,7 @@
 # 招式泰拉适配表（权威）
 
-**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**（见变更记录 / `docs/fx-knowledge.md`）  
-**版本：** 1.3（表结构）；变更记录至 **1.14（2026-09-07 Wave3 Accepted）**  
+**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**；**v1.4 数值已接线**（游戏内 DPS 抽检待本地）  
+**版本：** 1.3（表结构）；变更记录至 **1.19（2026-09-09 v1.4 数值）**  
 **冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
@@ -10,7 +10,7 @@
 
 ### 1.1 源表
 
-权威输入：[宝可梦.xlsx](file:///c:/Users/yuanu/xwechat_files/wxid_c4olaula6xc522_09c6/temp/RWTemp/2026-09/d03ae102dff8b4de328d76495433270f/宝可梦.xlsx)  
+权威输入：策划 Excel「宝可梦.xlsx」（本机路径，**仓库不收录**）。  
 列：姓名 · 被动 · 技能1 · 技能2 · 大招。Excel 文案为宝可梦语义，本文件给出**泰拉瑞亚可验收**的落地规格。
 
 - Excel「铁哑铃」→ 本模 **金属怪**（`L08_F01`）。
@@ -40,7 +40,7 @@
 
 ## 2. 能量规则摘要
 
-> **v1.4 数值真源：** `docs/requirements.md` §2.5 与 `docs/balance-stats.md` §6。下表为摘要；与旧「满值 100 / 命中 ICD」冲突时以 v1.4 为准（**代码尚未切到新池时，以代码+本表回写状态为准，实现 PR 须改代码并回写**）。
+> **v1.4 数值真源：** `docs/requirements.md` §2.5 与 `docs/balance-stats.md` §6。下表为摘要；与旧「满值 100 / 命中 ICD」冲突时以 v1.4 + `HenshinStatService` 为准（**代码已切 EnergyMax=1000**）。
 
 | 项 | 默认值（v1.4 设计） |
 |----|--------|
@@ -61,13 +61,7 @@
 
 **后摇 / aftermath：** 部分大招附带「休整」「伤害减半」「自损」「防御下降」等，写在表列「Energy/aftermath」；实现为短时自 debuff 或固定自伤，不受「坚硬脑袋」以外的反伤被动影响（自损类见各行）。
 
-> 表内仍写「耗 100」的行表示**耗尽满条**的语义；实现切到 EnergyMax=1000 后应理解为耗尽当前满值（或回写为「耗满」）。
-| 联机 | 能量与大招释放 **服务端权威** 同步 |
-| UI | Tooltip 显示该形态能量；物品图标底栏进度条；变身时**角色脚下**能量条（无新 UI 贴图）；满充时金色向上发散尘（约 1 格） |
-
-饰品修正（仅变身生效）：A19 命中能量 +30%；A20 大招后留 20%；A21 大招伤害 +25% 且非大招能量获取 −20%。讲究头带（A14）禁用技能2与大招。
-
-**后摇 / aftermath：** 部分大招附带「休整」「伤害减半」「自损」「防御下降」等，写在表列「Energy/aftermath」；实现为短时自 debuff 或固定自伤，不受「坚硬脑袋」以外的反伤被动影响（自损类见各行）。
+> 表内「耗 100」表示**耗尽满条**，不是字面扣 100。
 
 ---
 
@@ -149,7 +143,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，约 ×5 面板） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗 100 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
+| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，技能槽 ×**2.0**） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗满 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
 | L12_F02 | 胡地 | **同步**：同上 | 精神强念 鼠位×3 延迟追（不可穿墙/穿怪） | 真气拳 白气上扬无爆 | 预知未来 屏内夜光标记 1s 显形后追爆（IgnoreDef） | 耗 100 | 彩虹杖×3；FocusPunch；FairyQueenMagicItemShot | Medium | Accepted |
 
 ### 4.5 龙系链 L07
@@ -207,7 +201,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L04_F01 | 皮卡丘 | **静电**：被敌对接触/近战打中时，反弹 Electrify（短 CD） | 电击 Bolt+Electrify | 电光一闪 Blink（指针最近敌；落点电爆伤；2s CD + 0.25s 无敌；一屏） | 十万伏特：一道向前曲折天雷（≤64 格）；50% Electrify；0.5s 后对感电敌再射 | 耗 100 | `SkyBoltLightning` + `Assets/Fx/ThunderTrail`（抄 PRT_SkyBolt，无 CWR 运行时） | Medium | Done |
+| L04_F01 | 皮卡丘 | **静电**：被敌对接触/近战打中时，反弹 Electrify（短 CD） | 电击 Bolt+Electrify | 电光一闪 Blink（指针最近敌；落点电爆伤；2s CD + 0.25s 无敌；一屏） | 十万伏特：一道向前曲折天雷（≤64 格）；50% Electrify；0.5s 后对感电敌再射 | 耗满；大招 ×**4.8**（§7.1） | `SkyBoltLightning` + `Assets/Fx/ThunderTrail`（抄 PRT_SkyBolt，无 CWR 运行时） | Medium | Done |
 | L04_F02 | 雷丘 | **静电**：同上 | 十万伏特 Beam+Electrify（可链式） | 伏特攻击 Lunge+Recoil+Electrify | 打雷：屏内每敌头上一道更粗落雷 | 耗 100；伏特 Recoil | 同天雷管线 ai0=1、更粗；落点 SoftGlow | Medium | Done |
 
 ### 4.13 岩/钢蛇链 L13
@@ -222,7 +216,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 ×1.5 | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 0.5s 无敌吟唱后冲+6鸟 | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst`；`SkyAttackLunge`；`HurricaneField` 名键 `CycloneAttack` | High | Accepted |
-| L14_F01 | 超梦 | **压迫感**：×1.5 | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗 100 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
+| L14_F01 | 超梦 | **压迫感**：×1.5 | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun（技能槽 ×**2.0**） | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗满 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
 | L17_F01 | 烈空坐 | **气闸**：无视天气/昼夜，全招式伤害 ×1.7 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
 
 ### 4.15 地鼠链 L10（Excel 外补全）
@@ -266,5 +260,6 @@
 | 1.14 | 2026-09-07 | Wave3 验收 Accepted：鬼斯通（含睡眠白 DrawEffects 255,255,255,100+zzZ）/怪力/哈克龙龙尾/胡地 |
 | 1.15 | 2026-09-07 | Stage7+ 改版落地：钢尾/猛撞/暗影抓/恶波动/彗星拳/破灭自缓加粗/巨金怪强念=胡地/龙俯冲与画龙点睛星尘龙/逆鳞火球/流星群64 StarWrath/空气爆三段/神鸟吟唱/气旋32格 |
 | 1.16 | 2026-09-07 | Stage7+ **Accepted**；画龙点睛纯黑；`CycloneAttack` 名键；超梦强念×6穿墙+精神击破64暗影球 |
-| 1.17 | 2026-09-09 | 能量/倍率指针对齐 requirements **v1.4** + `docs/balance-stats.md`（池 1000、软顶、MoveRefRate；代码未切） |
+| 1.17 | 2026-09-09 | 能量/倍率指针对齐 requirements **v1.4** + `docs/balance-stats.md`（当时文档先切、代码尚未切） |
 | 1.18 | 2026-09-09 | 注明 MoveRefRate 柔性：段数慎改、按风险/命中难度偏置 |
+| 1.19 | 2026-09-09 | v1.4 数值接线：等级/攻防/能量 1000；§7.1 皮卡丘大招 ×4.8、凯西/超梦技能槽意念头锤 ×2.0 |
