@@ -374,7 +374,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = 36,
 				ShootSpeed = 0f,
 				Knockback = 2f,
-				KeyConflict = KeyConflictLevel.ModKeybind
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
 			};
 
 		public static MoveSpec RockTomb(string nameKey, float mult = 1.3f, int use = 28)

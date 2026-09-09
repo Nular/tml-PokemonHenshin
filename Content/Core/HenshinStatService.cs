@@ -5,6 +5,7 @@ namespace PokemonHenshin.Content.Core
 	/// <summary>
 	/// v1.4 数值真源实现（<c>docs/balance-stats.md</c>）。无 Terraria 依赖，可供独立校验。
 	/// 攻防插值用「当前 Level 所在等级带」，世界 <c>ProgressStage</c> 只做等级硬顶。
+	/// MidAtk 形状只读对齐灾厄大修比目鱼 <c>HalibutOverride.DamageDictionary</c> Level0–14 = 4,5,6,8,11,15,20,27,35,48,65,80,110,170,280（无运行时依赖）。
 	/// </summary>
 	public static class HenshinStatService
 	{
@@ -69,6 +70,9 @@ namespace PokemonHenshin.Content.Core
 			0,
 			35, 50, 70, 90, 120, 160, 220, 280, 360, 480, 600, 800
 		};
+
+		/// <summary>史莱姆王锚点（原版 lifeMax 公式会夹到档 1 下限 15；白名单抬到约 20）。</summary>
+		public const int KingSlimeXpFloor = 20;
 
 		public static int ClampStage(int stage) => Math.Clamp(stage, 1, 12);
 
@@ -222,6 +226,19 @@ namespace PokemonHenshin.Content.Core
 				return 0.35f;
 			return 1f;
 		}
+
+		/// <summary>
+		/// 文档公式：<c>(60/UseTime)*mult*hits</c>。标准技 UseTime 20、倍率 1、1 段 → 3.0（即 3 APS）。
+		/// §7 的 0.85～1.15 窗是相对该 3 APS 的归一化值（本值 / 3）。
+		/// </summary>
+		public static float MoveRefRate(int useTime, float damageMultiplier, float expectedHitsPerRelease = 1f)
+		{
+			int use = Math.Max(1, useTime);
+			return (60f / use) * damageMultiplier * expectedHitsPerRelease;
+		}
+
+		public static float MoveRefRateNormalized(int useTime, float damageMultiplier, float expectedHitsPerRelease = 1f)
+			=> MoveRefRate(useTime, damageMultiplier, expectedHitsPerRelease) / 3f;
 	}
 
 	/// <summary>招式预算标签（balance-stats §6 / §7）。</summary>

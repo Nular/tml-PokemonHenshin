@@ -377,7 +377,7 @@ BossXP   = Clamp(round(14 * lifeTerm * defTerm * stageMul), StageMin, StageMax)
 旧 `StageDamage = 8 + stage * 6` **废弃**。阶段基准对齐灾厄大修比目鱼的**有效 DPS 成长形状**（只读参考，无运行时依赖），再按本模「标准技 UseTime 20 ≈ 3 APS、倍率 1.0」反推面板。
 
 ```
-S = GetProgressStage()
+S = BandForLevel(Level)   // 攻防插值用物品等级所在带；世界 GetProgressStage() 只做等级硬顶与进化进度条件
 t = (Level - BandMin[S]) / max(1, BandMax[S] - BandMin[S])
 tw = t ^ LevelCurve[S]
 StageAttack  = lerp(MidAtk[S]*FloorMult[S], MidAtk[S]*CeilMult[S], tw)
@@ -400,7 +400,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验 — **已接线**
 5. 能量池 1000 + 每秒软顶 + Factor — **已接线**
 6. 进化双条件 — **已接线**
-7. 联机同步 level/xp/energy — **包已扩**；双端实测 pending
+7. 联机同步 level/xp/energy — **SyncEnergy 含三项；服务端写入持握物品并 TruncateToCap**；双端实测 pending
 8. 游戏内 DPS 抽检 PS7/9/12 — pending  
 
 ---

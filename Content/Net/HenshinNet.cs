@@ -358,16 +358,19 @@ namespace PokemonHenshin.Content.Net
 			if (player == null || !player.active)
 				return;
 
+			HenshinPlayer mp = player.GetModPlayer<HenshinPlayer>();
 			if (Main.netMode == NetmodeID.Server)
 			{
 				if (playerIndex != whoAmI)
 					return;
-				player.GetModPlayer<HenshinPlayer>().ApplyServerEnergy(energy);
-				SendEnergy(player.GetModPlayer<HenshinPlayer>(), -1, whoAmI);
+				mp.ApplyServerEnergy(energy);
+				if (level >= HenshinStatService.MinLevel && player.HeldItem?.ModItem is HenshinForceItem owned)
+					owned.SetProgress(level, xp);
+				SendEnergy(mp, -1, whoAmI);
 				return;
 			}
 
-			player.GetModPlayer<HenshinPlayer>().ApplyServerEnergy(energy);
+			mp.ApplyServerEnergy(energy);
 			if (player.whoAmI != Main.myPlayer && player.HeldItem?.ModItem is HenshinForceItem remoteForce)
 				remoteForce.SetProgress(level, xp);
 		}

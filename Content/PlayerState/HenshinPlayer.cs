@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using PokemonHenshin.Content.Affinity;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
+using PokemonHenshin.Content.Damage;
 using PokemonHenshin.Content.Net;
 using PokemonHenshin.Content.Visual;
 using Terraria;
@@ -111,6 +112,8 @@ namespace PokemonHenshin.Content.PlayerState
 		private ushort serverFormNetId;
 		private ushort lastSyncedNetId;
 		private float lastSyncedEnergy;
+		private int lastSyncedLevel;
+		private int lastSyncedXp;
 		private int dashDoubleTapTimer;
 		private int lastDashDir;
 
@@ -706,6 +709,8 @@ namespace PokemonHenshin.Content.PlayerState
 
 			int oldLevel = force.Level;
 			force.TryAddExperience(Player, amount, out int levelsGained, out _);
+			if (Main.netMode != NetmodeID.SinglePlayer)
+				HenshinNet.SendEnergy(this);
 			if (Player.whoAmI == Main.myPlayer && (IsBossForXp(target) || levelsGained > 0 || force.Level > oldLevel))
 			{
 				if (levelsGained > 0)
@@ -724,7 +729,21 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
 		{
+			if (!CountsAsHenshinMoveHit(proj))
+				return;
 			OnHitNPC(target, hit, damageDone);
+		}
+
+		/// <summary>持握 + 本模招式（含本模弹幕 / HenshinDamage）。原版壳碎片若未改 DamageType 则不计。</summary>
+		private static bool CountsAsHenshinMoveHit(Projectile proj)
+		{
+			if (proj == null)
+				return false;
+			if (proj.DamageType == HenshinDamage.Instance)
+				return true;
+			if (proj.ModProjectile is IHenshinMoveProj)
+				return true;
+			return proj.ModProjectile?.Mod == PokemonHenshinMod.Instance;
 		}
 
 		private void ApplyOnHitAccessories(int damageDone)
@@ -891,6 +910,9 @@ namespace PokemonHenshin.Content.PlayerState
 			var t = (HenshinPlayer)targetCopy;
 			t.lastSyncedNetId = CurrentFormNetId;
 			t.lastSyncedEnergy = UltimateEnergy;
+			ReadHeldProgress(out int lv, out int xp);
+			t.lastSyncedLevel = lv;
+			t.lastSyncedXp = xp;
 		}
 
 		public override void SendClientChanges(ModPlayer clientPlayer)
@@ -898,8 +920,20 @@ namespace PokemonHenshin.Content.PlayerState
 			var c = (HenshinPlayer)clientPlayer;
 			if (c.lastSyncedNetId != CurrentFormNetId)
 				HenshinNet.SendForm(this, -1, Player.whoAmI);
-			if (System.Math.Abs(c.lastSyncedEnergy - UltimateEnergy) > 1f)
+			ReadHeldProgress(out int lv, out int xp);
+			if (System.Math.Abs(c.lastSyncedEnergy - UltimateEnergy) > 1f || c.lastSyncedLevel != lv || c.lastSyncedXp != xp)
 				HenshinNet.SendEnergy(this);
+		}
+
+		private void ReadHeldProgress(out int level, out int xp)
+		{
+			level = 0;
+			xp = 0;
+			if (Player.HeldItem?.ModItem is HenshinForceItem force)
+			{
+				level = force.Level;
+				xp = force.Xp;
+			}
 		}
 	}
 }

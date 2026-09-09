@@ -36,7 +36,7 @@
 - 随 `ProgressStage` **与物品等级双条件**进化（需求 v1.4；代码已接线）
 - 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01～A21 饰品**
 - **联机必须一致**（形态、能量、伤害、进化、天气场伤害侧、地形变更；v1.4 另含 level/xp）
-- 招式泰拉适配：`docs/move-effects.md`；数值真源：`docs/balance-stats.md`（设计已定、代码未切）
+- 招式泰拉适配：`docs/move-effects.md`；数值真源：`docs/balance-stats.md`（**已接线** `HenshinStatService` / `FormStatTable`）
 
 ### 1.2 里程碑（对齐需求 §13）
 

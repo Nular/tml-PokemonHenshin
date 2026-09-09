@@ -225,9 +225,11 @@ DefenseMod = Clamp(Bulk / 100, 0.55, 1.50)
 MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 ```
 
+标准技 UseTime 20、倍率 1、1 段 → **3.0**（3 APS）。下表 0.85～1.15 是相对该 3 APS 的**归一化**值（`MoveRefRate / 3`；代码 `MoveRefRateNormalized`）。
+
 | 类型 | 参考目标（可浮动） |
 |------|-------------------|
-| Standard | MoveRefRate 约 **0.85～1.15** |
+| Standard | 归一化约 **0.85～1.15** |
 | HighFrequency（UseTime≤16） | 约 ≤ **1.25**；EnergyGainFactor≤0.35 |
 | MultiHit（一次≥3 段） | 总预算约 0.85～1.25；EnergyGainFactor≤0.25 |
 | WideAoE（半径≥8 或超大锥） | 相对标准约 ×**0.75～0.85**；Factor≤0.45 |
@@ -260,7 +262,7 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 ## 8. 实现检查清单
 
 - [x] `ExpNeeded` 公式单测 / 手算对照 §2 样例  
-- [x] Boss XP：史莱姆王公式夹到档 1 下限；离谱 HP 夹 max（白名单仍可补）  
+- [x] Boss XP：史莱姆王公式夹到档 1 下限；发放路径抬到锚点 20；离谱 HP 夹 max（白名单仍可补）  
 - [x] 进化：PS 够但 Level < BandMin[next] → 不进化  
 - [x] 进化：双条件满足 → 继承 Level/Xp  
 - [x] 变身：盔甲 defense 被扣、饰品 defense 保留、FinalDefense 加上  

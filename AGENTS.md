@@ -33,7 +33,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | 路径 | 角色 |
 |------|------|
 | `docs/requirements.md` | **产品唯一真相**（v1.4：含等级/攻防/能量/进化双条件） |
-| `docs/balance-stats.md` | **数值真源表**（等级带、经验、MidAtk/Def、种族 Mod、MoveRefRate；设计已定、代码未实现） |
+| `docs/balance-stats.md` | **数值真源表**（等级带、经验、MidAtk/Def、种族 Mod、MoveRefRate；**已接线** `HenshinStatService`） |
 | `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
 | `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
 | `docs/fx-knowledge.md` | FX 目录 / cookbook / 踩坑（Living；特效改动先查这里） |

@@ -12,10 +12,17 @@ namespace PokemonHenshin.Content.Core
 		{
 			if (npc == null)
 				return null;
-			return npc.type switch
+
+			// 原版史莱姆王 lifeMax=2000 公式夹到 15；锚点约 20。灾厄加血后公式若已 ≥20 则不压低。
+			if (npc.type == NPCID.KingSlime)
 			{
-				_ => null
-			};
+				int world = ProgressStageService.GetProgressStage();
+				int computed = HenshinStatService.ComputeBossXp(npc.lifeMax, npc.defense, world);
+				if (computed < HenshinStatService.KingSlimeXpFloor)
+					return HenshinStatService.KingSlimeXpFloor;
+			}
+
+			return null;
 		}
 	}
 }

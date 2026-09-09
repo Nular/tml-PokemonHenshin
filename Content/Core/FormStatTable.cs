@@ -58,6 +58,8 @@ namespace PokemonHenshin.Content.Core
 			["L17_F01"] = new(1.45f, 0.90f)
 		};
 
+		public static int Count => byFormId.Count;
+
 		public static Mods Get(string formId)
 			=> formId != null && byFormId.TryGetValue(formId, out Mods mods) ? mods : new Mods(1f, 1f);
 
