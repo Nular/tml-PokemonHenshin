@@ -15,7 +15,7 @@ namespace PokemonHenshin.Content.Core
 		public const float EnergyOnHit = 12f;
 		public const float EnergyOnKill = 55f;
 		public const float EnergyPassivePerTick = 0.15f;
-		public const float EnergyCombatSoftCapPerSecond = 90f;
+		public const float EnergyCombatSoftCapPerSecond = 1000f;
 
 		public static readonly int[] BandMin =
 		{
