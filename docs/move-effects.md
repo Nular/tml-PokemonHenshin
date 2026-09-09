@@ -1,7 +1,7 @@
 # 招式泰拉适配表（权威）
 
-**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**；**v1.4 数值已接线**（游戏内 DPS 抽检待本地）。鲤鱼王/凯西等为战斗形态，无钓鱼、侦测。  
-**版本：** 1.3（表结构）；变更记录至 **1.19（2026-09-09 v1.4 数值）**  
+**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**；**v1.4 数值已接线**（游戏内 DPS 抽检待本地）。  
+**版本：** 1.3（表结构）；变更记录至 **1.21（2026-09-09）**  
 **冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
@@ -15,7 +15,6 @@
 
 - Excel「铁哑铃」→ 本模 **金属怪**（`L08_F01`）。
 - **地鼠线**（`L10_F01` / `L10_F02`）不在 Excel 中，按同结构补全（战斗招式可改地形），表中标注「补全」。
-- **鲤鱼王**是弱体战斗形态（跃起 / 撞击 / 抓狂），**不是钓鱼玩法**，也不改钓力。
 
 ### 1.2 战斗模型
 
@@ -82,10 +81,9 @@
 | **StrikeFall** | 跃起后下落砸击 |
 | **AoEBurst** | 落点/自身周围爆发 |
 | **DoTBind** | 「漩涡缠绕」：短时 DoT + 减速（非物理绑人） |
-| **Field** | 天气/地形场（接 `WeatherField` 等） |
+| **Field** | 场地 / 大范围持续区 |
 | **SelfGuard** | 自身减伤/护盾类短 buff |
 | **SelfBuff** | 自身增益（攻/速等） |
-| **Phase** | 短时穿障（本表 **鬼斯通线不采用**；Excel 无穿障招） |
 | **Dig** | 挖洞位移 / 出土爆发（接挖掘预算） |
 | **Blink** | 短距瞬移（本表仅作备用代号；Excel 当前形态未用） |
 | **EasyCrit** | 易暴：提高暴击档或「易双倍」；与焦点镜（A15）叠乘规则：先 EasyCrit 判定，再滚 10% 升档 |
@@ -100,7 +98,7 @@
 
 **漩涡类**（火焰漩涡、潮旋、流沙地狱）一律 **DoTBind**，不做真束缚物理。
 
-**鬼斯通特记：** 被动「飘浮」= **强化飞行能量**（近似无限飞，仍禁坐骑），**不是**永久穿障。舌舔用短 **Stun**，不用 Phase。大招为催眠术。形态 **不**因旧设计保留 `GrantsPhasing` 招式；若代码仍有穿障标志，以实现本表为准改为关闭。
+**鬼斯通特记：** 被动「飘浮」= 强化飞行能量（默认池 ×2.5，仍禁坐骑）。舌舔用短 Stun。大招催眠术。
 
 ---
 
@@ -112,7 +110,7 @@
 - **Skill1 / Skill2 / Ultimate**：玩法代号 + 简述。
 - **Energy/aftermath**：大招耗能与后摇。
 - **VFX note**：无新图前提下的手法。
-- **Net risk**：Low / Medium / High（位移、场地、挖砖、穿障、多段同步越高）。
+- **Net risk**：Low / Medium / High（位移、场地、挖砖、多段同步越高）。
 
 列外加 **Code**：`Done` = 已接线；验收见计划验收清单。
 
@@ -144,7 +142,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD）。**无侦测 / 瞬移探索。** | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，技能槽 ×**2.0**） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗满 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
+| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，技能槽 ×**2.0**） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗满 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
 | L12_F02 | 胡地 | **同步**：同上 | 精神强念 鼠位×3 延迟追（不可穿墙/穿怪） | 真气拳 白气上扬无爆 | 预知未来 屏内夜光标记 1s 显形后追爆（IgnoreDef） | 耗 100 | 彩虹杖×3；FocusPunch；FairyQueenMagicItemShot | Medium | Accepted |
 
 ### 4.5 龙系链 L07
@@ -173,14 +171,14 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L06_F01 | 鬼斯通 | **飘浮**：飞行能量视为强化（默认池 ×2.5 或近似无限飞，仍禁坐骑）；**不**给永久穿墙；**无 Phase 招式** | 暗影球 Bolt+DefDown（BrokenArmor） | 舌舔 20格线+Stun（短硬直，**非**穿障） | 催眠术 `HenshinSleepDebuff` 5s（屏内；Boss 改 Slow ~2s） | 耗 100 | 暗影球不透明紫盘链；舌舔 Extra98；睡眠 `DrawEffects(255,255,255,100)`+zzZ | Medium | Accepted |
+| L06_F01 | 鬼斯通 | **飘浮**：飞行能量视为强化（默认池 ×2.5，仍禁坐骑） | 暗影球 Bolt+DefDown（BrokenArmor） | 舌舔 20格线+Stun（短硬直） | 催眠术 `HenshinSleepDebuff` 5s（屏内；Boss 改 Slow ~2s） | 耗 100 | 暗影球不透明紫盘链；舌舔 Extra98；睡眠 `DrawEffects(255,255,255,100)`+zzZ | Medium | Accepted |
 | L06_F02 | 耿鬼 | **飘浮**：同上强化飞 | 污泥炸弹 Bolt+Poison | 暗影抓 紫龙爪20格+ShadowFlame | 恶之波动 32暗影球穿墙追踪爆 | 耗 100 | `ShadowClawSlash`；`DarkPulseBarrage`×32 | Medium | Accepted |
 
 ### 4.9 水/飞鱼链 L09
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L09_F01 | 鲤鱼王 | **优游自如**：雨天或夜晚移速 +25%。**无钓力 / 渔获加成。** | 跃起 StrikeFall（高跳砸地，低伤） | 撞击 Lunge | 抓狂 Barrage；伤害随 **已损失 HP%** 提高（最高约 +80%） | 耗 100 | 水花跃起；抓狂：身周半径 **15 格** 杂乱交错爪痕多段 | Low |
+| L09_F01 | 鲤鱼王 | **优游自如**：雨天或夜晚移速 +25% | 跃起 StrikeFall（高跳砸地，低伤） | 撞击 Lunge | 抓狂 Barrage；伤害随 **已损失 HP%** 提高（最高约 +80%） | 耗 100 | 水花跃起；抓狂：身周半径 **15 格** 杂乱交错爪痕多段 | Low |
 | L09_F02 | 暴鲤龙 | **自信过度**：击杀叠攻 +20%/层，最多 2 层，每层 12s | 水炮 Beam | 咬碎 MeleeArc+DefDown | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | `WaterJet` 跟鼠标；破灭 `SustainedBeam`（方向跟鼠标） | Medium | Done |
 
 ### 4.10 格斗链 L05
@@ -218,7 +216,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 0.5s 无敌吟唱后冲+6鸟 | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst`；`SkyAttackLunge`；`HurricaneField` 名键 `CycloneAttack` | High | Accepted |
 | L14_F01 | 超梦 | **压迫感**：+50% | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun（技能槽 ×**2.0**） | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗满 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
-| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70%（代码不读天气；无天气场招式） | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
+| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
 
 ### 4.15 地鼠链 L10（Excel 外补全）
 
@@ -232,12 +230,12 @@
 ## 5. 实现备注（给编码）
 
 1. **键位：** 技能1=`None`（左键），技能2=`RightClick`，大招=`ModKeybind`。表中 Lunge/Charge 注意与原版右键交互的冲突等级。
-2. **穿障：** 本表无形态以招式授予 Phase；鬼斯通/耿鬼仅飘浮飞行。代码侧现役形态均未设 `GrantsPhasing=true`（已与本表对齐）；穿障管线与 A11 保留待未来形态。
-3. **EasyCrit：** 与 A15 焦点镜共用升档管线；超暴击伤害 ×4。
-4. **Recoil：** 统一走安全自损；坚硬脑袋免疫；生命宝珠（A16）的 −1HP 与 Recoil 分开结算。
-5. **Boss：** Sleep/长 Stun 须衰减；DoTBind 对 Boss 缩短时长或降 DoT。
-6. **联机 High：** 挖洞、地裂、大型场、强位移须服务端生成与拒绝超预算。
-7. **验收：** 逐形态 A1→玩法语义可辨；再对标同档武器 DPS 80%～120%（需求 §2.6）。
+2. **EasyCrit：** 与 A15 焦点镜共用升档管线；超暴击伤害 ×4。
+3. **Recoil：** 统一走安全自损；坚硬脑袋免疫；生命宝珠（A16）的 −1HP 与 Recoil 分开结算。
+4. **Boss：** Sleep/长 Stun 须衰减；DoTBind 对 Boss 缩短时长或降 DoT。
+5. **联机 High：** 挖洞、地裂、大型场、强位移须服务端生成与拒绝超预算。
+6. **验收：** 逐形态 A1→玩法语义可辨；再对标同档武器 DPS 80%～120%（需求 §2.6）。
+7. 未接线管线见 `docs/requirements.md` §12.1。
 
 ---
 
@@ -264,4 +262,5 @@
 | 1.17 | 2026-09-09 | 能量/倍率指针对齐 requirements **v1.4** + `docs/balance-stats.md`（当时文档先切、代码尚未切） |
 | 1.18 | 2026-09-09 | 注明 MoveRefRate 柔性：段数慎改、按风险/命中难度偏置 |
 | 1.19 | 2026-09-09 | v1.4 数值接线：等级/攻防/能量 1000；§7.1 皮卡丘大招 ×4.8、凯西/超梦技能槽意念头锤 ×2.0 |
-| 1.20 | 2026-09-09 | 洁癖：鲤鱼王非钓鱼；凯西非侦测；被动数字对齐 `FormPassiveApplier` |
+| 1.20 | 2026-09-09 | 被动数字对齐 `FormPassiveApplier` |
+| 1.21 | 2026-09-09 | 洁癖：去掉形态行上的否定口径；未接线见 requirements §12.1 |

@@ -6,7 +6,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，**v1.4.5**） |
+| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，**v1.4.6**） |
 | [docs/balance-stats.md](docs/balance-stats.md) | 等级/攻防/经验/招式数值真源 |
 | [docs/move-effects.md](docs/move-effects.md) | 招式 / 被动 / 大招泰拉适配表 |
 | [docs/dev-plan.md](docs/dev-plan.md) | 开发计划（冲突以需求为准） |
@@ -17,7 +17,7 @@
 
 ## 状态
 
-**现役代码（2026-09-09）：** 36 形态 + A01～A21；被动+技能1/2+能量大招；**v1.4 已接线**。第一版是换皮打架：鲤鱼王无钓力、凯西无侦测、鬼斯通无穿障。游戏内 DPS 抽检、联机双端/弹出验收仍待本地。
+**现役代码（2026-09-09）：** 36 形态 + A01～A21；被动+技能1/2+能量大招；**v1.4 已接线**。游戏内 DPS 抽检、联机双端/弹出验收仍待本地。
 
 **下一步：** 联机双端实测、DPS 对标 PS7/9/12、Rage。调试 `/henshin stage`、`/henshin evolve`、`/henshin stats`、`/henshin setlevel`。
 

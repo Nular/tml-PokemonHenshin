@@ -263,7 +263,7 @@ Items: {
 
 	HaunterForce: {
 		DisplayName: 鬼斯通之力
-		Tooltip: 幽灵/毒。暗影球、舌舔、催眠术。飘浮强化飞，无穿障。
+		Tooltip: 幽灵/毒。暗影球、舌舔、催眠术。飘浮强化飞。
 	}
 
 	GengarForce: {
@@ -298,7 +298,7 @@ Items: {
 
 	MagikarpForce: {
 		DisplayName: 鲤鱼王之力
-		Tooltip: 水。跃起、撞击、抓狂。弱体战斗，不加钓力。
+		Tooltip: 水。跃起、撞击、抓狂。弱体战斗。
 	}
 
 	GyaradosForce: {
@@ -328,7 +328,7 @@ Items: {
 
 	AbraForce: {
 		DisplayName: 凯西之力
-		Tooltip: 超能。念力、意念头锤、精神强念散射。无侦测。
+		Tooltip: 超能。念力、意念头锤、精神强念散射。
 	}
 
 	AlakazamForce: {
@@ -466,7 +466,6 @@ Items: {
 		Tooltip:
 			'''
 			古怪可怕的咒符。携带后，幽灵属性的招式威力就会提高。
-			幽灵共鸣·仅变身：穿障 +0.5s（封顶 2.0s）
 			'''
 	}
 
