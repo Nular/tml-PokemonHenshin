@@ -567,6 +567,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// <summary>恶波动子弹：穿墙追踪，命中紫爆 AoE。</summary>
 	public class DarkPulseHomingBallProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		private const float BaseDiameter = 22f;
 		private static readonly Color Fill = new(0x22, 0x00, 0x33, 255);
 		private static readonly Color Border = new(0x33, 0x00, 0x66, 255);
@@ -816,6 +817,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class OutrageFireballProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.CultistBossFireBall;
 
 		public override void SetDefaults()
@@ -955,6 +957,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class DracoStarWrathProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.StarWrath;
 
 		public override void SetDefaults()
@@ -1297,6 +1300,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// </summary>
 	public class MewtwoPsystrikeOrbProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		private static readonly Color Fill = new(0x22, 0x00, 0x33, 255);
 		private static readonly Color Border = new(0x33, 0x00, 0x66, 255);
 

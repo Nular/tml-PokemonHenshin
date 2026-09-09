@@ -37,10 +37,10 @@ namespace PokemonHenshin.Content.Visual
 		}
 
 		private const int MaxPopups = 48;
-		private const int ExpLife = 42;
-		private const int BossLife = 64;
-		private const int LevelLife = 50;
-		private const int LevelStagger = 18;
+		private const int ExpLife = 90;
+		private const int BossLife = 132;
+		private const int LevelLife = 108;
+		private const int LevelStagger = 22;
 
 		private static readonly List<Popup> popups = new();
 
@@ -159,9 +159,9 @@ namespace PokemonHenshin.Content.Visual
 		private static void DrawOne(SpriteBatch spriteBatch, DynamicSpriteFont font, Popup p)
 		{
 			float t = p.Age / (float)Math.Max(1, p.Life);
-			float rise = t * (p.Kind == Kind.BossExp ? 48f : 32f);
-			float fadeIn = t < 0.12f ? t / 0.12f : 1f;
-			float fadeOut = t > 0.65f ? (1f - t) / 0.35f : 1f;
+			float rise = t * (p.Kind == Kind.BossExp ? 56f : 38f);
+			float fadeIn = t < 0.08f ? t / 0.08f : 1f;
+			float fadeOut = t < 0.45f ? 1f : MathHelper.Clamp(1f - (t - 0.45f) / 0.55f, 0f, 1f);
 			float alpha = MathHelper.Clamp(fadeIn * fadeOut, 0f, 1f);
 			float scale = p.BaseScale * MathHelper.Lerp(0.85f, 1.12f, MathHelper.Clamp(t * 2.2f, 0f, 1f));
 

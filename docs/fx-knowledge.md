@@ -311,7 +311,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 - **禁止：** SoftGlow 几何罩；PostDraw 克隆贴图叠罩；弱 `Lerp→White` / `GetAlpha` 漂白（亮部不可见）。现役白即为用户确认规格。
 
 ### 经验世界字（`HenshinXpPopupSystem`，2026-09-09）
-- `EXP +X` 钉击杀坐标；`LEVEL UP!` 跟玩家、连升连弹（错开 18 tick）。Boss 更厚描边+金白闪光。文案固定英文，不绑 buff、不绑已死 NPC。画法对齐睡眠 zzZ（`MouseText` + 描边）。
+- `EXP +X` 钉击杀坐标；`LEVEL UP!` 跟玩家、连升连弹（错开 22 tick）。Boss 更厚描边+金白闪光。文案固定英文，不绑 buff、不绑已死 NPC。画法对齐睡眠 zzZ（`MouseText` + 描边）。
+- 时长约 1.5–2.2 秒（普通 EXP 90 tick / Boss 132 / 升级 108）；前 8% 淡入，45% 起渐隐到 0，到期移除（不突然消失）。
 
 ---
 
