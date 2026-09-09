@@ -1,3 +1,4 @@
+using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
 using Terraria;
 using Terraria.ID;
@@ -6,7 +7,8 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Evolution
 {
 	/// <summary>
-	/// 进化替换契约（需求 §4.3 / dev-plan §4.5）：前缀+收藏继承；仅背包/热键栏/鼠标。
+	/// 进化替换契约（需求 §4.3）：前缀+收藏+Level/Xp 继承；仅背包/热键栏/鼠标。
+	/// 触发须 ProgressStage 与 Level>=BandMin[next.Stage] 同时满足。
 	/// </summary>
 	public static class EvolutionService
 	{
@@ -15,24 +17,31 @@ namespace PokemonHenshin.Content.Evolution
 		{
 			if (isMouseItem)
 				return true;
-			// inventory 0..49 = 热键栏+主背包；50+ 为钱币/弹药等。
 			return inventorySlot >= 0 && inventorySlot < 50;
 		}
 
-		public static bool MeetsTrigger(Player player, FormDefinition current)
+		public static bool MeetsTrigger(Player player, FormDefinition current, Item item)
 		{
 			if (current == null)
 				return false;
 			FormDefinition next = FormRegistry.FindEvolutionOf(current.FormId);
 			if (next == null)
 				return false;
-			return ProgressStageService.MeetsStage(next.Stage);
+			int level = HenshinStatService.MinLevel;
+			if (item?.ModItem is HenshinForceItem force)
+			{
+				force.InitializeNewIfNeeded();
+				level = force.Level;
+			}
+
+			int world = ProgressStageService.GetProgressStage();
+			return HenshinStatService.MeetsEvolution(world, level, next.Stage);
 		}
 
 		public static FormDefinition GetNextForm(FormDefinition current)
 			=> current == null ? null : FormRegistry.FindEvolutionOf(current.FormId);
 
-		/// <summary>就地替换物品类型，保留 prefix / favorited / stack。</summary>
+		/// <summary>就地替换物品类型，保留 prefix / favorited / stack / Level / Xp。</summary>
 		public static bool TryReplace(Item item, int newItemType)
 		{
 			if (item == null || item.IsAir || newItemType <= 0)
@@ -41,12 +50,22 @@ namespace PokemonHenshin.Content.Evolution
 			int prefix = item.prefix;
 			bool favorited = item.favorited;
 			int stack = item.stack;
+			int level = HenshinStatService.MinLevel;
+			int xp = 0;
+			if (item.ModItem is HenshinForceItem src)
+			{
+				src.InitializeNewIfNeeded();
+				level = src.Level;
+				xp = src.Xp;
+			}
 
 			item.SetDefaults(newItemType);
 			if (prefix > 0)
 				item.Prefix(prefix);
 			item.favorited = favorited;
 			item.stack = stack;
+			if (item.ModItem is HenshinForceItem dst)
+				dst.SetProgress(level, xp);
 			return true;
 		}
 
@@ -61,7 +80,6 @@ namespace PokemonHenshin.Content.Evolution
 			if (player == null || !player.active)
 				return false;
 
-			// 优先当前选中热键栏。
 			int selected = player.selectedItem;
 			if (selected >= 0 && selected < HenshinPlayerHotbar.Size)
 			{
@@ -104,9 +122,7 @@ namespace PokemonHenshin.Content.Evolution
 			next = FormRegistry.FindEvolutionOf(current.FormId);
 			if (next == null)
 				return false;
-			if (!ProgressStageService.MeetsStage(next.Stage))
-				return false;
-			return true;
+			return MeetsTrigger(null, current, item);
 		}
 
 		public static Item GetItemRef(Player player, int slot, bool isMouse)

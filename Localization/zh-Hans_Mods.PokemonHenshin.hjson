@@ -7,6 +7,15 @@ Common: {
 	UltimateNotReady: 大招能量不足
 	ChoiceBandLocked: 讲究头带：仅能使用技能1
 	StageUp: 进度档提升至 {0}（御三家二阶需史莱姆神/鹿角怪，非史莱姆王）
+	ForceLevel: 等级 {0}（当前进度上限 {1}，世界档 {2}）
+	ForceLevelCapped: 等级 {0}（已达当前进度上限 {1}，世界档 {2}）
+	ForceXp: 经验 {0} / {1}
+	ForceStats: 变身攻击 {0}　变身防御 {1}
+	ForceDefenseNote: 变身时形态防御取代盔甲防御；饰品防御仍生效
+	ForceEvolveNeed: 进化为「{0}」需要进度档 {1} 且等级 ≥ {2}
+	ForceEvolveReady: 可进化为「{0}」（进度与等级均已满足）
+	GainedXp: +{0} 经验
+	LevelUp: {0} 升至 {1} 级
 }
 
 Keybinds: {
@@ -18,7 +27,7 @@ Keybinds: {
 
 Evolution: {
 	ConfirmTitle: 形态进化
-	ConfirmBody: 将「{0}」进化为「{1}」？前缀与收藏会保留。
+	ConfirmBody: 将「{0}」进化为「{1}」？前缀、收藏、等级与经验会保留。
 	ConfirmYes: 确认进化
 	ConfirmNo: 取消
 }

@@ -68,9 +68,9 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 - **已验收（暴风 + 大比鸟，2026-09-06）：** 大比鸟三招 / 哈克龙·快龙暴风。
 - **已验收（Wave3，2026-09-07）：** 鬼斯通 / 哈克龙龙尾 / 怪力 / 胡地。
 - **已验收（Stage7+，2026-09-07）：** 钢尾（`0,0,16,80` 罩）/ 猛撞灰日耀 / 暗影抓+影炎 / 恶波动×32 / 彗星拳+StarWrath / 破灭自缓加粗 / 巨金怪强念=胡地 / 龙俯冲·画龙点睛纯黑星尘龙 / 逆鳞火球 / 流星群64 / 空气爆三段 / 神鸟吟唱 / 气旋32格（`CycloneAttack`）/ 超梦强念×6穿墙·精神击破64球。
-- **进化：** UIState；ProgressStage 上升弹窗；`/henshin evolve` 可补弹。**v1.4 设计：** 进化须 `ProgressStage >= next.Stage` **且** `Level >= BandMin[next.Stage]`（代码未实现双条件/等级）。
-- **数值设计（2026-09-09）：** `docs/requirements.md` v1.4 + `docs/balance-stats.md` 已定稿（物品等级/经验、攻防、能量池 1000、招式 MoveRefRate）；**代码仍为旧 StageDamage/EnergyMax=100**，实现另开。
-- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机/DPS pending；**等级攻防未实装**。
-- **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3。
-- **下一步：** 实装 v1.4 数值体系 → 联机 → DPS 抽检 → Rage。
+- **进化：** UIState；ProgressStage 上升或升级越过 `BandMin` 可弹；`/henshin evolve` 可补弹。进化须 `ProgressStage >= next.Stage` **且** `Level >= BandMin[next.Stage]`，并继承 Level/Xp。
+- **数值（2026-09-09）：** `docs/requirements.md` v1.4 + `docs/balance-stats.md`：**物品等级/经验、FinalAttack/FinalDefense、能量池 1000、进化双条件已接线**。攻防按 Level 所在等级带插值。游戏内 DPS 抽检仍待本地。
+- **已知缺口：** 无现役 `GrantsPhasing`；A11 无消费者；联机双端实测 / DPS 抽检 / Rage pending。
+- **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`。
+- **下一步：** 联机 → DPS 抽检 PS7/9/12 → Rage。
 - 新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

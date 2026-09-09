@@ -14,7 +14,9 @@ namespace PokemonHenshin.Content.Items.Forms
 			FormRole role = FormRole.Combat,
 			PokemonType secondary = PokemonType.None, bool phasing = false, float dmgFactor = 1f,
 			string acquireKey = null)
-			=> new()
+		{
+			FormStatTable.Mods mods = FormStatTable.Get(formId);
+			return new()
 			{
 				FormId = formId,
 				NetworkId = netId,
@@ -28,10 +30,14 @@ namespace PokemonHenshin.Content.Items.Forms
 				Collision = phasing ? CollisionTier.C : CollisionTier.A,
 				GrantsPhasing = phasing,
 				HenshinDamageFactor = dmgFactor,
+				AttackMod = mods.AttackMod,
+				DefenseMod = mods.DefenseMod,
+				EnergyMax = HenshinStatService.EnergyMaxDefault,
 				Role = role,
 				Passive = passive,
 				AcquireHintKey = acquireKey ?? ("Mods.PokemonHenshin.Acquire." + formId)
 			};
+		}
 
 		public static MoveSpec Slash(string nameKey, float mult = 1f, int use = 18, int dust = DustID.Smoke, bool easyCrit = false)
 			=> new()
@@ -175,7 +181,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = 36,
 				ShootSpeed = 0f,
 				Knockback = 5f,
-				Ai0 = dust
+				Ai0 = dust,
+				BalanceTag = BalanceTag.WideAoE
 			};
 
 		public static MoveSpec Dig(string nameKey, float mult = 1f, int use = 20)
@@ -211,7 +218,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = 55,
 				ShootSpeed = 0f,
 				Ai0 = (byte)tag,
-				KeyConflict = KeyConflictLevel.ModKeybind
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.WideAoE
 			};
 
 		public static MoveSpec Scratch(string nameKey, float mult = 1f, int use = 18, float reachTiles = 3.5f)
@@ -338,7 +346,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				Knockback = 3f,
 				Ai2 = ult ? 1f : 0f,
 				IsRangedProjectile = true,
-				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None,
+				BalanceTag = ult ? BalanceTag.Ultimate : BalanceTag.WideAoE
 			};
 
 		public static MoveSpec BraveBirdUlt(string nameKey, float mult = 3.8f)
@@ -356,7 +365,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
-		public static MoveSpec ThunderboltUlt(string nameKey, float mult = 10f)
+		public static MoveSpec ThunderboltUlt(string nameKey, float mult = 4.8f)
 			=> new()
 			{
 				NameKey = nameKey,
@@ -403,7 +412,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = use,
 				ShootSpeed = 11f,
 				Knockback = 2.5f,
-				IsRangedProjectile = true
+				IsRangedProjectile = true,
+				BalanceTag = BalanceTag.WideAoE
 			};
 
 		public static MoveSpec PeckCone(string nameKey, float mult = 1.2f, int use = 18)
@@ -414,10 +424,11 @@ namespace PokemonHenshin.Content.Items.Forms
 				DamageMultiplier = mult,
 				UseTime = use,
 				ShootSpeed = 0f,
-				Knockback = 3f
+				Knockback = 3f,
+				BalanceTag = BalanceTag.MultiHit
 			};
 
-		public static MoveSpec ZenHammer(string nameKey, float mult = 5f, int use = 28)
+		public static MoveSpec ZenHammer(string nameKey, float mult = 2.0f, int use = 28)
 			=> new()
 			{
 				NameKey = nameKey,
@@ -454,7 +465,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				Ai0 = BarrageDirectorProj.ModeBubble,
 				Ai1 = count,
 				Ai2 = 16f,
-				CountsAsWaterMove = true
+				CountsAsWaterMove = true,
+				BalanceTag = BalanceTag.MultiHit
 			};
 
 		public static MoveSpec ThickBeam(string nameKey, float mult, int dust, bool aftermath = false, int selfStun = 0, int onHitBuff = 0, bool ignoreDef = false, bool ult = true, int beamMode = 0)
@@ -510,7 +522,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				Ai0 = DustID.DungeonWater,
 				Ai2 = ult ? DragonRageBarrageProj.ModeUlt : DragonRageBarrageProj.ModeSkill,
 				IsRangedProjectile = true,
-				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None,
+				BalanceTag = ult ? BalanceTag.Ultimate : BalanceTag.MultiHit
 			};
 
 		/// <summary>水柱：ai2=0 水炮（不穿透、命中渐缩）；ai2=1 加农水炮（穿透+每3击爆）。</summary>
@@ -548,7 +561,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				IgnoreDefensePartial = ignoreDef,
 				AftermathDamagePenaltyTicks = aftermath ? 300 : 0,
 				AftermathDamagePenalty = aftermath ? 0.5f : 1f,
-				KeyConflict = KeyConflictLevel.ModKeybind
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.WideAoE
 			};
 
 		public static MoveSpec ChargeBeamUlt(string nameKey, float mult = 4f)
@@ -576,7 +590,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				SpawnAtMouse = true,
 				Ai1 = count,
 				Ai2 = ult ? 192f : 80f,
-				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None,
+				BalanceTag = ult ? BalanceTag.Ultimate : BalanceTag.MultiHit
 			};
 
 		public static MoveSpec MeteorBarrageUlt(string nameKey, int count = 8, float mult = 4.2f)
@@ -603,7 +618,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = 26,
 				ShootSpeed = 0f,
 				Ai1 = count,
-				CountsAsFireMove = true
+				CountsAsFireMove = true,
+				BalanceTag = BalanceTag.MultiHit
 			};
 
 		public static MoveSpec LeafSpread(string nameKey, float mult = 1.3f)
@@ -614,7 +630,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				DamageMultiplier = mult,
 				UseTime = 18,
 				ShootSpeed = 0f,
-				CountsAsGrassMove = true
+				CountsAsGrassMove = true,
+				BalanceTag = BalanceTag.MultiHit
 			};
 
 		public static MoveSpec SeedBombUlt(string nameKey, float mult = 3.3f)
@@ -639,7 +656,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				DamageMultiplier = mult,
 				UseTime = ult ? 40 : 28,
 				ShootSpeed = 0f,
-				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None
+				KeyConflict = ult ? KeyConflictLevel.ModKeybind : KeyConflictLevel.None,
+				BalanceTag = ult ? BalanceTag.Ultimate : BalanceTag.WideAoE
 			};
 
 		public static MoveSpec ThunderPillarUlt(string nameKey, float mult = 3.8f)
@@ -791,7 +809,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				ProjectileType = ModContent.ProjectileType<TripleStabProj>(),
 				DamageMultiplier = mult,
 				UseTime = 20,
-				ShootSpeed = 0f
+				ShootSpeed = 0f,
+				BalanceTag = BalanceTag.MultiHit
 			};
 
 		public static MoveSpec BrickBreak(string nameKey, float mult = 1.4f)
@@ -893,7 +912,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = 22,
 				ShootSpeed = 0f,
 				SpawnAtMouse = true,
-				EasyCrit = true
+				EasyCrit = true,
+				BalanceTag = BalanceTag.WideAoE
 			};
 
 		public static MoveSpec StoneEdge(string nameKey, float mult = 1.7f)
@@ -1113,14 +1133,11 @@ namespace PokemonHenshin.Content.Items.Forms
 				RequiresLungeCooldown = true,
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
-
-		public static int StageDamage(int stage) => 8 + stage * 6;
 	}
 
 	// —— 御三家 ——
 	public class CharmanderForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(1);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F01", 1, "Mods.PokemonHenshin.Items.CharmanderForce.DisplayName", PokemonType.Fire, 1, null, FormPassiveKind.Blaze);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.FireBolt("Mods.PokemonHenshin.Moves.Ember");
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Scratch("Mods.PokemonHenshin.Moves.Scratch");
@@ -1129,7 +1146,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class CharmeleonForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F02", 2, "Mods.PokemonHenshin.Items.CharmeleonForce.DisplayName", PokemonType.Fire, 4, "L01_F01", FormPassiveKind.Blaze);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.35f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.FireFang", 1.3f, onFireTicks: 180);
@@ -1138,7 +1154,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class CharizardForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F03", 3, "Mods.PokemonHenshin.Items.CharizardForce.DisplayName", PokemonType.Fire, 7, "L01_F02", FormPassiveKind.SolarPower, secondary: PokemonType.Flying);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.FlameCone("Mods.PokemonHenshin.Moves.Flamethrower", 1.55f, 10);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Scratch("Mods.PokemonHenshin.Moves.DragonClaw", 1.4f, 16, reachTiles: 20f);
@@ -1147,7 +1162,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class SquirtleForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(1);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F01", 4, "Mods.PokemonHenshin.Items.SquirtleForce.DisplayName", PokemonType.Water, 1, null, FormPassiveKind.Torrent);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.AquaGun("Mods.PokemonHenshin.Moves.WaterGun");
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.Tackle", 1.1f, 18, DustID.Water);
@@ -1156,7 +1170,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class WartortleForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F02", 5, "Mods.PokemonHenshin.Items.WartortleForce.DisplayName", PokemonType.Water, 4, "L02_F01", FormPassiveKind.Torrent);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 32, 2.4f, 28);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
@@ -1165,7 +1178,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class BlastoiseForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F03", 6, "Mods.PokemonHenshin.Items.BlastoiseForce.DisplayName", PokemonType.Water, 7, "L02_F02", FormPassiveKind.RainDish);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroPump", 1.7f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.SkullBash", 1.6f, 34, DustID.Water);
@@ -1174,7 +1186,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class BulbasaurForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(1);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L03_F01", 7, "Mods.PokemonHenshin.Items.BulbasaurForce.DisplayName", PokemonType.Grass, 1, null, FormPassiveKind.Overgrow, secondary: PokemonType.Poison);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.VineWhip("Mods.PokemonHenshin.Moves.VineWhip");
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.Tackle", 1.1f, 18, DustID.Grass);
@@ -1183,7 +1194,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class IvysaurForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(4);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L03_F02", 8, "Mods.PokemonHenshin.Items.IvysaurForce.DisplayName", PokemonType.Grass, 4, "L03_F01", FormPassiveKind.Overgrow, secondary: PokemonType.Poison);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.LeafSpread("Mods.PokemonHenshin.Moves.RazorLeaf", 1.3f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
@@ -1192,7 +1202,6 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class VenusaurForce : HenshinForceItem
 	{
-		protected override int BaseDamage => FormItemUtil.StageDamage(7);
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L03_F03", 9, "Mods.PokemonHenshin.Items.VenusaurForce.DisplayName", PokemonType.Grass, 7, "L03_F02", FormPassiveKind.Chlorophyll, secondary: PokemonType.Poison);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.SludgeBolt("Mods.PokemonHenshin.Moves.SludgeBomb", 1.45f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.PetalDance("Mods.PokemonHenshin.Moves.PetalDance", 1.5f);

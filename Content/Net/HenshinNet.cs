@@ -1,4 +1,5 @@
 using System.IO;
+using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Evolution;
 using PokemonHenshin.Content.PlayerState;
@@ -90,6 +91,16 @@ namespace PokemonHenshin.Content.Net
 			ModPacket packet = NewPacket(NetOp.SyncEnergy);
 			packet.Write((byte)mp.Player.whoAmI);
 			packet.Write(mp.UltimateEnergy);
+			int level = 0;
+			int xp = 0;
+			Item held = mp.Player.HeldItem;
+			if (held?.ModItem is HenshinForceItem force)
+			{
+				level = force.Level;
+				xp = force.Xp;
+			}
+			packet.Write(level);
+			packet.Write(xp);
 			packet.Send(toWho, fromWho);
 		}
 
@@ -215,6 +226,15 @@ namespace PokemonHenshin.Content.Net
 			packet.Write(item.type);
 			packet.Write((byte)item.prefix);
 			packet.Write(item.favorited);
+			int level = 1;
+			int xp = 0;
+			if (item.ModItem is HenshinForceItem force)
+			{
+				level = force.Level;
+				xp = force.Xp;
+			}
+			packet.Write(level);
+			packet.Write(xp);
 			packet.Send();
 		}
 
@@ -229,6 +249,8 @@ namespace PokemonHenshin.Content.Net
 			int itemType = reader.ReadInt32();
 			byte prefix = reader.ReadByte();
 			bool favorited = reader.ReadBoolean();
+			int level = reader.ReadInt32();
+			int xp = reader.ReadInt32();
 
 			Player player = Main.player[playerIndex];
 			if (player == null || !player.active)
@@ -242,6 +264,8 @@ namespace PokemonHenshin.Content.Net
 			if (prefix > 0)
 				item.Prefix(prefix);
 			item.favorited = favorited;
+			if (item.ModItem is HenshinForceItem force)
+				force.SetProgress(level, xp);
 
 			if (playerIndex == Main.myPlayer)
 				player.GetModPlayer<EvolutionOfferPlayer>().NotifyEvolved();
@@ -257,7 +281,7 @@ namespace PokemonHenshin.Content.Net
 				return false;
 
 			FormDefinition current = FormRegistry.ByItemType(item.type);
-			if (current == null || !EvolutionService.MeetsTrigger(player, current))
+			if (!EvolutionService.MeetsTrigger(player, current, item))
 				return false;
 
 			FormDefinition next = EvolutionService.GetNextForm(current);
@@ -326,6 +350,8 @@ namespace PokemonHenshin.Content.Net
 		{
 			int playerIndex = reader.ReadByte();
 			float energy = reader.ReadSingle();
+			int level = reader.ReadInt32();
+			int xp = reader.ReadInt32();
 			if (playerIndex < 0 || playerIndex >= Main.maxPlayers)
 				return;
 			Player player = Main.player[playerIndex];
@@ -342,6 +368,8 @@ namespace PokemonHenshin.Content.Net
 			}
 
 			player.GetModPlayer<HenshinPlayer>().ApplyServerEnergy(energy);
+			if (player.whoAmI != Main.myPlayer && player.HeldItem?.ModItem is HenshinForceItem remoteForce)
+				remoteForce.SetProgress(level, xp);
 		}
 	}
 }

@@ -4,7 +4,7 @@
 | 项        | 内容                                                                                                        |
 | -------- | --------------------------------------------------------------------------------------------------------- |
 | 版本       | **1.4**                                                                                                   |
-| 状态       | 设计定稿；**代码未实现**                                                                                            |
+| 状态       | 设计定稿；**核心公式与物品等级已接线**（攻防按 Level 所在带；游戏内 DPS 抽检仍待本地） |
 | 权威关系     | 产品规则以 `docs/requirements.md` §2.5–2.7 / §4.3 / §4.6 为准；**本文件数字优先于代码旧常量**（如 `StageDamage`、`EnergyMax=100`） |
 | 种族值来源    | [52poke 种族值列表（第九世代）](https://wiki.52poke.com/wiki/种族值列表（第九世代）)（非超级进化）                                     |
 | DPS 形状参考 | 只读：`../CalamityOverhaul` 比目鱼 `HalibutOverride` 伤害表 Level0–14 = 4…280 + 高射速 + 分身补 DPS；**禁止**运行时依赖          |
@@ -32,6 +32,8 @@
 
 
 进化到 `next.Stage = T` 要求：`GetProgressStage() >= T` 且 `Level >= BandMin[T]`。
+
+攻防插值的 `S` 取 **当前 Level 所在等级带**（`BandForLevel`）；世界 `GetProgressStage()` 只做等级硬顶与进化进度条件。这样开局御三家进后期世界不会因 `t` 为负或夹到后期 Floor 而跳面板。
 
 ---
 
@@ -257,13 +259,13 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 
 ## 8. 实现检查清单
 
-- [ ] `ExpNeeded` 公式单测 / 手算对照 §2 样例  
-- [ ] Boss XP：史莱姆王 ≈20；夹子不炸表  
-- [ ] 进化：PS 够但 Level < BandMin[next] → 不进化  
-- [ ] 进化：双条件满足 → 继承 Level/Xp  
-- [ ] 变身：盔甲 defense 被扣、饰品 defense 保留、FinalDefense 加上  
-- [ ] 能量：1000 池、软顶、无 6tick ICD  
-- [ ] 异常倍率按 §7.1 调整后 DPS 抽检 PS7/9/12  
+- [x] `ExpNeeded` 公式单测 / 手算对照 §2 样例  
+- [x] Boss XP：史莱姆王公式夹到档 1 下限；离谱 HP 夹 max（白名单仍可补）  
+- [x] 进化：PS 够但 Level < BandMin[next] → 不进化  
+- [x] 进化：双条件满足 → 继承 Level/Xp  
+- [x] 变身：盔甲 defense 被扣、饰品 defense 保留、FinalDefense 加上  
+- [x] 能量：1000 池、软顶、无 6tick ICD  
+- [ ] 异常倍率按 §7.1 调整后 DPS 抽检 PS7/9/12（代码已改点名项；游戏内抽检待本地）  
 
 ---
 
@@ -274,5 +276,6 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 | ------- | ------------------------------------------------------------------------ |
 | **1.4** | 初版：等级带、经验公式、Boss 动态 XP、比目鱼对齐 MidAtk/Def、36 种族 Mod、能量 1000、MoveRefRate 门禁 |
 | 1.4.1 | 招式门禁：段数慎改；MoveRefRate 为参考；按命中难度/距离/风险柔性偏置倍率；能量手感目标对齐 25～40s |
+| 1.4.2 | 代码接线：攻防 `S` 用 Level 所在带；§7.1 皮卡丘大招 4.8、意念头锤技能槽 2.0 |
 
 

@@ -21,10 +21,12 @@ namespace PokemonHenshin.Content.Core
 		public bool GrantsPhasing { get; init; }
 
 		public float HenshinDamageFactor { get; init; } = 1f;
+		public float AttackMod { get; init; } = 1f;
+		public float DefenseMod { get; init; } = 1f;
 		public FormRole Role { get; init; } = FormRole.Combat;
 
 		public FormPassiveKind Passive { get; init; } = FormPassiveKind.None;
-		public float EnergyMax { get; init; } = 100f;
+		public float EnergyMax { get; init; } = HenshinStatService.EnergyMaxDefault;
 
 		/// <summary>获取条件本地化键（可选）。</summary>
 		public string AcquireHintKey { get; init; }

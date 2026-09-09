@@ -29,6 +29,10 @@ namespace PokemonHenshin.Content.Core
 		public int ProjectileType { get; init; }
 		public float DamageMultiplier { get; init; } = 1f;
 		public int UseTime { get; init; } = 20;
+		/// <summary>可写：工厂在构造后标记 MultiHit / WideAoE 等。</summary>
+		public BalanceTag BalanceTag { get; set; } = BalanceTag.Standard;
+
+		public float GetEnergyGainFactor() => HenshinStatService.EnergyGainFactor(BalanceTag, UseTime);
 		public float ShootSpeed { get; init; } = 0f;
 		public float Knockback { get; init; } = 2f;
 

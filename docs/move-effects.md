@@ -1,7 +1,7 @@
 # 招式泰拉适配表（权威）
 
-**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**（见变更记录 / `docs/fx-knowledge.md`）  
-**版本：** 1.3（表结构）；变更记录至 **1.14（2026-09-07 Wave3 Accepted）**  
+**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**；**v1.4 数值已接线**（游戏内 DPS 抽检待本地）  
+**版本：** 1.3（表结构）；变更记录至 **1.19（2026-09-09 v1.4 数值）**  
 **冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
@@ -149,7 +149,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，约 ×5 面板） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗 100 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
+| L12_F01 | 凯西 | **同步**：自身获得 OnFire/Poison/Electrify 时，最近敌对复制同 debuff（短 CD） | 念力 Bolt+Stun（弱，短硬直） | 意念头锤 StrikeFall（幽灵锤下砸 AoE，技能槽 ×**2.0**） | 精神强念 Scatter×32 彩虹杖可见弹；单发 ×2；生成 0.5s 后追踪 | 耗满 | 念力：`PsychicWaveBolt` ShadowBeamFriendly；**32 格**索敌、弹射下一目标（最多 2 击）；意念头锤；粉紫散射+延迟追踪 | Medium |
 | L12_F02 | 胡地 | **同步**：同上 | 精神强念 鼠位×3 延迟追（不可穿墙/穿怪） | 真气拳 白气上扬无爆 | 预知未来 屏内夜光标记 1s 显形后追爆（IgnoreDef） | 耗 100 | 彩虹杖×3；FocusPunch；FairyQueenMagicItemShot | Medium | Accepted |
 
 ### 4.5 龙系链 L07
@@ -207,7 +207,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L04_F01 | 皮卡丘 | **静电**：被敌对接触/近战打中时，反弹 Electrify（短 CD） | 电击 Bolt+Electrify | 电光一闪 Blink（指针最近敌；落点电爆伤；2s CD + 0.25s 无敌；一屏） | 十万伏特：一道向前曲折天雷（≤64 格）；50% Electrify；0.5s 后对感电敌再射 | 耗 100 | `SkyBoltLightning` + `Assets/Fx/ThunderTrail`（抄 PRT_SkyBolt，无 CWR 运行时） | Medium | Done |
+| L04_F01 | 皮卡丘 | **静电**：被敌对接触/近战打中时，反弹 Electrify（短 CD） | 电击 Bolt+Electrify | 电光一闪 Blink（指针最近敌；落点电爆伤；2s CD + 0.25s 无敌；一屏） | 十万伏特：一道向前曲折天雷（≤64 格）；50% Electrify；0.5s 后对感电敌再射 | 耗满；大招 ×**4.8**（§7.1） | `SkyBoltLightning` + `Assets/Fx/ThunderTrail`（抄 PRT_SkyBolt，无 CWR 运行时） | Medium | Done |
 | L04_F02 | 雷丘 | **静电**：同上 | 十万伏特 Beam+Electrify（可链式） | 伏特攻击 Lunge+Recoil+Electrify | 打雷：屏内每敌头上一道更粗落雷 | 耗 100；伏特 Recoil | 同天雷管线 ai0=1、更粗；落点 SoftGlow | Medium | Done |
 
 ### 4.13 岩/钢蛇链 L13
@@ -222,7 +222,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 ×1.5 | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 0.5s 无敌吟唱后冲+6鸟 | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst`；`SkyAttackLunge`；`HurricaneField` 名键 `CycloneAttack` | High | Accepted |
-| L14_F01 | 超梦 | **压迫感**：×1.5 | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗 100 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
+| L14_F01 | 超梦 | **压迫感**：×1.5 | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun（技能槽 ×**2.0**） | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗满 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
 | L17_F01 | 烈空坐 | **气闸**：无视天气/昼夜，全招式伤害 ×1.7 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
 
 ### 4.15 地鼠链 L10（Excel 外补全）
@@ -268,3 +268,4 @@
 | 1.16 | 2026-09-07 | Stage7+ **Accepted**；画龙点睛纯黑；`CycloneAttack` 名键；超梦强念×6穿墙+精神击破64暗影球 |
 | 1.17 | 2026-09-09 | 能量/倍率指针对齐 requirements **v1.4** + `docs/balance-stats.md`（池 1000、软顶、MoveRefRate；代码未切） |
 | 1.18 | 2026-09-09 | 注明 MoveRefRate 柔性：段数慎改、按风险/命中难度偏置 |
+| 1.19 | 2026-09-09 | v1.4 数值接线：等级/攻防/能量 1000；§7.1 皮卡丘大招 ×4.8、凯西/超梦技能槽意念头锤 ×2.0 |

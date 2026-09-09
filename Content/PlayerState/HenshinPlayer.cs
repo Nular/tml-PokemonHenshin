@@ -22,9 +22,9 @@ namespace PokemonHenshin.Content.PlayerState
 		public const int PhasingCooldownTicks = 480;
 		public const int BossEngageLockTicks = 180;
 		public const int DashBaseCooldown = 90;
-		public const float EnergyOnHit = 4f;
-		public const float EnergyOnKill = 18f;
-		public const float EnergyPassivePerTick = 0.02f;
+		public const float EnergyOnHit = HenshinStatService.EnergyOnHit;
+		public const float EnergyOnKill = HenshinStatService.EnergyOnKill;
+		public const float EnergyPassivePerTick = HenshinStatService.EnergyPassivePerTick;
 
 		public FormDefinition CurrentForm { get; private set; }
 		public bool IsTransformed => CurrentForm != null;
@@ -79,11 +79,11 @@ namespace PokemonHenshin.Content.PlayerState
 		// —— 能量（按 FormId 分存）——
 		private readonly Dictionary<string, float> energyByForm = new();
 		public float UltimateEnergy { get; private set; }
-		public float UltimateEnergyMax => CurrentForm?.EnergyMax ?? 100f;
+		public float UltimateEnergyMax => CurrentForm?.EnergyMax ?? HenshinStatService.EnergyMaxDefault;
 		public bool UltimateReady => IsTransformed && UltimateEnergy >= UltimateEnergyMax - 0.01f;
 
 		/// <summary>读取指定形态的已存能量（当前变身同 FormId 时用实时条）。</summary>
-		public float GetStoredEnergy(string formId, float energyMax = 100f)
+		public float GetStoredEnergy(string formId, float energyMax = HenshinStatService.EnergyMaxDefault)
 		{
 			if (string.IsNullOrEmpty(formId))
 				return 0f;
@@ -104,6 +104,9 @@ namespace PokemonHenshin.Content.PlayerState
 		public int LungeCooldown { get; private set; }
 
 		public MoveSlot LastMoveSlot { get; set; } = MoveSlot.Skill1;
+
+		private readonly float[] combatEnergyRing = new float[60];
+		private int combatEnergyIndex;
 
 		private ushort serverFormNetId;
 		private ushort lastSyncedNetId;
@@ -298,11 +301,40 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public void AddUltimateEnergy(float amount, bool fromUltGainPath = true)
 		{
+			AddPassiveEnergy(amount);
+		}
+
+		public void AddPassiveEnergy(float amount)
+		{
 			if (!IsTransformed || amount <= 0f)
 				return;
-			UltimateEnergy = System.Math.Clamp(UltimateEnergy + amount * EnergyGainMultiplier, 0f, UltimateEnergyMax);
+			UltimateEnergy = System.Math.Clamp(UltimateEnergy + amount, 0f, UltimateEnergyMax);
 			if (CurrentForm != null)
 				energyByForm[CurrentForm.FormId] = UltimateEnergy;
+		}
+
+		public void AddCombatEnergy(float amount)
+		{
+			if (!IsTransformed || amount <= 0f)
+				return;
+			float scaled = amount * EnergyGainMultiplier;
+			float used = 0f;
+			for (int i = 0; i < combatEnergyRing.Length; i++)
+				used += combatEnergyRing[i];
+			float allowed = System.Math.Max(0f, HenshinStatService.EnergyCombatSoftCapPerSecond - used);
+			float add = System.Math.Min(scaled, allowed);
+			if (add <= 0f)
+				return;
+			combatEnergyRing[combatEnergyIndex] += add;
+			UltimateEnergy = System.Math.Clamp(UltimateEnergy + add, 0f, UltimateEnergyMax);
+			if (CurrentForm != null)
+				energyByForm[CurrentForm.FormId] = UltimateEnergy;
+		}
+
+		private void TickCombatEnergyWindow()
+		{
+			combatEnergyIndex = (combatEnergyIndex + 1) % combatEnergyRing.Length;
+			combatEnergyRing[combatEnergyIndex] = 0f;
 		}
 
 		public bool TryConsumeUltimate()
@@ -382,10 +414,11 @@ namespace PokemonHenshin.Content.PlayerState
 
 			if (IsTransformed && !IsRemotePlayerOnClient)
 			{
+				TickCombatEnergyWindow();
 				float passive = EnergyPassivePerTick;
 				if (BossEngageTimer > 0 || NearBoss())
 					passive *= 3f;
-				AddUltimateEnergy(passive, fromUltGainPath: true);
+				AddPassiveEnergy(passive);
 			}
 		}
 
@@ -408,6 +441,33 @@ namespace PokemonHenshin.Content.PlayerState
 			FlightEnergyMax = (LevitateFlight ? 10f : 4f) * 60f + ExtraFlightEnergy * 60f;
 			FormPassiveApplier.Apply(this);
 			TypePassiveApplier.Apply(this);
+			ApplyFormDefense();
+		}
+
+		private void ApplyFormDefense()
+		{
+			int armorDef = 0;
+			for (int i = 0; i < 3; i++)
+			{
+				Item piece = Player.armor[i];
+				if (piece != null && !piece.IsAir)
+					armorDef += piece.defense;
+			}
+
+			Player.statDefense -= armorDef;
+			int formDef = 0;
+			if (Player.HeldItem?.ModItem is HenshinForceItem force)
+				formDef = force.ComputeFinalDefense();
+			else if (CurrentForm != null)
+			{
+				FormStatTable.Mods mods = FormStatTable.Get(CurrentForm.FormId);
+				int level = HenshinStatService.StartingLevelForFormStage(CurrentForm.Stage);
+				if (Player.HeldItem?.ModItem is HenshinForceItem held)
+					level = held.Level;
+				formDef = HenshinStatService.FinalDefense(level, mods.DefenseMod);
+			}
+
+			Player.statDefense += formDef;
 		}
 
 		public override void PostUpdate()
@@ -586,18 +646,80 @@ namespace PokemonHenshin.Content.PlayerState
 				return;
 			if (target.boss)
 				NotifyBossEngage();
+
+			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
+			MoveSpec move = force?.GetMove(LastMoveSlot);
+			float factor = LastMoveSlot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
 			if (LastMoveSlot != MoveSlot.Ultimate)
-				AddUltimateEnergy(EnergyOnHit);
+				AddCombatEnergy(EnergyOnHit * factor);
 
 			if (target.life <= 0)
 			{
-				if (LastMoveSlot != MoveSlot.Ultimate)
-					AddUltimateEnergy(EnergyOnKill);
-				if (CurrentForm?.Passive == FormPassiveKind.Moxie && MoxieStacks < 2)
-					MoxieStacks++;
+				if (ShouldGrantKillRewards(target))
+				{
+					if (LastMoveSlot != MoveSlot.Ultimate)
+						AddCombatEnergy(EnergyOnKill * factor);
+					if (force != null)
+						GrantKillExperience(force, target);
+					if (CurrentForm?.Passive == FormPassiveKind.Moxie && MoxieStacks < 2)
+						MoxieStacks++;
+				}
 			}
 
 			ApplyOnHitAccessories(damageDone);
+		}
+
+		private static bool ShouldGrantKillRewards(NPC npc)
+		{
+			if (npc == null)
+				return false;
+			if (npc.realLife >= 0 && npc.realLife != npc.whoAmI)
+			{
+				NPC real = Main.npc[npc.realLife];
+				if (real != null && real.active && real.life > 0)
+					return false;
+			}
+
+			return true;
+		}
+
+		private static bool IsBossForXp(NPC npc)
+		{
+			if (npc.boss)
+				return true;
+			if (NPCID.Sets.ShouldBeCountedAsBoss[npc.type])
+				return true;
+			return false;
+		}
+
+		private void GrantKillExperience(HenshinForceItem force, NPC target)
+		{
+			int amount;
+			if (IsBossForXp(target))
+			{
+				int world = ProgressStageService.GetProgressStage();
+				int? over = HenshinBossXpOverrides.TryGet(target);
+				amount = HenshinStatService.ComputeBossXp(target.lifeMax, target.defense, world, over);
+			}
+			else
+				amount = Main.rand.Next(1, 4);
+
+			int oldLevel = force.Level;
+			force.TryAddExperience(Player, amount, out int levelsGained, out _);
+			if (Player.whoAmI == Main.myPlayer && (IsBossForXp(target) || levelsGained > 0 || force.Level > oldLevel))
+			{
+				if (levelsGained > 0)
+				{
+					Main.NewText(Language.GetTextValue(
+						"Mods.PokemonHenshin.Common.LevelUp",
+						Language.GetTextValue(force.Definition.DisplayNameKey),
+						force.Level), Microsoft.Xna.Framework.Color.LightGreen);
+				}
+				else if (IsBossForXp(target))
+				{
+					Main.NewText(Language.GetTextValue("Mods.PokemonHenshin.Common.GainedXp", amount), Microsoft.Xna.Framework.Color.SkyBlue);
+				}
+			}
 		}
 
 		public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)

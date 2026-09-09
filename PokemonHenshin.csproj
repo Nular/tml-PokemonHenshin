@@ -7,10 +7,14 @@
 		<Nullable>disable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
-		<!-- 仅文档，不参与编译/打包 -->
+		<!-- 仅文档/工具/构建产物，不参与编译/打包 -->
 		<Compile Remove="docs\**" />
 		<None Remove="docs\**" />
 		<AdditionalFiles Remove="docs\**" />
+		<Compile Remove="tools\**" />
+		<None Remove="tools\**" />
+		<Compile Remove="obj\**" />
+		<Compile Remove="bin\**" />
 	</ItemGroup>
 	<Import Project="$(TMLTargets)" Condition="Exists('$(TMLTargets)')" />
 	<Import Project="..\tModLoader.targets" Condition="!Exists('$(TMLTargets)') And Exists('..\tModLoader.targets')" />

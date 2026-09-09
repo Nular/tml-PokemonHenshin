@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | **1.4** |
-| 状态 | 现役开发基线（v1.3 战斗已落地；**v1.4 等级/攻防/能量数值设计已定稿，代码未实现**） |
+| 状态 | 现役开发基线（v1.3 战斗已落地；**v1.4 等级/攻防/能量/进化双条件已接线**；游戏内 DPS 抽检待本地） |
 | 平台 | 泰拉瑞亚 + tModLoader + 灾厄（Calamity） |
 | 联机 | 必须支持多人 |
 | 读者 | 策划 / 程序 / 其他实现 Agent |
@@ -392,17 +392,16 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 种族值以第九世代为准（非超级进化）；36 形态 Mod 全表见 `docs/balance-stats.md`。段内升级收益刻意加大（约 +55%～+90% 视阶段），用于体感成长；更大跳变仍来自**推进阶段 / 进化新形态与新技能**。
 
-#### 4.6.6 实现指引（供下一 Agent，本版仅文档）
+#### 4.6.6 实现指引
 
-建议顺序：
-
-1. `FormStatTable`（或 `FormDefinition` 字段）：`AttackMod` / `DefenseMod`；`MoveSpec` 增加 `EnergyGainFactor`、`BalanceTag`  
-2. `HenshinForceItem`：`Level`/`Xp` 的 Save/Load；Tooltip；进化拷贝  
-3. `HenshinStatService`：`ExpNeeded`、Boss XP、Stage→Final 计算  
-4. 面板改用 `FinalAttack`；`HenshinPlayer` 盔甲防御剥离 + `FinalDefense`；击杀加经验  
-5. 能量池 1000 + 每秒软顶 + Factor；按 balance-stats 扫异常倍率  
-6. 进化双条件：`ProgressStage` + `Level >= BandMin[next.Stage]`  
-7. 联机同步 level/xp/energy；游戏内 DPS 抽检 PS7/9/12  
+1. `FormStatTable` + `MoveSpec.BalanceTag` / `EnergyGainFactor` — **已接线**
+2. `HenshinForceItem`：`Level`/`Xp` Save/Load/Net；Tooltip；进化拷贝 — **已接线**
+3. `HenshinStatService`：`ExpNeeded`、Boss XP、Stage→Final — **已接线**
+4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验 — **已接线**
+5. 能量池 1000 + 每秒软顶 + Factor — **已接线**
+6. 进化双条件 — **已接线**
+7. 联机同步 level/xp/energy — **包已扩**；双端实测 pending
+8. 游戏内 DPS 抽检 PS7/9/12 — pending  
 
 ---
 
