@@ -38,6 +38,8 @@ namespace PokemonHenshin.Content.Accessories
 					return "PokemonHenshin/Assets/Accessories/A01";
 				if (Piece == AccPiece.Super)
 					return def.SuperTexturePath;
+				if (Piece != AccPiece.Normal)
+					return def.ShardTexturePath;
 				return def.TexturePath;
 			}
 		}

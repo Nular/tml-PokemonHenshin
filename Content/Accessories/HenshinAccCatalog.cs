@@ -29,6 +29,7 @@ namespace PokemonHenshin.Content.Accessories
 
 		public string TexturePath => $"PokemonHenshin/Assets/Accessories/A{(int)Id:D2}";
 		public string SuperTexturePath => TexturePath + "_Super";
+		public string ShardTexturePath => TexturePath + "_Shard";
 
 		public string ItemName(AccPiece piece)
 		{

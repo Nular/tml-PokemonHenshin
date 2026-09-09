@@ -34,5 +34,5 @@
 
 ## 资源约定
 
-- 宝可梦 / 饰品外观：52poke；脚本见 `tools/fetch_assets.py`（A13+ 暂复用 A01～A12 贴图）
+- 宝可梦 / 饰品外观：52poke；拉取 `tools/fetch_assets.py`，饰品像素化 `tools/pixelize_accessories.py`（64×64：`Axx` / `_Super` / `_Shard`）
 - 特效：优先原版 `LoadProjectile`/真弹；CWR 只读抄逻辑，trail 可贴图拷入 `Assets/Fx/`（无运行时依赖）；**禁止擅自降级**（见 `AGENTS.md`）

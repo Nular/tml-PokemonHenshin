@@ -19,7 +19,7 @@
 3. **超级 2× 规则：** 倍率类 ×2；冷却类减半（更短）；开关类保持开关，并给附加价值（见各家族表）。
 4. **范围：** 旧 A01–A21 **全部**改碎片线；新 7 件也全部做。共 **28 家族 ×（6 碎片 + 1 普通 + 1 超级）= 224 物品**。
 5. **不变之石：** **唯一破例**——未变身也生效（戴着就挡进化）。
-6. **贴图：** 独立脚本拉取 52poke 袋内图 + 生成超级闪光图；碎片不另绘图，运行时角标。
+6. **贴图（2026-09-10）：** `fetch_assets` 拉 52poke 袋内图 → 高清备份 `_src_hires/`；`tools/pixelize_accessories.py`（pixeloe）产出 **64×64** 的 `Axx.png` / `Axx_Super.png`（粗金边+闪点）/ `Axx_Shard.png`（碎片剪影）。S1–S6 共用 `_Shard`，库存仍叠片号角标（不生成 168 张）。
 7. **广角镜 / 诅咒之符：** 共用 `MoveDelivery` 分类；**作用集合不同（方案 B）**。广角镜 **不含 Beam**。
 8. **无条件加伤**并进之力 `ModifyWeaponDamage`（面板看得到）。有条件（Boss / 着火 / 大招槽）仍走命中。
 9. **饰品伤不对齐之力 DPS 80–120% 窗**；对标同阶段灾厄 / 大修饰品量级。
@@ -130,8 +130,9 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `Content/Loot/HenshinLoot.cs` | **删光旧 AddAcc 占位配方**；只保留之力掉落；饰品掉落/配方走 Catalog | WP-F |
 | `Content/Loot/HenshinAccLoot.cs` | GlobalNPC / ModPlayer 钓鱼匣 / 事件掉落，读 Catalog | WP-F |
 | `Localization/zh-Hans_*.hjson` + `en-US_*.hjson` | 物品名/说明/角标/生效标签 | WP-G |
-| `tools/fetch_assets.py` | 扩展 ACC_FILES 到 A01–A28 | WP-H |
-| `tools/make_super_accessory_sprites.py` | **新建**：从基础 PNG 生成 `*_Super.png` | WP-H |
+| `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
+| `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |
+| `tools/make_super_accessory_sprites.py` | **已弃用**：转发到 `pixelize_accessories.py` | WP-H |
 | `docs/requirements.md` §6 §10 | 实现结束后回写（本计划落地后再改，避免审阅期双源） | 收尾 |
 | `docs/accessory-rework-plan.md` | 本文件 | 主 Agent |
 
@@ -148,6 +149,7 @@ AccFamilyDef {
   string WikiBagFile             // "Bag 力量头带 SV Sprite.png"
   string TexturePath             // "PokemonHenshin/Assets/Accessories/A02"
   string SuperTexturePath        // ".../A02_Super"
+  string ShardTexturePath        // ".../A02_Shard"（S1–S6）
   PokemonType Resonance          // None = 通用
   bool WorksUntransformed        // 仅 A24
   int MinStage                   // 普通成品出现的进度锚（F1–F4 须在此之前可凑齐）
@@ -539,27 +541,31 @@ WP-F 把上表译成 `ItemID` / `NPCID` / 灾厄内部名。灾厄名用字符�
 
 ---
 
-## 8. 贴图脚本（WP-H，单独一次做完）
+## 8. 贴图脚本（WP-H，已落地 2026-09-10）
 
-### 8.1 扩展 `tools/fetch_assets.py`
+### 8.1 `tools/fetch_assets.py`
 
-`ACC_FILES` 改为 A01–A28 的 `Bag {官方名} SV Sprite.png`，输出 `Assets/Accessories/Axx.png`。失败则 fallback `Bag {名} Sprite.png`。User-Agent 保持。
+`ACC_FILES`：A01–A28 的 `Bag {官方名} SV Sprite.png` → 写入 `Assets/Accessories/`（再拷/备份到 `_src_hires/`）。失败则 fallback `Bag {名} Sprite.png`。
 
-### 8.2 新建 `tools/make_super_accessory_sprites.py`
+### 8.2 `tools/pixelize_accessories.py`（现役）
 
-输入 `Assets/Accessories/Axx.png`，输出 `Axx_Super.png`（同目录）。算法（确定，避免每跑不一样）：
+依赖：`pip install pixeloe pillow numpy opencv-python-headless`。
 
-1. RGBA，按 alpha bbox 裁切（与 fetch 一致）。
-2. 亮度 ×1.18，饱和 ×1.12（HSV）。
-3. 金色外发光：alpha 边缘膨胀 2px，色 `(255, 215, 80)`，再叠一层 `(255,255,220)` 内高光（按法线假：上缘 +20% 白）。
-4. 四角各 1px 星点（固定种子 `hash(Axx)`），不动画。
-5. 禁止引入新噪声图文件。
+输入优先 `Assets/Accessories/_src_hires/Axx.png`，输出同目录：
 
-云端可跑：`python3 tools/fetch_assets.py && python3 tools/make_super_accessory_sprites.py`。PIL 已在 fetch 里用。Cloud setup 若无 PIL：`pip install pillow` 写进脚本头注释。
+| 文件 | 内容 |
+|------|------|
+| `Axx.png` | pixeloe 对比感知像素化，短边约 56 再 pad 到 **64×64** |
+| `Axx_Super.png` | 自普通图重建：加亮 + **多层金边/外发光** + 确定性十字闪点（种子=`Axx`） |
+| `Axx_Shard.png` | 自普通图裁不规则晶体剪影 + 边缘压暗（种子=`shard:Axx`） |
 
-碎片：`HenshinAccItem.PostDrawInInventory/World` 用 `FontAssets.ItemStack` 画 `S1`–`S6` 小字，不生成 168 张图。
+**禁止**给 legacy pixeloe 传 `contrast=` / `saturation=`（会把 uint8 压成近黑）；色调用 PIL 后处理。
 
-`HenshinAccItem.Texture`：Super 用 `_Super`，其它用 `Axx`。缺文件时 fallback `A01` 并 `Logger.Warn` 一次。
+重跑：`python tools/pixelize_accessories.py`。`make_super_accessory_sprites.py` 仅作转发兼容。
+
+### 8.3 运行时贴图路径
+
+`HenshinAccItem.Texture`：Super → `_Super`；S1–S6 → `_Shard`；普通 → `Axx`。库存/世界仍画片号角标区分六片。缺文件时 fallback `A01` 并 `Logger.Warn` 一次。
 
 ---
 
@@ -631,8 +637,8 @@ Tooltip 结构：官网一句 + 本片效果 + 合成提示 + 生效标签。
 
 ### 11.1 名称与图
 
-- [ ] 28 个基础 PNG 为 52poke 袋内图；文件名 A01–A28 与家族表一致  
-- [ ] 28 个 `_Super.png` 明显更亮/金边  
+- [x] 28 个基础 PNG 源自 52poke 袋内图（高清在 `_src_hires/`；游戏用 64×64 像素版）；文件名 A01–A28 与家族表一致  
+- [x] 28 个 `_Super.png` 粗金边 + 闪点；28 个 `_Shard.png` 碎片剪影（S1–S6 共用 + 角标）  
 - [ ] 中文 DisplayName = 官方名（吃剩的东西、不变之石、黑带、特性胶囊、气势头带 ≠ 披带）  
 - [ ] A05 图是头带、A27 图是披带、A16 图是生命宝珠、A06 图是达人带  
 
