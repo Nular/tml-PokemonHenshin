@@ -170,20 +170,20 @@ Acquire: {
 	L07_F02: 获取：迷你龙进化（进度档≥8）
 	L07_F03: 获取：哈克龙进化（进度档≥11）
 	L08_F01: 获取：石巨人掉落（约35%）
-	L08_F02: 获取：金属怪进化（进度档≥12）
+	L08_F02: 获取：金属怪进化（进度档≥10）
 	L09_F01: 获取：合成（鲈鱼×5 + 坠落之星×3）
-	L09_F02: 获取：鲤鱼王进化（进度档≥6）
+	L09_F02: 获取：鲤鱼王进化（进度档≥9）
 	L10_F01: 获取：合成（金/铂锭×8 + 土块×50）
-	L10_F02: 获取：地鼠进化（进度档≥5）
+	L10_F02: 获取：地鼠进化（进度档≥6）
 	L11_F01: 获取：骷髅王掉落（约30%）
-	L11_F02: 获取：波波进化（进度档≥8）
+	L11_F02: 获取：波波进化（进度档≥7）
 	L12_F01: 获取：骷髅王掉落（约30%）
 	L12_F02: 获取：凯西进化（档≥9）或月亮领主掉落
 	L13_F01: 获取：血肉墙掉落（约40%）
-	L13_F02: 获取：大岩蛇进化（进度档≥10）
+	L13_F02: 获取：大岩蛇进化（进度档≥9）
 	L14_F01: 获取：月亮领主掉落（约50%）
 	L15_F01: 获取：月后合成（夜明锭等）
-	L15_F02: 获取：圆陆鲨进化（进度档≥12）
+	L15_F02: 获取：圆陆鲨进化（进度档≥11）
 	L16_F01: 获取：月后合成（夜明锭 + 星旋碎片）
 	L17_F01: 获取：月后合成（夜明锭 + 星云/星尘碎片）
 }
@@ -193,182 +193,182 @@ DamageClasses.HenshinDamage.DisplayName: 变身伤害
 Items: {
 	CharmanderForce: {
 		DisplayName: 小火龙之力
-		Tooltip: 火属性。挥爪近身撕裂，吐出火花点燃敌人。
+		Tooltip: 火。火花、抓、火焰漩涡。
 	}
 
 	CharmeleonForce: {
 		DisplayName: 火恐龙之力
-		Tooltip: 火属性。连爪撕扯，喷出火焰锥。
+		Tooltip: 火。龙之波动、火焰牙、闪焰冲锋。
 	}
 
 	CharizardForce: {
 		DisplayName: 喷火龙之力
-		Tooltip: 火/飞。龙爪突进与火焰弹幕。
+		Tooltip: 火/飞。喷射火焰、龙爪、过热。
 	}
 
 	SquirtleForce: {
 		DisplayName: 杰尼龟之力
-		Tooltip: 水属性。水枪压制，缩壳减伤。
+		Tooltip: 水。水枪、撞击、泡沫光线。
 	}
 
 	WartortleForce: {
 		DisplayName: 卡咪龟之力
-		Tooltip: 水属性。水弹连射与潮汐推开。
+		Tooltip: 水。泡沫光线、咬住、潮旋。
 	}
 
 	BlastoiseForce: {
 		DisplayName: 水箭龟之力
-		Tooltip: 水属性。水炮与雨天气场。
+		Tooltip: 水。水炮、火箭头锤、加农水炮。
 	}
 
 	BulbasaurForce: {
 		DisplayName: 妙蛙种子之力
-		Tooltip: 草/毒。藤鞭与毒粉。
+		Tooltip: 草/毒。藤鞭、撞击、种子机关枪。
 	}
 
 	IvysaurForce: {
 		DisplayName: 妙蛙草之力
-		Tooltip: 草/毒。寄生种子与毒液弹。
+		Tooltip: 草/毒。飞叶快刀、咬住、种子炸弹。
 	}
 
 	VenusaurForce: {
 		DisplayName: 妙蛙花之力
-		Tooltip: 草/毒。阳光烈焰与种子机枪。
+		Tooltip: 草/毒。污泥炸弹、花瓣舞、日光束。
 	}
 
 	PikachuForce: {
 		DisplayName: 皮卡丘之力
-		Tooltip: 电属性。电光弹与短冲刺。
+		Tooltip: 电。电击、电光一闪、十万伏特。
 	}
 
 	RaichuForce: {
 		DisplayName: 雷丘之力
-		Tooltip: 电属性。十万伏特与落雷。
+		Tooltip: 电。十万伏特、伏特攻击、打雷。
 	}
 
 	MachopForce: {
 		DisplayName: 腕力之力
-		Tooltip: 格斗。近战连打与投掷。
+		Tooltip: 格斗。岩石封锁、撞击、十字劈。
 	}
 
 	MachokeForce: {
 		DisplayName: 豪力之力
-		Tooltip: 格斗。强力近战连招。
+		Tooltip: 格斗。岩崩、劈瓦、爆裂拳。
 	}
 
 	MachampForce: {
 		DisplayName: 怪力之力
-		Tooltip: 格斗。终极近身爆发。
+		Tooltip: 格斗。尖石攻击、十字劈、近身战。
 	}
 
 	HaunterForce: {
 		DisplayName: 鬼斯通之力
-		Tooltip: 幽灵/毒。影球；右键限时穿障。
+		Tooltip: 幽灵/毒。暗影球、舌舔、催眠术。飘浮强化飞，无穿障。
 	}
 
 	GengarForce: {
 		DisplayName: 耿鬼之力
-		Tooltip: 幽灵/毒。暗影连射与夜袭。
+		Tooltip: 幽灵/毒。污泥炸弹、暗影抓、恶之波动。
 	}
 
 	DratiniForce: {
 		DisplayName: 迷你龙之力
-		Tooltip: 龙属性。龙波与缠绕。
+		Tooltip: 龙。龙息、咬住、龙之怒。
 	}
 
 	DragonairForce: {
 		DisplayName: 哈克龙之力
-		Tooltip: 龙属性。龙息与蓄势。
+		Tooltip: 龙。龙之波动、龙尾、暴风。
 	}
 
 	DragoniteForce: {
 		DisplayName: 快龙之力
-		Tooltip: 龙/飞。逆鳞与破坏光线。
+		Tooltip: 龙/飞。暴风、龙之俯冲、逆鳞。
 	}
 
 	MetangForce: {
 		DisplayName: 金属怪之力
-		Tooltip: 钢/超能。金属爪与子弹拳。
+		Tooltip: 钢/超能。念力、撞击、猛撞。
 	}
 
 	MetagrossForce: {
 		DisplayName: 巨金怪之力
-		Tooltip: 钢/超能。彗星拳与重力井。
+		Tooltip: 钢/超能。精神强念、彗星拳、破坏光线。
 	}
 
 	MagikarpForce: {
 		DisplayName: 鲤鱼王之力
-		Tooltip: 水/一般。弱撞击与溅水（钓鱼向）。
+		Tooltip: 水。跃起、撞击、抓狂。弱体战斗，不加钓力。
 	}
 
 	GyaradosForce: {
 		DisplayName: 暴鲤龙之力
-		Tooltip: 水/飞。水息与腾空撕咬。
+		Tooltip: 水/飞。水炮、咬碎、破坏光线。
 	}
 
 	DiglettForce: {
 		DisplayName: 地鼠之力
-		Tooltip: 地面。抓击与挖掘。
+		Tooltip: 地面。掷泥、撞击；大招挖洞爆发（可挖砖）。
 	}
 
 	DugtrioForce: {
 		DisplayName: 三地鼠之力
-		Tooltip: 地面。三连刺与高速挖掘。
+		Tooltip: 地面。三连刺、挖洞突进（镐力清走廊）、地震。
 	}
 
 	PidgeyForce: {
 		DisplayName: 波波之力
-		Tooltip: 一般/飞。起风与滑翔。
+		Tooltip: 飞/一般。起风、啄、燕返。持握可限时飞。
 	}
 
 	PidgeotForce: {
 		DisplayName: 大比鸟之力
-		Tooltip: 一般/飞。空气斩与俯冲。
+		Tooltip: 飞/一般。暴风、燕返、勇鸟猛攻。
 	}
 
 	AbraForce: {
 		DisplayName: 凯西之力
-		Tooltip: 超能。念力与侦测/瞬移占位。
+		Tooltip: 超能。念力、意念头锤、精神强念散射。无侦测。
 	}
 
 	AlakazamForce: {
 		DisplayName: 胡地之力
-		Tooltip: 超能。精神强念与预知。
+		Tooltip: 超能。精神强念、真气拳、预知未来。
 	}
 
 	OnixForce: {
 		DisplayName: 大岩蛇之力
-		Tooltip: 岩石。岩击与挖掘。
+		Tooltip: 岩石/地面。岩石封锁、撞击、岩崩。
 	}
 
 	SteelixForce: {
 		DisplayName: 大钢蛇之力
-		Tooltip: 岩/钢。铁尾与挖速爆发。
+		Tooltip: 钢/地面。岩崩、钢尾、猛撞。
 	}
 
 	MewtwoForce: {
 		DisplayName: 超梦之力
-		Tooltip: 传说·超能。精神击破与屏障。
+		Tooltip: 传说·超能。精神强念、意念头锤、精神击破。
 	}
 
 	GibleForce: {
 		DisplayName: 圆陆鲨之力
-		Tooltip: 龙/地面。龙爪与沙尘。
+		Tooltip: 龙/地面。龙之怒、撞击、流沙地狱。
 	}
 
 	GarchompForce: {
 		DisplayName: 烈咬陆鲨之力
-		Tooltip: 龙/地面。逆鳞与改地形。
+		Tooltip: 龙/地面。龙之波动、咬碎、流星群。
 	}
 
 	LugiaForce: {
 		DisplayName: 洛奇亚之力
-		Tooltip: 传说·超能/飞。气势轮与风暴场。
+		Tooltip: 传说·超能/飞。空气爆炸、神鸟猛击、气旋攻击。
 	}
 
 	RayquazaForce: {
 		DisplayName: 烈空坐之力
-		Tooltip: 传说·龙/飞。画龙点睛与终局龙息。
+		Tooltip: 传说·龙/飞。龙之波动、咬碎、画龙点睛。
 	}
 
 	A01AbilityCapsuleBelt: {
@@ -394,7 +394,7 @@ Items: {
 		Tooltip:
 			'''
 			让拉帝欧斯或拉帝亚斯携带后，超能力和龙属性的招式威力就会提高的神奇珠子。
-			仅变身时：情境加成幅度 +20%
+			仅变身时：属性被动幅度 +20%
 			'''
 	}
 

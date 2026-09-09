@@ -76,7 +76,7 @@ namespace PokemonHenshin.Content.Loot
 				.AddTile(TileID.Anvils)
 				.Register();
 
-			// 鲤鱼王：钓鱼向
+			// 鲤鱼王：鲈鱼合成（获取风味，不是钓鱼玩法 / 不加钓力）
 			Recipe.Create(ModContent.ItemType<MagikarpForce>())
 				.AddIngredient(ItemID.Bass, 5)
 				.AddIngredient(ItemID.FallenStar, 3)

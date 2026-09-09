@@ -3,8 +3,8 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4**（数值表 `docs/balance-stats.md`） |
-| 状态 | **战斗模型 v1.3 已落地并验收**；**v1.4 等级/攻防/能量/进化双条件/XP 缩放已接线**（世界字 `LEVEL UP!`/`EXP +X`）；联机双端 / DPS 抽检 / 弹出验收 / M5 后置 |
+| 对齐需求 | `docs/requirements.md` **v1.4.5**（数值表 `docs/balance-stats.md`） |
+| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；**v1.4.5 现役口径：换皮打架**（无钓鱼/侦测/商店/穿障形态/天气场招式）；联机双端 / DPS 抽检 / 弹出验收 / M5 后置 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -29,7 +29,7 @@
 
 在泰拉瑞亚 + tModLoader + 灾厄环境下，实现「**{宝可梦名}之力**」换皮武器模组：
 
-- 热键栏**持握** = 变身（外观 Overlay、**持握被动 + 技能1/2 + 能量大招**、属性情境弱加成、仅变身生效的饰品）
+- 热键栏**持握** = 变身（外观 Overlay、**持握被动 + 技能1/2 + 能量大招**、属性生存/机动、仅变身生效的饰品）
 - **取消持握**同 tick 清除本模全部相关效果
 - 持握期间**禁止坐骑**
 - 独立伤害类型 `HenshinDamage`，职业专精按 **k = 0.35** 折算
@@ -45,7 +45,7 @@
 | **M0** | 小火龙竖切：状态机 + Overlay + 伤害 + 禁坐骑 + SyncForm | 持握变身/切换解除；第二客户端可见；坐骑不可用 |
 | **M1** | 进度查询 + 进化 UI + 二阶演示 + 开局御三家 | 银行不自动进化；前缀/收藏继承 |
 | **M2** | 火/水/飞情境被动子集 + 2 件饰品 | 未持握饰品不生效 |
-| **M3** | 天气场一例、穿障一例、挖掘一例 | 硬限制达标；联机一致 |
+| **M3** | 天气场 / 穿障 / 挖掘**管线** | 挖掘：地鼠线已接；穿障与天气场招式现役未消费 |
 | **M4** | 填满形态数值、饰品、每档 DPS 抽检 | 对标 80%～120% |
 | **M5** | 负面用例、本地化、资源替换路径 | 发布候选 |
 
@@ -228,7 +228,7 @@ sortAfter = CalamityMod
 |--|--|
 | **参考** | `Content/Wraiths/Core/WraithDefinition.cs`、`WraithRegistry.cs`、`WraithRoster.cs` |
 | **学什么** | 定义抽象 + 注册表按 Key/网络 ID 查询；显示名可本地化 |
-| **裁剪** | `FormDefinition`（FormId、显示名键、属性、Stage、进化自、招式 A/B 元数据、碰撞级别、穿障标志、贴图路径模板、`HenshinDamageFactor`）。`FormRegistry` 启动注册 36 形态。显示名/贴图路径可配置覆盖（需求 §12.7）。 |
+| **裁剪** | `FormDefinition`（FormId、显示名键、属性、Stage、进化自、招式 A/B 元数据、碰撞级别、穿障标志、贴图路径模板、`HenshinDamageFactor`）。`FormRegistry` 启动注册 36 形态。显示名/贴图路径可配置覆盖（需求 §12 第 7 条）。 |
 
 ### 3.11 项目结构与依赖写法
 
@@ -317,7 +317,7 @@ FormDefinition {
   CollisionTier Collision;    // A/B/C
   bool GrantsPhasing;
   float HenshinDamageFactor;
-  string Role;                // 战斗/功能/传说
+  string Role;                // Combat / Legendary；Utility 标签残留，玩法不读
 }
 ```
 
@@ -347,6 +347,8 @@ Stage 条件严格按需求 §4.1（含 downedBoomerDuke）
 
 ### 4.7 天气场、穿障、地形预算
 
+**现役口径：** 三套管线都在。挖掘由地鼠线消费；**无现役穿障形态**（鬼斯通是飘浮飞）；**无现役天气场招式**。下面是当时的裁剪规格，不是「水箭龟已接雨场 / 鬼斯通已接穿障」。
+
 **天气场（参考 GhostRain* 裁剪）：**
 
 - 服务端 `List&lt;WeatherField&gt;`；招式只 `WeatherFieldSystem.TrySpawn(...)`
@@ -358,7 +360,7 @@ Stage 条件严格按需求 §4.1（含 downedBoomerDuke）
 - Boss 交战（造成或受到）后 3s 内不可开
 - 期间：`noBuilding`、禁拾取/开箱；`SyncPhasing`
 - 结束卡墙：搜安全格传送，否则短定身，不处死
-- 第一版仅 L06_F01（鬼斯通）带穿障
+- 设计草案曾写「仅鬼斯通带穿障」；**现役未接线**
 
 **地形预算（参考 noBuilding + SendTileSquare，预算自研）：**
 
@@ -484,17 +486,19 @@ TryEditTile(player, action) →
 
 ### M3 — 天气场、穿障、挖掘
 
-- [x] WeatherFieldSystem + 水箭龟雨场
-- [x] 鬼斯通穿障 + SyncPhasing
-- [x] 地鼠挖掘 + TerrainBudgetPlayer
-- **验收：** **待游戏内 A3**
+**现役口径（2026-09-09）：** 管线在，形态消费以战斗招式为准。
+
+- [x] `WeatherFieldSystem` + `RainFieldProj` 工厂（**无现役形态调用**；水箭龟雨场曾误标完成）
+- [x] `SyncPhasing` + `TryStartPhasing`（**现役 `GrantsPhasing=false`**；鬼斯通改为飘浮飞，不是穿障）
+- [x] 地鼠 `DigBurst` + 三地鼠 `DigLunge` + `TerrainBudgetPlayer`
+- **验收：** 挖掘手感待本地；穿障 / 天气场招式是否补形态另议
 
 ---
 
 ### M4 — 内容填满与平衡
 
 - [x] 36 形态物品与招式骨架 + 52poke 贴图
-- [x] 饰品 12 件（52poke 图/描述）
+- [x] 饰品 A01～A21
 - [x] 掉落/合成占位；传说可创造/合成
 - [ ] DPS 抽检精表（占位数值，精调后置 M5）
 - **验收：** **待游戏内 A4**
@@ -527,7 +531,7 @@ TryEditTile(player, action) →
 | 阶段 | 形态表 | 招式 | 饰品 | 宝可梦图 | 特效 |
 |------|--------|------|------|----------|------|
 | M0 | 1 条 L01_F01 | A/B 占位 | 无 | 52poke 小火龙 | 仅原版/灾厄/大修复用 |
-| M1～M4（**现役**） | **36 形态满表** | 骨架占位（随 Stage 递增伤害） | **12 件满** | **36 Forms + 12 Acc 已入库** | 逐招式映射已有 FX，禁止新图 |
+| M1～M4（**现役**） | **36 形态满表** | 被动+技能1/2+大招已接线 | **A01～A21** | **36 Forms + 饰品已入库**（A13+ 暂复用旧图） | 逐招式映射已有 FX，禁止新图 |
 | M5 | 冻结 ID | 数值精调 | 微调 | 路径可替换验收 | 回归：仓库无新增 Fx 图片 |
 
 **仍待填写（不挡玩法骨架）：** 招式精确数值、对标 ItemID、DPS 抽检精表、商标策略（需求 §15）。
@@ -648,7 +652,7 @@ TryEditTile(player, action) →
 | 与 requirements **v1.4** 对齐 | **规则层通过**；**代码已接线**等级/Xp/`StageXpScale`/`FinalAttack`/`FinalDefense`/能量 1000/进化双条件/世界字（DPS 与弹出验收待本地） |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
 | 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
-| 总评 | **v1.4 数值已接线**；下一步联机与 DPS 抽检；现役穿障形态为 0 |
+| 总评 | **v1.4 数值已接线**；现役是换皮打架（无钓力/侦测/穿障形态）；下一步联机与 DPS 抽检 |
 
 ---
 
@@ -671,3 +675,4 @@ TryEditTile(player, action) →
 | **1.4.2** | 洁癖：去掉「数值未接线 / EnergyMax=100」现役说法；MoveRefRate 归一化窗与构建命令同源 |
 | **1.4.3** | 击杀 XP × 世界档；ExpNeeded × 物品带；LEVEL UP / EXP 世界字 |
 | **1.4.4** | 洁癖：页眉/对照表/README 对齐 XP 双自变量与世界字；去掉死 loc `GainedXp`/`LevelUp`/`Moves` |
+| **1.4.5** | 洁癖：M3 误标（水箭龟雨场 / 鬼斯通穿障）改为管线现状；对齐 requirements v1.4.5 |

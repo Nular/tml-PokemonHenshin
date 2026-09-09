@@ -170,20 +170,20 @@ Acquire: {
 	L07_F02: Obtain: Evolve Dratini (stage ≥8)
 	L07_F03: Obtain: Evolve Dragonair (stage ≥11)
 	L08_F01: Obtain: Golem drop (~35%)
-	L08_F02: Obtain: Evolve Metang (stage ≥12)
+	L08_F02: Obtain: Evolve Metang (stage ≥10)
 	L09_F01: Obtain: Craft (Bass×5 + Fallen Star×3)
-	L09_F02: Obtain: Evolve Magikarp (stage ≥6)
+	L09_F02: Obtain: Evolve Magikarp (stage ≥9)
 	L10_F01: Obtain: Craft (Gold/Platinum Bar×8 + Dirt×50)
-	L10_F02: Obtain: Evolve Diglett (stage ≥5)
+	L10_F02: Obtain: Evolve Diglett (stage ≥6)
 	L11_F01: Obtain: Skeletron drop (~30%)
-	L11_F02: Obtain: Evolve Pidgey (stage ≥8)
+	L11_F02: Obtain: Evolve Pidgey (stage ≥7)
 	L12_F01: Obtain: Skeletron drop (~30%)
 	L12_F02: Obtain: Evolve Abra (stage ≥9) or Moon Lord drop
 	L13_F01: Obtain: Wall of Flesh drop (~40%)
-	L13_F02: Obtain: Evolve Onix (stage ≥10)
+	L13_F02: Obtain: Evolve Onix (stage ≥9)
 	L14_F01: Obtain: Moon Lord drop (~50%)
 	L15_F01: Obtain: Post-Moon Lord craft
-	L15_F02: Obtain: Evolve Gible (stage ≥12)
+	L15_F02: Obtain: Evolve Gible (stage ≥11)
 	L16_F01: Obtain: Post-Moon Lord craft
 	L17_F01: Obtain: Post-Moon Lord craft
 }
@@ -193,182 +193,182 @@ DamageClasses.HenshinDamage.DisplayName: henshin damage
 Items: {
 	CharmanderForce: {
 		DisplayName: Charmander Force
-		Tooltip: Fire. Scratch and spit embers.
+		Tooltip: Fire. Ember, Scratch, Fire Vortex.
 	}
 
 	CharmeleonForce: {
 		DisplayName: Charmeleon Force
-		Tooltip: Fire. Fury swipes and flame cone.
+		Tooltip: Fire. Dragon Pulse, Fire Fang, Flare Blitz.
 	}
 
 	CharizardForce: {
 		DisplayName: Charizard Force
-		Tooltip: Fire/Flying. Dragon Claw and fire barrage.
+		Tooltip: Fire/Flying. Flamethrower, Dragon Claw, Overheat.
 	}
 
 	SquirtleForce: {
 		DisplayName: Squirtle Force
-		Tooltip: Water. Water Gun and Withdraw.
+		Tooltip: Water. Water Gun, Tackle, Bubble Beam.
 	}
 
 	WartortleForce: {
 		DisplayName: Wartortle Force
-		Tooltip: Water. Water Pulse and tide push.
+		Tooltip: Water. Bubble Beam, Bite, Whirlpool.
 	}
 
 	BlastoiseForce: {
 		DisplayName: Blastoise Force
-		Tooltip: Water. Hydro Pump and rain field.
+		Tooltip: Water. Hydro Pump, Skull Bash, Hydro Cannon.
 	}
 
 	BulbasaurForce: {
 		DisplayName: Bulbasaur Force
-		Tooltip: Grass/Poison. Vine Whip and Poison Powder.
+		Tooltip: Grass/Poison. Vine Whip, Tackle, Seed Gun.
 	}
 
 	IvysaurForce: {
 		DisplayName: Ivysaur Force
-		Tooltip: Grass/Poison. Leech Seed and sludge.
+		Tooltip: Grass/Poison. Razor Leaf, Bite, Seed Bomb.
 	}
 
 	VenusaurForce: {
 		DisplayName: Venusaur Force
-		Tooltip: Grass/Poison. Solar Beam and seed gun.
+		Tooltip: Grass/Poison. Sludge Bomb, Petal Dance, Solar Beam.
 	}
 
 	PikachuForce: {
 		DisplayName: Pikachu Force
-		Tooltip: Electric. Electro Ball and Quick Attack.
+		Tooltip: Electric. Thunder Shock, Quick Attack, Thunderbolt.
 	}
 
 	RaichuForce: {
 		DisplayName: Raichu Force
-		Tooltip: Electric. Thunderbolt and Thunder.
+		Tooltip: Electric. Thunderbolt, Volt Tackle, Thunder.
 	}
 
 	MachopForce: {
 		DisplayName: Machop Force
-		Tooltip: Fighting. Melee chain.
+		Tooltip: Fighting. Rock Tomb, Tackle, Cross Chop.
 	}
 
 	MachokeForce: {
 		DisplayName: Machoke Force
-		Tooltip: Fighting. Stronger melee.
+		Tooltip: Fighting. Rock Slide, Brick Break, Dynamic Punch.
 	}
 
 	MachampForce: {
 		DisplayName: Machamp Force
-		Tooltip: Fighting. Peak close combat.
+		Tooltip: Fighting. Stone Edge, Cross Chop, Close Combat.
 	}
 
 	HaunterForce: {
 		DisplayName: Haunter Force
-		Tooltip: Ghost/Poison. Shadow Ball; R-click phasing.
+		Tooltip: Ghost/Poison. Shadow Ball, Lick, Hypnosis. Levitate flight, no phasing.
 	}
 
 	GengarForce: {
 		DisplayName: Gengar Force
-		Tooltip: Ghost/Poison. Shadow barrage.
+		Tooltip: Ghost/Poison. Sludge Bomb, Shadow Claw, Dark Pulse.
 	}
 
 	DratiniForce: {
 		DisplayName: Dratini Force
-		Tooltip: Dragon. Dragon Pulse.
+		Tooltip: Dragon. Dragon Breath, Bite, Dragon Rage.
 	}
 
 	DragonairForce: {
 		DisplayName: Dragonair Force
-		Tooltip: Dragon. Dragon Breath.
+		Tooltip: Dragon. Dragon Pulse, Dragon Tail, Hurricane.
 	}
 
 	DragoniteForce: {
 		DisplayName: Dragonite Force
-		Tooltip: Dragon/Flying. Outrage and Hyper Beam.
+		Tooltip: Dragon/Flying. Hurricane, Dragon Dive, Outrage.
 	}
 
 	MetangForce: {
 		DisplayName: Metang Force
-		Tooltip: Steel/Psychic. Metal Claw.
+		Tooltip: Steel/Psychic. Confusion, Tackle, Take Down.
 	}
 
 	MetagrossForce: {
 		DisplayName: Metagross Force
-		Tooltip: Steel/Psychic. Meteor Mash.
+		Tooltip: Steel/Psychic. Psychic, Meteor Mash, Hyper Beam.
 	}
 
 	MagikarpForce: {
 		DisplayName: Magikarp Force
-		Tooltip: Water/Normal. Weak splash (utility).
+		Tooltip: Water. Splash, Tackle, Flail. Weak combat; no fishing power.
 	}
 
 	GyaradosForce: {
 		DisplayName: Gyarados Force
-		Tooltip: Water/Flying. Aqua Tail and Crunch.
+		Tooltip: Water/Flying. Hydro Pump, Crunch, Hyper Beam.
 	}
 
 	DiglettForce: {
 		DisplayName: Diglett Force
-		Tooltip: Ground. Dig within terrain budget.
+		Tooltip: Ground. Mud-Slap, Tackle; Dig burst mines a tile.
 	}
 
 	DugtrioForce: {
 		DisplayName: Dugtrio Force
-		Tooltip: Ground. Faster dig.
+		Tooltip: Ground. Triple stab, Dig lunge (pickaxe corridor), Earthquake.
 	}
 
 	PidgeyForce: {
 		DisplayName: Pidgey Force
-		Tooltip: Normal/Flying. Gust and glide.
+		Tooltip: Flying/Normal. Gust, Peck, Aerial Ace. Timed flight while held.
 	}
 
 	PidgeotForce: {
 		DisplayName: Pidgeot Force
-		Tooltip: Normal/Flying. Air Slash.
+		Tooltip: Flying/Normal. Hurricane, Aerial Ace, Brave Bird.
 	}
 
 	AbraForce: {
 		DisplayName: Abra Force
-		Tooltip: Psychic. Confusion and teleport.
+		Tooltip: Psychic. Confusion, Zen Headbutt, Psychic scatter. No detect/teleport.
 	}
 
 	AlakazamForce: {
 		DisplayName: Alakazam Force
-		Tooltip: Psychic. Psychic and Future Sight.
+		Tooltip: Psychic. Psychic, Focus Punch, Future Sight.
 	}
 
 	OnixForce: {
 		DisplayName: Onix Force
-		Tooltip: Rock. Rock Throw and Dig.
+		Tooltip: Rock/Ground. Rock Tomb, Tackle, Rock Slide.
 	}
 
 	SteelixForce: {
 		DisplayName: Steelix Force
-		Tooltip: Rock/Steel. Iron Tail.
+		Tooltip: Steel/Ground. Rock Slide, Iron Tail, Take Down.
 	}
 
 	MewtwoForce: {
 		DisplayName: Mewtwo Force
-		Tooltip: Legendary Psychic. Psystrike.
+		Tooltip: Legendary Psychic. Psychic, Zen Headbutt, Psystrike.
 	}
 
 	GibleForce: {
 		DisplayName: Gible Force
-		Tooltip: Dragon/Ground. Dragon Claw.
+		Tooltip: Dragon/Ground. Dragon Rage, Tackle, Sand Tomb.
 	}
 
 	GarchompForce: {
 		DisplayName: Garchomp Force
-		Tooltip: Dragon/Ground. Outrage and Dig.
+		Tooltip: Dragon/Ground. Dragon Pulse, Crunch, Draco Meteor.
 	}
 
 	LugiaForce: {
 		DisplayName: Lugia Force
-		Tooltip: Legendary Psychic/Flying. Aeroblast.
+		Tooltip: Legendary Psychic/Flying. Aeroblast, Sky Attack, Cyclone.
 	}
 
 	RayquazaForce: {
 		DisplayName: Rayquaza Force
-		Tooltip: Legendary Dragon/Flying. Dragon Ascent.
+		Tooltip: Legendary Dragon/Flying. Dragon Pulse, Crunch, Dragon Ascent.
 	}
 
 	A01AbilityCapsuleBelt: {

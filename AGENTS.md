@@ -33,7 +33,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 | 路径 | 角色 |
 |------|------|
-| `docs/requirements.md` | **产品唯一真相**（v1.4：含等级/攻防/能量/进化双条件/XP 缩放） |
+| `docs/requirements.md` | **产品唯一真相**（v1.4.5：换皮打架；等级/攻防/能量/进化双条件/XP 缩放） |
 | `docs/balance-stats.md` | **数值数字权威**（等级带、经验、MidAtk/Def、种族 Mod、MoveRefRate） |
 | `Content/Core/HenshinStatService.cs` · `FormStatTable.cs` | 上表公式的代码入口（无 Terraria 依赖，供 `tools/HenshinStatVerify`） |
 | `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
@@ -45,7 +45,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame / Extra98 |
 | `Content/Combat/Moves/HenshinFxDraw.cs` | Additive 绘制：`DrawContinuousBeam` / SheetFrame / `ScaleForWorldDiameter` |
 | `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态；`Wave2MoveProjs`（水柱/日棱/龙怒球/破灭等） |
-| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 脚下能量条 + 经验世界字（`HenshinXpPopupSystem`）/ 饰品 / 被动进化天气挖掘 Net |
+| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 脚下能量条 + 经验世界字 / 饰品 / 被动进化；天气场与挖掘为管线（地鼠线消费挖掘） |
 
 ## 特效踩坑与禁止降级（必读）
 
@@ -63,6 +63,6 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 - **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
 - **数值（2026-09-09）：** v1.4 已接线。击杀 XP × 世界档（1～3→300～900）；`ExpNeeded` × 物品等级带。`LEVEL UP!` / `EXP +X` 世界字。游戏内 DPS 抽检仍待本地。
-- **已知缺口：** 无现役 `GrantsPhasing=true`（A11 加成穿障时长/CD，但无形态消费）；联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。
+- **已知缺口：** 无现役 `GrantsPhasing=true`（A11 加成空转）；`WeatherFieldSystem` 无现役招式；联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。
 - **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`；`tools/HenshinStatVerify`。
 - **下一步：** 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。
