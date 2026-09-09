@@ -107,7 +107,7 @@
   - 击杀：`EnergyOnKill = 55` × `EnergyGainFactor`  
   - 被动：`0.15 / tick`（Boss 附近 ×3）  
   - 大招命中**不**充能  
-  - **无**按 tick 的命中 ICD；改为滚动 1 秒窗口内命中+击杀能量合计 **≤ 90**（软顶；被动不受限）  
+  - **无**按 tick 的命中 ICD；改为滚动 1 秒窗口内命中+击杀能量合计 **≤ 1000**（软顶，只兜极端连击；被动不受限）  
   - `EnergyGainFactor` 默认：Standard 1.0 / HighFrequency 0.35 / MultiHit 0.25 / WideAoE 0.45 / Ultimate 0  
   - 数值表与异常倍率见 `docs/balance-stats.md`；玩法语义见 `docs/move-effects.md`  
 - 招式风格可因宝可梦而异（近战、远程、突进、AOE、缠绕 DoT、地鼠线改地形等）。  
