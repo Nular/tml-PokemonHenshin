@@ -75,7 +75,7 @@
 | A24 | **不变之石** | Everstone | `Bag 不变之石 SV Sprite.png` | 「不变石」 | 戴着阻止进化（未变身也生效） |
 | A25 | **黑带** | Black Belt | `Bag 黑带 SV Sprite.png` | 近战/撞击件 | 短距伤 + 撞击 CD |
 | A26 | **吃剩的东西** | Leftovers | `Bag 吃剩的东西 SV Sprite.png` | 「剩饭」（非官方） | 持续回血 |
-| A27 | **气势披带** | Focus Sash | `Bag 气势披带 SV Sprite.png` | — | 满血致死留 1，60s CD |
+| A27 | **气势披带** | Focus Sash | `Bag 气势披带 SV Sprite.png` | — | 致死留 1（碎片 ≥60% 血 / 成品 ≥50% / 超级 ≥30%），60s CD |
 | A28 | **进化奇石** | Eviolite | `Bag 进化奇石 SV Sprite.png` | — | 还能进化的形态加防 |
 
 Tooltip 第一行用 52poke 官方说明（可略缩）；第二行起写本模效果。英文 `en-US` 用上表英文名。
@@ -199,7 +199,9 @@ AccFamilyDef {
 | `ShellBellHeal` | `+=`（整数 HP） | 否 | 共用 CD |
 | `RockyHelmetScale` | `+=` | 否 | 受击反伤倍率（1.0 基准） |
 | `LeftoversHpPerSec` | `+=` | 否 | |
-| `FocusSash` | OR + CD 取最短 | 否 | 1HP；CD 秒写在 Value |
+| `FocusSash` | OR | 否 | 开启致死留 1 |
+| `FocusSashHpPct` | **min**（越小越强） | 否 | 触发时当前 HP 须 ≥ max×该比例。碎片 0.60、成品 0.50、超级 0.30。未装备时不写（保持 1.0 哨兵） |
+| `FocusSashCdSec` | **min** | 否 | 触发后 CD 秒。碎片 90、成品 60、超级 30 |
 | `EvioliteDefMul` | `+=` | 否 | 仅当 `FindEvolutionOf(current)!=null` |
 | `EverstoneBlock` | OR | 否 | 未变身也 Apply |
 | `CritUpgradeChance` | `+=` | 否 | 焦点镜 |
@@ -449,10 +451,19 @@ S1 0.25/s（实现：每 240 tick +1，或多件累加到 float 池每 60 tick f
 S5 +0.25/s；S6 低于 50% HP 时再 +0.25/s。
 
 **A27 气势披带** Min 4 / Super 8  
-普通：HP 全满（`statLife >= statLifeMax2`）将死时留 1，CD **60s**。超级：CD **30s** + 触发后 1s 无敌。  
-S1 IncomingCut 2%；S2 IncomingCut 2%；S3 CD 仍 60 但… S3 单独不给 1HP；**S4 开启 1HP 且 CD 90s**（弱于成品）；普通并集：1HP + 60s + 不含 S1–S2 减伤？为「并集」把 S1–S2 减伤也写入普通（×0.96 量级 Cut 4%）。避免披带普通太亏。  
-最终普通：FocusSash 60s + IncomingCut 4%。超级：FocusSash 30s + Cut 8% + 1s immune。  
-实现：`ModifyHurt` 里若 `statLife + incoming >= max` 且将把 life 打到 0，则改 hurt 使 life=1，启动 CD。必须服务端。`player.immune` 超级才加。
+
+门槛是「当前生命 **≥ max × 比例**」时，本击若将致死则留 1HP。比例越低越强（残血也能撑）。
+
+| 件 | 血量门槛 | CD | 其它 |
+|----|----------|----|------|
+| 碎片 S1–S6 | **≥ 60%** | 90s | 均带致死留 1 |
+| 普通成品 | **≥ 50%** | **60s** | IncomingCut 4% |
+| 超级 | **≥ 30%** | **30s** | IncomingCut 8% + 触发后 1s 无敌 |
+
+多件同族叠：门槛取 **min**（戴超级则以 30% 为准），CD 取 **min**。  
+
+S1 IncomingCut 2%；S2 IncomingCut 2%；S3–S6 无额外汇入减伤，但仍有 60% 门槛的留 1。普通并集含 S1–S2 的 Cut 4%。  
+实现见 §9.1。必须服务端。
 
 **A28 进化奇石** Min 4 / Super 7  
 普通：当前形态 `FindEvolutionOf != null` 时 FinalDefense 乘区 +20%（变身防御）。超级 +40%。  
@@ -556,7 +567,7 @@ WP-F 把上表译成 `ItemID` / `NPCID` / 灾厄内部名。灾厄名用字符�
 
 ### 9.1 气势披带
 
-`ModifyHurt`：仅变身；`FocusSash` 真；`FocusSashCd==0`；`statLife >= statLifeMax2`；本次伤害将导致 `statLife - Incoming <= 0`。则 `modifiers.SetMaxDamage(statLife-1)` 或等价 tML 1.4.4 API（查 `HurtModifiers`）。然后 CD = 已装备最短秒×60。超级 `Player.immuneTime = max(..., 60)`。
+`ModifyHurt`：仅变身；`FocusSash` 真；`FocusSashCd==0`；`statLife >= ceil(statLifeMax2 * FocusSashHpPct)`（碎片 0.60 / 成品 0.50 / 超级 0.30，多件取 min）；本次伤害将导致 `statLife - Incoming <= 0`。则 `modifiers.SetMaxDamage(statLife-1)` 或等价 tML 1.4.4 API（查 `HurtModifiers`）。然后 CD = 已装备最短秒×60。仅当装备超级时 `Player.immuneTime = max(..., 60)`。
 
 ### 9.2 不变之石
 
@@ -659,7 +670,7 @@ Tooltip 结构：官网一句 + 本片效果 + 合成提示 + 生效标签。
 - [ ] 不变之石：未持握之力时进化 UI 不出现 / 服务端拒绝  
 - [ ] 黑带：撞击 CD 缩短；爪击伤害提高；电击不提高  
 - [ ] 吃剩的东西：站桩回血  
-- [ ] 气势披带：满血致死留 1，60s 内不再触发  
+- [ ] 气势披带：仅碎片时 ≥60% 血致死留 1、CD 90s；仅成品 ≥50% / 60s；仅超级 ≥30% / 30s；叠件门槛与 CD 取 min；CD 内不再触发  
 - [ ] 进化奇石：小火龙变身防上升；喷火龙无下一阶则不加  
 
 ### 11.7 共鸣 / 破例
@@ -738,7 +749,7 @@ tML API：https://docs.tmodloader.net/docs/stable/annotated.html 按需打开 Mo
 1. **224 物品创造栏噪音：** 用 `CreativeItemSacrificesCatalog` 和研究分组；`ModSide` 正常。可 `Item.SetNameOverride` 不需要。考虑 `ContentSamples` 无特殊处理。  
 2. **冷却乘法叠爆：** A01 用 Cut 加法封顶 0.20。  
 3. **EnergyGain 连乘：** A21 S4 整份惩罚只在成品/S4，避免四碎片全是 ×0.8。  
-4. **气势披带 vs 原版神级：** 60s CD + 须满血，可接受。  
+4. **气势披带 vs 原版神级：** 不再要求满血；碎片 60% / 成品 50% / 超级 30% + CD。残血更能撑的是超级，碎片只在较健康时触发。  
 5. **学习装置联机：** 只同步发生变化的格子，避免 10 格全量。  
 6. **旧配方世界：** 合成表刷新即可；已造出的旧成品变成更名后的普通件。
 
@@ -755,6 +766,6 @@ tML API：https://docs.tmodloader.net/docs/stable/annotated.html 按需打开 Mo
 3. 黑带 **不要求格斗共鸣**（所有近战交付都吃）。  
 4. 诅咒之符 **普通成品含 Beam 穿墙**（S1–S4 配方仍能做出带 Beam 的成品）。  
 5. 学习装置复制 **40% / 超级 80%**；幸运蛋 **+50% / 超级 +100%**。  
-6. 气势披带须 **当前满血**。
+6. 气势披带血量门槛：**碎片 ≥60% / 成品 ≥50% / 超级 ≥30%**（已按此修订；叠件取 min）。
 
 回一句「按计划执行」或点名要改的行号即可开工。
