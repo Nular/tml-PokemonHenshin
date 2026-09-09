@@ -62,11 +62,14 @@ namespace PokemonHenshin.Content.Accessories
 			HenshinAccLoader.RegisterType(FamilyId, Piece, Type);
 		}
 
+		/// <summary>52poke 袋内图约 140×152，地上按原像素绘制会过大；世界绘制与碰撞盒均为现役一半。</summary>
+		private const float WorldSpriteScale = 0.5f;
+
 		public override void SetDefaults()
 		{
 			AccFamilyDef def = Def;
-			Item.width = 28;
-			Item.height = 28;
+			Item.width = 14;
+			Item.height = 14;
 			Item.accessory = true;
 			Item.rare = Piece == AccPiece.Super
 				? (def?.SuperRarity ?? ItemRarityID.Yellow)
@@ -135,6 +138,12 @@ namespace PokemonHenshin.Content.Accessories
 					OverrideColor = Color.SkyBlue
 				});
 			}
+		}
+
+		public override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
+		{
+			scale *= WorldSpriteScale;
+			return true;
 		}
 
 		public override void PostDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
