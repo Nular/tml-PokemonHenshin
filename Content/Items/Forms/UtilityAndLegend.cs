@@ -24,7 +24,7 @@ namespace PokemonHenshin.Content.Items.Forms
 
 	public class MagikarpForce : HenshinForceItem
 	{
-		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L09_F01", 22, "Mods.PokemonHenshin.Items.MagikarpForce.DisplayName", PokemonType.Water, 1, null, FormPassiveKind.SwiftSwim, role: FormRole.Utility);
+		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L09_F01", 22, "Mods.PokemonHenshin.Items.MagikarpForce.DisplayName", PokemonType.Water, 1, null, FormPassiveKind.SwiftSwim);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.Strike("Mods.PokemonHenshin.Moves.Splash", 0.25f, DustID.Water);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.Tackle", 0.6f, 22, DustID.Water);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.FlailUlt("Mods.PokemonHenshin.Moves.Flail", 1.5f);

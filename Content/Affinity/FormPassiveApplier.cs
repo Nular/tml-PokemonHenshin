@@ -6,7 +6,7 @@ using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Affinity
 {
-	/// <summary>Excel 持握被动（优先于情境弱加成）。</summary>
+		/// <summary>Excel 持握被动（优先于 TypePassiveApplier）。</summary>
 	public static class FormPassiveApplier
 	{
 		public static void Apply(HenshinPlayer hp)
