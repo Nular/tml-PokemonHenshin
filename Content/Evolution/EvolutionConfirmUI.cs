@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Net;
+using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.Audio;
 using Terraria.GameContent.UI.Elements;
@@ -237,6 +238,8 @@ namespace PokemonHenshin.Content.Evolution
 		{
 			if (Player.whoAmI != Main.myPlayer)
 				return;
+			if (Player.GetModPlayer<HenshinPlayer>().EverstoneBlock)
+				return;
 			if (EvolutionConfirmSystem.Instance == null || EvolutionConfirmSystem.Instance.IsOpen)
 				return;
 
@@ -249,6 +252,8 @@ namespace PokemonHenshin.Content.Evolution
 		public void TryOfferAfterLevelUp(HenshinForceItem force)
 		{
 			if (Player.whoAmI != Main.myPlayer)
+				return;
+			if (Player.GetModPlayer<HenshinPlayer>().EverstoneBlock)
 				return;
 			if (EvolutionConfirmSystem.Instance == null || EvolutionConfirmSystem.Instance.IsOpen)
 				return;

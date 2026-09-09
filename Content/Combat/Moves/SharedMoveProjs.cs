@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
+using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
 using Terraria;
 using Terraria.Audio;
@@ -46,6 +47,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public bool Homing { get; set; }
 		public float HomingTurnRate { get; set; } = 0.08f;
 		public bool IgnoreDefensePartial { get; set; }
+		public MoveDelivery Delivery { get; set; }
 
 		public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
 		{

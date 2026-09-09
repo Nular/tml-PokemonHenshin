@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |----|------|
-| 状态 | **待用户审阅；未开工实现** |
+| 状态 | **已实现，待游戏内验收** |
 | 日期 | 2026-09-09 |
 | 基线 | `origin/main` @ `06509c0`（neat-freak 文档对齐）。能量软顶 90→1000 在 PR #7，合入与否不阻塞本计划（实现时按当时 main 的常量）。 |
 | 权威 | 产品规则仍以 `docs/requirements.md` 为准；**本文件是本次饰品重构的施工图**。实现后把已落地规则回写 requirements §6 / §10，本文件可删或改成「已完成」归档。 |
@@ -487,9 +487,7 @@ S1 IncomingCut 2%；S2 IncomingCut 2%；S3–S6 无额外汇入减伤，但仍�
 - F4 **主题 Boss**（对齐 MinStage）。
 - F5 更高一档矿 **或** 下一档 Boss。
 - F6 再下一档 Boss / 晚事件。
-- 掉率（非合成）：匣 **10%**；事件小怪 **2%**（每只，`player.RollLuck`）。  
-- **Boss 饰品碎片：每次击杀 30%** 掉落该 Boss **表内对应的那一枚碎片**（不是随机饰品、也不是直接掉普通成品）。专家/大师袋再独立 Roll 一次 30%（与原版袋内多一次类似）。用 `npc.boss` / `IsBossForXp`；多节 Boss 只在最终节结算。多人掉在 Boss 处，归属 `lastInteraction`。  
-  例：克眼 S4 表是力量头带碎片Ⅳ → 30% 掉该碎片，不会 30% 掉一件成品力量头带。
+- 掉率（非合成）：匣 **10%**；事件小怪 **2%**（每只，需 `player.RollLuck`）；Boss **25%**（专家袋可再 Roll 一次，用 `npc.boss` / `IsBossForXp`）。掉的是该 Boss **表内对应的那一枚碎片**，不是随机饰品、也不是直接掉普通成品。多节 Boss 只在最终节结算。多人掉在 Boss 处，归属 `lastInteraction`。
 - 灾厄 Boss：`NPC.FullName` / `ModNPC.Mod == Calamity` + `npc.boss`，用 Catalog 里写的 **内部名字符串** `CalamityMod/DesertScourgeHead` 等，`ModContent.TryFind<ModNPC>` 缓存 type。找不到则跳过（无灾厄时原版路径仍在）。
 
 ### 7.2 匣子 ID（原版）

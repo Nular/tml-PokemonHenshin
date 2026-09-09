@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using PokemonHenshin.Content.Accessories;
 using PokemonHenshin.Content.Affinity;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
@@ -49,21 +51,65 @@ namespace PokemonHenshin.Content.PlayerState
 		public float OnFireTargetBonus { get; set; }
 		public float WaterSpeedBonus { get; set; }
 		public float DashCooldownMultiplier { get; set; } = 1f;
+		public float LungeCooldownMultiplier { get; set; } = 1f;
 		public float FallDamageReduction { get; set; }
 		public float BossDamageBonus { get; set; }
 		public bool AccActive { get; set; }
 
-		// —— 新饰品标志 ——
-		public bool AccWideLens { get; set; }
-		public bool AccChoiceBand { get; set; }
-		public bool AccScopeLens { get; set; }
-		public bool AccLifeOrb { get; set; }
-		public bool AccShellBell { get; set; }
-		public bool AccRockyHelmet { get; set; }
+		public float IncomingCut { get; set; }
+		public float CooldownCut { get; set; }
+		public float DashCooldownCut { get; set; }
+		public float LungeCooldownCut { get; set; }
+		public float FallDmgTakenMul { get; set; } = 1f;
+		public float EnergyGainAdd { get; set; }
+		public float EnergyGainMulProduct { get; set; } = 1f;
 		public float EnergyGainMultiplier { get; set; } = 1f;
 		public float UltRetainFraction { get; set; }
 		public float UltDamageBonus { get; set; }
+		public float HomingTurn { get; set; }
 		public float HomingTurnRate { get; set; } = 0.08f;
+		public bool HomingBolt { get; set; }
+		public bool HomingSpread { get; set; }
+		public bool HomingBarrage { get; set; }
+		public bool HomingDoTBind { get; set; }
+		public bool TilePierceBolt { get; set; }
+		public bool TilePierceSpread { get; set; }
+		public bool TilePierceBarrage { get; set; }
+		public bool TilePierceDoTBind { get; set; }
+		public bool TilePierceBeam { get; set; }
+		public int PenetrateAdd { get; set; }
+		public bool ChoiceLockSkill2 { get; set; }
+		public bool ChoiceLockUlt { get; set; }
+		public float ChoiceDamage { get; set; }
+		public float LifeOrbDamage { get; set; }
+		public bool LifeOrbHpDrain { get; set; }
+		public float LifeOrbGateTicks { get; set; } = float.MaxValue;
+		public float ShellBellHeal { get; set; }
+		public float ShellBellCdTicks { get; set; } = float.MaxValue;
+		public float RockyHelmetScale { get; set; }
+		public float RockyHelmetCdTicks { get; set; } = float.MaxValue;
+		public float LeftoversHpPerSec { get; set; }
+		public float LeftoversLowHpBonus { get; set; }
+		public bool FocusSash { get; set; }
+		public float FocusSashHpPct { get; set; } = 1f;
+		public float FocusSashCdSec { get; set; } = 999f;
+		public float FocusSashImmuneTicks { get; set; }
+		public int FocusSashCooldown { get; private set; }
+		public float EvioliteDefMul { get; set; }
+		public float EvioliteDamage { get; set; }
+		public bool EverstoneBlock { get; set; }
+		public float XpHeldMul { get; set; }
+		public float XpHotbarShareMul { get; set; }
+		public float CritUpgradeChance { get; set; }
+		public float OnFireCritUpgrade { get; set; }
+		public float FireMoveDamage { get; set; }
+		public float MeleeDeliveryDamage { get; set; }
+		public float PassiveEnergyMul { get; set; }
+		public float DashSpeedBonus { get; set; }
+		public int LungeIFrameBonus { get; set; }
+		public float PsychicDragonDamage { get; set; }
+		public int AccGuardCutTicks { get; set; }
+		public int AccGuardActiveTimer { get; set; }
 
 		// —— 被动运行时 ——
 		public float TypeMoveBonus { get; set; }
@@ -162,6 +208,109 @@ namespace PokemonHenshin.Content.PlayerState
 			MoxieStacks = 0;
 		}
 
+		private float leftoversAcc;
+
+		public bool ShouldHoming(MoveDelivery d) => d switch
+		{
+			MoveDelivery.Bolt => HomingBolt,
+			MoveDelivery.Spread => HomingSpread,
+			MoveDelivery.Barrage => HomingBarrage,
+			MoveDelivery.DoTBind => HomingDoTBind,
+			_ => false
+		};
+
+		public bool ShouldTilePierce(MoveDelivery d) => d switch
+		{
+			MoveDelivery.Bolt => TilePierceBolt,
+			MoveDelivery.Spread => TilePierceSpread,
+			MoveDelivery.Barrage => TilePierceBarrage,
+			MoveDelivery.DoTBind => TilePierceDoTBind,
+			MoveDelivery.Beam => TilePierceBeam,
+			_ => false
+		};
+
+		public void ApplyAccStat(AccStatLine line)
+		{
+			switch (line.Stat)
+			{
+				case AccStat.DamageBonus: HenshinDamageBonus += line.Value; break;
+				case AccStat.DamageFactorBonus: HenshinDamageFactorBonus += line.Value; break;
+				case AccStat.MeleeDeliveryDamage: MeleeDeliveryDamage += line.Value; break;
+				case AccStat.BossDamageBonus: BossDamageBonus += line.Value; break;
+				case AccStat.OnFireTargetBonus: OnFireTargetBonus += line.Value; break;
+				case AccStat.UltDamageBonus: UltDamageBonus += line.Value; break;
+				case AccStat.IncomingCut: IncomingCut += line.Value; break;
+				case AccStat.CooldownCut: CooldownCut += line.Value; break;
+				case AccStat.DashCooldownCut: DashCooldownCut += line.Value; break;
+				case AccStat.LungeCooldownCut: LungeCooldownCut += line.Value; break;
+				case AccStat.MoveSpeedBonus: MoveSpeedBonus += line.Value; break;
+				case AccStat.WaterSpeedBonus: WaterSpeedBonus += line.Value; break;
+				case AccStat.FlightEnergySec: ExtraFlightEnergy += line.Value; break;
+				case AccStat.FallDmgTakenMul:
+					FallDmgTakenMul = Math.Min(FallDmgTakenMul, line.Value);
+					break;
+				case AccStat.AffinityAmp: AffinityAmplitudeBonus += line.Value; break;
+				case AccStat.EnergyGainAdd: EnergyGainAdd += line.Value; break;
+				case AccStat.EnergyGainMul: EnergyGainMulProduct *= line.Value; break;
+				case AccStat.UltRetain: UltRetainFraction = Math.Max(UltRetainFraction, line.Value); break;
+				case AccStat.XpHeldMul: XpHeldMul += line.Value; break;
+				case AccStat.XpHotbarShareMul: XpHotbarShareMul += line.Value; break;
+				case AccStat.HomingTurn: HomingTurn = Math.Max(HomingTurn, line.Value); break;
+				case AccStat.HomingBolt: HomingBolt = true; break;
+				case AccStat.HomingSpread: HomingSpread = true; break;
+				case AccStat.HomingBarrage: HomingBarrage = true; break;
+				case AccStat.HomingDoTBind: HomingDoTBind = true; break;
+				case AccStat.TilePierceBolt: TilePierceBolt = true; break;
+				case AccStat.TilePierceSpread: TilePierceSpread = true; break;
+				case AccStat.TilePierceBarrage: TilePierceBarrage = true; break;
+				case AccStat.TilePierceDoTBind: TilePierceDoTBind = true; break;
+				case AccStat.TilePierceBeam: TilePierceBeam = true; break;
+				case AccStat.PenetrateAdd: PenetrateAdd += (int)line.Value; break;
+				case AccStat.ChoiceLockSkill2: ChoiceLockSkill2 = true; break;
+				case AccStat.ChoiceLockUlt: ChoiceLockUlt = true; break;
+				case AccStat.ChoiceDamage: ChoiceDamage += line.Value; break;
+				case AccStat.LifeOrbDamage: LifeOrbDamage += line.Value; break;
+				case AccStat.LifeOrbHpDrain: LifeOrbHpDrain = true; break;
+				case AccStat.LifeOrbGateTicks: LifeOrbGateTicks = Math.Min(LifeOrbGateTicks, line.Value); break;
+				case AccStat.ShellBellHeal: ShellBellHeal += line.Value; break;
+				case AccStat.ShellBellCdTicks: ShellBellCdTicks = Math.Min(ShellBellCdTicks, line.Value); break;
+				case AccStat.RockyHelmetScale: RockyHelmetScale += line.Value; break;
+				case AccStat.RockyHelmetCdTicks: RockyHelmetCdTicks = Math.Min(RockyHelmetCdTicks, line.Value); break;
+				case AccStat.LeftoversHpPerSec: LeftoversHpPerSec += line.Value; break;
+				case AccStat.LeftoversLowHpBonus: LeftoversLowHpBonus += line.Value; break;
+				case AccStat.FocusSash: FocusSash = true; break;
+				case AccStat.FocusSashHpPct: FocusSashHpPct = Math.Min(FocusSashHpPct, line.Value); break;
+				case AccStat.FocusSashCdSec: FocusSashCdSec = Math.Min(FocusSashCdSec, line.Value); break;
+				case AccStat.FocusSashImmuneTicks: FocusSashImmuneTicks = Math.Max(FocusSashImmuneTicks, line.Value); break;
+				case AccStat.EvioliteDefMul: EvioliteDefMul += line.Value; break;
+				case AccStat.EvioliteDamage: EvioliteDamage += line.Value; break;
+				case AccStat.EverstoneBlock: EverstoneBlock = true; break;
+				case AccStat.CritUpgradeChance: CritUpgradeChance += line.Value; break;
+				case AccStat.OnFireCritUpgrade: OnFireCritUpgrade += line.Value; break;
+				case AccStat.FireMoveDamage: FireMoveDamage += line.Value; break;
+				case AccStat.PassiveEnergyMul: PassiveEnergyMul += line.Value; break;
+				case AccStat.DashSpeedBonus: DashSpeedBonus += line.Value; break;
+				case AccStat.LungeIFrameBonus: LungeIFrameBonus += (int)line.Value; break;
+				case AccStat.PsychicDragonDamage: PsychicDragonDamage += line.Value; break;
+				case AccStat.GuardCutTimer: AccGuardCutTicks = Math.Max(AccGuardCutTicks, (int)line.Value); break;
+			}
+		}
+
+		public void FinalizeAccStats()
+		{
+			IncomingDamageMultiplier *= 1f - Math.Min(0.30f, IncomingCut);
+			MoveCooldownMultiplier *= 1f - Math.Min(0.20f, CooldownCut);
+			DashCooldownMultiplier *= 1f - Math.Min(0.30f, DashCooldownCut);
+			LungeCooldownMultiplier *= 1f - Math.Min(0.30f, LungeCooldownCut);
+			EnergyGainMultiplier = (1f + EnergyGainAdd) * EnergyGainMulProduct;
+			if (FallDmgTakenMul < 1f)
+				FallDamageReduction = Math.Max(FallDamageReduction, 1f - FallDmgTakenMul);
+			if (HomingTurn > 0f)
+				HomingTurnRate = HomingTurn;
+			if (AccGuardActiveTimer > 0)
+				IncomingDamageMultiplier *= 0.97f;
+		}
+
 		private void ClearFrameBonuses()
 		{
 			MoveCooldownMultiplier = 1f;
@@ -174,21 +323,57 @@ namespace PokemonHenshin.Content.PlayerState
 			OnFireTargetBonus = 0f;
 			WaterSpeedBonus = 0f;
 			DashCooldownMultiplier = 1f;
+			LungeCooldownMultiplier = 1f;
 			FallDamageReduction = 0f;
 			BossDamageBonus = 0f;
 			PhasingBonusTicks = 0f;
 			PhasingCooldownMultiplier = 1f;
 			AccActive = false;
-			AccWideLens = false;
-			AccChoiceBand = false;
-			AccScopeLens = false;
-			AccLifeOrb = false;
-			AccShellBell = false;
-			AccRockyHelmet = false;
+			IncomingCut = 0f;
+			CooldownCut = 0f;
+			DashCooldownCut = 0f;
+			LungeCooldownCut = 0f;
+			FallDmgTakenMul = 1f;
+			EnergyGainAdd = 0f;
+			EnergyGainMulProduct = 1f;
 			EnergyGainMultiplier = 1f;
 			UltRetainFraction = 0f;
 			UltDamageBonus = 0f;
+			HomingTurn = 0f;
 			HomingTurnRate = 0.08f;
+			HomingBolt = HomingSpread = HomingBarrage = HomingDoTBind = false;
+			TilePierceBolt = TilePierceSpread = TilePierceBarrage = TilePierceDoTBind = TilePierceBeam = false;
+			PenetrateAdd = 0;
+			ChoiceLockSkill2 = false;
+			ChoiceLockUlt = false;
+			ChoiceDamage = 0f;
+			LifeOrbDamage = 0f;
+			LifeOrbHpDrain = false;
+			LifeOrbGateTicks = float.MaxValue;
+			ShellBellHeal = 0f;
+			ShellBellCdTicks = float.MaxValue;
+			RockyHelmetScale = 0f;
+			RockyHelmetCdTicks = float.MaxValue;
+			LeftoversHpPerSec = 0f;
+			LeftoversLowHpBonus = 0f;
+			FocusSash = false;
+			FocusSashHpPct = 1f;
+			FocusSashCdSec = 999f;
+			FocusSashImmuneTicks = 0f;
+			EvioliteDefMul = 0f;
+			EvioliteDamage = 0f;
+			EverstoneBlock = false;
+			XpHeldMul = 0f;
+			XpHotbarShareMul = 0f;
+			CritUpgradeChance = 0f;
+			OnFireCritUpgrade = 0f;
+			FireMoveDamage = 0f;
+			MeleeDeliveryDamage = 0f;
+			PassiveEnergyMul = 0f;
+			DashSpeedBonus = 0f;
+			LungeIFrameBonus = 0;
+			PsychicDragonDamage = 0f;
+			AccGuardCutTicks = 0;
 			TypeMoveBonus = 0f;
 			SynchronizePassive = false;
 			RoughSkinPassive = false;
@@ -342,7 +527,7 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public bool TryConsumeUltimate()
 		{
-			if (!UltimateReady || AccChoiceBand)
+			if (!UltimateReady || ChoiceLockUlt)
 				return false;
 			float retain = UltRetainFraction;
 			UltimateEnergy = UltimateEnergyMax * retain;
@@ -358,7 +543,7 @@ namespace PokemonHenshin.Content.PlayerState
 			if (!IsTransformed || DashCooldown > 0)
 				return false;
 			dir = dir >= 0 ? 1 : -1;
-			Player.velocity.X = dir * 12f;
+			Player.velocity.X = dir * (12f + DashSpeedBonus);
 			Player.velocity.Y = System.Math.Min(Player.velocity.Y, -2f);
 			DashCooldown = (int)System.Math.Max(1, DashBaseCooldown * DashCooldownMultiplier);
 			for (int i = 0; i < 16; i++)
@@ -374,7 +559,8 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public void StartLungeCooldown(int ticks = 120)
 		{
-			LungeCooldown = System.Math.Max(LungeCooldown, ticks);
+			int scaled = (int)Math.Max(1, Math.Round(ticks * LungeCooldownMultiplier));
+			LungeCooldown = Math.Max(LungeCooldown, scaled);
 		}
 
 		public override void ResetEffects() => ClearFrameBonuses();
@@ -392,6 +578,9 @@ namespace PokemonHenshin.Content.PlayerState
 			if (ShellBellCooldown > 0) ShellBellCooldown--;
 			if (RockyHelmetCooldown > 0) RockyHelmetCooldown--;
 			if (LifeOrbGate > 0) LifeOrbGate--;
+			if (FocusSashCooldown > 0) FocusSashCooldown--;
+			if (AccGuardActiveTimer > 0)
+				AccGuardActiveTimer--;
 			if (GuardBonusTimer > 0)
 			{
 				GuardBonusTimer--;
@@ -416,13 +605,7 @@ namespace PokemonHenshin.Content.PlayerState
 			}
 
 			if (IsTransformed && !IsRemotePlayerOnClient)
-			{
 				TickCombatEnergyWindow();
-				float passive = EnergyPassivePerTick;
-				if (BossEngageTimer > 0 || NearBoss())
-					passive *= 3f;
-				AddPassiveEnergy(passive);
-			}
 		}
 
 		private bool NearBoss()
@@ -438,6 +621,7 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public override void PostUpdateEquips()
 		{
+			FinalizeAccStats();
 			if (!IsTransformed)
 				return;
 			EnforceNoMount();
@@ -445,6 +629,13 @@ namespace PokemonHenshin.Content.PlayerState
 			FormPassiveApplier.Apply(this);
 			TypePassiveApplier.Apply(this);
 			ApplyFormDefense();
+			if (!IsRemotePlayerOnClient)
+			{
+				float passive = EnergyPassivePerTick * (1f + PassiveEnergyMul);
+				if (BossEngageTimer > 0 || NearBoss())
+					passive *= 3f;
+				AddPassiveEnergy(passive);
+			}
 		}
 
 		private void ApplyFormDefense()
@@ -471,6 +662,12 @@ namespace PokemonHenshin.Content.PlayerState
 			}
 
 			Player.statDefense += formDef;
+			if (EvioliteDefMul > 0f && CurrentForm != null
+				&& FormRegistry.FindEvolutionOf(CurrentForm.FormId) != null)
+			{
+				int extra = (int)Math.Round(formDef * EvioliteDefMul);
+				Player.statDefense += extra;
+			}
 		}
 
 		public override void PostUpdate()
@@ -481,10 +678,34 @@ namespace PokemonHenshin.Content.PlayerState
 			if (MoveSpeedBonus != 0f)
 				Player.moveSpeed += MoveSpeedBonus;
 
+			TickLeftovers();
 			UpdateFlight();
 			TryProcessUltimateKey();
 			TryProcessDashInput();
 			TrySpawnFullChargeDust();
+		}
+
+		private void TickLeftovers()
+		{
+			if (LeftoversHpPerSec <= 0f && LeftoversLowHpBonus <= 0f)
+			{
+				leftoversAcc = 0f;
+				return;
+			}
+			if (Player.statLife >= Player.statLifeMax2)
+			{
+				leftoversAcc = 0f;
+				return;
+			}
+			leftoversAcc += LeftoversHpPerSec / 60f;
+			if (LeftoversLowHpBonus > 0f && Player.statLife < Player.statLifeMax2 * 0.5f)
+				leftoversAcc += LeftoversLowHpBonus / 60f;
+			int heal = (int)leftoversAcc;
+			if (heal <= 0)
+				return;
+			leftoversAcc -= heal;
+			Player.statLife = Math.Min(Player.statLifeMax2, Player.statLife + heal);
+			Player.HealEffect(heal);
 		}
 
 		/// <summary>大招满充：角色周围稀疏金色发散尘，路径约 1 格，整体向上，营造「充满电」感。</summary>
@@ -519,7 +740,7 @@ namespace PokemonHenshin.Content.PlayerState
 				return;
 			if (HenshinKeybinds.Ultimate == null || !HenshinKeybinds.Ultimate.JustPressed)
 				return;
-			if (AccChoiceBand)
+			if (ChoiceLockUlt)
 			{
 				Main.NewText(Language.GetTextValue("Mods.PokemonHenshin.Common.ChoiceBandLocked"), Color.Orange);
 				return;
@@ -627,10 +848,12 @@ namespace PokemonHenshin.Content.PlayerState
 				int dmg = System.Math.Max(1, (int)(Player.GetWeaponDamage(Player.HeldItem) * 0.15f));
 				source.SimpleStrikeNPC(dmg, 0, false, 0f, DamageClass.Generic);
 			}
-			if (AccRockyHelmet && RockyHelmetCooldown <= 0)
+			if (RockyHelmetScale > 0f && RockyHelmetCooldown <= 0)
 			{
-				RockyHelmetCooldown = 45;
-				int baseDmg = System.Math.Max(1, Player.GetWeaponDamage(Player.HeldItem));
+				int cd = RockyHelmetCdTicks < float.MaxValue / 4f ? (int)RockyHelmetCdTicks : 45;
+				RockyHelmetCooldown = Math.Max(1, cd);
+				int baseDmg = Math.Max(1, Player.GetWeaponDamage(Player.HeldItem));
+				int dmg = Math.Max(1, (int)Math.Round(baseDmg * RockyHelmetScale));
 				for (int i = 0; i < Main.maxNPCs; i++)
 				{
 					NPC n = Main.npc[i];
@@ -638,9 +861,11 @@ namespace PokemonHenshin.Content.PlayerState
 						continue;
 					if (n.Distance(Player.Center) > 6f * 16f)
 						continue;
-					n.SimpleStrikeNPC(baseDmg, n.Center.X < Player.Center.X ? -1 : 1, false, 2f, ModContent.GetInstance<Damage.HenshinDamage>());
+					n.SimpleStrikeNPC(dmg, n.Center.X < Player.Center.X ? -1 : 1, false, 2f, ModContent.GetInstance<Damage.HenshinDamage>());
 				}
 			}
+			if (AccGuardCutTicks > 0)
+				AccGuardActiveTimer = Math.Max(AccGuardActiveTimer, AccGuardCutTicks);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -716,14 +941,29 @@ namespace PokemonHenshin.Content.PlayerState
 
 			Vector2 popupAt = target.Center;
 			int oldLevel = force.Level;
-			force.TryAddExperience(Player, amount, out int levelsGained, out _);
+			int held = Math.Max(0, (int)Math.Round(amount * (1f + XpHeldMul)));
+			force.TryAddExperience(Player, held, out int levelsGained, out _);
+			if (XpHotbarShareMul > 0f)
+			{
+				int share = Math.Max(0, (int)Math.Round(amount * XpHotbarShareMul));
+				if (share > 0)
+				{
+					for (int i = 0; i < HotbarSize; i++)
+					{
+						if (i == Player.selectedItem)
+							continue;
+						if (Player.inventory[i]?.ModItem is HenshinForceItem other)
+							other.TryAddExperience(Player, share, out _, out _);
+					}
+				}
+			}
 			if (Main.netMode != NetmodeID.SinglePlayer)
 				HenshinNet.SendEnergy(this);
 
 			if (Player.whoAmI != Main.myPlayer)
 				return;
 
-			HenshinXpPopupSystem.ShowExp(popupAt, amount, boss);
+			HenshinXpPopupSystem.ShowExp(popupAt, held, boss);
 			if (levelsGained > 0 || force.Level > oldLevel)
 				HenshinXpPopupSystem.ShowLevelUps(Player, System.Math.Max(levelsGained, force.Level - oldLevel));
 		}
@@ -749,61 +989,107 @@ namespace PokemonHenshin.Content.PlayerState
 
 		private void ApplyOnHitAccessories(int damageDone)
 		{
-			if (AccLifeOrb && LifeOrbGate <= 0 && Player.statLife > 1)
+			if (LifeOrbHpDrain && LifeOrbGate <= 0 && Player.statLife > 1)
 			{
-				LifeOrbGate = 8;
-				Player.statLife = System.Math.Max(1, Player.statLife - 1);
+				int gate = LifeOrbGateTicks < float.MaxValue / 4f ? (int)LifeOrbGateTicks : 8;
+				LifeOrbGate = Math.Max(1, gate);
+				Player.statLife = Math.Max(1, Player.statLife - 1);
 				Player.HealEffect(-1, true);
 			}
 			if (SolarPowerDrain && Player.statLife > 1 && LifeOrbGate <= 0)
 			{
-				Player.statLife = System.Math.Max(1, Player.statLife - 1);
+				Player.statLife = Math.Max(1, Player.statLife - 1);
 			}
-			if (AccShellBell && ShellBellCooldown <= 0 && damageDone > 0)
+			if (ShellBellHeal > 0f && ShellBellCooldown <= 0 && damageDone > 0)
 			{
-				// 灾厄吸血冷却不可靠反射时，使用本模短 CD（约 0.5s）
-				ShellBellCooldown = 30;
-				Player.statLife = System.Math.Min(Player.statLifeMax2, Player.statLife + 2);
-				Player.HealEffect(2);
+				int cd = ShellBellCdTicks < float.MaxValue / 4f ? (int)ShellBellCdTicks : 30;
+				ShellBellCooldown = Math.Max(1, cd);
+				int heal = Math.Max(1, (int)Math.Round(ShellBellHeal));
+				Player.statLife = Math.Min(Player.statLifeMax2, Player.statLife + heal);
+				Player.HealEffect(heal);
 			}
 		}
 
 		public override void ModifyHurt(ref Player.HurtModifiers modifiers)
 		{
-			if (IsTransformed && IncomingDamageMultiplier != 1f)
+			if (IncomingDamageMultiplier != 1f)
 				modifiers.FinalDamage *= IncomingDamageMultiplier;
+
+			if (!IsTransformed || !FocusSash || FocusSashCooldown > 0)
+				return;
+			int need = (int)Math.Ceiling(Player.statLifeMax2 * FocusSashHpPct);
+			if (Player.statLife < need)
+				return;
+			modifiers.ModifyHurtInfo += ApplyFocusSashHurt;
+		}
+
+		private void ApplyFocusSashHurt(ref Player.HurtInfo info)
+		{
+			if (!FocusSash || FocusSashCooldown > 0 || !IsTransformed)
+				return;
+			int need = (int)Math.Ceiling(Player.statLifeMax2 * FocusSashHpPct);
+			if (Player.statLife < need)
+				return;
+			if (Player.statLife - info.Damage > 0)
+				return;
+			int cap = Math.Max(1, Player.statLife - 1);
+			if (info.Damage > cap)
+				info.Damage = cap;
+			FocusSashCooldown = Math.Max(1, (int)Math.Round(FocusSashCdSec * 60f));
+			if (FocusSashImmuneTicks > 0f)
+				Player.immuneTime = Math.Max(Player.immuneTime, (int)FocusSashImmuneTicks);
 		}
 
 		public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
 		{
+			ModifyHenshinHit(target, null, ref modifiers);
+		}
+
+		public override void ModifyHitNPCWithProj(Projectile proj, NPC target, ref NPC.HitModifiers modifiers)
+		{
+			ModifyHenshinHit(target, proj, ref modifiers);
+		}
+
+		private void ModifyHenshinHit(NPC target, Projectile proj, ref NPC.HitModifiers modifiers)
+		{
 			if (!IsTransformed)
 				return;
 
-			float mult = 1f + HenshinDamageBonus;
+			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
+			MoveSpec move = force?.GetMove(LastMoveSlot);
+			MoveDelivery delivery = MoveDelivery.None;
+			if (proj?.ModProjectile is IHenshinMoveProj tagged)
+				delivery = tagged.Delivery;
+			else if (move != null)
+				delivery = move.Delivery;
+
+			float mult = 1f;
 			if (BossDamageBonus > 0f && target.boss)
 				mult += BossDamageBonus;
 			if (OnFireTargetBonus > 0f && target.onFire)
 				mult += OnFireTargetBonus;
 			if (TypeMoveBonus > 0f)
 				mult += TypeMoveBonus;
-			if (AccLifeOrb)
-				mult += 0.20f;
-			if (AccChoiceBand)
-				mult += 0.50f;
 			if (LastMoveSlot == MoveSlot.Ultimate)
 				mult += UltDamageBonus;
+			if (FireMoveDamage > 0f && move?.CountsAsFireMove == true)
+				mult += FireMoveDamage;
+			if (MeleeDeliveryDamage > 0f && MoveDeliverySets.MeleeShort(delivery))
+				mult += MeleeDeliveryDamage;
+			if (PsychicDragonDamage > 0f && CurrentForm != null
+				&& (CurrentForm.Primary == PokemonType.Psychic || CurrentForm.Secondary == PokemonType.Psychic
+					|| CurrentForm.Primary == PokemonType.Dragon || CurrentForm.Secondary == PokemonType.Dragon))
+				mult += PsychicDragonDamage;
+			if (EvioliteDamage > 0f && CurrentForm != null && FormRegistry.FindEvolutionOf(CurrentForm.FormId) != null)
+				mult += EvioliteDamage;
 			mult *= AftermathPenaltyMult;
-			modifiers.FinalDamage *= mult;
+			if (mult != 1f)
+				modifiers.FinalDamage *= mult;
 
-			ApplyCritTier(ref modifiers);
+			ApplyCritTier(target, ref modifiers);
 		}
 
-		public override void ModifyHitNPCWithProj(Projectile proj, NPC target, ref NPC.HitModifiers modifiers)
-		{
-			ModifyHitNPC(target, ref modifiers);
-		}
-
-		private void ApplyCritTier(ref NPC.HitModifiers modifiers)
+		private void ApplyCritTier(NPC target, ref NPC.HitModifiers modifiers)
 		{
 			bool easy = false;
 			if (Player.HeldItem?.ModItem is HenshinForceItem force)
@@ -812,7 +1098,9 @@ namespace PokemonHenshin.Content.PlayerState
 				easy = move?.EasyCrit == true;
 			}
 
-			float upgradeChance = AccScopeLens ? 0.10f : 0f;
+			float upgradeChance = CritUpgradeChance;
+			if (OnFireCritUpgrade > 0f && target.onFire)
+				upgradeChance += OnFireCritUpgrade;
 			if (easy)
 				upgradeChance += 0.25f;
 
@@ -821,18 +1109,18 @@ namespace PokemonHenshin.Content.PlayerState
 				critChance += 0.35f;
 
 			bool baseCrit = Main.rand.NextFloat() < critChance;
-			modifiers.DisableCrit(); // 手动结算档位，避免引擎重复暴击
+			modifiers.DisableCrit();
 
 			if (!baseCrit)
 			{
 				if (Main.rand.NextFloat() < upgradeChance)
-					modifiers.FinalDamage *= 2f; // 升为普通暴击
+					modifiers.FinalDamage *= 2f;
 			}
 			else
 			{
 				modifiers.FinalDamage *= 2f;
 				if (Main.rand.NextFloat() < upgradeChance)
-					modifiers.FinalDamage *= 2f; // 超暴击 ≈×4
+					modifiers.FinalDamage *= 2f;
 			}
 		}
 

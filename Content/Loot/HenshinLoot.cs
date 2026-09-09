@@ -1,5 +1,4 @@
 using PokemonHenshin.Content.Core;
-using PokemonHenshin.Content.Items.Accessories;
 using PokemonHenshin.Content.Items.Forms;
 using Terraria;
 using Terraria.ID;
@@ -103,39 +102,6 @@ namespace PokemonHenshin.Content.Loot
 				.AddIngredient(ItemID.FragmentNebula, 8)
 				.AddIngredient(ItemID.FragmentStardust, 8)
 				.AddTile(TileID.LunarCraftingStation)
-				.Register();
-
-			// 饰品简易合成（占位）
-			AddAcc(ModContent.ItemType<A01AbilityCapsuleBelt>(), ItemID.LifeCrystal, 1);
-			AddAcc(ModContent.ItemType<A02MuscleBand>(), ItemID.Shackle, 1);
-			AddAcc(ModContent.ItemType<A03SoulDewPendant>(), ItemID.ManaCrystal, 1);
-			AddAcc(ModContent.ItemType<A04FloatStoneAnklet>(), ItemID.Feather, 10);
-			AddAcc(ModContent.ItemType<A05FocusSashBadge>(), ItemID.Bezoar, 1);
-			AddAcc(ModContent.ItemType<A06LifeOrbCore>(), ItemID.AvengerEmblem, 1);
-			AddAcc(ModContent.ItemType<A07CharcoalBag>(), ItemID.HellstoneBar, 5);
-			AddAcc(ModContent.ItemType<A08MysticWaterPouch>(), ItemID.Coral, 10);
-			AddAcc(ModContent.ItemType<A09MagnetChip>(), ItemID.Wire, 20);
-			AddAcc(ModContent.ItemType<A10SharpBeakMembrane>(), ItemID.GiantHarpyFeather, 1);
-			AddAcc(ModContent.ItemType<A11SpellTagCloth>(), ItemID.SoulofNight, 8);
-			AddAcc(ModContent.ItemType<A12DragonFangCharm>(), ItemID.SoulofMight, 8);
-
-			AddAcc(ModContent.ItemType<A13WideLens>(), ItemID.Lens, 5);
-			AddAcc(ModContent.ItemType<A14ChoiceBand>(), ItemID.BandofRegeneration, 1);
-			AddAcc(ModContent.ItemType<A15ScopeLens>(), ItemID.BlackLens, 2);
-			AddAcc(ModContent.ItemType<A16LifeOrb>(), ItemID.LifeCrystal, 3);
-			AddAcc(ModContent.ItemType<A17ShellBell>(), ItemID.Seashell, 5);
-			AddAcc(ModContent.ItemType<A18RockyHelmet>(), ItemID.StoneBlock, 50);
-			AddAcc(ModContent.ItemType<A19ChargeBelt>(), ItemID.Wire, 30);
-			AddAcc(ModContent.ItemType<A20EchoPendant>(), ItemID.ManaCrystal, 2);
-			AddAcc(ModContent.ItemType<A21BurstArmband>(), ItemID.SoulofFright, 5);
-		}
-
-		private static void AddAcc(int result, int ing, int stack)
-		{
-			Recipe.Create(result)
-				.AddIngredient(ing, stack)
-				.AddIngredient(ItemID.FallenStar, 3)
-				.AddTile(TileID.TinkerersWorkbench)
 				.Register();
 		}
 	}

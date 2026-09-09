@@ -42,6 +42,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Slash(string nameKey, float mult = 1f, int use = 18, int dust = DustID.Smoke, bool easyCrit = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<GenericSlashProj>(),
 				DamageMultiplier = mult,
@@ -58,6 +59,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec FireBolt(string nameKey, float mult = 1.3f, int use = 28)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<EmberBoltProj>(),
 				DamageMultiplier = mult,
@@ -75,6 +77,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec WaterBolt(string nameKey, float mult = 1.2f, int use = 26, int slowTicks = 0)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<WaterBoltHenshinProj>(),
 				DamageMultiplier = mult,
@@ -94,6 +97,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			bool ranged = true, bool easyCrit = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = projType,
 				DamageMultiplier = mult,
@@ -113,6 +117,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Lunge(string nameKey, float mult, int use, int dust, bool recoil = false, float recoilFrac = 0.08f, int onHitBuff = 0, KeyConflictLevel key = KeyConflictLevel.None)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<LungeProj>(),
 				DamageMultiplier = mult,
@@ -130,6 +135,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Vortex(string nameKey, float mult, int dust, int buff = 0)
 			=> new()
 			{
+				Delivery = MoveDelivery.DoTBind,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<VortexBindProj>(),
 				DamageMultiplier = mult,
@@ -145,6 +151,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Strike(string nameKey, float mult, int dust = DustID.Electric)
 			=> new()
 			{
+				Delivery = MoveDelivery.StrikeFall,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<StrikeFallProj>(),
 				DamageMultiplier = mult,
@@ -158,6 +165,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Beam(string nameKey, float mult, bool aftermath = false, bool ignoreDef = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BeamBoltProj>(),
 				DamageMultiplier = mult,
@@ -175,6 +183,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec AoE(string nameKey, float mult, int dust)
 			=> new()
 			{
+				Delivery = MoveDelivery.AoEBurst,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<AoEBurstProj>(),
 				DamageMultiplier = mult,
@@ -188,6 +197,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Dig(string nameKey, float mult = 1f, int use = 20)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DigLungeProj>(),
 				DamageMultiplier = mult,
@@ -201,6 +211,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Sleep(string nameKey)
 			=> new()
 			{
+				Delivery = MoveDelivery.Field,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<SleepWaveProj>(),
 				DamageMultiplier = 0.3f,
@@ -212,6 +223,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Field(string nameKey, WeatherField.WeatherTag tag)
 			=> new()
 			{
+				Delivery = MoveDelivery.Field,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<RainFieldProj>(),
 				DamageMultiplier = 0.2f,
@@ -225,6 +237,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec Scratch(string nameKey, float mult = 1f, int use = 18, float reachTiles = 3.5f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<ScratchSlashProj>(),
 				DamageMultiplier = mult,
@@ -239,6 +252,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec FlareUlt(string nameKey, float mult = 2.6f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<FlareBoltUltProj>(),
 				DamageMultiplier = mult,
@@ -254,6 +268,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec AquaGun(string nameKey, float mult = 1.25f, int use = 22)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<AquaScepterShotProj>(),
 				DamageMultiplier = mult,
@@ -267,6 +282,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec BubbleBarrageUlt(string nameKey, float mult = 2.5f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BarrageDirectorProj>(),
 				DamageMultiplier = mult,
@@ -283,6 +299,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec SeedBarrageUlt(string nameKey, float mult = 2.5f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BarrageDirectorProj>(),
 				DamageMultiplier = mult,
@@ -300,6 +317,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec VineWhip(string nameKey, float mult = 1.15f, int use = 20)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<GrassWhipProj>(),
 				DamageMultiplier = mult,
@@ -312,6 +330,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec BlinkStrike(string nameKey, float mult = 1.15f, int use = 14)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BlinkStrikeProj>(),
 				DamageMultiplier = mult,
@@ -325,6 +344,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec AerialAceBlink(string nameKey, float mult = 1.6f, int use = 16)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<AerialAceBlinkProj>(),
 				DamageMultiplier = mult,
@@ -338,6 +358,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec WeatherPainHurricane(string nameKey, float mult = 1.6f, bool ult = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.Field,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<WeatherPainHurricaneProj>(),
 				DamageMultiplier = mult,
@@ -353,6 +374,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec BraveBirdUlt(string nameKey, float mult = 3.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BraveBirdLungeProj>(),
 				DamageMultiplier = mult,
@@ -368,6 +390,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec ThunderboltUlt(string nameKey, float mult = 4.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<SkyBoltLightningProj>(),
 				DamageMultiplier = mult,
@@ -381,6 +404,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec RockTomb(string nameKey, float mult = 1.3f, int use = 28)
 			=> new()
 			{
+				Delivery = MoveDelivery.AoEBurst,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<RockTombDirectorProj>(),
 				DamageMultiplier = mult,
@@ -394,6 +418,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec CrossChopUlt(string nameKey, float mult = 2.6f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<CrossChopArcProj>(),
 				DamageMultiplier = mult,
@@ -407,6 +432,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec GroundCyclone(string nameKey, float mult = 1.25f, int use = 24)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<GroundCycloneProj>(),
 				DamageMultiplier = mult,
@@ -420,6 +446,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec PeckCone(string nameKey, float mult = 1.2f, int use = 18)
 			=> new()
 			{
+				Delivery = MoveDelivery.Spread,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<PeckConeProj>(),
 				DamageMultiplier = mult,
@@ -432,6 +459,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec ZenHammer(string nameKey, float mult = 2.0f, int use = 28)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<ZenHammerSmashProj>(),
 				DamageMultiplier = mult,
@@ -444,6 +472,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec ResonanceScatterUlt(string nameKey, float mult = 2f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<ResonanceScatterProj>(),
 				DamageMultiplier = mult,
@@ -457,6 +486,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec BubbleBarrage(string nameKey, int count, float mult, int use = 36)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BarrageDirectorProj>(),
 				DamageMultiplier = mult,
@@ -473,6 +503,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec ThickBeam(string nameKey, float mult, int dust, bool aftermath = false, int selfStun = 0, int onHitBuff = 0, bool ignoreDef = false, bool ult = true, int beamMode = 0)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<ThickBeamProj>(),
 				DamageMultiplier = mult,
@@ -494,6 +525,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec SustainedBeam(string nameKey, float mult, int dust, int beamMode, bool aftermath = false, int selfStun = 0, bool ignoreDef = false, bool ult = true)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<SustainedBeamProj>(),
 				DamageMultiplier = mult,
@@ -514,6 +546,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DragonRage(string nameKey, float mult, bool ult = true)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DragonRageBarrageProj>(),
 				DamageMultiplier = mult,
@@ -531,6 +564,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec WaterJet(string nameKey, float mult, bool cannon = false, bool aftermath = false, int selfStun = 0, bool ult = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<WaterJetProj>(),
 				DamageMultiplier = mult,
@@ -550,6 +584,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec MouseAoE(string nameKey, float mult, int dust, int buff = 0, bool aftermath = false, bool ignoreDef = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.AoEBurst,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<MouseAoEBurstProj>(),
 				DamageMultiplier = mult,
@@ -569,6 +604,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec ChargeBeamUlt(string nameKey, float mult = 4f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<ChargeBeamDirectorProj>(),
 				DamageMultiplier = mult,
@@ -582,6 +618,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec RockSlideX(string nameKey, int count, float mult, bool ult = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<RockSlideDirectorProj>(),
 				DamageMultiplier = mult,
@@ -598,6 +635,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec MeteorBarrageUlt(string nameKey, int count = 8, float mult = 4.2f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DracoMeteorDirectorProj>(),
 				DamageMultiplier = mult,
@@ -613,6 +651,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec FlameCone(string nameKey, float mult = 1.55f, int count = 10)
 			=> new()
 			{
+				Delivery = MoveDelivery.Spread,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<FlameConeDirectorProj>(),
 				DamageMultiplier = mult,
@@ -626,6 +665,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec LeafSpread(string nameKey, float mult = 1.3f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Spread,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<LeafSpreadProj>(),
 				DamageMultiplier = mult,
@@ -638,6 +678,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec SeedBombUlt(string nameKey, float mult = 3.3f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<SeedBombProj>(),
 				DamageMultiplier = mult,
@@ -652,6 +693,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec HurricaneField(string nameKey, float mult, bool ult = false)
 			=> new()
 			{
+				Delivery = MoveDelivery.Field,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<HurricaneFieldProj>(),
 				DamageMultiplier = mult,
@@ -664,6 +706,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec ThunderPillarUlt(string nameKey, float mult = 3.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<SkyBoltRainUltProj>(),
 				DamageMultiplier = mult,
@@ -675,6 +718,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec CloseCombatUlt(string nameKey, float mult = 4f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<CloseCombatFuryProj>(),
 				DamageMultiplier = mult,
@@ -688,6 +732,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec OutrageUlt(string nameKey, float mult = 4.2f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<OutrageDirectorProj>(),
 				DamageMultiplier = mult,
@@ -701,6 +746,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec FutureSightUlt(string nameKey, float mult = 3.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.AoEBurst,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<FutureSightMarkDirectorProj>(),
 				DamageMultiplier = mult,
@@ -713,6 +759,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DarkPulseCone(string nameKey, float mult = 3.6f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Spread,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DarkPulseBarrageProj>(),
 				DamageMultiplier = mult,
@@ -725,6 +772,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec FlailUlt(string nameKey, float mult = 1.5f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<FlailBarrageProj>(),
 				DamageMultiplier = mult,
@@ -736,6 +784,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec BiteArc(string nameKey, float mult = 1.25f, int brokenArmorTicks = 0, float size = 1f, int onFireTicks = 0)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BiteArcProj>(),
 				DamageMultiplier = mult,
@@ -751,6 +800,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DragonPulse(string nameKey, float mult = 1.45f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Beam,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<NebulaPulseDirectorProj>(),
 				DamageMultiplier = mult,
@@ -763,6 +813,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DragonBreath(string nameKey, float mult = 1.25f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Spread,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DragonBreathConeProj>(),
 				DamageMultiplier = mult,
@@ -773,6 +824,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec PetalDance(string nameKey, float mult = 1.5f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Field,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<PetalDanceFieldProj>(),
 				DamageMultiplier = mult,
@@ -784,6 +836,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec MudSlap(string nameKey, float mult = 1f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<MudSlapBoltProj>(),
 				DamageMultiplier = mult,
@@ -795,6 +848,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec CrossChopShort(string nameKey, float mult = 1.6f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<CrossChopArcXProj>(),
 				DamageMultiplier = mult,
@@ -806,6 +860,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec TripleStab(string nameKey, float mult = 1.3f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<TripleStabProj>(),
 				DamageMultiplier = mult,
@@ -817,6 +872,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec BrickBreak(string nameKey, float mult = 1.4f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BrickBreakProj>(),
 				DamageMultiplier = mult,
@@ -827,6 +883,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec MouseVortex(string nameKey, float mult, int dust, int buff = 0)
 			=> new()
 			{
+				Delivery = MoveDelivery.DoTBind,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<MouseVortexProj>(),
 				DamageMultiplier = mult,
@@ -841,6 +898,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DynamicPunchUlt(string nameKey, float mult = 3.4f, bool ult = true)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DynamicPunchProj>(),
 				DamageMultiplier = mult,
@@ -853,6 +911,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec MidThunder(string nameKey, float mult = 1.5f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<MidThunderBeamProj>(),
 				DamageMultiplier = mult,
@@ -864,6 +923,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec BigShadowBall(string nameKey, float mult = 1.35f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<BigShadowBallProj>(),
 				DamageMultiplier = mult,
@@ -875,6 +935,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec SludgeBolt(string nameKey, float mult = 1.45f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<SludgeBoltProj>(),
 				DamageMultiplier = mult,
@@ -886,6 +947,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec HypnosisUlt(string nameKey)
 			=> new()
 			{
+				Delivery = MoveDelivery.Field,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<HypnosisWaveProj>(),
 				DamageMultiplier = 2.6f,
@@ -897,6 +959,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec LickFan(string nameKey, float mult = 0.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<LickTongueProj>(),
 				DamageMultiplier = mult,
@@ -907,6 +970,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec AirBurst(string nameKey, float mult = 1.9f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Spread,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<AirBurstProj>(),
 				DamageMultiplier = mult,
@@ -920,6 +984,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec StoneEdge(string nameKey, float mult = 1.7f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<StoneEdgeDirectorProj>(),
 				DamageMultiplier = mult,
@@ -931,6 +996,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DragonTailWhip(string nameKey, float mult = 1.35f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DragonTailWhipProj>(),
 				DamageMultiplier = mult,
@@ -942,6 +1008,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec IronTailWhip(string nameKey, float mult = 1.6f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DragonTailWhipProj>(),
 				DamageMultiplier = mult,
@@ -954,6 +1021,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec TakeDownUlt(string nameKey, float mult = 3.2f, float reachTiles = 28f, float recoilFrac = 0.25f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<TakeDownLungeProj>(),
 				DamageMultiplier = mult,
@@ -971,6 +1039,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec ShadowClawSlash(string nameKey, float mult = 1.55f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<ShadowClawSlashProj>(),
 				DamageMultiplier = mult,
@@ -983,6 +1052,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec CometPunch(string nameKey, float mult = 1.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<CometPunchProj>(),
 				DamageMultiplier = mult,
@@ -993,6 +1063,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DragonDive(string nameKey, float mult = 1.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<StardustPathLungeProj>(),
 				DamageMultiplier = mult,
@@ -1006,6 +1077,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DragonAscentUlt(string nameKey, float mult = 5.0f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<StardustPathLungeProj>(),
 				DamageMultiplier = mult,
@@ -1023,6 +1095,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec SkyAttack(string nameKey, float mult = 1.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.AoEBurst,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<SkyAttackLungeProj>(),
 				DamageMultiplier = mult,
@@ -1035,6 +1108,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec AlakazamPsychic(string nameKey, float mult = 1.7f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<AlakazamPsychicDirectorProj>(),
 				DamageMultiplier = mult,
@@ -1046,6 +1120,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec MewtwoPsychic(string nameKey, float mult = 1.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<AlakazamPsychicDirectorProj>(),
 				DamageMultiplier = mult,
@@ -1059,6 +1134,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec MewtwoPsystrikeUlt(string nameKey, float mult = 4.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<MewtwoPsystrikeDirectorProj>(),
 				DamageMultiplier = mult,
@@ -1072,6 +1148,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec FocusPunch(string nameKey, float mult = 1.8f)
 			=> new()
 			{
+				Delivery = MoveDelivery.MeleeArc,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<FocusPunchProj>(),
 				DamageMultiplier = mult,
@@ -1082,6 +1159,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec DigUlt(string nameKey, float mult = 3f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DigUltBurstProj>(),
 				DamageMultiplier = mult,
@@ -1094,6 +1172,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec QuakeUlt(string nameKey, float mult = 3.6f)
 			=> new()
 			{
+				Delivery = MoveDelivery.AoEBurst,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<QuakeWaveProj>(),
 				DamageMultiplier = mult,
@@ -1106,6 +1185,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec StrongPsychic(string nameKey, float mult = 1.7f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Bolt,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<StrongPsychicBoltProj>(),
 				DamageMultiplier = mult,
@@ -1120,6 +1200,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		public static MoveSpec FlareBlitzUlt(string nameKey, float mult = 3.2f)
 			=> new()
 			{
+				Delivery = MoveDelivery.Lunge,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<LungeProj>(),
 				DamageMultiplier = mult,
