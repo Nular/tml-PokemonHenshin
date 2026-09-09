@@ -17,7 +17,7 @@
 
 ## 状态
 
-**现役代码（2026-09-09）：** 36 形态 + A01～A21；被动+技能1/2+能量大招；**v1.4 物品等级/经验/FinalAttack·Defense/能量 1000/进化双条件已接线**。游戏内 DPS 抽检、联机双端实测仍待本地。
+**现役代码（2026-09-09）：** 36 形态 + A01～A21；被动+技能1/2+能量大招；**v1.4 已接线**（物品等级/经验；击杀 XP×世界档、升级需求×物品带；`FinalAttack`/`FinalDefense`；能量 1000；进化双条件）。世界字：`EXP +X`、`LEVEL UP!`。游戏内 DPS 抽检、联机双端/弹出验收仍待本地。
 
 **下一步：** 联机双端实测、DPS 对标 PS7/9/12、Rage。调试 `/henshin stage`、`/henshin evolve`、`/henshin stats`、`/henshin setlevel`。
 

@@ -33,7 +33,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 | 路径 | 角色 |
 |------|------|
-| `docs/requirements.md` | **产品唯一真相**（v1.4：含等级/攻防/能量/进化双条件） |
+| `docs/requirements.md` | **产品唯一真相**（v1.4：含等级/攻防/能量/进化双条件/XP 缩放） |
 | `docs/balance-stats.md` | **数值数字权威**（等级带、经验、MidAtk/Def、种族 Mod、MoveRefRate） |
 | `Content/Core/HenshinStatService.cs` · `FormStatTable.cs` | 上表公式的代码入口（无 Terraria 依赖，供 `tools/HenshinStatVerify`） |
 | `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
@@ -45,7 +45,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame / Extra98 |
 | `Content/Combat/Moves/HenshinFxDraw.cs` | Additive 绘制：`DrawContinuousBeam` / SheetFrame / `ScaleForWorldDiameter` |
 | `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态；`Wave2MoveProjs`（水柱/日棱/龙怒球/破灭等） |
-| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 脚下能量条 UI / 饰品 / 被动进化天气挖掘 Net |
+| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 脚下能量条 + 经验世界字（`HenshinXpPopupSystem`）/ 饰品 / 被动进化天气挖掘 Net |
 
 ## 特效踩坑与禁止降级（必读）
 

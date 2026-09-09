@@ -1,6 +1,5 @@
 Common: {
 	HoldToTransform: 在热键栏持握即变身；取消持握立刻恢复
-	Moves: 左键：{0}   右键：{1}
 	Moves3: 技能1：{0}   技能2：{1}   大招：{2}（能量满后热键）
 	UltimateEnergy: 大招能量：{0}/{1}
 	NoMount: 变身期间禁止使用坐骑
@@ -14,8 +13,6 @@ Common: {
 	ForceDefenseNote: 变身时形态防御取代盔甲防御；饰品防御仍生效
 	ForceEvolveNeed: 进化为「{0}」需要进度档 {1} 且等级 ≥ {2}
 	ForceEvolveReady: 可进化为「{0}」（进度与等级均已满足）
-	GainedXp: +{0} 经验
-	LevelUp: {0} 升至 {1} 级
 }
 
 Keybinds: {

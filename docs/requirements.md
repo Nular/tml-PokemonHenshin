@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | **1.4** |
-| 状态 | 现役开发基线（v1.3 战斗已落地；**v1.4 等级/攻防/能量/进化双条件已接线**；游戏内 DPS 抽检待本地） |
+| 状态 | 现役开发基线（v1.3 战斗已落地；**v1.4 等级/攻防/能量/进化双条件/XP 缩放已接线**；游戏内 DPS 抽检与弹出验收待本地） |
 | 平台 | 泰拉瑞亚 + tModLoader + 灾厄（Calamity） |
 | 联机 | 必须支持多人 |
 | 读者 | 策划 / 程序 / 其他实现 Agent |
@@ -398,8 +398,8 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 1. `FormStatTable` + `MoveSpec.BalanceTag` / `EnergyGainFactor` — **已接线**
 2. `HenshinForceItem`：`Level`/`Xp` Save/Load/Net；Tooltip；进化拷贝 — **已接线**
-3. `HenshinStatService`：`ExpNeeded`、Boss XP、Stage→Final — **已接线**
-4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验 — **已接线**
+3. `HenshinStatService`：`ExpNeeded`（×物品带）、Boss XP、`StageXpScale`（击杀×世界档）、Stage→Final — **已接线**
+4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验；世界字 `EXP +X` / `LEVEL UP!` — **已接线**
 5. 能量池 1000 + 每秒软顶 + Factor — **已接线**
 6. 进化双条件 — **已接线**
 7. 联机同步 level/xp/energy — **SyncEnergy 含三项；服务端写入持握物品并 TruncateToCap**；双端实测 pending
@@ -634,7 +634,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 ## 15. 仍待实现期填写（不阻塞文档）
 
-- 各招式精确倍率按 `docs/balance-stats.md` §7 重标定后回写（代码实装时）  
+- 逐招精标定仍待游戏内 DPS 抽检后回写 `docs/move-effects.md`（§7.1 点名项代码已改）  
 - 对标武器的具体 ItemID（随灾厄版本）  
 - 饰品精确数值微调  
 - Boss XP 白名单（若动态公式对个别 Boss 偏差过大）  
@@ -655,3 +655,4 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 | 1.3.1 | 洁癖：§1.1/§14/状态栏与 README·AGENTS·dev-plan 对齐现役；注明无穿障形态 |
 | **1.4** | 物品实例等级/经验；分阶段等级硬顶；经验公式与 Boss 动态 XP；推翻 StageDamage，攻防对齐比目鱼有效 DPS；变身替换盔甲防御；能量池 1000+软顶；进化须进度+等级双条件；数值表见 `docs/balance-stats.md` |
 | 1.4.1 | 招式平衡：段数慎改；MoveRefRate 为参考；按命中难度/距离/风险柔性调倍率（见 balance-stats §7） |
+| 1.4.3 | 击杀 XP × 世界档；`ExpNeeded` × 物品带；世界字 `EXP +X` / `LEVEL UP!`（不跟世界档折算当前 Xp） |

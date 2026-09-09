@@ -4,7 +4,7 @@
 |----|------|
 | 版本 | 1.4 |
 | 对齐需求 | `docs/requirements.md` **v1.4**（数值表 `docs/balance-stats.md`） |
-| 状态 | **战斗模型 v1.3 已落地并验收**；**v1.4 等级/攻防/能量/进化双条件已接线**；联机双端 / DPS 抽检 / M5 后置 |
+| 状态 | **战斗模型 v1.3 已落地并验收**；**v1.4 等级/攻防/能量/进化双条件/XP 缩放已接线**（世界字 `LEVEL UP!`/`EXP +X`）；联机双端 / DPS 抽检 / 弹出验收 / M5 后置 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -645,7 +645,7 @@ TryEditTile(player, action) →
 
 | 维度 | 结论 |
 |------|------|
-| 与 requirements **v1.4** 对齐 | **规则层通过**；**代码已接线**等级/Xp/`FinalAttack`/`FinalDefense`/能量 1000/进化双条件（DPS 抽检待本地） |
+| 与 requirements **v1.4** 对齐 | **规则层通过**；**代码已接线**等级/Xp/`StageXpScale`/`FinalAttack`/`FinalDefense`/能量 1000/进化双条件/世界字（DPS 与弹出验收待本地） |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
 | 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
 | 总评 | **v1.4 数值已接线**；下一步联机与 DPS 抽检；现役穿障形态为 0 |
@@ -670,3 +670,4 @@ TryEditTile(player, action) →
 | **1.4.1** | 接线 v1.4 数值：Level/Xp、FinalAttack/Def、能量 1000、进化双条件、§7.1 点名倍率 |
 | **1.4.2** | 洁癖：去掉「数值未接线 / EnergyMax=100」现役说法；MoveRefRate 归一化窗与构建命令同源 |
 | **1.4.3** | 击杀 XP × 世界档；ExpNeeded × 物品带；LEVEL UP / EXP 世界字 |
+| **1.4.4** | 洁癖：页眉/对照表/README 对齐 XP 双自变量与世界字；去掉死 loc `GainedXp`/`LevelUp`/`Moves` |

@@ -1,6 +1,5 @@
 Common: {
 	HoldToTransform: Hold in your hotbar to transform; release to revert instantly
-	Moves: Left click: {0}   Right click: {1}
 	Moves3: Skill1: {0}   Skill2: {1}   Ult: {2} (hotkey when charged)
 	UltimateEnergy: Ultimate energy: {0}/{1}
 	NoMount: Mounts cannot be used while transformed
@@ -14,8 +13,6 @@ Common: {
 	ForceDefenseNote: Form defense replaces armor defense while transformed; accessory defense still applies
 	ForceEvolveNeed: Evolve to {0} requires stage {1} and level >= {2}
 	ForceEvolveReady: Ready to evolve into {0}
-	GainedXp: +{0} XP
-	LevelUp: {0} reached level {1}
 }
 
 Keybinds: {
