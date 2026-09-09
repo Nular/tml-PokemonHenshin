@@ -41,13 +41,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	public abstract class HenshinMoveProj : ModProjectile, IHenshinMoveProj
-	{
-		public bool EasyCrit { get; set; }
-		public bool Homing { get; set; }
-		public float HomingTurnRate { get; set; } = 0.08f;
-		public bool IgnoreDefensePartial { get; set; }
-		public MoveDelivery Delivery { get; set; }
+		public abstract class HenshinMoveProj : ModProjectile, IHenshinMoveProj
+		{
+			public bool EasyCrit { get; set; }
+			public bool Homing { get; set; }
+			public float HomingTurnRate { get; set; } = 0.08f;
+			public bool IgnoreDefensePartial { get; set; }
+			public MoveDelivery Delivery { get; set; }
+			public virtual bool HandlesOwnHoming => false;
 
 		public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
 		{
@@ -140,6 +141,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class GenericBoltProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.BallofFire;
 
 		public override void SetDefaults()
@@ -177,6 +179,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class WaterBoltHenshinProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.WaterBolt;
 
 		public override void SetDefaults()
@@ -207,6 +210,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class ThunderBoltHenshinProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.MagnetSphereBolt;
 
 		public override void SetDefaults()
@@ -235,6 +239,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class ShadowBallHenshinProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.ShadowBeamHostile;
 
 		public override void SetDefaults()
@@ -727,6 +732,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// <summary>漩涡缠绕：附着目标 DoT + 减速。</summary>
 	public class VortexBindProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
@@ -990,6 +996,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class BeamBoltProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.PurpleLaser;
 
 		public override void SetDefaults()

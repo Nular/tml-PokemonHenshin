@@ -10,6 +10,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 {
 	public class EmberBoltProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.BallofFire;
 
 		public override void SetStaticDefaults()

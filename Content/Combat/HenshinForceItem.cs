@@ -174,7 +174,8 @@ namespace PokemonHenshin.Content.Combat
 			if (nextForm != null)
 				crossedEvolveBand = HenshinStatService.CrossedBandMin(oldLevel, Level, nextForm.Stage);
 
-			if (crossedEvolveBand && player != null && player.whoAmI == Main.myPlayer)
+			if (levelsGained > 0 && nextForm != null && player != null && player.whoAmI == Main.myPlayer
+				&& HenshinStatService.MeetsEvolution(world, Level, nextForm.Stage))
 				player.GetModPlayer<EvolutionOfferPlayer>().TryOfferAfterLevelUp(this);
 
 			return levelsGained > 0 || amount > 0;

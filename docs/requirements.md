@@ -381,7 +381,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 ## 5. 获取途径
 
 1. **开局发放**御三家（`StarterGrantPlayer`）  
-2. **Boss 掉落**（`HenshinLootGlobalNPC`：克眼皮卡丘、蜂后腕力、骷髅王波波/凯西、肉山大岩蛇、机械迷你龙、世花鬼斯通、石巨人金属怪、月总超梦/胡地）  
+2. **Boss 掉落**（`ModifyNPCLoot` / 宝藏袋 `ModifyItemLoot`：克眼皮卡丘、蜂后腕力、骷髅王波波/凯西、肉山大岩蛇、机械迷你龙、世花鬼斯通、石巨人金属怪、月总超梦/胡地）  
 3. **合成**（地鼠：金/铂锭+土；鲤鱼王：鲈鱼×5+坠落之星×3；圆陆鲨/洛奇亚/烈空坐：月后锭与碎片；饰品见 §6：碎片主题合成 + Ⅰ–Ⅳ 成品 + 超级）
 
 ---
@@ -401,7 +401,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 - **碎片线：** 每家族 6 碎片 + 普通成品 + 超级 = 8 件。同族不同 `Item.type` 可叠戴并全部生效。超级数字写在目录里（已是 2×），运行时不再乘。  
 - **贴图：** `Assets/Accessories/Axx.png` / `_Super` / `_Shard` 均为 **64×64** 像素风（`tools/pixelize_accessories.py`；高清源 `_src_hires/`）。S1–S6 共用 `_Shard` + 片号角标。  
 - **合成：** Ⅰ–Ⅳ @ 工匠 → 普通；普通+Ⅴ+Ⅵ **以及** Ⅰ–Ⅵ → 超级。废除落星占位配方。  
-- **掉落：** 匣 10%；事件小怪 2%（`RollLuck`）；Boss **25%**（专家可再 Roll），掉的是表内对应**碎片**。多节 Boss 只结算最终节。  
+- **掉落：** 匣 10%（含困难匣）；事件小怪 2%；Boss **25%**（专家袋再 Roll 一次），掉的是表内对应**碎片**。走 `ModifyNPCLoot` / `ModifyItemLoot`（图鉴与合成浏览器可见）。多节 Boss 只结算最终节。  
 - **无条件加伤**（力量头带 / 讲究头带伤 / 生命宝珠伤 / 达人带 Factor）走之力 `ModifyWeaponDamage`，面板看得到。有条件（Boss / 着火 / 大招 / 近战 Delivery）走命中，不与上述四项双算。  
 - 饰品伤**不对齐**之力 DPS 80–120% 窗。  
 - 广角镜追踪集合 `{Bolt, Spread, Barrage, DoTBind}`（**不含 Beam**）；诅咒之符穿墙在此基础上加 Beam。子弹继承母弹 `MoveDelivery`。  

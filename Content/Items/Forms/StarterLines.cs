@@ -796,11 +796,11 @@ namespace PokemonHenshin.Content.Items.Forms
 				Ai2 = onFireTicks
 			};
 
-		/// <summary>龙之波动：10 枚星云奥秘同款弹（70%、不穿透、不追踪、碰撞爆炸）。</summary>
+		/// <summary>龙之波动：10 枚星云奥秘同款弹（70%、不穿透、碰撞爆炸；广角镜可追踪）。</summary>
 		public static MoveSpec DragonPulse(string nameKey, float mult = 1.45f)
 			=> new()
 			{
-				Delivery = MoveDelivery.Beam,
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<NebulaPulseDirectorProj>(),
 				DamageMultiplier = mult,

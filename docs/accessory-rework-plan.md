@@ -128,7 +128,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `Content/PlayerState/HenshinPlayer.cs` | 新字段、Reset、命中/受伤/XP/能量/披带/剩饭 | WP-D **独占运行时字段** |
 | `Content/Evolution/EvolutionService.cs` + ConfirmUI | 不变之石门闩 | WP-E |
 | `Content/Loot/HenshinLoot.cs` | **删光旧 AddAcc 占位配方**；只保留之力掉落；饰品掉落/配方走 Catalog | WP-F |
-| `Content/Loot/HenshinAccLoot.cs` | GlobalNPC / ModPlayer 钓鱼匣 / 事件掉落，读 Catalog | WP-F |
+| `Content/Loot/HenshinDropDatabase.cs` | `ModifyNPCLoot` / `ModifyItemLoot`：碎片 + 之力 Boss/匣/袋 | WP-F |
 | `Localization/zh-Hans_*.hjson` + `en-US_*.hjson` | 物品名/说明/角标/生效标签 | WP-G |
 | `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
 | `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |

@@ -79,6 +79,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// </summary>
 	public class AlakazamPsychicBoltProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		private const int HomingDelay = 26;
 		private static readonly Color Tint = new Color(230, 140, 255);
 

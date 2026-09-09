@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
+using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
 using Terraria;
 using Terraria.Audio;
@@ -2023,7 +2024,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, vel,
 				ModContent.ProjectileType<NebulaPulseShardProj>(), per, Projectile.knockBack, Projectile.owner);
 			if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+			{
 				tagged.EasyCrit = EasyCrit;
+				tagged.Homing = Homing;
+				tagged.HomingTurnRate = HomingTurnRate;
+				tagged.Delivery = Delivery == MoveDelivery.None ? MoveDelivery.Barrage : Delivery;
+			}
 
 			Projectile.localAI[0] = fired + 1;
 			if (fired + 1 >= Total)
@@ -2035,8 +2041,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>
-	/// 星云奥秘同款外观直飞弹：自管运动（不套原版 AI，避免位置/显隐异常），
-	/// 0.7 缩放、穿透 1、无追踪；亡时生成原版 NebulaArcanumExplosionShotShard。
+	/// 星云奥秘同款外观直飞弹：自管运动（不套原版 AI），
+	/// 0.7 缩放、穿透 1；广角镜可将 Homing 打开并由全局 AI 转向。
+	/// 亡时生成原版 NebulaArcanumExplosionShotShard。
 	/// </summary>
 	public class NebulaPulseShardProj : HenshinMoveProj
 	{
@@ -2073,14 +2080,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
-			// 锁定初速，禁止任何追踪/漂浮
-			if (Projectile.localAI[0] == 0f)
-			{
-				Projectile.localAI[0] = 1f;
-				Projectile.localAI[1] = Projectile.velocity.X;
-				Projectile.localAI[2] = Projectile.velocity.Y;
-			}
-			Projectile.velocity = new Vector2(Projectile.localAI[1], Projectile.localAI[2]);
 			Projectile.rotation += 0.2f;
 			Lighting.AddLight(Projectile.Center, 0.55f, 0.25f, 0.75f);
 			if (Main.rand.NextBool(2))
@@ -3239,6 +3238,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// <summary>共鸣强弹（技能强念）。</summary>
 	public class StrongPsychicBoltProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.RainbowRodBullet;
 
 		public override void SetDefaults()

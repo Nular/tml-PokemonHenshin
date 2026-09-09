@@ -144,6 +144,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// <summary>借用原版贴图与基础运动的伤害弹。ai0=贴图用 Projectile type。</summary>
 	public class BorrowedVisualBoltProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		private int _texType;
 		private Color _tint = Color.White;
 		private Vector2 _baseVel;
@@ -350,6 +351,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// <summary>小火龙大招：指针生成，原版利刃台风橙红染色，接触首敌后锁定追踪。</summary>
 	public class FlareBoltUltProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
 		private int _lockNpc = -1;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Typhoon;
