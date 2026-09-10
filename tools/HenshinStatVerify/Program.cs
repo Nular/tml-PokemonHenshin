@@ -150,6 +150,11 @@ internal static class Program
 		ExpectF(0.45f, HenshinStatService.EnergyGainFactor(BalanceTag.WideAoE, 24), "aoe");
 		ExpectF(0f, HenshinStatService.EnergyGainFactor(BalanceTag.Ultimate, 36), "ult");
 		Expect(1000, HenshinStatService.EnergyMaxDefault, "EnergyMax");
+		ExpectF(12f, HenshinStatService.CombatHitEnergy(1f, false), "std hit energy");
+		ExpectF(1f, HenshinStatService.CombatHitEnergy(1f, true), "fragment hit 1×factor");
+		ExpectF(0.25f, HenshinStatService.CombatHitEnergy(0.25f, true), "fragment × MultiHit");
+		ExpectF(0f, HenshinStatService.CombatHitEnergy(0f, true), "ult fragment still 0");
+		ExpectF(3f, HenshinStatService.CombatHitEnergy(0.25f, false), "multi main hit");
 
 		// MoveRefRate 门禁：原始公式标准技 = 3 APS；§7 窗 0.85～1.15 是归一化值。
 		ExpectF(3f, HenshinStatService.MoveRefRate(20, 1f), "std MoveRefRate");

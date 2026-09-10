@@ -13,6 +13,8 @@ namespace PokemonHenshin.Content.Core
 		public const int MaxLevel = 100;
 		public const int EnergyMaxDefault = 1000;
 		public const float EnergyOnHit = 12f;
+		/// <summary>爆炸碎片等次级生成物的命中基数；再乘 <see cref="EnergyGainFactor"/> 与饰品。</summary>
+		public const float EnergyOnFragmentHit = 1f;
 		public const float EnergyOnKill = 55f;
 		public const float EnergyPassivePerTick = 0.15f;
 		public const float EnergyCombatSoftCapPerSecond = 1000f;
@@ -256,6 +258,17 @@ namespace PokemonHenshin.Content.Core
 			if (tag == BalanceTag.HighFrequency || useTime <= 16)
 				return 0.35f;
 			return 1f;
+		}
+
+		/// <summary>
+		/// 命中战斗能量（未乘饰品）。大招 Factor=0 → 0。
+		/// 碎片等次级生成物用 <see cref="EnergyOnFragmentHit"/>，击杀仍走 <see cref="EnergyOnKill"/>。
+		/// </summary>
+		public static float CombatHitEnergy(float energyGainFactor, bool fragment)
+		{
+			if (energyGainFactor <= 0f)
+				return 0f;
+			return (fragment ? EnergyOnFragmentHit : EnergyOnHit) * energyGainFactor;
 		}
 
 		/// <summary>

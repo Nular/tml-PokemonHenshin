@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-09
+**版本日期：** 2026-09-10
 
 ## 1. 权威与硬约束
 
@@ -60,8 +60,9 @@
 | **文件** | `Wave2MoveProjs.cs` → `NebulaPulseDirectorProj` / `NebulaPulseShardProj` |
 | **形态** | 火恐龙、哈克龙、烈咬陆鲨、烈空坐等 |
 | **手法** | 连发约 ×10；壳弹自管飞行（**不**跑原版 Nebula AI）；`LoadProjectile(NebulaArcanum)`（**617**）；亡时 `NewProjectile(NebulaArcanumExplosionShotShard)`（**620**）紫染；scale≈0.7、不追踪 |
-| **踩坑** | 跳过自管位移只留爆炸 →「远处紫碎片有伤无弹」 |
-| **勿做** | 直接挂原版 Nebula AI；灾厄龙弹 |
+| **踩坑** | 跳过自管位移只留爆炸 →「远处紫碎片有伤无弹」。`RetargetAsHenshin` 后的 620 走 `HenshinDamage`，若不打 `CrumbHitEnergy` 会按完整 `EnergyOnHit` 结算（10×12 碎片瞬间灌满能量条） |
+| **能量** | 碎片命中 `1 × EnergyGainFactor`（`HenshinNebulaShardTintGlobal.CrumbHitEnergy` + ExtraAI）；击杀仍 `55 × Factor`。主弹 10 发仍 `12 × Factor` |
+| **勿做** | 直接挂原版 Nebula AI；灾厄龙弹；整招改 MultiHit 来压碎片充能（会误伤主弹） |
 
 ### 2.4 天雷 — `SkyBoltLightning` + ThunderTrail Additive 保 Alpha
 
@@ -594,6 +595,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 1.8 Living | 2026-09-07 | Wave3 Accepted（睡眠白等） |
 | 1.9 Living | 2026-09-07 | Stage7+ 落地：钢尾铁罩；猛撞灰日耀；暗影抓/恶波动32；彗星拳 StarWrath；破灭自缓加粗；星尘路径俯冲/画龙点睛；逆鳞火球；64 StarWrath；空气三段；神鸟吟唱；气旋32格 |
 | 2.0 Living | 2026-09-07 | Stage7+ **Accepted**；画龙点睛改纯黑龙；气旋独立名键 `CycloneAttack`；超梦强念×6穿墙+精神击破64球 |
+| 2.1 Living | 2026-09-10 | 龙之波动 620 碎片命中能量改为碎屑 `1×Factor`；击杀不变 |
 
 ---
 
