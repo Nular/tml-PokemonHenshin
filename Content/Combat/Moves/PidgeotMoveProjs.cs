@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
+using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
 using Terraria;
 using Terraria.Audio;
@@ -11,15 +12,19 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Combat.Moves
 {
 	/// <summary>
-	/// 暴风天候棒：直立帧动画（不自旋）。ai2≥0.5=大招（发射时多 4 伴随风）。
-	/// ai1≥0.5=伴随弹（不二次分裂）。穿透 + 途中牵引。
+	/// 暴风天候棒：Barrage 穿透飞弹（不是 Field）。直立帧、不自旋。
+	/// 默认撞实心贴地飞；诅咒符 Barrage 穿墙。自管位移，广角镜不弯。
+	/// ai2≥0.5=大招（发射时多 4 伴随风）。ai1≥0.5=伴随弹（不二次分裂）。
 	/// </summary>
 	public class WeatherPainHurricaneProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
+
 		private const float FlightSpeed = 14f;
 		private const float SuckRange = 112f;
 		private const int FlightLife = 100;
 		private bool _spawnedCompanions;
+		private bool _grounded;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.WeatherPainShot;
 
@@ -33,7 +38,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = FlightLife;
-			Projectile.tileCollide = false;
+			Projectile.tileCollide = true;
 			Projectile.penetrate = -1; // 穿透
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 10;
@@ -66,7 +71,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 						ModContent.ProjectileType<WeatherPainHurricaneProj>(), companionDmg, Projectile.knockBack * 0.85f,
 						Projectile.owner, 0f, 1f, 1f); // ai1=companion, ai2=ult
 					if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+					{
 						tagged.EasyCrit = EasyCrit;
+						tagged.Delivery = Delivery == MoveDelivery.None ? MoveDelivery.Barrage : Delivery;
+					}
 				}
 			}
 		}
@@ -88,6 +96,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				-Projectile.velocity * 0.1f + Main.rand.NextVector2Circular(1.5f, 1.5f), 100,
 				new Color(160, 190, 230), 1.2f).noGravity = true;
 
+			if (_grounded)
+				SnapToGround();
+
 			float pullStr = IsUlt ? 8f : 6f;
 			float carry = IsUlt ? 0.65f : 0.55f;
 			for (int i = 0; i < Main.maxNPCs; i++)
@@ -107,6 +118,41 @@ namespace PokemonHenshin.Content.Combat.Moves
 				else
 					n.Center = Vector2.Lerp(n.Center, Projectile.Center, 0.25f);
 			}
+		}
+
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			_grounded = true;
+			float sx = Math.Abs(Projectile.velocity.X) > 0.01f
+				? Math.Sign(Projectile.velocity.X)
+				: Math.Sign(oldVelocity.X);
+			if (sx == 0)
+				sx = Main.player[Projectile.owner].direction;
+			if (Math.Abs(Projectile.velocity.X) < 0.01f && Math.Abs(oldVelocity.X) > 0.01f)
+				sx = -Math.Sign(oldVelocity.X);
+			Projectile.velocity.X = sx * FlightSpeed;
+			Projectile.velocity.Y = 0f;
+			return false;
+		}
+
+		private void SnapToGround()
+		{
+			int tileX = (int)(Projectile.Center.X / 16f);
+			int startY = (int)(Projectile.Center.Y / 16f);
+			bool found = false;
+			for (int y = startY; y < startY + 40 && y < Main.maxTilesY; y++)
+			{
+				Tile tile = Framing.GetTileSafely(tileX, y);
+				if (tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
+				{
+					Projectile.position.Y = y * 16f - Projectile.height;
+					found = true;
+					break;
+				}
+			}
+			Projectile.velocity.Y = found ? 0f : 6f;
+			if (Math.Abs(Projectile.velocity.X) < 0.1f)
+				Projectile.velocity.X = Main.player[Projectile.owner].direction * FlightSpeed;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)

@@ -95,6 +95,10 @@ namespace PokemonHenshin.Content.Visual
 			lines.Add(new StatLine(StatLineKind.Warn, T("NotTransformed")));
 			if (hp.EverstoneBlock)
 				lines.Add(new StatLine(StatLineKind.Active, T("EverstoneOn")));
+			if (hp.CurseTagSuperImmune)
+				lines.Add(new StatLine(StatLineKind.Active, T("CurseTagImmuneOn")));
+			else if (hp.CurseTagBurnTicks > 0)
+				lines.Add(new StatLine(StatLineKind.Warn, T("CurseTagBurnOn", Num(hp.CurseTagBurnTicks / 60f))));
 			AppendAccessories(lines, accs);
 		}
 
@@ -378,6 +382,10 @@ namespace PokemonHenshin.Content.Visual
 				lines.Add(new StatLine(StatLineKind.Warn, T("TotLifeOrbDrain")));
 			if (hp.FocusSash)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotSash", Pct(hp.FocusSashHpPct), Num(hp.FocusSashCdSec))));
+			if (hp.CurseTagSuperImmune)
+				lines.Add(new StatLine(StatLineKind.Active, T("TotCurseImmune")));
+			else if (hp.CurseTagBurnTicks > 0)
+				lines.Add(new StatLine(StatLineKind.Warn, T("TotCurseBurn", Num(hp.CurseTagBurnTicks / 60f))));
 
 			AppendDeliveryFlags(lines, hp);
 
@@ -395,12 +403,13 @@ namespace PokemonHenshin.Content.Visual
 			if (homing.Count > 0)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotHoming", string.Join("/", homing))));
 
-			var pierce = new List<string>(5);
+			var pierce = new List<string>(6);
 			if (hp.TilePierceBolt) pierce.Add(T("DelBolt"));
 			if (hp.TilePierceSpread) pierce.Add(T("DelSpread"));
 			if (hp.TilePierceBarrage) pierce.Add(T("DelBarrage"));
 			if (hp.TilePierceDoTBind) pierce.Add(T("DelDoT"));
 			if (hp.TilePierceBeam) pierce.Add(T("DelBeam"));
+			if (hp.TilePierceField) pierce.Add(T("DelField"));
 			if (pierce.Count > 0)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotPierce", string.Join("/", pierce))));
 		}
@@ -482,12 +491,15 @@ namespace PokemonHenshin.Content.Visual
 				bool resOk = def == null || def.Resonance == PokemonType.None
 					|| (hp.CurrentForm != null && (hp.CurrentForm.Primary == def.Resonance || hp.CurrentForm.Secondary == def.Resonance));
 				bool everstone = def is { WorksUntransformed: true };
+				bool curseTag = acc.FamilyId == AccFamilyId.A11;
 				bool active = everstone ? resOk : transformed && resOk;
 				string reason = active
 					? string.Empty
-					: !transformed && !everstone
-						? T("AccReasonForm")
-						: T("AccReasonResonance");
+					: curseTag && !transformed
+						? T("AccReasonCurseTag")
+						: !transformed && !everstone
+							? T("AccReasonForm")
+							: T("AccReasonResonance");
 
 				rows.Add(new AccRow
 				{

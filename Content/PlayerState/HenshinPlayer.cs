@@ -79,7 +79,11 @@ namespace PokemonHenshin.Content.PlayerState
 		public bool TilePierceBarrage { get; set; }
 		public bool TilePierceDoTBind { get; set; }
 		public bool TilePierceBeam { get; set; }
+		public bool TilePierceField { get; set; }
 		public int PenetrateAdd { get; set; }
+		public bool CurseTagSuperImmune { get; set; }
+		public int CurseTagBurnTicks { get; set; }
+		private int _curseTagPulseCd;
 		public bool ChoiceLockSkill2 { get; set; }
 		public bool ChoiceLockUlt { get; set; }
 		public float ChoiceDamage { get; set; }
@@ -229,8 +233,23 @@ namespace PokemonHenshin.Content.PlayerState
 			MoveDelivery.Barrage => TilePierceBarrage,
 			MoveDelivery.DoTBind => TilePierceDoTBind,
 			MoveDelivery.Beam => TilePierceBeam,
+			MoveDelivery.Field => TilePierceField,
 			_ => false
 		};
+
+		public const int CurseTagPulseInterval = 1800;
+
+		public void NotifyCurseTagWorn(AccPiece piece)
+		{
+			if (piece == AccPiece.Super)
+			{
+				CurseTagSuperImmune = true;
+				return;
+			}
+			int ticks = piece == AccPiece.Normal ? 300 : 180;
+			if (ticks > CurseTagBurnTicks)
+				CurseTagBurnTicks = ticks;
+		}
 
 		public void ApplyAccStat(AccStatLine line)
 		{
@@ -269,6 +288,11 @@ namespace PokemonHenshin.Content.PlayerState
 				case AccStat.TilePierceBarrage: TilePierceBarrage = true; break;
 				case AccStat.TilePierceDoTBind: TilePierceDoTBind = true; break;
 				case AccStat.TilePierceBeam: TilePierceBeam = true; break;
+				case AccStat.TilePierceField: TilePierceField = true; break;
+				case AccStat.CursedInfernoImmune: CurseTagSuperImmune = true; break;
+				case AccStat.CursedInfernoSec:
+					CurseTagBurnTicks = Math.Max(CurseTagBurnTicks, (int)(line.Value * 60f));
+					break;
 				case AccStat.PenetrateAdd: PenetrateAdd += (int)line.Value; break;
 				case AccStat.ChoiceLockSkill2: ChoiceLockSkill2 = true; break;
 				case AccStat.ChoiceLockUlt: ChoiceLockUlt = true; break;
@@ -347,8 +371,10 @@ namespace PokemonHenshin.Content.PlayerState
 			HomingTurnRate = 0.08f;
 			HomingRangeTiles = 0f;
 			HomingBolt = HomingSpread = HomingBarrage = HomingDoTBind = false;
-			TilePierceBolt = TilePierceSpread = TilePierceBarrage = TilePierceDoTBind = TilePierceBeam = false;
+			TilePierceBolt = TilePierceSpread = TilePierceBarrage = TilePierceDoTBind = TilePierceBeam = TilePierceField = false;
 			PenetrateAdd = 0;
+			CurseTagSuperImmune = false;
+			CurseTagBurnTicks = 0;
 			ChoiceLockSkill2 = false;
 			ChoiceLockUlt = false;
 			ChoiceDamage = 0f;
@@ -678,6 +704,7 @@ namespace PokemonHenshin.Content.PlayerState
 		public override void PostUpdate()
 		{
 			CleanupKillXp();
+			TickCurseTagBurn();
 			if (!IsTransformed)
 				return;
 
@@ -689,6 +716,23 @@ namespace PokemonHenshin.Content.PlayerState
 			TryProcessUltimateKey();
 			TryProcessDashInput();
 			TrySpawnFullChargeDust();
+		}
+
+		private void TickCurseTagBurn()
+		{
+			bool tax = CurseTagBurnTicks > 0 && !CurseTagSuperImmune;
+			if (!tax)
+			{
+				_curseTagPulseCd = 0;
+				return;
+			}
+			if (_curseTagPulseCd <= 0)
+			{
+				Player.AddBuff(BuffID.CursedInferno, CurseTagBurnTicks);
+				_curseTagPulseCd = CurseTagPulseInterval;
+			}
+			else
+				_curseTagPulseCd--;
 		}
 
 		private void TickLeftovers()

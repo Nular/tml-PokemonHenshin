@@ -22,6 +22,8 @@ StatsUI: {
 	ButtonHover: Henshin stats
 	NotTransformed: Not transformed. Hold a force item in the hotbar to see live bonuses and abilities.
 	EverstoneOn: Everstone: evolution blocked
+	CurseTagBurnOn: Spell Tag: Cursed Inferno {0}s (while worn)
+	CurseTagImmuneOn: Super Spell Tag: immune to Cursed Inferno
 	NoMount: Mounts are disabled while transformed
 	SectionForm: Form
 	TypesLine: Types: {0}
@@ -221,12 +223,15 @@ StatsUI: {
 	TotRocky: Thorns {0}% of form attack
 	TotLifeOrbDrain: Life Orb: attacks cost HP
 	TotSash: Focus Sash: lethal save at ≥{0}% HP, {1}s CD
+	TotCurseBurn: Cursed Inferno every 30s for {0}s
+	TotCurseImmune: Immune to Spell Tag burn
 	TotNone: (no extra numeric bonuses)
 	DelBolt: bolt
 	DelSpread: spread
 	DelBarrage: barrage
 	DelDoT: bind
 	DelBeam: beam
+	DelField: field
 	TotHoming: Homing: {0}
 	TotPierce: Tile pierce: {0}
 	SectionAcc: Equipped accessories
@@ -234,6 +239,7 @@ StatsUI: {
 	AccOn: "{0}  [ON]"
 	AccOff: "{0}  [{1}]"
 	AccReasonForm: henshin only
+	AccReasonCurseTag: burn active; tile pierce needs henshin
 	AccReasonResonance: resonance unmet
 	SectionRuntime: Now
 	RunMoxie: Moxie x{0} ({1}% damage)
@@ -279,6 +285,7 @@ Accessories: {
 	InactiveTag: "[Henshin only - inactive]"
 	AlwaysActiveTag: "[Always on - ACTIVE]"
 	AlwaysInactiveTag: "[Always on - inactive]"
+	CurseTagWornTag: "[Cursed Inferno while worn; tile pierce requires henshin]"
 	ShardTag: Shard {0}/6
 
 	ResonanceLine: Resonance: {0}
@@ -319,6 +326,9 @@ Accessories: {
 	StatTilePierceBarrage: Tile pierce: barrage
 	StatTilePierceDoTBind: Tile pierce: bind shots
 	StatTilePierceBeam: Tile pierce: beams
+	StatTilePierceField: Tile pierce: fields
+	StatCursedInfernoSec: Cursed Inferno on wear, then every 30s for {0}s (even untransformed)
+	StatCursedInfernoImmune: Immune to Spell Tag burn
 	StatPenetrateAdd: Pierce +{0}
 	StatChoiceLockSkill2: Locks skill 2
 	StatChoiceLockUlt: Locks ultimate
