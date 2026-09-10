@@ -180,8 +180,6 @@ namespace PokemonHenshin.Content.Loot
 
 		public static bool LootContainsBossBag(NPCLoot npcLoot)
 		{
-			if (npcLoot == null)
-				return false;
 			var seen = new HashSet<IItemDropRule>();
 			foreach (IItemDropRule rule in npcLoot.Get())
 			{
