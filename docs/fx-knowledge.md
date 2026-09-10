@@ -40,8 +40,9 @@
 | **文件** | `Wave2MoveProjs.cs` → `LeafSpreadProj`；`FormItemUtil.LeafSpread` |
 | **形态** | `L03_F02` 妙蛙草 Skill1 |
 | **手法** | Director 扇出 5 枚；`ProjectileBorrow.ItemShoot(ItemID.LeafBlower)` 回退 `ProjectileID.Leaf`（**206**）；`RetargetAsHenshin` |
+| **穿墙** | 真 Leaf 默认撞墙；诅咒之符 Spread 时 GlobalProjectile 继承 Delivery 并 `PostAI` 保 `tileCollide=false` |
 | **为何 Accepted** | 真生成会顺带加载贴图；与吹叶机同外观 |
-| **勿做** | 只刷 `DustID.Grass` 当成品；有伤无叶 |
+| **勿做** | 只刷 `DustID.Grass` 当成品；有伤无叶；为穿墙改成壳弹 |
 
 ### 2.2 泡沫光线 — `LoadProjectile(Bubble)` + `BorrowedVisualBoltProj`
 
@@ -80,6 +81,7 @@
 |----|------|
 | **文件** | `FlareBoltUltProj`（小火龙大招）；`GroundCycloneProj`（波波起风） |
 | **贴图** | `ProjectileID.Typhoon`（**409**）；橙红 / 深蓝染色 + `LoadProjectile` |
+| **火焰漩涡** | 默认 `tileCollide`；撞实心 **停飞不 Kill**，继续转圈伤到 `timeLeft`。诅咒符 Bolt 穿墙则不停 |
 | **勿做** | 生成灾厄台风弹；Invisible hitbox 只伤 |
 
 ### 2.6 Boulder — 岩石封锁
@@ -180,7 +182,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 |------------|---------------|-----------|---------|-------------|------|--------|
 | Ember/火花 | L01_F01,1 | Bolt+OnFire | `EmberBoltProj`←BallofFire | BallofFire Shell | 可用 | Accepted |
 | Scratch/抓 | L01_F01,1 | MeleeArc | `ScratchSlashProj` | 自绘爪痕 | 平行爪 | Accepted |
-| FireSpin/火焰漩涡 | L01_F01 Ult | HomingLock | `FlareBoltUltProj` Typhoon | Typhoon Shell | 可见涡 | Accepted |
+| FireSpin/火焰漩涡 | L01_F01 Ult | HomingLock | `FlareBoltUltProj` Typhoon；**撞墙停飞不 Kill** | Typhoon Shell | 可见涡 | Accepted |
 | DragonPulse/龙之波动 | L01_F02,4 | Bolt×10 | NebulaPulse* **直线连发** | Nebula 617/620 | 紫炸 | Accepted |
 | FireFang/火焰牙 | L01_F02,4 | MeleeArc+OnFire | BiteArc **两对大弧牙**+OnFire | BiteArc cookbook | 火焰牙 | Accepted |
 | FlareBlitz/闪焰冲锋 | L01_F02,4 | Lunge+Recoil | `LungeProj` **32格** 多线火径+包裹焰+收尾减速 | 火尘残影 | 可见冲锋 | Accepted |
@@ -197,7 +199,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble **窄直线**速度随机+破裂小泡 | Bubble Load | 密泡 | Accepted |
 | Bite/咬住 | L02_F02,4 | BiteArc | `BiteArcProj` | cookbook | 尖牙 | Accepted |
 | Whirlpool/潮旋 | L02_F02 Ult | DoTBind | MouseVortex Cyclone 蓝 | Typhoon 蓝染 / `Assets/Fx/Cyclone` | 可见涡 | Implemented |
-| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中不穿透+渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
+| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中墙=怪渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
 | SkullBash/火箭头锤 | L02_F03,7 | Charge→Lunge | Lunge 长 use | — | OK | Accepted |
 | HydroCannon/加农水炮 | L02_F03 Ult | Beam | `WaterJet` cannon：穿透+每3击爆 | 同水炮加粗+流动 | 粗柱 | Accepted |
 
@@ -252,13 +254,13 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 | MoveKey/CN | Forms (Stage) | Playstyle | Current | Recommended | Feel | Status |
 |------------|---------------|-----------|---------|-------------|------|--------|
-| DragonBreath/龙息 | L07_F01,6 | Spread+Stun | **128格** Fire 帧线；禁飞散 Flames | Flames/紫火锥；`Assets/Fx/Fire` 按帧 | 火息线 | Implemented |
+| DragonBreath/龙息 | L07_F01,6 | Spread+Stun | **128格** Fire 帧线；禁飞散 Flames；**线在实心截断**（诅咒符 Spread 穿） | Flames/紫火锥；`Assets/Fx/Fire` 按帧 | 火息线 | Implemented |
 | Bite/咬住 | L07_F01,6 | BiteArc | BiteArc | cookbook | OK | Accepted |
-| DragonRage/龙之怒 | L07_F01 Ult / L15_F01 S1 | Barrage | `DragonRageBarrage` 技能12/大招32 抖动球 | SoftGlow≈1.5格（晕抬亮#2108ad/芯#e7ce39）+5格爆 | 球体连射 | Implemented |
+| DragonRage/龙之怒 | L07_F01 Ult / L15_F01 S1 | Barrage | `DragonRageBarrage` 技能12/大招32 抖动球；**技能球撞实心爆，大招仍穿墙** | SoftGlow≈1.5格（晕抬亮#2108ad/芯#e7ce39）+5格爆 | 球体连射 | Implemented |
 | DragonPulse | L07_F02,8 | Nebula×10 | NebulaPulse | cookbook | OK | Accepted |
 | DragonTail/龙尾 | L07_F02,8 | Melee | DragonTailWhip 星尘龙节链15格强击退 | StardustDragon1–4 | 鞭弧 | Accepted |
-| Hurricane/暴风 | L07_F02 Ult | Bolt+Orbit | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆 | WeatherPainShot | 大招风团 | Accepted |
-| Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Bolt+Orbit | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋） | WeatherPainShot | 天候棒 | Accepted |
+| Hurricane/暴风 | L07_F02 Ult | Bolt+Orbit | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆；**默认撞实心贴地**（诅咒符 Field 穿墙） | WeatherPainShot | 大招风团 | Accepted |
+| Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Bolt+Orbit | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋）；**默认撞实心贴地** | WeatherPainShot | 天候棒 | Accepted |
 | DragonDive/龙之俯冲 | L07_F03,11 | Lunge | StardustPathLunge 半透明星尘龙路径伤 | StardustDragon2–4 | 路径龙 | Accepted |
 | Outrage/逆鳞 | L07_F03 Ult | Barrage | 3s CultistBossFireBall 壳追踪爆+Confused | CultistBossFireBall | 身周火球 | Accepted |
 
@@ -479,13 +481,13 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ### HydroPump / HydroCannon（水炮 / 加农水炮）— Implemented
 
-- **目标：** **粗水柱**，跟鼠标；枪口约 24 tick 渐进伸长；水炮宽 **≈1～1.5 格**（不穿透，命中渐缩）；加农 **≈2～2.5 格**（穿透，每 3 击半径 5 格水爆）。
+- **目标：** **粗水柱**，跟鼠标；枪口约 24 tick 渐进伸长；水炮宽 **≈1～1.5 格**（不穿透，**命中墙=命中怪**锁长渐缩）；加农 **≈2～2.5 格**（**仍穿墙穿怪**，每 3 击半径 5 格水爆）。诅咒符 Beam 让水炮穿墙但仍撞怪渐缩。
 - **复用：** `WaterJetProj`：`DrawContinuousBeam` + `DrawWaterFlowRipples`（流动波节）；工厂 `FormItemUtil.WaterJet`。
 - **Files：** `WaterJetProj`；Blastoise / Gyarados。
 
 ### DragonRage（龙之怒）— Implemented
 
-- **非光束：** 技能 **12** / 大招 **32** 发 SoftGlow 球体（直径 **≈1.5 格**），直线 + 垂直抖动；外晕抬亮蓝紫 + 金芯 `#e7ce39`；尘粒两色插值；命中直径 **5 格**。
+- **非光束：** 技能 **12** / 大招 **32** 发 SoftGlow 球体（直径 **≈1.5 格**），直线 + 垂直抖动；外晕抬亮蓝紫 + 金芯 `#e7ce39`；尘粒两色插值；命中直径 **5 格**。技能球撞实心即爆；**迷你龙大招仍穿墙**。诅咒符 Barrage 让技能球也穿墙。
 - **为何不用原版球弹：** 色/AI 绑死；要精确龙色 → SoftGlow 壳。
 - **Files：** `DragonRageBarrageProj` / `DragonRageOrbProj`；`FormItemUtil.DragonRage`。
 
@@ -596,6 +598,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 1.9 Living | 2026-09-07 | Stage7+ 落地：钢尾铁罩；猛撞灰日耀；暗影抓/恶波动32；彗星拳 StarWrath；破灭自缓加粗；星尘路径俯冲/画龙点睛；逆鳞火球；64 StarWrath；空气三段；神鸟吟唱；气旋32格 |
 | 2.0 Living | 2026-09-07 | Stage7+ **Accepted**；画龙点睛改纯黑龙；气旋独立名键 `CycloneAttack`；超梦强念×6穿墙+精神击破64球 |
 | 2.1 Living | 2026-09-10 | 龙之波动 620 碎片命中能量改为碎屑 `1×Factor`；击杀不变 |
+| 2.2 Living | 2026-09-10 | 诅咒之符 Field 穿墙 + 诅咒焰；火焰漩涡停飞不 Kill；水炮墙=怪；暴风默认贴地；龙息截断；技能龙怒撞实心 |
 
 ---
 

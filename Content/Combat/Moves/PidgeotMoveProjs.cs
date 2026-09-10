@@ -20,6 +20,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const float SuckRange = 112f;
 		private const int FlightLife = 100;
 		private bool _spawnedCompanions;
+		private bool _grounded;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.WeatherPainShot;
 
@@ -33,7 +34,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = FlightLife;
-			Projectile.tileCollide = false;
+			Projectile.tileCollide = true;
 			Projectile.penetrate = -1; // 穿透
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 10;
@@ -88,6 +89,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				-Projectile.velocity * 0.1f + Main.rand.NextVector2Circular(1.5f, 1.5f), 100,
 				new Color(160, 190, 230), 1.2f).noGravity = true;
 
+			if (_grounded)
+				SnapToGround();
+
 			float pullStr = IsUlt ? 8f : 6f;
 			float carry = IsUlt ? 0.65f : 0.55f;
 			for (int i = 0; i < Main.maxNPCs; i++)
@@ -107,6 +111,41 @@ namespace PokemonHenshin.Content.Combat.Moves
 				else
 					n.Center = Vector2.Lerp(n.Center, Projectile.Center, 0.25f);
 			}
+		}
+
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			_grounded = true;
+			float sx = Math.Abs(Projectile.velocity.X) > 0.01f
+				? Math.Sign(Projectile.velocity.X)
+				: Math.Sign(oldVelocity.X);
+			if (sx == 0)
+				sx = Main.player[Projectile.owner].direction;
+			if (Math.Abs(Projectile.velocity.X) < 0.01f && Math.Abs(oldVelocity.X) > 0.01f)
+				sx = -Math.Sign(oldVelocity.X);
+			Projectile.velocity.X = sx * FlightSpeed;
+			Projectile.velocity.Y = 0f;
+			return false;
+		}
+
+		private void SnapToGround()
+		{
+			int tileX = (int)(Projectile.Center.X / 16f);
+			int startY = (int)(Projectile.Center.Y / 16f);
+			bool found = false;
+			for (int y = startY; y < startY + 40 && y < Main.maxTilesY; y++)
+			{
+				Tile tile = Framing.GetTileSafely(tileX, y);
+				if (tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
+				{
+					Projectile.position.Y = y * 16f - Projectile.height;
+					found = true;
+					break;
+				}
+			}
+			Projectile.velocity.Y = found ? 0f : 6f;
+			if (Math.Abs(Projectile.velocity.X) < 0.1f)
+				Projectile.velocity.X = Main.player[Projectile.owner].direction * FlightSpeed;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)

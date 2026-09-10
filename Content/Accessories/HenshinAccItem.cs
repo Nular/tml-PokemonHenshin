@@ -92,6 +92,9 @@ namespace PokemonHenshin.Content.Accessories
 			if (def == null)
 				return;
 
+			if (FamilyId == AccFamilyId.A11)
+				hp.NotifyCurseTagWorn(Piece);
+
 			bool transformed = hp.IsTransformed;
 			if (!transformed && !def.WorksUntransformed)
 				return;
@@ -121,16 +124,31 @@ namespace PokemonHenshin.Content.Accessories
 			bool resOk = def == null || def.Resonance == PokemonType.None
 				|| (hp?.CurrentForm != null && (hp.CurrentForm.Primary == def.Resonance || hp.CurrentForm.Secondary == def.Resonance));
 			bool everstone = def is { WorksUntransformed: true };
-			bool active = everstone
-				? resOk
-				: transformed && resOk;
-
-			string key = everstone
-				? (active ? "Mods.PokemonHenshin.Accessories.AlwaysActiveTag" : "Mods.PokemonHenshin.Accessories.AlwaysInactiveTag")
-				: (active ? "Mods.PokemonHenshin.Accessories.ActiveTag" : "Mods.PokemonHenshin.Accessories.InactiveTag");
+			bool curseTag = FamilyId == AccFamilyId.A11;
+			string key;
+			if (curseTag)
+			{
+				key = transformed
+					? "Mods.PokemonHenshin.Accessories.ActiveTag"
+					: "Mods.PokemonHenshin.Accessories.CurseTagWornTag";
+			}
+			else
+			{
+				bool active = everstone
+					? resOk
+					: transformed && resOk;
+				key = everstone
+					? (active ? "Mods.PokemonHenshin.Accessories.AlwaysActiveTag" : "Mods.PokemonHenshin.Accessories.AlwaysInactiveTag")
+					: (active ? "Mods.PokemonHenshin.Accessories.ActiveTag" : "Mods.PokemonHenshin.Accessories.InactiveTag");
+			}
+			bool gateOn = curseTag
+				? transformed
+				: everstone
+					? resOk
+					: transformed && resOk;
 			tooltips.Add(new TooltipLine(Mod, "HenshinAccGate", Language.GetTextValue(key))
 			{
-				OverrideColor = active ? Color.LightGreen : Color.OrangeRed
+				OverrideColor = curseTag || gateOn ? Color.LightGreen : Color.OrangeRed
 			});
 
 			if (Piece is >= AccPiece.S1 and <= AccPiece.S6)

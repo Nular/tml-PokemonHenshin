@@ -2,7 +2,7 @@
 
 ## 定位
 
-泰拉瑞亚 + tModLoader + 灾厄：持握「{宝可梦}之力」换皮变身；**持握被动 + 技能1/2 + 能量大招**；仅变身生效饰品；松手失效。联机必需。
+泰拉瑞亚 + tModLoader + 灾厄：持握「{宝可梦}之力」换皮变身；**持握被动 + 技能1/2 + 能量大招**；仅变身生效饰品（不变之石、诅咒焰除外）；松手失效。联机必需。
 
 ## 怎么跑
 
@@ -63,7 +63,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 
 - **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
 - **数值（2026-09-09～10）：** v1.4 已接线。击杀 XP × 世界档；`ExpNeeded` × 物品带。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。DPS 抽检仍待本地。
-- **饰品（2026-09-10）：** 28 家族逻辑已接线；A01–A28 普通/超级/碎片 64×64 pixeloe。重跑：`python tools/pixelize_accessories.py`。**游戏内图标/合成/掉落验收仍待本地**。
+- **饰品（2026-09-10）：** 28 家族逻辑已接线；A01–A28 普通/超级/碎片 64×64 pixeloe。诅咒之符无共鸣；穿墙含 Beam+Field；戴上即受原版诅咒焰（未变身也烧，超级免疫）。重跑：`python tools/pixelize_accessories.py`。**游戏内图标/合成/掉落验收仍待本地**。
 - **已知缺口：** 联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。污泥毒云等未打标 Retarget 弹仍走完整命中能。未接线代码见 `docs/requirements.md` §12.1。变身属性面板（物品栏右侧）待游戏内验收。
 - **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`；`tools/HenshinStatVerify`。
 - **下一步：** 游戏内验饰品（含新图标）→ 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

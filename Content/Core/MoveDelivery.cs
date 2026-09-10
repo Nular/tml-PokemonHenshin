@@ -24,7 +24,7 @@ namespace PokemonHenshin.Content.Core
 			d is MoveDelivery.Bolt or MoveDelivery.Spread or MoveDelivery.Barrage or MoveDelivery.DoTBind;
 
 		public static bool TilePierceEligible(MoveDelivery d) =>
-			HomingEligible(d) || d == MoveDelivery.Beam;
+			HomingEligible(d) || d is MoveDelivery.Beam or MoveDelivery.Field;
 
 		public static bool MeleeShort(MoveDelivery d) =>
 			d is MoveDelivery.MeleeArc or MoveDelivery.Lunge or MoveDelivery.StrikeFall;

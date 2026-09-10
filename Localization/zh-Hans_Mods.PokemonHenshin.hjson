@@ -22,6 +22,8 @@ StatsUI: {
 	ButtonHover: 变身属性
 	NotTransformed: 未持握之力。持握热键栏中的「xxx之力」后，这里显示当前加成与特性。
 	EverstoneOn: 不变之石：阻止进化
+	CurseTagBurnOn: 诅咒之符：诅咒焰 {0} 秒（戴着即生效）
+	CurseTagImmuneOn: 超级诅咒之符：免疫诅咒焰
 	NoMount: 变身期间禁止坐骑
 	SectionForm: 形态
 	TypesLine: 属性：{0}
@@ -221,12 +223,15 @@ StatsUI: {
 	TotRocky: 受击反伤 {0}% 持握攻击
 	TotLifeOrbDrain: 生命宝珠：攻击扣 HP
 	TotSash: 气势披带：HP≥{0}% 可挡致死，CD {1}s
+	TotCurseBurn: 诅咒焰每 30 秒灼烧 {0} 秒
+	TotCurseImmune: 免疫诅咒之符灼烧
 	TotNone: （无额外数值加成）
 	DelBolt: 单体弹
 	DelSpread: 扇形
 	DelBarrage: 连发
 	DelDoT: 缠绕
 	DelBeam: 光束
+	DelField: 场地
 	TotHoming: 追踪：{0}
 	TotPierce: 穿墙：{0}
 	SectionAcc: 已装备饰品
@@ -234,6 +239,7 @@ StatsUI: {
 	AccOn: {0}　【生效】
 	AccOff: {0}　【{1}】
 	AccReasonForm: 仅变身生效
+	AccReasonCurseTag: 诅咒焰已生效；穿墙需变身
 	AccReasonResonance: 共鸣不符
 	SectionRuntime: 当前状态
 	RunMoxie: 自信过度 {0} 层（伤害 {1}%）
@@ -269,6 +275,7 @@ Accessories: {
 	InactiveTag: 【仅变身生效·当前未生效】
 	AlwaysActiveTag: 【戴着即生效·当前生效】
 	AlwaysInactiveTag: 【戴着即生效·当前未生效】
+	CurseTagWornTag: 【诅咒焰戴着即生效；穿墙仅变身】
 	ShardTag: 碎片 {0}/6
 
 	ResonanceLine: 共鸣：{0}
@@ -309,6 +316,9 @@ Accessories: {
 	StatTilePierceBarrage: 穿墙：连发弹幕
 	StatTilePierceDoTBind: 穿墙：缠绕弹
 	StatTilePierceBeam: 穿墙：直线光束
+	StatTilePierceField: 穿墙：场地
+	StatCursedInfernoSec: 戴上即受诅咒焰，每 30 秒灼烧 {0} 秒（未变身也会触发）
+	StatCursedInfernoImmune: 免疫诅咒之符灼烧
 	StatPenetrateAdd: 穿透 +{0}
 	StatChoiceLockSkill2: 锁定技能2
 	StatChoiceLockUlt: 锁定大招

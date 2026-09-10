@@ -353,6 +353,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	{
 		public override bool HandlesOwnHoming => true;
 		private int _lockNpc = -1;
+		private bool _halted;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Typhoon;
 
@@ -364,7 +365,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 6;
 			Projectile.timeLeft = 240;
-			Projectile.tileCollide = false;
+			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 1;
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 12;
@@ -381,7 +382,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			Projectile.rotation += 0.25f;
-			if (_lockNpc >= 0)
+			if (_halted)
+			{
+				Projectile.velocity = Vector2.Zero;
+			}
+			else if (_lockNpc >= 0)
 			{
 				NPC n = Main.npc[_lockNpc];
 				if (!n.active || n.life <= 0)
@@ -412,9 +417,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Lighting.AddLight(Projectile.Center, 1f, 0.4f, 0.1f);
 		}
 
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			_halted = true;
+			_lockNpc = -1;
+			Projectile.velocity = Vector2.Zero;
+			return false;
+		}
+
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			if (_lockNpc < 0)
+			if (!_halted && _lockNpc < 0)
 				_lockNpc = target.whoAmI;
 			target.AddBuff(BuffID.OnFire, 180);
 		}
