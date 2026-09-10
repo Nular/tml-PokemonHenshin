@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
@@ -6,6 +7,7 @@ using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 
 namespace PokemonHenshin.Content.Accessories
 {
@@ -22,6 +24,8 @@ namespace PokemonHenshin.Content.Accessories
 			{
 				child.Homing |= p.Homing;
 				child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
+				child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+				child.HomingTargetWhoAmI = -1;
 				if (child.Delivery == MoveDelivery.None)
 					child.Delivery = p.Delivery;
 				child.EasyCrit |= p.EasyCrit;
@@ -43,11 +47,7 @@ namespace PokemonHenshin.Content.Accessories
 					child.Delivery = move.Delivery;
 			}
 
-			if (hp.ShouldHoming(child.Delivery))
-			{
-				child.Homing = true;
-				child.HomingTurnRate = Math.Max(child.HomingTurnRate, hp.HomingTurn);
-			}
+			HenshinProjUtil.ApplyAccessoryHoming(child, hp.ShouldHoming(child.Delivery), hp.HomingTurn, hp.HomingRangeTiles);
 
 			if (hp.ShouldTilePierce(child.Delivery))
 				projectile.tileCollide = false;
@@ -65,6 +65,18 @@ namespace PokemonHenshin.Content.Accessories
 			if (projectile.ModProjectile is ModProjectile mp && !mp.ShouldUpdatePosition())
 				return;
 			HenshinProjUtil.HomingAI(projectile, true, child.HomingTurnRate);
+		}
+
+		public override void SendExtraAI(Projectile projectile, BitWriter bitWriter, BinaryWriter binaryWriter)
+		{
+			if (projectile.ModProjectile is IHenshinMoveProj child)
+				binaryWriter.Write(child.HomingTargetWhoAmI);
+		}
+
+		public override void ReceiveExtraAI(Projectile projectile, BitReader bitReader, BinaryReader binaryReader)
+		{
+			if (projectile.ModProjectile is IHenshinMoveProj child)
+				child.HomingTargetWhoAmI = binaryReader.ReadInt32();
 		}
 	}
 }

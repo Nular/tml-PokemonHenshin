@@ -71,7 +71,7 @@ namespace PokemonHenshin.Content.Accessories
 					or AccStat.ChoiceLockSkill2 or AccStat.ChoiceLockUlt
 					or AccStat.LifeOrbHpDrain or AccStat.FocusSash or AccStat.EverstoneBlock
 					=> Language.GetTextValue(key),
-				AccStat.FlightEnergySec or AccStat.HomingTurn or AccStat.PenetrateAdd
+				AccStat.FlightEnergySec or AccStat.HomingTurn or AccStat.HomingRange or AccStat.PenetrateAdd
 					or AccStat.DashSpeedBonus or AccStat.LungeIFrameBonus
 					or AccStat.ShellBellHeal or AccStat.LeftoversHpPerSec or AccStat.LeftoversLowHpBonus
 					or AccStat.FocusSashCdSec

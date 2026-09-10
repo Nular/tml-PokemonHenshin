@@ -2030,6 +2030,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				tagged.EasyCrit = EasyCrit;
 				tagged.Homing = Homing;
 				tagged.HomingTurnRate = HomingTurnRate;
+				tagged.HomingRangeTiles = Math.Max(tagged.HomingRangeTiles, HomingRangeTiles);
 				tagged.Delivery = Delivery == MoveDelivery.None ? MoveDelivery.Barrage : Delivery;
 			}
 

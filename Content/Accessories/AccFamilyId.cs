@@ -103,7 +103,8 @@ namespace PokemonHenshin.Content.Accessories
 		DashSpeedBonus,
 		LungeIFrameBonus,
 		PsychicDragonDamage,
-		GuardCutTimer
+		GuardCutTimer,
+		HomingRange
 	}
 
 	public readonly struct AccStatLine

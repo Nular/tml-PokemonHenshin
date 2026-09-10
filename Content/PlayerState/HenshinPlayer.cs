@@ -69,6 +69,7 @@ namespace PokemonHenshin.Content.PlayerState
 		public float UltDamageBonus { get; set; }
 		public float HomingTurn { get; set; }
 		public float HomingTurnRate { get; set; } = 0.08f;
+		public float HomingRangeTiles { get; set; }
 		public bool HomingBolt { get; set; }
 		public bool HomingSpread { get; set; }
 		public bool HomingBarrage { get; set; }
@@ -258,6 +259,7 @@ namespace PokemonHenshin.Content.PlayerState
 				case AccStat.XpHeldMul: XpHeldMul += line.Value; break;
 				case AccStat.XpHotbarShareMul: XpHotbarShareMul += line.Value; break;
 				case AccStat.HomingTurn: HomingTurn = Math.Max(HomingTurn, line.Value); break;
+				case AccStat.HomingRange: HomingRangeTiles = Math.Max(HomingRangeTiles, line.Value); break;
 				case AccStat.HomingBolt: HomingBolt = true; break;
 				case AccStat.HomingSpread: HomingSpread = true; break;
 				case AccStat.HomingBarrage: HomingBarrage = true; break;
@@ -343,6 +345,7 @@ namespace PokemonHenshin.Content.PlayerState
 			UltDamageBonus = 0f;
 			HomingTurn = 0f;
 			HomingTurnRate = 0.08f;
+			HomingRangeTiles = 0f;
 			HomingBolt = HomingSpread = HomingBarrage = HomingDoTBind = false;
 			TilePierceBolt = TilePierceSpread = TilePierceBarrage = TilePierceDoTBind = TilePierceBeam = false;
 			PenetrateAdd = 0;
