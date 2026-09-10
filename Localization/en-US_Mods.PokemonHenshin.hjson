@@ -309,6 +309,7 @@ Accessories: {
 	StatXpHeldMul: Held XP +{0}%
 	StatXpHotbarShareMul: Copy {0}% XP to other hotbar forces
 	StatHomingTurn: Homing turn {0}
+	StatHomingRange: Homing range {0} tiles (diamond)
 	StatHomingBolt: Homing: bolts
 	StatHomingSpread: Homing: spread
 	StatHomingBarrage: Homing: barrage

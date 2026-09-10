@@ -190,6 +190,7 @@ AccFamilyDef {
 | `XpHeldMul` | `+=` | 否 | 幸运蛋，持握那只 |
 | `XpHotbarShareMul` | `+=` | 否 | 学习装置，其它 9 格各复制 |
 | `HomingTurn` | `max(现,值)` + 开标志 | 否 | 广角镜角速度 |
+| `HomingRange` | `max(现,值)` | 否 | 广角镜菱形索敌格数。碎片 8、成品 16、超级 32；断锁 2×。新锁 60° 半角 |
 | `HomingEnableBoltSpreadBarrage` | OR | 否 | |
 | `TilePierceBoltSpreadBarrageDotBind` | OR | 否 | 诅咒之符（不含 Beam 以外再加 Beam） |
 | `TilePierceBeam` | OR | 否 | 诅咒之符梁 |
@@ -359,10 +360,11 @@ S1 移速 +1.25%；S2 移速 +1.25%；S3 飞行 +0.25s；S4 飞行 +0.25s；S5 �
 普通 DamageFactorBonus +0.05；超级 +0.10。碎片各 +0.0125。S5 +0.0125；S6 BossDamage +3%。
 
 **A13 广角镜** Min 3 / Super 6  
-普通：开启 Bolt/Spread/Barrage/DoTBind 追踪，Turn=0.12。  
-超级：同上 Turn=0.20，并 +5% DamageBonus（附加价值）。  
-S1 只开 Bolt，Turn=0.06；S2 开 Spread，Turn=0.06；S3 开 Barrage，Turn=0.06；S4 开 DoTBind，Turn=0.06；S5 Turn max 0.08 + Bolt；S6 DamageBonus +1.5%。  
-多件 Turn 取 **max**；Enable 集合 **并**。
+普通：开启 Bolt/Spread/Barrage/DoTBind 追踪，Turn=0.12，菱形索敌 **16 格**。  
+超级：同上 Turn=0.20，索敌 **32 格**，并 +5% DamageBonus（附加价值）。  
+S1 只开 Bolt，Turn=0.06，索敌 8 格；S2 开 Spread，8 格；S3 开 Barrage，8 格；S4 开 DoTBind，8 格；S5 Turn max 0.08 + Bolt + 8 格；S6 DamageBonus +1.5%（无索敌）。  
+多件 Turn 与索敌格数取 **max**；Enable 集合 **并**。  
+追踪手感（叶绿弹式）：新锁须在**当前速度方向 60° 半角**内（出生帧即朝鼠标，不会锁身后）；锁死后可掉头追；曼哈顿距离超过索敌 **2×** 断锁；会撞墙的弹新锁要 `CanHit`。
 
 **A14 讲究头带** Min 4 / Super 7  
 普通：锁技能2+大招，ChoiceDamage +50%。  
@@ -607,6 +609,10 @@ OnSpawn：`penetrate>0 && penetrate!=-1` 才 `+= AccPenetrateAdd`。无限穿透
 
 `HomingAI(proj, homing || acc, max(turn, accTurn))` 其中 acc 仅当 Delivery 在集合内。招式写死 `true` 时即使无饰品也追。
 
+索敌为**曼哈顿菱形**（`|dx|+|dy|`），格数来自饰品 `HomingRange`（碎片 8 / 成品 16 / 超级 32，叠戴 max）。无饰品的自带追踪默认 30 格。自带追踪与饰品格数取 max，避免碎片削短。
+
+新锁：当前速度方向 **60° 半角**（`dot ≥ 0.5`）+ 菱形半径内最近；`tileCollide` 时还要 `Collision.CanHit`。出生点在玩家、速度朝鼠标，因此不会第一帧锁背后。锁上后跟同一目标，可掉头；曼哈顿 ≥ 2× 索敌则断锁再找。
+
 ### 9.6 剩饭 vs 贝壳
 
 贝壳：命中、短 CD。剩饭：PostUpdate 计时。可以同一秒都奶。生命宝珠扣血仍走命中闸门。
@@ -658,6 +664,9 @@ Tooltip 结构：官网一句 + 本片效果 + 合成提示 + 生效标签。
 
 - [ ] 皮卡丘电击 + 广角镜：转弯  
 - [ ] 喷火龙火花 + 广角镜：转弯（重力仍在）  
+- [ ] 朝鼠标开火、身后有近怪：第一帧**不**锁身后  
+- [ ] 锁上后目标绕到身后：可以掉头继续追  
+- [ ] 碎片 / 成品 / 超级菱形索敌约 8 / 16 / 32 格（叠戴 max）  
 - [ ] 水炮/日光束 + 广角镜：**不**转弯  
 - [ ] 水炮 + 诅咒之符：穿墙  
 - [ ] 爪击 + 广角镜：不追踪  

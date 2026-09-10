@@ -391,14 +391,14 @@ namespace PokemonHenshin.Content.Accessories
 				}),
 
 			Fam(AccFamilyId.A13, "A13WideLens", "广角镜", "Wide Lens", "Bag 广角镜 SV Sprite.png", 3, 6,
-				s1: new[] { F(AccStat.HomingBolt), S(AccStat.HomingTurn, 0.06f) },
-				s2: new[] { F(AccStat.HomingSpread), S(AccStat.HomingTurn, 0.06f) },
-				s3: new[] { F(AccStat.HomingBarrage), S(AccStat.HomingTurn, 0.06f) },
-				s4: new[] { F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.06f) },
-				s5: new[] { F(AccStat.HomingBolt), S(AccStat.HomingTurn, 0.08f) },
+				s1: new[] { F(AccStat.HomingBolt), S(AccStat.HomingTurn, 0.06f), S(AccStat.HomingRange, 8f) },
+				s2: new[] { F(AccStat.HomingSpread), S(AccStat.HomingTurn, 0.06f), S(AccStat.HomingRange, 8f) },
+				s3: new[] { F(AccStat.HomingBarrage), S(AccStat.HomingTurn, 0.06f), S(AccStat.HomingRange, 8f) },
+				s4: new[] { F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.06f), S(AccStat.HomingRange, 8f) },
+				s5: new[] { F(AccStat.HomingBolt), S(AccStat.HomingTurn, 0.08f), S(AccStat.HomingRange, 8f) },
 				s6: new[] { S(AccStat.DamageBonus, 0.015f) },
-				normal: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.12f) },
-				super: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.20f), S(AccStat.DamageBonus, 0.05f) },
+				normal: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.12f), S(AccStat.HomingRange, 16f) },
+				super: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.20f), S(AccStat.HomingRange, 32f), S(AccStat.DamageBonus, 0.05f) },
 				loot: new[]
 				{
 					Craft(TileID.WorkBenches, (ItemID.Lens, 5)),

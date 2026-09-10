@@ -351,11 +351,7 @@ namespace PokemonHenshin.Content.Combat
 				tagged.Delivery = move.Delivery;
 				tagged.EasyCrit = move.EasyCrit;
 				tagged.IgnoreDefensePartial = move.IgnoreDefensePartial;
-				if (hp.ShouldHoming(move.Delivery))
-				{
-					tagged.Homing = true;
-					tagged.HomingTurnRate = Math.Max(tagged.HomingTurnRate, hp.HomingTurn);
-				}
+				HenshinProjUtil.ApplyAccessoryHoming(tagged, hp.ShouldHoming(tagged.Delivery), hp.HomingTurn, hp.HomingRangeTiles);
 			}
 
 			if (move.RecoilSelf && !ReferenceEquals(move, Ultimate))
@@ -510,6 +506,8 @@ namespace PokemonHenshin.Content.Combat
 		bool EasyCrit { get; set; }
 		bool Homing { get; set; }
 		float HomingTurnRate { get; set; }
+		float HomingRangeTiles { get; set; }
+		int HomingTargetWhoAmI { get; set; }
 		bool IgnoreDefensePartial { get; set; }
 		MoveDelivery Delivery { get; set; }
 	}
