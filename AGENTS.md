@@ -44,8 +44,8 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | `Assets/Forms/` · `Assets/Accessories/` · `Assets/Items/` | 36 形态 + 饰品 64×64（`Axx`/`_Super`/`_Shard`；高清 `_src_hires/`；脚本 `tools/pixelize_accessories.py`）；消耗品 `RareCandy.png` |
 | `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame / Extra98 |
 | `Content/Combat/Moves/HenshinFxDraw.cs` | Additive 绘制：`DrawContinuousBeam` / SheetFrame / `ScaleForWorldDiameter` |
-| `Content/Combat/` · `Items/Forms/` | HenshinForceItem + 36 形态；`Wave2MoveProjs`（水柱/日棱/龙怒球/破灭等） |
-| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / 脚下能量条 + 经验世界字 / 饰品 / 被动进化 / 地鼠挖砖 Net |
+| `Content/Combat/` · `Items/Forms/` · `Items/Consumables/` | HenshinForceItem + 36 形态；`RareCandy` |
+| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / Overlay / 属性面板 / 饰品 / 进化 / 糖果掉落 Net |
 
 ## 特效踩坑与禁止降级（必读）
 
@@ -66,4 +66,4 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 - **饰品（2026-09-10）：** 28 家族逻辑已接线；A01–A28 普通/超级/碎片 64×64 pixeloe。重跑：`python tools/pixelize_accessories.py`。**游戏内图标/合成/掉落验收仍待本地**。
 - **已知缺口：** 联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。污泥毒云等未打标 Retarget 弹仍走完整命中能。未接线代码见 `docs/requirements.md` §12.1。变身属性面板（物品栏右侧）与神奇糖果待游戏内验收。
 - **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`；`tools/HenshinStatVerify`。
-- **下一步：** 游戏内验饰品（含新图标）→ 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。
+- **下一步：** 游戏内验饰品（含新图标）与神奇糖果 → 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

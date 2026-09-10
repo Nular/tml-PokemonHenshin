@@ -318,7 +318,7 @@ Tooltip：`ForceStats` 那行继续用 `GetWeaponDamage`（会吃 ModifyWeaponDa
 
 ### 5.3 联机
 
-饰品效果走原版 `UpdateAccessory`（双端）。XP 只在服务端 `GrantKillExperience` 写入物品并 `SendEnergy`/`SyncForceProgress`。不变之石在 **服务端** `RequestEvolve` 拒绝。客户端 UI 在戴着石头时隐藏/禁用确认钮，防止误点。
+饰品效果走原版 `UpdateAccessory`（双端）。XP 只在服务端 `GrantKillExperience` 写入物品并 `SendEnergy`（包内含持握 level/xp；无独立 `SyncForceProgress`）。不变之石在 **服务端** `RequestEvolve` 拒绝。客户端 UI 在戴着石头时隐藏/禁用确认钮，防止误点。
 
 ---
 
@@ -594,7 +594,7 @@ if (XpHotbarShareMul > 0)
   for i in 0..9 where i != selectedItem
     if inventory[i].ModItem is HenshinForceItem other
       other.TryAddExperience(round(amount * XpHotbarShareMul))
-SyncForceProgress 持握 + 有变化的其它格
+SendEnergy 持握（含 level/xp）；热键栏其它格靠物品 NetSend
 ```
 
 满级截断已有。

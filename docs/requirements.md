@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |----|------|
-| 版本 | **1.4.10** |
+| 版本 | **1.4.11** |
 | 状态 | 现役开发基线：换皮武器；被动 + 技能1/2 + 能量大招；v1.4 等级/攻防/能量/进化/XP 已接线。游戏内 DPS 抽检与弹出验收待本地。 |
 | 平台 | 泰拉瑞亚 + tModLoader + 灾厄（Calamity） |
 | 联机 | 必须支持多人 |
@@ -441,7 +441,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 必须保证主机与客户端一致：变身形态、招式伤害、Buff、进化结果、地形实际变更。
 
-最小同步包：`SyncForm`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、**`SyncEnergy`（level、xp、energy）**、**`RequestRareCandy` / `ApplyForceProgress`**（糖果改第一格之力，持握同步管不到）。其它 `NetOp` 见 §12.1。
+最小同步包：`SyncForm`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、**`SyncEnergy`（level、xp、energy）**、**`RequestRareCandy` / `ApplyForceProgress`**（糖果改第一格之力，持握同步管不到）。完整枚举见 `Content/Net/HenshinNet.cs` 的 `NetOp`。未接线玩法见 §12.1。
 
 ---
 
@@ -640,7 +640,8 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 12. 变身 Overlay 使用的宝可梦图来自约定图鉴来源（或可替换路径），而非自制特效图集。  
 13. 物品描述含获取/进化条件（含等级要求）；进度档提升有提示（史莱姆王 ≠ 史莱姆神）。  
 14. 变身时盔甲防御被形态防御取代，饰品防御仍生效。  
-15. 不够等级时即使已击败对应 Boss，也不得进化。
+15. 不够等级时即使已击败对应 Boss，也不得进化。  
+16. 神奇糖果：金美味同材料可合成；使用使物品栏第一格之力 +1 级（守硬顶 / 满级拒用）；任意 `npc.boss` 5%，专家袋不额外 roll。
 
 ---
 
@@ -674,3 +675,4 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 | **1.4.8** | 龙之波动爆炸碎片（原版 620）命中改为 `1 × EnergyGainFactor`；击杀能量不变。洁癖：明确**仅打标弹**走碎屑；入口文档对齐 A28 / 页眉版本 |
 | **1.4.9** | 变身属性面板：物品栏右侧入口，汇总当前形态/特性/属性/饰品加成（§2.9） |
 | **1.4.10** | 神奇糖果：金美味同材料合成；使用令物品栏第一格之力 +1 级（守硬顶）；每个 `npc.boss` 5%（袋内不额外 roll） |
+| **1.4.11** | 洁癖：入口文档对齐糖果；§8 NetOp 指向代码枚举；施工图 `SyncForceProgress` 更正为现役 `SyncEnergy` |

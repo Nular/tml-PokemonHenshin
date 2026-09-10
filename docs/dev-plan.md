@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.10**（数值表 `docs/balance-stats.md`） |
+| 对齐需求 | `docs/requirements.md` **v1.4.11**（数值表 `docs/balance-stats.md`） |
 | 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
@@ -90,20 +90,22 @@ PokemonHenshin/                # 仓库根 = 模组根
   Assets/
     Forms/                     # 36 形态精灵图，按 FormId 命名
     Accessories/               # A01–A28：`Axx` / `_Super` / `_Shard` 64×64（非 FX）
+    Items/                     # RareCandy.png
+    Fx/                        # CWR 拷贝贴图（无运行时依赖）
   Content/
     Core/                      # FormDefinition、FormRegistry、MoveSpec、ProgressStage、CalamityProgressAdapter
     Damage/                    # HenshinDamage
     PlayerState/               # HenshinPlayer、StarterGrantPlayer
-    Visual/                    # HenshinOverlayLayer
+    Visual/                    # Overlay、能量条、XP 字、属性面板
     Combat/                    # HenshinForceItem；Moves/
     Affinity/                  # ConditionEvaluator、TypePassiveApplier
     Evolution/                 # EvolutionService、确认 UI
-    Accessories/               # HenshinAccessoryItem 基类
+    Accessories/               # HenshinAccItem + Catalog（无独立 Items/Accessories）
     Items/Forms/               # 36 形态物品（StarterLines / CombatLinesA / UtilityAndLegend）
-    Items/Accessories/         # A01–A28 碎片/普通/超级
-    WeatherField/              # 天气场
+    Items/Consumables/         # RareCandy
+    WeatherField/              # 天气场（无形态调用，见需求 §12.1）
     TerrainEdit/               # 挖掘预算
-    Loot/                      # Boss 掉落 + 合成
+    Loot/                      # 之力/碎片/糖果掉落 + 合成
     Net/                       # HenshinNet + NetOp
 ```
 
@@ -676,3 +678,4 @@ TryEditTile(player, action) →
 | **1.4.6** | 洁癖：页眉/M3/总评对齐 requirements v1.4.6；未接线集中到 §12.1 |
 | **1.4.8** | 洁癖：页眉/目标/管线对齐 A28 与 requirements v1.4.8；龙波碎片能量见需求 §2.5 |
 | **1.4.10** | 神奇糖果：合成/使用/Boss 5%；`RequestRareCandy` / `ApplyForceProgress` |
+| **1.4.11** | 洁癖：目录树对齐 Consumables / AccItem；NetOp 指针不再指向 §12.1 |
