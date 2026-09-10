@@ -18,7 +18,7 @@ description: >-
 
 | 权威                               | 管什么                                                  |
 | -------------------------------- | ---------------------------------------------------- |
-| `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP） |
+| `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP；广角镜索敌） |
 | `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量、MoveRefRate |
 | `docs/move-effects.md`           | 招式玩法语义 / 接线状态                                        |
 | `docs/fx-knowledge.md`           | FX cookbook、本模已用手法、贴图与踩坑                             |
@@ -26,7 +26,7 @@ description: >-
 | `.cursor/rules/tml-api-docs.mdc` | **全局 alwaysApply**：tModLoader stable API（类表入口见下）     |
 
 
-改特效、招式或数值前先扫一眼上表对应行；缺项就地补进权威文档，不要只写在聊天里。
+改特效、招式或数值前先扫一眼上表对应行；缺项就地补进权威文档，不要只写在聊天里。改共享 `HomingAI` 时读需求 §6：菱形 8/16/32、60° 第一锁、断锁 2×；**禁止**退回全向「圈里最近」。招式自带索敌（如念力 32 格）仍以 `docs/move-effects.md` 为准。
 
 ## 外链与只读参考（需要时再打开）
 
