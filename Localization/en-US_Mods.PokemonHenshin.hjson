@@ -264,6 +264,16 @@ Evolution: {
 	ConfirmNo: Cancel
 }
 
+RareCandy: {
+	NoForce: Inventory slot 1 does not hold a Pokémon Force
+	Capped: That Force is already at the current stage level cap
+	MaxLevel: That Force is already max level
+}
+
+Recipes: {
+	AnyGoldCritter: Any Gold Critter
+}
+
 Accessories: {
 	ActiveTag: "[Henshin only - ACTIVE]"
 	InactiveTag: "[Henshin only - inactive]"
@@ -674,6 +684,16 @@ Items: {
 	RayquazaForce: {
 		DisplayName: Rayquaza Force
 		Tooltip: Legendary Dragon/Flying. Dragon Pulse, Crunch, Dragon Ascent.
+	}
+
+	RareCandy: {
+		DisplayName: Rare Candy
+		Tooltip:
+			'''
+			Raises the Pokémon Force in inventory slot 1 by 1 level
+			Cannot be used at the current stage cap or level 100
+			Cooking Pot: any gold critter or Golden Carp
+			'''
 	}
 
 	A01AbilityCapsuleBelt: {

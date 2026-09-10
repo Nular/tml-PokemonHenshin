@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using PokemonHenshin.Content.Accessories;
+using PokemonHenshin.Content.Items.Consumables;
 using PokemonHenshin.Content.Items.Forms;
 using Terraria;
 using Terraria.ID;
@@ -60,6 +61,36 @@ namespace PokemonHenshin.Content.Loot
 				return;
 			foreach (HenshinNpcDrop drop in list)
 				HenshinDropRules.AddNpcDrop(npcLoot, drop.ItemType, drop.Chance, drop.Related, drop.HasBag);
+		}
+
+		public static void ApplyRareCandyNpc(NPC npc, NPCLoot npcLoot)
+		{
+			if (npc == null || !npc.boss || HenshinDropRules.IsNonLootBossPart(npc.type))
+				return;
+
+			int candy = ModContent.ItemType<RareCandy>();
+			int[] related = HenshinDropRules.SegmentGroup(npc.type);
+			bool hasBag = HenshinDropRules.VanillaBossBag(npc.type) > 0
+				|| HenshinDropRules.LootContainsBossBag(npcLoot);
+
+			if (npc.ModNPC != null && npc.ModNPC.Mod != null && npc.ModNPC.Mod.Name == "CalamityMod")
+			{
+				Mod calamity = npc.ModNPC.Mod;
+				int[] calamityRelated = CalamityRelated(calamity, npc.ModNPC.Name, npc.type);
+				if (calamityRelated != null)
+					related = calamityRelated;
+				if (FindCalamityBag(calamity, npc.ModNPC.Name) > 0)
+					hasBag = true;
+			}
+
+			HenshinDropRules.AddBossCandyDrop(npcLoot, candy, RareCandy.BossDropChance, related, hasBag);
+		}
+
+		public static void ApplyRareCandyBag(int itemType, ItemLoot itemLoot)
+		{
+			if (!HenshinDropRules.IsBossBagItem(itemType))
+				return;
+			itemLoot.Add(HenshinDropRules.Chance(ModContent.ItemType<RareCandy>(), RareCandy.BossDropChance));
 		}
 
 		public static void ApplyItemLoot(int itemType, ItemLoot itemLoot)
@@ -164,11 +195,11 @@ namespace PokemonHenshin.Content.Loot
 
 		private static int[] CalamityRelated(Mod calamity, string npcName, int npcType)
 		{
-			if (npcName != "Leviathan")
+			if (npcName != "Leviathan" && npcName != "Anahita")
 				return null;
-			if (!calamity.TryFind("Anahita", out ModNPC anahita))
-				return null;
-			return new[] { npcType, anahita.Type };
+			if (!calamity.TryFind("Leviathan", out ModNPC leviathan) || !calamity.TryFind("Anahita", out ModNPC anahita))
+				return new[] { npcType };
+			return new[] { leviathan.Type, anahita.Type };
 		}
 
 		private static int FindCalamityBag(Mod calamity, string npcName)
@@ -176,7 +207,7 @@ namespace PokemonHenshin.Content.Loot
 			string[] names = npcName switch
 			{
 				"CalamitasClone" => new[] { "CalamitasCloneBag" },
-				"Leviathan" => new[] { "LeviathanBag" },
+				"Leviathan" or "Anahita" => new[] { "LeviathanBag" },
 				"Providence" => new[] { "ProvidenceBag" },
 				"Polterghast" => new[] { "PolterghastBag" },
 				"Yharon" => new[] { "YharonBag" },
@@ -233,12 +264,18 @@ namespace PokemonHenshin.Content.Loot
 	public sealed class HenshinLootGlobalNPC : GlobalNPC
 	{
 		public override void ModifyNPCLoot(NPC npc, NPCLoot npcLoot)
-			=> HenshinDropDatabase.ApplyNpcLoot(npc.type, npcLoot);
+		{
+			HenshinDropDatabase.ApplyNpcLoot(npc.type, npcLoot);
+			HenshinDropDatabase.ApplyRareCandyNpc(npc, npcLoot);
+		}
 	}
 
 	public sealed class HenshinLootGlobalItem : GlobalItem
 	{
 		public override void ModifyItemLoot(Item item, ItemLoot itemLoot)
-			=> HenshinDropDatabase.ApplyItemLoot(item.type, itemLoot);
+		{
+			HenshinDropDatabase.ApplyItemLoot(item.type, itemLoot);
+			HenshinDropDatabase.ApplyRareCandyBag(item.type, itemLoot);
+		}
 	}
 }

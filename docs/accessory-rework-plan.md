@@ -133,7 +133,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
 | `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |
 | `tools/make_super_accessory_sprites.py` | **已弃用**：转发到 `pixelize_accessories.py` | WP-H |
-| `docs/requirements.md` §6 §10 | 已回写（含 1.4.9 广角镜菱形索敌）；冲突以需求 + 代码为准 | 收尾 |
+| `docs/requirements.md` §6 §10 | 已回写（含 1.4.10 广角镜菱形索敌）；冲突以需求 + 代码为准 | 收尾 |
 | `docs/accessory-rework-plan.md` | 本文件 | 主 Agent |
 
 `Items/Accessories/HenshinAccessories.cs`：脚手架完成后删除，避免 21 个 class 与 Loader 抢同一个 Name。
@@ -319,7 +319,7 @@ Tooltip：`ForceStats` 那行继续用 `GetWeaponDamage`（会吃 ModifyWeaponDa
 
 ### 5.3 联机
 
-饰品效果走原版 `UpdateAccessory`（双端）。XP 只在服务端 `GrantKillExperience` 写入物品并 `SendEnergy`/`SyncForceProgress`。不变之石在 **服务端** `RequestEvolve` 拒绝。客户端 UI 在戴着石头时隐藏/禁用确认钮，防止误点。
+饰品效果走原版 `UpdateAccessory`（双端）。XP 只在服务端 `GrantKillExperience` 写入物品并 `SendEnergy`（包内含持握 level/xp；无独立 `SyncForceProgress`）。不变之石在 **服务端** `RequestEvolve` 拒绝。客户端 UI 在戴着石头时隐藏/禁用确认钮，防止误点。
 
 ---
 
@@ -596,7 +596,7 @@ if (XpHotbarShareMul > 0)
   for i in 0..9 where i != selectedItem
     if inventory[i].ModItem is HenshinForceItem other
       other.TryAddExperience(round(amount * XpHotbarShareMul))
-SyncForceProgress 持握 + 有变化的其它格
+SendEnergy 持握（含 level/xp）；热键栏其它格靠物品 NetSend
 ```
 
 满级截断已有。
