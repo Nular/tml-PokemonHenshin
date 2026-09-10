@@ -3,8 +3,8 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.8**（数值表 `docs/balance-stats.md`） |
-| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
+| 对齐需求 | `docs/requirements.md` **v1.4.9**（数值表 `docs/balance-stats.md`） |
+| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；变身属性面板（§2.9）已接线。联机双端 / DPS 抽检 / 弹出与面板点开验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -53,7 +53,7 @@
 
 - **不做（需求 §1.3 + 本计划加严）：**
 
-- 完整图鉴养成、PvP 属性克制、给敌人标宝可梦属性
+- 完整图鉴养成（开背包当前持握查询见需求 §2.9，不是图鉴）、PvP 属性克制、给敌人标宝可梦属性
 - 第二套完整体型角色控制器；碰撞级别 B/C 以外的永久穿墙
 - 依赖 InnoVault / SubworldLibrary（大修强依赖；本模不跟）
 - 照搬役鬼、传说武器模块、鬼雨世界观等大修玩法内容
@@ -94,13 +94,12 @@ PokemonHenshin/                # 仓库根 = 模组根
     Core/                      # FormDefinition、FormRegistry、MoveSpec、ProgressStage、CalamityProgressAdapter
     Damage/                    # HenshinDamage
     PlayerState/               # HenshinPlayer、StarterGrantPlayer
-    Visual/                    # HenshinOverlayLayer
+    Visual/                    # Overlay、脚下能量条、XP 世界字、开背包属性面板
     Combat/                    # HenshinForceItem；Moves/
     Affinity/                  # ConditionEvaluator、TypePassiveApplier
     Evolution/                 # EvolutionService、确认 UI
-    Accessories/               # HenshinAccessoryItem 基类
+    Accessories/               # HenshinAccItem + Catalog（无 Items/Accessories）
     Items/Forms/               # 36 形态物品（StarterLines / CombatLinesA / UtilityAndLegend）
-    Items/Accessories/         # A01–A28 碎片/普通/超级
     WeatherField/              # 天气场
     TerrainEdit/               # 挖掘预算
     Loot/                      # Boss 掉落 + 合成
@@ -649,7 +648,7 @@ TryEditTile(player, action) →
 | 与 requirements **v1.4** 对齐 | **规则层通过**；**代码已接线**等级/Xp/`StageXpScale`/`FinalAttack`/`FinalDefense`/能量 1000/进化双条件/世界字（DPS 与弹出验收待本地） |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
 | 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
-| 总评 | **v1.4 数值已接线**；下一步联机与 DPS 抽检 |
+| 总评 | **v1.4 数值已接线**；属性面板已接线；下一步游戏内验收 + 联机与 DPS 抽检 |
 
 ---
 
@@ -675,3 +674,4 @@ TryEditTile(player, action) →
 | **1.4.5** | 洁癖：M3 误标（水箭龟雨场 / 鬼斯通穿障）改为管线现状；对齐 requirements v1.4.5 |
 | **1.4.6** | 洁癖：页眉/M3/总评对齐 requirements v1.4.6；未接线集中到 §12.1 |
 | **1.4.8** | 洁癖：页眉/目标/管线对齐 A28 与 requirements v1.4.8；龙波碎片能量见需求 §2.5 |
+| **1.4.9** | 洁癖：对齐 requirements v1.4.9 属性面板；目录树去掉已删的 `Items/Accessories` |
