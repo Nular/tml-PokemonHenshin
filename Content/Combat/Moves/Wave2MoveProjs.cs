@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
@@ -10,6 +11,7 @@ using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 
 namespace PokemonHenshin.Content.Combat.Moves
 {
@@ -2104,10 +2106,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			int shards = 12;
 			int shardDmg = System.Math.Max(1, (int)(Projectile.damage * 0.65f));
+			IEntitySource crumbSource = Projectile.GetSource_Death(HenshinNebulaShardTintGlobal.CrumbHitContext);
 			for (int i = 0; i < shards; i++)
 			{
 				Vector2 vel = Main.rand.NextVector2CircularEdge(7f, 7f) * Main.rand.NextFloat(0.85f, 1.3f);
-				int id = Projectile.NewProjectile(Projectile.GetSource_Death(), Projectile.Center, vel,
+				int id = Projectile.NewProjectile(crumbSource, Projectile.Center, vel,
 					ProjectileID.NebulaArcanumExplosionShotShard, shardDmg, Projectile.knockBack * 0.8f, Projectile.owner);
 				if (id < 0)
 					continue;
@@ -2116,7 +2119,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				p.scale *= 0.7f;
 				p.DamageType = HenshinDamage.Instance;
 				p.penetrate = 1;
-				p.GetGlobalProjectile<HenshinNebulaShardTintGlobal>().TintPurple = true;
+				HenshinNebulaShardTintGlobal.MarkCrumb(p, tintPurple: true);
+				p.netUpdate = true;
 			}
 		}
 
@@ -2130,11 +2134,63 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>龙之波动爆炸碎片强制紫染色（原版 shard 在光照下偏棕）。</summary>
+	/// <summary>
+	/// 龙之波动爆炸碎片：紫染色 + 命中能量走碎屑（1×Factor）。
+	/// 只挂在原版 620 上；变身时玩家自己的星云奥秘碎片不会带 CrumbHitEnergy。
+	/// </summary>
 	public sealed class HenshinNebulaShardTintGlobal : GlobalProjectile
 	{
+		public const string CrumbHitContext = "HenshinCrumbHit";
+
 		public override bool InstancePerEntity => true;
 		public bool TintPurple;
+		public bool CrumbHitEnergy;
+
+		public override bool AppliesToEntity(Projectile entity, bool lateInstantiation)
+			=> entity.type == ProjectileID.NebulaArcanumExplosionShotShard;
+
+		public static void MarkCrumb(Projectile proj, bool tintPurple = false)
+		{
+			if (proj == null || !proj.active)
+				return;
+			if (!proj.TryGetGlobalProjectile(out HenshinNebulaShardTintGlobal g))
+				return;
+			g.CrumbHitEnergy = true;
+			if (tintPurple)
+				g.TintPurple = true;
+		}
+
+		/// <summary>
+		/// 本模 Retarget 的爆炸碎片。优先读同步标记；
+		/// ExtraAI 未到时，用 HenshinDamage 的 620 兜底（原版星云奥秘仍是 Magic，不会误伤）。
+		/// </summary>
+		public static bool UsesCrumbHitEnergy(Projectile proj)
+		{
+			if (proj == null)
+				return false;
+			if (proj.TryGetGlobalProjectile(out HenshinNebulaShardTintGlobal g) && g.CrumbHitEnergy)
+				return true;
+			return proj.type == ProjectileID.NebulaArcanumExplosionShotShard
+				&& proj.DamageType == HenshinDamage.Instance;
+		}
+
+		public override void OnSpawn(Projectile projectile, IEntitySource source)
+		{
+			if (source?.Context == CrumbHitContext)
+				MarkCrumb(projectile, tintPurple: projectile.type == ProjectileID.NebulaArcanumExplosionShotShard);
+		}
+
+		public override void SendExtraAI(Projectile projectile, BitWriter bitWriter, BinaryWriter binaryWriter)
+		{
+			bitWriter.WriteBit(TintPurple);
+			bitWriter.WriteBit(CrumbHitEnergy);
+		}
+
+		public override void ReceiveExtraAI(Projectile projectile, BitReader bitReader, BinaryReader binaryReader)
+		{
+			TintPurple = bitReader.ReadBit();
+			CrumbHitEnergy = bitReader.ReadBit();
+		}
 
 		public override Color? GetAlpha(Projectile projectile, Color lightColor)
 		{

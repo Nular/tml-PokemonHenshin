@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using PokemonHenshin.Content.Accessories;
 using PokemonHenshin.Content.Affinity;
 using PokemonHenshin.Content.Combat;
+using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
 using PokemonHenshin.Content.Net;
@@ -871,16 +872,16 @@ namespace PokemonHenshin.Content.PlayerState
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
-			=> ProcessHenshinNpcHit(target, damageDone);
+			=> ProcessHenshinNpcHit(target, damageDone, proj: null);
 
 		public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			if (!CountsAsHenshinMoveHit(proj))
 				return;
-			ProcessHenshinNpcHit(target, damageDone);
+			ProcessHenshinNpcHit(target, damageDone, proj);
 		}
 
-		private void ProcessHenshinNpcHit(NPC target, int damageDone)
+		private void ProcessHenshinNpcHit(NPC target, int damageDone, Projectile proj)
 		{
 			if (!IsTransformed)
 				return;
@@ -891,7 +892,10 @@ namespace PokemonHenshin.Content.PlayerState
 			MoveSpec move = force?.GetMove(LastMoveSlot);
 			float factor = LastMoveSlot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
 			if (LastMoveSlot != MoveSlot.Ultimate)
-				AddCombatEnergy(EnergyOnHit * factor);
+			{
+				bool fragment = HenshinNebulaShardTintGlobal.UsesCrumbHitEnergy(proj);
+				AddCombatEnergy(HenshinStatService.CombatHitEnergy(factor, fragment));
+			}
 
 			if (target.life <= 0)
 			{
