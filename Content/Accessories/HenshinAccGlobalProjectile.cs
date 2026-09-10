@@ -22,6 +22,8 @@ namespace PokemonHenshin.Content.Accessories
 			{
 				child.Homing |= p.Homing;
 				child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
+				child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+				child.HomingTargetWhoAmI = -1;
 				if (child.Delivery == MoveDelivery.None)
 					child.Delivery = p.Delivery;
 				child.EasyCrit |= p.EasyCrit;
@@ -43,11 +45,7 @@ namespace PokemonHenshin.Content.Accessories
 					child.Delivery = move.Delivery;
 			}
 
-			if (hp.ShouldHoming(child.Delivery))
-			{
-				child.Homing = true;
-				child.HomingTurnRate = Math.Max(child.HomingTurnRate, hp.HomingTurn);
-			}
+			HenshinProjUtil.ApplyAccessoryHoming(child, hp.ShouldHoming(child.Delivery), hp.HomingTurn, hp.HomingRangeTiles);
 
 			if (hp.ShouldTilePierce(child.Delivery))
 				projectile.tileCollide = false;

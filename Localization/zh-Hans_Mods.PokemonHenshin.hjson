@@ -67,6 +67,7 @@ Accessories: {
 	StatXpHeldMul: 持握经验 +{0}%
 	StatXpHotbarShareMul: 热键栏其它之力复制经验 {0}%
 	StatHomingTurn: 追踪转向 {0}
+	StatHomingRange: 索敌 {0} 格（菱形）
 	StatHomingBolt: 追踪：单体飞行弹
 	StatHomingSpread: 追踪：扇形/锥
 	StatHomingBarrage: 追踪：连发弹幕

@@ -14,30 +14,112 @@ namespace PokemonHenshin.Content.Combat.Moves
 {
 	public static class HenshinProjUtil
 	{
+		/// <summary>无饰品、招式自带追踪时的菱形索敌格数（对齐旧 HomingAI 480px 轴向）。</summary>
+		public const float DefaultHomingTiles = 30f;
+
+		/// <summary>新锁目标须落在飞行方向 60° 半角内（cos 60° = 0.5）。</summary>
+		public const float HomingAcquireMinDot = 0.5f;
+
+		/// <summary>锁上后曼哈顿距离超过索敌半径该倍数则断锁。</summary>
+		public const float HomingLockBreakMul = 2f;
+
+		public static float ManhattanPx(Vector2 a, Vector2 b)
+			=> Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+
+		public static bool InForwardCone(Vector2 aim, Vector2 toTarget, float minDot)
+		{
+			if (aim.LengthSquared() < 0.0001f || toTarget.LengthSquared() < 0.0001f)
+				return false;
+			aim.Normalize();
+			toTarget.Normalize();
+			return Vector2.Dot(aim, toTarget) >= minDot;
+		}
+
+		/// <summary>
+		/// 广角镜：按 Delivery 开追踪；转向与索敌格数取 max。
+		/// 招式本来就会追时，索敌格数与饰品取 max，避免碎片把自带范围削短。
+		/// </summary>
+		public static void ApplyAccessoryHoming(IHenshinMoveProj tagged, bool accShouldHome, float accTurn, float accRangeTiles)
+		{
+			bool inherent = tagged.Homing;
+			if (accShouldHome)
+				tagged.Homing = true;
+			if (tagged.Homing && accTurn > 0f)
+				tagged.HomingTurnRate = Math.Max(tagged.HomingTurnRate, accTurn);
+			if (!tagged.Homing || accRangeTiles <= 0f)
+				return;
+			float own = tagged.HomingRangeTiles > 0f
+				? tagged.HomingRangeTiles
+				: (inherent ? DefaultHomingTiles : 0f);
+			tagged.HomingRangeTiles = own > 0f ? Math.Max(own, accRangeTiles) : accRangeTiles;
+		}
+
+		/// <summary>
+		/// 叶绿弹式追踪：菱形索敌；新锁须在当前速度 60° 半角内；锁死后可掉头追，直到 2× 半径断锁。
+		/// </summary>
 		public static void HomingAI(Projectile proj, bool homing, float turnRate)
 		{
-			if (!homing || proj.velocity.LengthSquared() < 0.01f)
+			if (!homing || !proj.friendly || proj.velocity.LengthSquared() < 0.01f)
 				return;
+
+			IHenshinMoveProj tagged = proj.ModProjectile as IHenshinMoveProj;
+			float acquireTiles = tagged != null && tagged.HomingRangeTiles > 0f
+				? tagged.HomingRangeTiles
+				: DefaultHomingTiles;
+			float acquirePx = acquireTiles * 16f;
+			float breakPx = acquirePx * HomingLockBreakMul;
+
 			NPC target = null;
-			float best = 480f * 480f;
-			for (int i = 0; i < Main.maxNPCs; i++)
+			int locked = tagged?.HomingTargetWhoAmI ?? -1;
+			if ((uint)locked < Main.maxNPCs)
 			{
-				NPC n = Main.npc[i];
-				if (!n.active || n.friendly || n.life <= 0 || !n.CanBeChasedBy())
-					continue;
-				float d = proj.DistanceSQ(n.Center);
-				if (d < best)
-				{
-					best = d;
+				NPC n = Main.npc[locked];
+				if (n.active && n.CanBeChasedBy(proj, ignoreDontTakeDamage: true) && !n.dontTakeDamage
+					&& ManhattanPx(proj.Center, n.Center) < breakPx)
 					target = n;
-				}
+				else if (tagged != null)
+					tagged.HomingTargetWhoAmI = -1;
 			}
+
+			if (target == null)
+			{
+				target = AcquireHomingTarget(proj, acquirePx);
+				if (tagged != null)
+					tagged.HomingTargetWhoAmI = target != null ? target.whoAmI : -1;
+			}
+
 			if (target == null)
 				return;
+
 			Vector2 desired = target.Center - proj.Center;
+			if (desired.LengthSquared() < 0.0001f)
+				return;
 			desired.Normalize();
 			float speed = proj.velocity.Length();
 			proj.velocity = Vector2.Normalize(Vector2.Lerp(Vector2.Normalize(proj.velocity), desired, turnRate)) * speed;
+		}
+
+		private static NPC AcquireHomingTarget(Projectile proj, float acquirePx)
+		{
+			NPC bestNpc = null;
+			float best = acquirePx;
+			Vector2 aim = proj.velocity;
+			for (int i = 0; i < Main.maxNPCs; i++)
+			{
+				NPC n = Main.npc[i];
+				if (!n.active || n.friendly || n.life <= 0 || !n.CanBeChasedBy(proj))
+					continue;
+				float d = ManhattanPx(proj.Center, n.Center);
+				if (d >= best)
+					continue;
+				if (!InForwardCone(aim, n.Center - proj.Center, HomingAcquireMinDot))
+					continue;
+				if (proj.tileCollide && !Collision.CanHit(proj.Center, 1, 1, n.position, n.width, n.height))
+					continue;
+				best = d;
+				bestNpc = n;
+			}
+			return bestNpc;
 		}
 	}
 
@@ -46,6 +128,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			public bool EasyCrit { get; set; }
 			public bool Homing { get; set; }
 			public float HomingTurnRate { get; set; } = 0.08f;
+			public float HomingRangeTiles { get; set; }
+			public int HomingTargetWhoAmI { get; set; } = -1;
 			public bool IgnoreDefensePartial { get; set; }
 			public MoveDelivery Delivery { get; set; }
 			public virtual bool HandlesOwnHoming => false;
