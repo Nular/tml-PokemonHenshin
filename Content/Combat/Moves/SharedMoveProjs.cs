@@ -69,8 +69,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float acquirePx = acquireTiles * 16f;
 			float breakPx = acquirePx * HomingLockBreakMul;
 
+			int prevLock = tagged?.HomingTargetWhoAmI ?? -1;
 			NPC target = null;
-			int locked = tagged?.HomingTargetWhoAmI ?? -1;
+			int locked = prevLock;
 			if ((uint)locked < Main.maxNPCs)
 			{
 				NPC n = Main.npc[locked];
@@ -87,6 +88,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (tagged != null)
 					tagged.HomingTargetWhoAmI = target != null ? target.whoAmI : -1;
 			}
+
+			if (tagged != null && tagged.HomingTargetWhoAmI != prevLock)
+				proj.netUpdate = true;
 
 			if (target == null)
 				return;
