@@ -259,8 +259,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | DragonRage/龙之怒 | L07_F01 Ult / L15_F01 S1 | Barrage | `DragonRageBarrage` 技能12/大招32 抖动球；**技能球撞实心爆，大招仍穿墙** | SoftGlow≈1.5格（晕抬亮#2108ad/芯#e7ce39）+5格爆 | 球体连射 | Implemented |
 | DragonPulse | L07_F02,8 | Nebula×10 | NebulaPulse | cookbook | OK | Accepted |
 | DragonTail/龙尾 | L07_F02,8 | Melee | DragonTailWhip 星尘龙节链15格强击退 | StardustDragon1–4 | 鞭弧 | Accepted |
-| Hurricane/暴风 | L07_F02 Ult | Bolt+Orbit | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆；**默认撞实心贴地**（诅咒符 Field 穿墙） | WeatherPainShot | 大招风团 | Accepted |
-| Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Bolt+Orbit | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋）；**默认撞实心贴地** | WeatherPainShot | 天候棒 | Accepted |
+| Hurricane/暴风 | L07_F02 Ult | Barrage | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆；**默认撞实心贴地**（诅咒符 Barrage 穿墙） | WeatherPainShot | 大招风团 | Accepted |
+| Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Barrage | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋）；**默认撞实心贴地** | WeatherPainShot | 天候棒 | Accepted |
 | DragonDive/龙之俯冲 | L07_F03,11 | Lunge | StardustPathLunge 半透明星尘龙路径伤 | StardustDragon2–4 | 路径龙 | Accepted |
 | Outrage/逆鳞 | L07_F03 Ult | Barrage | 3s CultistBossFireBall 壳追踪爆+Confused | CultistBossFireBall | 身周火球 | Accepted |
 
@@ -598,7 +598,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 1.9 Living | 2026-09-07 | Stage7+ 落地：钢尾铁罩；猛撞灰日耀；暗影抓/恶波动32；彗星拳 StarWrath；破灭自缓加粗；星尘路径俯冲/画龙点睛；逆鳞火球；64 StarWrath；空气三段；神鸟吟唱；气旋32格 |
 | 2.0 Living | 2026-09-07 | Stage7+ **Accepted**；画龙点睛改纯黑龙；气旋独立名键 `CycloneAttack`；超梦强念×6穿墙+精神击破64球 |
 | 2.1 Living | 2026-09-10 | 龙之波动 620 碎片命中能量改为碎屑 `1×Factor`；击杀不变 |
-| 2.2 Living | 2026-09-10 | 诅咒之符 Field 穿墙 + 诅咒焰；火焰漩涡停飞不 Kill；水炮墙=怪；暴风默认贴地；龙息截断；技能龙怒撞实心 |
+| 2.2 Living | 2026-09-10 | 诅咒之符 + 诅咒焰；火焰漩涡停飞不 Kill；水炮墙=怪；暴风默认贴地；龙息截断；技能龙怒撞实心 |
+| 2.3 Living | 2026-09-10 | 暴风 Delivery=Barrage（不是 Field）；诅咒符穿墙不含 Field |
 
 ---
 

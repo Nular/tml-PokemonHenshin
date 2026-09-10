@@ -355,10 +355,11 @@ namespace PokemonHenshin.Content.Items.Forms
 				RequiresLungeCooldown = true
 			};
 
+		/// <summary>暴风：穿透飞弹（Barrage）。不是场地。自管位移，广角镜不弯；诅咒符 Barrage 穿墙。</summary>
 		public static MoveSpec WeatherPainHurricane(string nameKey, float mult = 1.6f, bool ult = false)
 			=> new()
 			{
-				Delivery = MoveDelivery.Field,
+				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<WeatherPainHurricaneProj>(),
 				DamageMultiplier = mult,

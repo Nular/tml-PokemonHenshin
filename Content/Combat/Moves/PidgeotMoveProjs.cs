@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
+using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
 using Terraria;
 using Terraria.Audio;
@@ -11,11 +12,14 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Combat.Moves
 {
 	/// <summary>
-	/// 暴风天候棒：直立帧动画（不自旋）。ai2≥0.5=大招（发射时多 4 伴随风）。
-	/// ai1≥0.5=伴随弹（不二次分裂）。穿透 + 途中牵引。
+	/// 暴风天候棒：Barrage 穿透飞弹（不是 Field）。直立帧、不自旋。
+	/// 默认撞实心贴地飞；诅咒符 Barrage 穿墙。自管位移，广角镜不弯。
+	/// ai2≥0.5=大招（发射时多 4 伴随风）。ai1≥0.5=伴随弹（不二次分裂）。
 	/// </summary>
 	public class WeatherPainHurricaneProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
+
 		private const float FlightSpeed = 14f;
 		private const float SuckRange = 112f;
 		private const int FlightLife = 100;
@@ -67,7 +71,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 						ModContent.ProjectileType<WeatherPainHurricaneProj>(), companionDmg, Projectile.knockBack * 0.85f,
 						Projectile.owner, 0f, 1f, 1f); // ai1=companion, ai2=ult
 					if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+					{
 						tagged.EasyCrit = EasyCrit;
+						tagged.Delivery = Delivery == MoveDelivery.None ? MoveDelivery.Barrage : Delivery;
+					}
 				}
 			}
 		}

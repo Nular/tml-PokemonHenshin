@@ -1,6 +1,6 @@
 namespace PokemonHenshin.Content.Core
 {
-	/// <summary>招式交付类型。饰品按集合过滤（广角镜不含 Beam）。</summary>
+	/// <summary>招式交付类型。饰品按集合过滤（广角镜不含 Beam / Field）。</summary>
 	public enum MoveDelivery : byte
 	{
 		None = 0,

@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.11**（数值表 `docs/balance-stats.md`） |
+| 对齐需求 | `docs/requirements.md` **v1.4.12**（数值表 `docs/balance-stats.md`） |
 | 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |

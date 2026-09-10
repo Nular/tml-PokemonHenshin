@@ -20,7 +20,7 @@
 4. **范围：** 旧 A01–A21 **全部**改碎片线；新 7 件也全部做。共 **28 家族 ×（6 碎片 + 1 普通 + 1 超级）= 224 物品**。
 5. **不变之石：** 未变身也生效（戴着就挡进化）。**诅咒之符灼烧**同样未变身生效；穿墙仍仅变身。
 6. **贴图（2026-09-10）：** `fetch_assets` 拉 52poke 袋内图 → 高清备份 `_src_hires/`；`tools/pixelize_accessories.py`（pixeloe）产出 **64×64** 的 `Axx.png` / `Axx_Super.png`（粗金边+闪点）/ `Axx_Shard.png`（碎片剪影）。S1–S6 共用 `_Shard`，库存仍叠片号角标（不生成 168 张）。
-7. **广角镜 / 诅咒之符：** 共用 `MoveDelivery` 分类；**作用集合不同（方案 B）**。广角镜 **不含 Beam/Field**。诅咒之符穿墙含 Beam+Field，无幽灵共鸣。
+7. **广角镜 / 诅咒之符：** 共用 `MoveDelivery` 分类；**作用集合不同（方案 B）**。广角镜 **不含 Beam/Field**。诅咒之符穿墙含 Beam、**不含 Field**，无幽灵共鸣。暴风是 Barrage 穿透弹。
 8. **无条件加伤**并进之力 `ModifyWeaponDamage`（面板看得到）。有条件（Boss / 着火 / 大招槽）仍走命中。
 9. **饰品伤不对齐之力 DPS 80–120% 窗**；对标同阶段灾厄 / 大修饰品量级。
 10. **仅变身生效**（除不变之石、诅咒之符灼烧）。未变身：占用栏、显示未生效标签、本模效果不加（诅咒焰仍烧）。共鸣不满足：占用栏、显示未生效。
@@ -194,7 +194,7 @@ AccFamilyDef {
 | `HomingEnableBoltSpreadBarrage` | OR | 否 | |
 | `TilePierceBoltSpreadBarrageDotBind` | OR | 否 | 诅咒之符 |
 | `TilePierceBeam` | OR | 否 | 诅咒之符梁 |
-| `TilePierceField` | OR | 否 | 诅咒之符场地（暴风等；花瓣/催眠/气旋场本就不撞墙） |
+| `TilePierceField` | OR | 否 | 枚举保留；目录不再发放。暴风已改 Barrage，现役 Field（花瓣/催眠/气旋场）本就不撞墙 |
 | `CursedInfernoSec` | **max**（秒） | 否 | 戴上即烧、每 30s 再烧；碎片 3、普通 5。未变身也 Apply（`NotifyCurseTagWorn`） |
 | `CursedInfernoImmune` | OR | 否 | 超级诅咒之符：不烧；叠戴普通也不烧 |
 | `ChoiceLockSkill2` | OR | 否 | |
@@ -248,14 +248,14 @@ public enum MoveDelivery : byte
 
 | 饰品 | 集合 |
 |------|------|
-| 广角镜追踪 | `{ Bolt, Spread, Barrage, DoTBind }` **不含 Beam** |
-| 诅咒之符穿墙 | `{ Bolt, Spread, Barrage, DoTBind, Beam, Field }` |
+| 广角镜追踪 | `{ Bolt, Spread, Barrage, DoTBind }` **不含 Beam / Field** |
+| 诅咒之符穿墙 | `{ Bolt, Spread, Barrage, DoTBind, Beam }` **不含 Field** |
 | 黑带短距伤 | `{ MeleeArc, Lunge, StrikeFall }` |
 | 黑带撞击 CD | `Delivery==Lunge` **或** `RequiresLungeCooldown`（Blink / DigLunge / BraveBird 也吃 CD 减） |
 
 内置追踪（强念等 AI 写死 `HomingAI(..., true)`）**不关**。广角镜是额外转弯。实现时：`Homing = 招式自己要追 \|\| (AccHoming && set.Contains(Delivery))`。招式自己要追的，继续用自己的 turnRate 与饰品 `max`。
 
-`HomingAI` 在 `velocity≈0` 时 return —— Beam/场地本来就不该被广角镜弯折。
+`HomingAI` 在 `velocity≈0` 时 return —— Beam/场地本来就不该被广角镜弯折。暴风是 Barrage 但 `HandlesOwnHoming`，广角镜不弯。
 
 ### 3.3 工厂 → Delivery（`FormItemUtil` 全表，WP-B 按此改，不要猜）
 
@@ -266,9 +266,9 @@ public enum MoveDelivery : byte
 | Strike | StrikeFall | |
 | FireBolt / WaterBolt / Bolt / FlareUlt / AquaGun / MudSlap / MidThunder / BigShadowBall / SludgeBolt / StrongPsychic / AlakazamPsychic / MewtwoPsychic / SeedBombUlt | Bolt | MidThunder 是电球不是梁 |
 | PeckCone / FlameCone / LeafSpread / DragonBreath / DarkPulseCone / AirBurst | Spread | |
-| BubbleBarrage / SeedBarrageUlt / DragonRage / MeteorBarrageUlt / RockSlideX / FlailUlt / MewtwoPsystrikeUlt | Barrage | 导演弹 Delivery=Barrage，子弹继承 |
+| BubbleBarrage / SeedBarrageUlt / DragonRage / MeteorBarrageUlt / RockSlideX / FlailUlt / MewtwoPsystrikeUlt / WeatherPainHurricane | Barrage | 导演弹 Delivery=Barrage，子弹继承。暴风是穿透飞弹，不是 Field |
 | Beam / ThickBeam / SustainedBeam / WaterJet / ChargeBeamUlt / HyperBeamUlt / ThunderboltUlt / ThunderPillarUlt / DragonPulse | Beam | **龙之波动导演弹标 Beam**（直线连发星云，不追踪） |
-| AoE / MouseAoE / FutureSightUlt / QuakeUlt / PetalDance / HurricaneField / WeatherPainHurricane / SkyAttack | AoEBurst 或 Field | Petal/Hurricane/WeatherPain→**Field**；RockTomb 落点→AoEBurst；ThunderboltUlt 是天雷柱→**Beam**（已列） |
+| AoE / MouseAoE / FutureSightUlt / QuakeUlt / PetalDance / HurricaneField / SkyAttack | AoEBurst 或 Field | Petal/HurricaneField→**Field**；WeatherPain 已改 Barrage；RockTomb 落点→AoEBurst；ThunderboltUlt 是天雷柱→**Beam**（已列） |
 | Vortex / MouseVortex | DoTBind | |
 | Field() | Field | 无形态调用，仍赋值 |
 | Sleep / HypnosisUlt | Field | 范围控制 |
@@ -424,11 +424,11 @@ S1 OnFire +2%；S2 火系招式（`CountsAsFireMove`）DamageBonus +2%；S3 Crit
 S1 0.80；S2 0.80；S3 0.70；S4 0.70；普通写 0.25。S5 移速 +2%；S6 飞行 +0.5s。
 
 **A11 诅咒之符** 通用 Min 6 / Super 9（无幽灵共鸣）  
-普通：Bolt/Spread/Barrage/DoTBind/**Beam/Field** 穿墙（仅变身）+ 戴上即受诅咒焰，每 30s 灼烧 **5s**（未变身也烧）。  
+普通：Bolt/Spread/Barrage/DoTBind/**Beam** 穿墙（仅变身，**不含 Field**）+ 戴上即受诅咒焰，每 30s 灼烧 **5s**（未变身也烧）。  
 超级：同上穿墙 + 穿透 +1；**免疫**诅咒之符灼烧（与普通叠戴也不烧）。  
-S1 只 Bolt 穿墙；S2 Spread；S3 Barrage；S4 DoTBind；S5 Beam+Field；S6 penetrate +1。碎片均带灼烧 **3s**。  
+S1 只 Bolt 穿墙；S2 Spread；S3 Barrage；S4 DoTBind；S5 Beam；S6 penetrate +1。碎片均带灼烧 **3s**。  
 原版 `Flames`/`Leaf` 不改实现；诅咒符 Spread 时 GlobalProjectile `PostAI` 保 `tileCollide=false`。  
-Field 加入集合后，现役会变的是 **暴风** `WeatherPainHurricaneProj`（默认贴地，戴符则穿墙）。花瓣舞/催眠/洛奇亚气旋场本来 `tileCollide=false`。
+**暴风** `WeatherPainHurricane` 是 **Barrage 穿透飞弹**（自管位移，广角镜不弯）。默认撞实心贴地；成品诅咒符含 Barrage，戴上穿墙。花瓣舞/催眠/洛奇亚气旋场仍是 Field，本来 `tileCollide=false`。
 
 **A12 龙之牙** 龙 Min 8 / Super 11  
 普通 Boss +6%；超级 +12%。碎片 +1.5%。S5 +1.5%；S6 DamageBonus +2%（通用）。
@@ -737,7 +737,7 @@ tML API：https://docs.tmodloader.net/docs/stable/annotated.html 按需打开 Mo
 禁止：改你独占列表以外的文件。需要新字段先停下来写在计划 AccStat 表，不要私加。
 叠：同族碎片/普通/超级全部生效，不要写互斥。
 不变之石：未变身也 Apply。
-广角镜集合不含 Beam/Field；诅咒之符含 Beam+Field。无幽灵共鸣。
+广角镜集合不含 Beam/Field；诅咒之符含 Beam、不含 Field。无幽灵共鸣。暴风是 Barrage。
 ```
 
 ### 12.2 脚手架验收（主 Agent 做完再开人）
@@ -785,7 +785,7 @@ tML API：https://docs.tmodloader.net/docs/stable/annotated.html 按需打开 Mo
 1. A06→达人带、A19→充电电池、A20→光之黏土、A21→弱点保险（原作效果泰拉化，不是 1:1）。  
 2. 「剩饭」DisplayName 用官网 **吃剩的东西**；「不变石」用 **不变之石**。  
 3. 黑带 **不要求格斗共鸣**（所有近战交付都吃）。  
-4. 诅咒之符 **普通成品含 Beam+Field 穿墙**（S1–S4 配方仍能做出带 Beam/Field 的成品）。戴上即受原版诅咒焰。  
+4. 诅咒之符 **普通成品含 Beam 穿墙、不含 Field**（S1–S4 配方仍能做出带 Beam 的成品）。戴上即受原版诅咒焰。暴风走 Barrage。  
 5. 学习装置复制 **40% / 超级 80%**；幸运蛋 **+50% / 超级 +100%**。  
 6. 气势披带血量门槛：**碎片 ≥60% / 成品 ≥50% / 超级 ≥30%**（已按此修订；叠件取 min）。
 

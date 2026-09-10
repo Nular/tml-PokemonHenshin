@@ -1,7 +1,7 @@
 # 招式泰拉适配表（权威）
 
 **Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 已验收**；**v1.4 数值已接线**（游戏内 DPS 抽检待本地）。  
-**版本：** 1.3（表结构）；变更记录至 **1.23（2026-09-10）**  
+**版本：** 1.3（表结构）；变更记录至 **1.24（2026-09-10）**  
 **冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
@@ -151,8 +151,8 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L07_F01 | 迷你龙 | **蜕皮**：每 5s 约 15% 概率清除自身 1 个可清除 debuff | 龙息 Spread/Bolt+Stun（概率短僵；**线在实心截断**） | 咬住 MeleeArc | 龙之怒 Barrage（12/32 抖动球+5格爆；**大招仍穿墙**） | 耗 100 | 龙息：**128 格** Fire 帧线；怒：`DragonRageBarrage` SoftGlow 球 | Low | Done |
-| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 星尘龙鞭 15格极强击退 | 暴风 Spread/AoEBurst+Stun（**默认撞实心贴地飞**） | 耗 100 | 龙波；`DragonTailWhip`；暴风 WeatherPain 主+**4伴随**穿透牵引 | Medium | Accepted |
-| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 AoEBurst+Stun（**默认撞实心贴地飞**） | 龙之俯冲 星尘龙路径冲 | 逆鳞 3s 身周火球；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 暴风 WeatherPain 技能档；`StardustPathLunge`；逆鳞 CultistBossFireBall 壳 | Medium | Accepted |
+| L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 星尘龙鞭 15格极强击退 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**；诅咒符 Barrage 穿墙） | 耗 100 | 龙波；`DragonTailWhip`；暴风 WeatherPain 主+**4伴随**穿透牵引 | Medium | Accepted |
+| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 龙之俯冲 星尘龙路径冲 | 逆鳞 3s 身周火球；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 暴风 WeatherPain 技能档；`StardustPathLunge`；逆鳞 CultistBossFireBall 壳 | Medium | Accepted |
 
 ### 4.6 钢/超能链 L08（Excel：铁哑铃→金属怪）
 
@@ -195,7 +195,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（原版 Typhoon **单帧**深蓝贴地；盒随帧） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime；与撞击共用突进 CD） | 耗 100 | 单团贴地旋风；尖角尘锥 | Medium |
-| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 AoEBurst+Stun（**默认撞实心贴地飞**） | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 暴风 WeatherPain 直立帧+穿透牵引（技能档）；燕返双弧；勇鸟梭形+交叉鸟 | Medium | Done |
+| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 暴风 WeatherPain 直立帧+穿透牵引（技能档）；燕返双弧；勇鸟梭形+交叉鸟 | Medium | Done |
 
 ### 4.12 电系链 L04
 
@@ -266,4 +266,5 @@
 | 1.20 | 2026-09-09 | 被动数字对齐 `FormPassiveApplier` |
 | 1.21 | 2026-09-09 | 洁癖：去掉形态行上的否定口径；未接线见 requirements §12.1 |
 | 1.22 | 2026-09-10 | 龙之波动爆炸碎片命中改为 `1 × Factor`（须 `MarkCrumb`；仅 620）；击杀能量不变 |
-| 1.23 | 2026-09-10 | 诅咒之符去共鸣；穿墙加 Field。火焰漩涡撞墙停飞不 Kill；水炮墙=怪锁长渐缩（加农仍穿）；电击/十万伏特/暗影球撞墙；龙息线截断；技能龙怒撞实心爆（迷你龙大招仍穿）；暴风默认贴地。喷射火焰/飞叶仍真弹，诅咒符 Spread `PostAI` 保穿墙 |
+| 1.23 | 2026-09-10 | 诅咒之符去共鸣。火焰漩涡撞墙停飞不 Kill；水炮墙=怪锁长渐缩（加农仍穿）；电击/十万伏特/暗影球撞墙；龙息线截断；技能龙怒撞实心爆（迷你龙大招仍穿）；暴风默认贴地。喷射火焰/飞叶仍真弹，诅咒符 Spread `PostAI` 保穿墙 |
+| 1.24 | 2026-09-10 | 暴风改为 Barrage 穿透飞弹（不是 Field）；广角镜仍不含 Field；诅咒符穿墙含 Beam、不含 Field |

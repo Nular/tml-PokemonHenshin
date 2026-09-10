@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |----|------|
-| 版本 | **1.4.11** |
+| 版本 | **1.4.12** |
 | 状态 | 现役开发基线：换皮武器；被动 + 技能1/2 + 能量大招；v1.4 等级/攻防/能量/进化/XP 已接线。游戏内 DPS 抽检与弹出验收待本地。 |
 | 平台 | 泰拉瑞亚 + tModLoader + 灾厄（Calamity） |
 | 联机 | 必须支持多人 |
@@ -416,7 +416,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 - **掉落：** 匣 10%（含困难匣）；事件小怪 2%；Boss **25%**（专家袋再 Roll 一次），掉的是表内对应**碎片**。走 `ModifyNPCLoot` / `ModifyItemLoot`（图鉴与合成浏览器可见）。多节 Boss 只结算最终节。  
 - **无条件加伤**（力量头带 / 讲究头带伤 / 生命宝珠伤 / 达人带 Factor）走之力 `ModifyWeaponDamage`，面板看得到。有条件（Boss / 着火 / 大招 / 近战 Delivery）走命中，不与上述四项双算。  
 - 饰品伤**不对齐**之力 DPS 80–120% 窗。  
-- 广角镜追踪集合 `{Bolt, Spread, Barrage, DoTBind}`（**不含 Beam / Field**）。诅咒之符穿墙集合在此基础上加 **Beam + Field**；无幽灵共鸣。原版 `Flames`/`Leaf` 子弹继承母弹 Delivery，诅咒符 Spread 时 `PostAI` 保 `tileCollide=false`。菱形索敌碎片 **8** / 成品 **16** / 超级 **32** 格（叠戴 max）；新锁须在出弹方向 **60° 半角**内；锁死后可掉头，断锁 **2×**。  
+- 广角镜追踪集合 `{Bolt, Spread, Barrage, DoTBind}`（**不含 Beam / Field**）。诅咒之符穿墙集合在此基础上加 **Beam**（仍不含 Field）。无幽灵共鸣。暴风是 **Barrage 穿透飞弹**（自管位移，广角镜不弯）；戴符 Barrage 穿墙，默认撞实心贴地。原版 `Flames`/`Leaf` 子弹继承母弹 Delivery，诅咒符 Spread 时 `PostAI` 保 `tileCollide=false`。菱形索敌碎片 **8** / 成品 **16** / 超级 **32** 格（叠戴 max）；新锁须在出弹方向 **60° 半角**内；锁死后可掉头，断锁 **2×**。  
 - 诅咒之符灼烧：戴上立刻第一段原版 `CursedInferno`（可被护士/蜕皮/恒净清除，毅力吃得到）；之后每 **30 秒**再烧一段。碎片 **3 秒**、普通 **5 秒**。超级**免疫**该灼烧（与普通叠戴也不烧）。穿墙仍仅变身。  
 - 学习装置只扫描热键栏 0–9，复制经验（不拆分持握份）。
 
@@ -532,9 +532,9 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 | A08 | 神秘水滴 | 水共鸣 | 2 | 水中移速 +10% |
 | A09 | 磁铁 | 电共鸣 | 4 | 冲刺冷却 Cut 15% |
 | A10 | 锐利鸟嘴 | 飞共鸣 | 5 | 坠落承伤剩余 25% |
-| A11 | 诅咒之符 | 通用 | 6 | Bolt/Spread/Barrage/DoTBind/**Beam/Field** 穿墙（仅变身）；戴上即受诅咒焰，每 30s 灼烧 5s（未变身也烧） |
+| A11 | 诅咒之符 | 通用 | 6 | Bolt/Spread/Barrage/DoTBind/**Beam** 穿墙（仅变身；不含 Field）；戴上即受诅咒焰，每 30s 灼烧 5s（未变身也烧） |
 | A12 | 龙之牙 | 龙共鸣 | 8 | 对 Boss 命中 +6% |
-| A13 | 广角镜 | 通用 | 3 | Bolt/Spread/Barrage/DoTBind 追踪（不含 Beam）；菱形索敌 16 格 |
+| A13 | 广角镜 | 通用 | 3 | Bolt/Spread/Barrage/DoTBind 追踪（不含 Beam / Field）；菱形索敌 16 格 |
 | A14 | 讲究头带 | 通用 | 4 | 锁技能2+大招；伤害 +50%（进面板） |
 | A15 | 焦点镜 | 通用 | 5 | 10% 升暴击档 |
 | A16 | 生命宝珠 | 通用 | 5 | 命中扣 1 HP；伤害 +20%（进面板） |
@@ -597,7 +597,7 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 | 代码 | 现状 |
 |------|------|
 | `GrantsPhasing` / `TryStartPhasing` / `SyncPhasing` / `PhaseTriggerProj` | 无形态打开该开关。鬼斯通线是飘浮飞。 |
-| A11 诅咒之符 | 现役：无共鸣。变身时按 `MoveDelivery` 穿墙（含 Beam + Field）。戴上即受原版诅咒焰（碎片 3s / 普通 5s / 每 30s；超级免疫）。不再依赖 `GrantsPhasing`。 |
+| A11 诅咒之符 | 现役：无共鸣。变身时按 `MoveDelivery` 穿墙（含 Beam，**不含 Field**）。暴风是 Barrage 穿透弹。戴上即受原版诅咒焰（碎片 3s / 普通 5s / 每 30s；超级免疫）。不再依赖 `GrantsPhasing`。 |
 | `WeatherFieldSystem` / `RainFieldProj` / `FormItemUtil.Field` / `SyncWeatherField` | 无形态调用。洛奇亚气旋是战斗弹幕。 |
 | `CollisionTier` B / C | 形态均为 A。 |
 | `FormRole` | 标签存在，不参与数值或获取。 |
@@ -675,4 +675,5 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 | **1.4.8** | 龙之波动爆炸碎片（原版 620）命中改为 `1 × EnergyGainFactor`；击杀能量不变。洁癖：明确**仅打标弹**走碎屑；入口文档对齐 A28 / 页眉版本 |
 | **1.4.9** | 变身属性面板：物品栏右侧入口，汇总当前形态/特性/属性/饰品加成（§2.9） |
 | **1.4.10** | 广角镜菱形索敌：碎片 8 / 成品 16 / 超级 32 格（max）；新锁 60° 半角；锁死后可掉头，断锁 2× |
-| **1.4.11** | 诅咒之符去幽灵共鸣；穿墙集合加 Field；戴上即受原版诅咒焰（碎片 3s / 普通 5s / 每 30s；超级免疫；未变身也烧）。若干招默认撞墙，诅咒符按 Delivery 再穿 |
+| **1.4.11** | 诅咒之符去幽灵共鸣；戴上即受原版诅咒焰（碎片 3s / 普通 5s / 每 30s；超级免疫；未变身也烧）。若干招默认撞墙，诅咒符按 Delivery 再穿 |
+| **1.4.12** | 暴风改为 Barrage 穿透飞弹（不是 Field）；广角镜仍不含 Field；诅咒符穿墙含 Beam、不含 Field。暴风默认贴地，戴符 Barrage 穿墙 |

@@ -357,10 +357,10 @@ namespace PokemonHenshin.Content.Accessories
 				s2: new[] { F(AccStat.TilePierceSpread), S(AccStat.CursedInfernoSec, 3f) },
 				s3: new[] { F(AccStat.TilePierceBarrage), S(AccStat.CursedInfernoSec, 3f) },
 				s4: new[] { F(AccStat.TilePierceDoTBind), S(AccStat.CursedInfernoSec, 3f) },
-				s5: new[] { F(AccStat.TilePierceBeam), F(AccStat.TilePierceField), S(AccStat.CursedInfernoSec, 3f) },
+				s5: new[] { F(AccStat.TilePierceBeam), S(AccStat.CursedInfernoSec, 3f) },
 				s6: new[] { S(AccStat.PenetrateAdd, 1f), S(AccStat.CursedInfernoSec, 3f) },
-				normal: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam), F(AccStat.TilePierceField), S(AccStat.CursedInfernoSec, 5f) },
-				super: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam), F(AccStat.TilePierceField), S(AccStat.PenetrateAdd, 1f), F(AccStat.CursedInfernoImmune) },
+				normal: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam), S(AccStat.CursedInfernoSec, 5f) },
+				super: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam), S(AccStat.PenetrateAdd, 1f), F(AccStat.CursedInfernoImmune) },
 				loot: new[]
 				{
 					Craft(TileID.MythrilAnvil, (ItemID.SoulofNight, 5), (ItemID.RottenChunk, 10)),
