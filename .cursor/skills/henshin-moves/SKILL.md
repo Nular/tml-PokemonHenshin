@@ -18,7 +18,7 @@ description: >-
 
 | 权威                               | 管什么                                                  |
 | -------------------------------- | ---------------------------------------------------- |
-| `docs/requirements.md`           | 产品规则（v1.4.6；含等级/攻防/能量/进化/XP） |
+| `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP） |
 | `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量、MoveRefRate |
 | `docs/move-effects.md`           | 招式玩法语义 / 接线状态                                        |
 | `docs/fx-knowledge.md`           | FX cookbook、本模已用手法、贴图与踩坑                             |
@@ -51,6 +51,7 @@ description: >-
   - 估算 `MoveRefRate` 作**参考**（见 `docs/balance-stats.md` §7），结合命中难度、攻击距离、风险再定倍率——追踪远程宜低、短近战宜高。
   - **段数谨慎改动**（影响手感）；失衡时优先调单段 `DamageMultiplier` / `EnergyGainFactor`。
   - 填写拟定 `EnergyGainFactor`（大招槽为 0）。
+  - 亡时 `RetargetAsHenshin` 的原版弹**默认按完整命中给能**。要削弱须显式 `MarkCrumb`（`1 × Factor`）；禁止用整招 `MultiHit` 代替。现役仅龙之波动 620；污泥毒云等未打标。
   - **同一招式名**若出现在不同形态或技能/大招不同槽，必须分列倍率，禁止默认抄同一数字。
   - 面板伤来自 `FinalAttack`（等级带基准 × 种族 `AttackMod` × `HenshinDamageFactor`）。§7 窗用 `MoveRefRateNormalized`。
 4. **写设计方案（最终预期效果）**：用玩家主观语言描述，同时当作验收标准。建议覆盖：

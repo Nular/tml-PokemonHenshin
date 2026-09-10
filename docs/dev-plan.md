@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.6**（数值表 `docs/balance-stats.md`） |
+| 对齐需求 | `docs/requirements.md` **v1.4.8**（数值表 `docs/balance-stats.md`） |
 | 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
@@ -34,7 +34,7 @@
 - 持握期间**禁止坐骑**
 - 独立伤害类型 `HenshinDamage`，职业专精按 **k = 0.35** 折算
 - 随 `ProgressStage` **与物品等级双条件**进化（需求 v1.4；代码已接线）
-- 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01～A21 饰品**
+- 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01–A28 饰品**（碎片/普通/超级）
 - **联机必须一致**（形态、能量、伤害、进化、天气场伤害侧、地形变更；v1.4 另含 level/xp）
 - 招式泰拉适配：`docs/move-effects.md`；数值真源：`docs/balance-stats.md`（**已接线** `HenshinStatService` / `FormStatTable`）
 
@@ -89,7 +89,7 @@ PokemonHenshin/                # 仓库根 = 模组根
   Localization/                # en-US / zh-Hans hjson（特殊字符须引号或 ''' 多行）
   Assets/
     Forms/                     # 36 形态精灵图，按 FormId 命名
-    Accessories/               # 饰品图 A01～A12（非 FX；A13+ 暂复用）
+    Accessories/               # A01–A28：`Axx` / `_Super` / `_Shard` 64×64（非 FX）
   Content/
     Core/                      # FormDefinition、FormRegistry、MoveSpec、ProgressStage、CalamityProgressAdapter
     Damage/                    # HenshinDamage
@@ -100,7 +100,7 @@ PokemonHenshin/                # 仓库根 = 模组根
     Evolution/                 # EvolutionService、确认 UI
     Accessories/               # HenshinAccessoryItem 基类
     Items/Forms/               # 36 形态物品（StarterLines / CombatLinesA / UtilityAndLegend）
-    Items/Accessories/         # A01～A12
+    Items/Accessories/         # A01–A28 碎片/普通/超级
     WeatherField/              # 天气场
     TerrainEdit/               # 挖掘预算
     Loot/                      # Boss 掉落 + 合成
@@ -495,7 +495,7 @@ TryEditTile(player, action) →
 ### M4 — 内容填满与平衡
 
 - [x] 36 形态物品与招式骨架 + 52poke 贴图
-- [x] 饰品 A01～A21
+- [x] 饰品 A01–A28（碎片/普通/超级；游戏内验收 pending）
 - [x] 掉落/合成占位；传说可创造/合成
 - [ ] DPS 抽检精表（占位数值，精调后置 M5）
 - **验收：** **待游戏内 A4**
@@ -528,7 +528,7 @@ TryEditTile(player, action) →
 | 阶段 | 形态表 | 招式 | 饰品 | 宝可梦图 | 特效 |
 |------|--------|------|------|----------|------|
 | M0 | 1 条 L01_F01 | A/B 占位 | 无 | 52poke 小火龙 | 仅原版/灾厄/大修复用 |
-| M1～M4（**现役**） | **36 形态满表** | 被动+技能1/2+大招已接线 | **A01～A21** | **36 Forms + 饰品已入库**（A13+ 暂复用旧图） | 逐招式映射已有 FX，禁止新图 |
+| M1～M4（**现役**） | **36 形态满表** | 被动+技能1/2+大招已接线 | **A01–A28** | **36 Forms + 饰品 64×64 已入库**（游戏内图标验收 pending） | 逐招式映射已有 FX，禁止新图 |
 | M5 | 冻结 ID | 数值精调 | 微调 | 路径可替换验收 | 回归：仓库无新增 Fx 图片 |
 
 **仍待填写（不挡玩法骨架）：** 招式精确数值、对标 ItemID、DPS 抽检精表、商标策略（需求 §15）。
@@ -674,3 +674,4 @@ TryEditTile(player, action) →
 | **1.4.4** | 洁癖：页眉/对照表/README 对齐 XP 双自变量与世界字；去掉死 loc `GainedXp`/`LevelUp`/`Moves` |
 | **1.4.5** | 洁癖：M3 误标（水箭龟雨场 / 鬼斯通穿障）改为管线现状；对齐 requirements v1.4.5 |
 | **1.4.6** | 洁癖：页眉/M3/总评对齐 requirements v1.4.6；未接线集中到 §12.1 |
+| **1.4.8** | 洁癖：页眉/目标/管线对齐 A28 与 requirements v1.4.8；龙波碎片能量见需求 §2.5 |

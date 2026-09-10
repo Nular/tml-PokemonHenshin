@@ -210,7 +210,7 @@ DefenseMod = Clamp(Bulk / 100, 0.55, 1.50)
 | -------------- | ------------------------------- |
 | EnergyMax      | **1000**（默认）                    |
 | EnergyOnHit    | 12 × EnergyGainFactor × 饰品      |
-| EnergyOnFragmentHit | 1 × EnergyGainFactor × 饰品（龙之波动爆炸碎片 620 等已打标次级弹） |
+| EnergyOnFragmentHit | 1 × EnergyGainFactor × 饰品（须 `MarkCrumb`；**现役仅**龙之波动 620。污泥毒云等未打标仍走 EnergyOnHit） |
 | EnergyOnKill   | 55 × EnergyGainFactor（碎片击杀仍走本条；每怪一次） |
 | Passive / tick | 0.15（Boss 附近 ×3）                |
 | 大招命中           | 不充能                             |
@@ -296,6 +296,6 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 | 1.4.2 | 代码接线：攻防 `S` 用 Level 所在带；§7.1 皮卡丘大招 4.8、意念头锤技能槽 2.0 |
 | 1.4.3 | 击杀 XP × 世界档（1～3 → 300～900）；ExpNeeded × 物品等级带；LEVEL UP / EXP 世界字 |
 | 1.4.4 | 战斗能量软顶 90→1000 / 秒：只兜极端连击；25～40s 打满仍由 Factor 负责 |
-| 1.4.5 | 龙之波动爆炸碎片命中 `1 × Factor`；主弹仍 `12 × Factor`；击杀不变 |
+| 1.4.5 | 龙之波动爆炸碎片命中 `1 × Factor`（须打标；现役仅 620）；主弹仍 `12 × Factor`；击杀不变 |
 
 

@@ -104,8 +104,8 @@
 - **大招**常规不可用；变身期间按形态积攒能量，满条后方可释放。能量按 `FormId` 分存，解除变身暂停积攒。  
 - **能量池（v1.4）：** 默认 `EnergyMax = 1000`（形态可覆写）。大招一次耗尽至 `UltRetainFraction`（默认 0；A20=0.20）。  
   - 命中：`EnergyOnHit = 12` × 招式 `EnergyGainFactor` × 饰品修正  
-  - 爆炸碎片等次级生成物命中：`EnergyOnFragmentHit = 1` × `EnergyGainFactor` × 饰品修正（击杀仍按下条）  
-  - 击杀：`EnergyOnKill = 55` × `EnergyGainFactor`  
+  - 打标次级弹命中：`EnergyOnFragmentHit = 1` × `EnergyGainFactor` × 饰品修正（须 `MarkCrumb`；**现役仅**龙之波动爆炸碎片 620。未打标的 `RetargetAsHenshin` 弹仍走上一行，如污泥毒云）  
+  - 击杀：`EnergyOnKill = 55` × `EnergyGainFactor`（打标碎片击杀仍走本条）  
   - 被动：`0.15 / tick`（Boss 附近 ×3）  
   - 大招命中**不**充能  
   - **无**按 tick 的命中 ICD；改为滚动 1 秒窗口内命中+击杀能量合计 **≤ 1000**（软顶，只兜极端连击；被动不受限）  
@@ -372,7 +372,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 2. `HenshinForceItem`：`Level`/`Xp` Save/Load/Net；Tooltip；进化拷贝 — **已接线**
 3. `HenshinStatService`：`ExpNeeded`（×物品带）、Boss XP、`StageXpScale`（击杀×世界档）、Stage→Final — **已接线**
 4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验；世界字 `EXP +X` / `LEVEL UP!` — **已接线**
-5. 能量池 1000 + 每秒软顶 + Factor — **已接线**
+5. 能量池 1000 + 每秒软顶 + Factor；打标碎片命中 1×Factor（现役龙之波动 620）— **已接线**
 6. 进化双条件 — **已接线**
 7. 联机同步 level/xp/energy — **SyncEnergy 含三项；服务端写入持握物品并 TruncateToCap**；双端实测 pending
 8. 游戏内 DPS 抽检 PS7/9/12 — pending  
@@ -660,4 +660,4 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 | **1.4.5** | 洁癖：§9 档位与 `FormDefinition.Stage` 对齐；获取途径写开局/Boss/合成 |
 | **1.4.6** | 洁癖：产品口径只写现役；未接线代码集中到 §12.1；去掉每档数量上限 |
 | **1.4.7** | 饰品重构：28 家族碎片/普通/超级；52poke 官方名；不变之石未变身也挡进化；广角镜按 Delivery 追踪；掉率匣 10% / 事件 2% / Boss 25% |
-| **1.4.8** | 龙之波动爆炸碎片（原版 620）命中改为 `1 × EnergyGainFactor`；击杀能量不变 |
+| **1.4.8** | 龙之波动爆炸碎片（原版 620）命中改为 `1 × EnergyGainFactor`；击杀能量不变。洁癖：明确**仅打标弹**走碎屑；入口文档对齐 A28 / 页眉版本 |
