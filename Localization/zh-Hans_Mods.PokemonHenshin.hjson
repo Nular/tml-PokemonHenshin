@@ -18,6 +18,238 @@ Common: {
 	ForceEvolveReady: 可进化为「{0}」（进度与等级均已满足）
 }
 
+StatsUI: {
+	ButtonHover: 变身属性
+	NotTransformed: 未持握之力。持握热键栏中的「xxx之力」后，这里显示当前加成与特性。
+	EverstoneOn: 不变之石：阻止进化
+	NoMount: 变身期间禁止坐骑
+	SectionForm: 形态
+	TypesLine: 属性：{0}
+	LevelLine: 等级 {0}（上限 {1}，世界档 {2}）
+	LevelCapped: 等级 {0}（已达上限 {1}，世界档 {2}）
+	XpLine: 经验 {0} / {1}
+	AttackLine: 形态攻击 {0}　面板攻击 {1}
+	DefenseLine: 形态防御 {0}　当前防御 {1}
+	EnergyLine: 大招能量 {0} / {1}
+	FlightLine: 飞行能量 {0}s / {1}s
+	EvolveNeed: 进化为「{0}」需要档 {1} 且等级 ≥ {2}
+	EvolveReady: 可进化为「{0}」
+	SectionMoves: 招式
+	Skill1: 技能1  {0}
+	Skill2: 技能2  {0}
+	Skill2Locked: 技能2  {0}（讲究头带锁定）
+	Ult: 大招  {0}
+	UltLocked: 大招  {0}（讲究头带锁定）
+	SectionPassive: 持握特性
+	PassiveAlways: {0}：{1}
+	PassiveOn: {0}：{1}　【触发中】
+	PassiveOff: {0}：{1}　【条件未满足】
+	Passive: {
+		Blaze: {
+			Name: 猛火
+			Desc: 生命≤50% 时招式伤害 +20%
+		}
+		Torrent: {
+			Name: 激流
+			Desc: 生命≤50% 时招式伤害 +20%
+		}
+		Overgrow: {
+			Name: 茂盛
+			Desc: 生命≤50% 时招式伤害 +20%
+		}
+		Chlorophyll: {
+			Name: 叶绿素
+			Desc: 白天地表移速 +35%
+		}
+		RainDish: {
+			Name: 雨盘
+			Desc: 雨天或夜晚定期少量回血
+		}
+		Synchronize: {
+			Name: 同步
+			Desc: 受异常状态时反弹给攻击者
+		}
+		ShedSkin: {
+			Name: 蜕皮
+			Desc: 每 tick 小概率清除减益
+		}
+		Multiscale: {
+			Name: 多重鳞片
+			Desc: 满血时承伤 ×20%
+		}
+		ClearBody: {
+			Name: 清净之躯
+			Desc: 持续清除并可免疫常见减益
+		}
+		RoughSkin: {
+			Name: 粗糙皮肤
+			Desc: 受击反伤近战接触者
+		}
+		Levitate: {
+			Name: 飘浮
+			Desc: 强化飞行（约 10s）且免疫坠落
+		}
+		SwiftSwim: {
+			Name: 悠游自如
+			Desc: 雨天或夜晚移速 +25%
+		}
+		Moxie: {
+			Name: 自信过度
+			Desc: 击杀叠层，每层本模伤害 +20%
+		}
+		Guts: {
+			Name: 毅力
+			Desc: 自身有减益时本模伤害 +25%
+		}
+		KeenEye: {
+			Name: 锐利目光
+			Desc: 本模伤害 +20%
+		}
+		Static: {
+			Name: 静电
+			Desc: 被近战接触时使对方感电
+		}
+		RockHead: {
+			Name: 坚硬脑袋
+			Desc: 免疫招式反伤，承伤 ×85%
+		}
+		Pressure: {
+			Name: 压迫感
+			Desc: 本模伤害 +50%
+		}
+		AirLock: {
+			Name: 气闸
+			Desc: 本模伤害 +70%
+		}
+		SolarPower: {
+			Name: 太阳之力
+			Desc: 白天本模伤害 +20%，攻击扣血
+		}
+		SandVeil: {
+			Name: 沙隐
+			Desc: 挖掘速度提升；地下移速 +15%
+		}
+	}
+	SectionType: 属性效果
+	AmpNote: 心之水滴：属性幅度 +{0}%
+	TypeFireOk: {0}：免疫熔岩 / 燃烧 / 着火
+	TypeFireWet: {0}：免疫熔岩 / 燃烧 / 着火；浸水中本模输出 -{1}%
+	TypeWaterDry: {0}：水下呼吸；入水后移速提升
+	TypeWaterWet: {0}：水下呼吸；水中移速 +{1}%
+	TypeGrass: {0}：未满血时约每秒 +1 HP
+	TypeElectric: {0}：双击左右短冲刺（冷却减免 {1}%）
+	TypeFlying: {0}：限时飞行；坠落减免 {1}%
+	TypeIce: {0}：免疫寒冷 / 冻结
+	TypeGround: {0}：挖掘速度 -{1}%（更快）；击退抗性
+	TypeRock: {0}：承伤 ×90%；免疫坠落
+	TypeSteelOn: {0}：低生命或附近有 Boss —— 免疫困惑【触发中】
+	TypeSteelOff: {0}：低生命或附近有 Boss 时免疫困惑
+	TypeDragon: {0}：击退抗性
+	TypeDark: {0}：暴击率 +{1}%
+	TypeFighting: {0}：本模伤害 +{1}%
+	TypePsychic: {0}：缓降
+	TypeBug: {0}：移速 +{1}%
+	TypePoison: {0}：免疫中毒
+	TypeNormal: {0}：本模伤害 +{1}%
+	TypeGhost: {0}：无额外生存被动（穿墙来自招式 / 诅咒之符）
+	TypeFairy: {0}：占位（当前无效果）
+	TypeSecFlying: 副属性 {0}：坠落减免 {1}%
+	TypeSecPoison: 副属性 {0}：免疫中毒
+	TypeSecPsychic: 副属性 {0}：缓降
+	TypeSecSteel: 副属性 {0}：承伤 ×97%
+	TypeSecGround: 副属性 {0}：挖掘速度 -{1}%
+	TypeSecDragon: 副属性 {0}：击退抗性
+	TypeSecWaterWet: 副属性 {0}：水中移速 +{1}%
+	TypeSecWaterDry: 副属性 {0}：入水后少量移速
+	TypeSecNone: 副属性 {0}
+	Type: {
+		None: —
+		Normal: 一般
+		Fire: 火
+		Water: 水
+		Grass: 草
+		Electric: 电
+		Ice: 冰
+		Fighting: 格斗
+		Poison: 毒
+		Ground: 地面
+		Flying: 飞行
+		Psychic: 超能
+		Bug: 虫
+		Rock: 岩石
+		Ghost: 幽灵
+		Dragon: 龙
+		Dark: 恶
+		Steel: 钢
+		Fairy: 妖精
+	}
+	SectionCombat: 战斗加成（合计）
+	TotDamage: 本模伤害 {0}%
+	TotFactor: 变身伤害因子 {0}%
+	TotChoice: 讲究头带伤害 {0}%
+	TotLifeOrb: 生命宝珠伤害 {0}%
+	TotTypeMove: 特性招式伤害 {0}%
+	TotBoss: 对 Boss {0}%
+	TotOnFire: 对燃烧目标 {0}%
+	TotUlt: 大招伤害 {0}%
+	TotMelee: 近战招式 {0}%
+	TotFireMove: 火招式 {0}%
+	TotPsychicDragon: 超能/龙招式 {0}%
+	TotEvioliteDmg: 进化奇石伤害 {0}%
+	TotEvioliteDef: 进化奇石防御 {0}%
+	TotMoveSpeed: 移动速度 {0}%
+	TotWaterSpeed: 水中移速 {0}%
+	TotXpHeld: 持握经验 {0}%
+	TotXpShare: 热键栏经验分享 {0}%
+	TotCrit: 暴击升级率 {0}%
+	TotOnFireCrit: 对燃烧目标暴击升级 {0}%
+	TotPassiveEnergy: 被动充能 {0}%
+	TotIncoming: 承伤 ×{0}%
+	TotCooldown: 招式冷却 ×{0}%
+	TotDashCd: 冲刺冷却 ×{0}%
+	TotLungeCd: 撞击冷却 ×{0}%
+	TotEnergyGain: 战斗能量获取 ×{0}%
+	TotUltRetain: 大招后保留能量 {0}%
+	TotFlightSec: 飞行能量 +{0} 秒
+	TotFall: 坠落减免 {0}%
+	TotPenetrate: 穿透 +{0}
+	TotDashSpeed: 冲刺速度 +{0}
+	TotLungeIFrame: 撞击无敌帧 +{0}
+	TotLeftovers: 每秒回复 {0} HP
+	TotLeftoversLow: 半血额外每秒回复 {0} HP
+	TotShellBell: 命中回复 {0} HP
+	TotRocky: 受击反伤 {0}% 持握攻击
+	TotLifeOrbDrain: 生命宝珠：攻击扣 HP
+	TotSash: 气势披带：HP≥{0}% 可挡致死，CD {1}s
+	TotNone: （无额外数值加成）
+	DelBolt: 单体弹
+	DelSpread: 扇形
+	DelBarrage: 连发
+	DelDoT: 缠绕
+	DelBeam: 光束
+	TotHoming: 追踪：{0}
+	TotPierce: 穿墙：{0}
+	SectionAcc: 已装备饰品
+	AccNone: （未装备本模饰品）
+	AccOn: {0}　【生效】
+	AccOff: {0}　【{1}】
+	AccReasonForm: 仅变身生效
+	AccReasonResonance: 共鸣不符
+	SectionRuntime: 当前状态
+	RunMoxie: 自信过度 {0} 层（伤害 {1}%）
+	RunDashCd: 冲刺冷却 {0}s
+	RunLungeCd: 撞击冷却 {0}s
+	RunSashCd: 气势披带冷却 {0}s
+	RunSashReady: 气势披带就绪
+	RunShellCd: 贝壳之铃冷却 {0}s
+	RunRockyCd: 凸凸头盔冷却 {0}s
+	RunAftermath: 大招后摇 {0}s（伤害 ×{1}%）
+	RunGuard: 受击减伤剩余 {0}s
+	RunAccGuard: 气势头带减伤剩余 {0}s
+	RunSolarDrain: 太阳之力：攻击扣血中
+	RunNone: （无冷却或层数）
+}
+
 Keybinds: {
 	HenshinUltimate: {
 		$parentVal: 释放变身大招
