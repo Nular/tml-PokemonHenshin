@@ -18,6 +18,238 @@ Common: {
 	ForceEvolveReady: Ready to evolve into {0}
 }
 
+StatsUI: {
+	ButtonHover: Henshin stats
+	NotTransformed: Not transformed. Hold a force item in the hotbar to see live bonuses and abilities.
+	EverstoneOn: Everstone: evolution blocked
+	NoMount: Mounts are disabled while transformed
+	SectionForm: Form
+	TypesLine: Types: {0}
+	LevelLine: Level {0} (cap {1}, world stage {2})
+	LevelCapped: Level {0} (capped at {1}, world stage {2})
+	XpLine: XP {0} / {1}
+	AttackLine: Form attack {0}  Panel attack {1}
+	DefenseLine: Form defense {0}  Current defense {1}
+	EnergyLine: Ultimate energy {0} / {1}
+	FlightLine: Flight energy {0}s / {1}s
+	EvolveNeed: Evolve to {0} needs stage {1} and level ≥ {2}
+	EvolveReady: Ready to evolve into {0}
+	SectionMoves: Moves
+	Skill1: Skill 1  {0}
+	Skill2: Skill 2  {0}
+	Skill2Locked: Skill 2  {0} (Choice Band locked)
+	Ult: Ultimate  {0}
+	UltLocked: Ultimate  {0} (Choice Band locked)
+	SectionPassive: Ability
+	PassiveAlways: "{0}: {1}"
+	PassiveOn: "{0}: {1}  [ACTIVE]"
+	PassiveOff: "{0}: {1}  [not met]"
+	Passive: {
+		Blaze: {
+			Name: Blaze
+			Desc: Move damage +20% at ≤50% HP
+		}
+		Torrent: {
+			Name: Torrent
+			Desc: Move damage +20% at ≤50% HP
+		}
+		Overgrow: {
+			Name: Overgrow
+			Desc: Move damage +20% at ≤50% HP
+		}
+		Chlorophyll: {
+			Name: Chlorophyll
+			Desc: +35% move speed on the surface by day
+		}
+		RainDish: {
+			Name: Rain Dish
+			Desc: Small regen in rain or at night
+		}
+		Synchronize: {
+			Name: Synchronize
+			Desc: Reflects status effects at attackers
+		}
+		ShedSkin: {
+			Name: Shed Skin
+			Desc: Small per-tick chance to clear debuffs
+		}
+		Multiscale: {
+			Name: Multiscale
+			Desc: Take ×20% damage at full HP
+		}
+		ClearBody: {
+			Name: Clear Body
+			Desc: Clears and immunizes common debuffs
+		}
+		RoughSkin: {
+			Name: Rough Skin
+			Desc: Reflects contact melee hits
+		}
+		Levitate: {
+			Name: Levitate
+			Desc: Stronger flight (~10s) and no fall damage
+		}
+		SwiftSwim: {
+			Name: Swift Swim
+			Desc: +25% move speed in rain or at night
+		}
+		Moxie: {
+			Name: Moxie
+			Desc: +20% henshin damage per kill stack
+		}
+		Guts: {
+			Name: Guts
+			Desc: +25% henshin damage while debuffed
+		}
+		KeenEye: {
+			Name: Keen Eye
+			Desc: +20% henshin damage
+		}
+		Static: {
+			Name: Static
+			Desc: Electrifies melee attackers on contact
+		}
+		RockHead: {
+			Name: Rock Head
+			Desc: Ignore move recoil; take ×85% damage
+		}
+		Pressure: {
+			Name: Pressure
+			Desc: +50% henshin damage
+		}
+		AirLock: {
+			Name: Air Lock
+			Desc: +70% henshin damage
+		}
+		SolarPower: {
+			Name: Solar Power
+			Desc: +20% henshin damage by day; attacks drain HP
+		}
+		SandVeil: {
+			Name: Sand Veil
+			Desc: Faster mining; +15% move speed underground
+		}
+	}
+	SectionType: Type effects
+	AmpNote: Soul Dew: type amplitude +{0}%
+	TypeFireOk: "{0}: immune to lava / burning / On Fire"
+	TypeFireWet: "{0}: lava / burn immunity; in water henshin damage -{1}%"
+	TypeWaterDry: "{0}: breathe underwater; bonus speed in water"
+	TypeWaterWet: "{0}: breathe underwater; +{1}% speed in water"
+	TypeGrass: "{0}: ~+1 HP/s while not at full health"
+	TypeElectric: "{0}: double-tap dash (cooldown cut {1}%)"
+	TypeFlying: "{0}: timed flight; {1}% fall reduction"
+	TypeIce: "{0}: immune to chilled / frozen"
+	TypeGround: "{0}: mining speed -{1}% (faster); knockback resist"
+	TypeRock: "{0}: take ×90% damage; no fall damage"
+	TypeSteelOn: "{0}: confuse immunity (low HP or boss nearby) [ACTIVE]"
+	TypeSteelOff: "{0}: confuse immunity at low HP or near a boss"
+	TypeDragon: "{0}: knockback resist"
+	TypeDark: "{0}: +{1}% crit"
+	TypeFighting: "{0}: +{1}% henshin damage"
+	TypePsychic: "{0}: slow fall"
+	TypeBug: "{0}: +{1}% move speed"
+	TypePoison: "{0}: poison immunity"
+	TypeNormal: "{0}: +{1}% henshin damage"
+	TypeGhost: "{0}: no extra survival trait (tile pierce comes from moves / Spell Tag)"
+	TypeFairy: "{0}: placeholder (no effect)"
+	TypeSecFlying: "Secondary {0}: {1}% fall reduction"
+	TypeSecPoison: "Secondary {0}: poison immunity"
+	TypeSecPsychic: "Secondary {0}: slow fall"
+	TypeSecSteel: "Secondary {0}: take ×97% damage"
+	TypeSecGround: "Secondary {0}: mining speed -{1}%"
+	TypeSecDragon: "Secondary {0}: knockback resist"
+	TypeSecWaterWet: "Secondary {0}: +{1}% speed in water"
+	TypeSecWaterDry: "Secondary {0}: small speed bonus in water"
+	TypeSecNone: "Secondary {0}"
+	Type: {
+		None: —
+		Normal: Normal
+		Fire: Fire
+		Water: Water
+		Grass: Grass
+		Electric: Electric
+		Ice: Ice
+		Fighting: Fighting
+		Poison: Poison
+		Ground: Ground
+		Flying: Flying
+		Psychic: Psychic
+		Bug: Bug
+		Rock: Rock
+		Ghost: Ghost
+		Dragon: Dragon
+		Dark: Dark
+		Steel: Steel
+		Fairy: Fairy
+	}
+	SectionCombat: Combat totals
+	TotDamage: Henshin damage {0}%
+	TotFactor: Damage factor {0}%
+	TotChoice: Choice Band damage {0}%
+	TotLifeOrb: Life Orb damage {0}%
+	TotTypeMove: Ability move damage {0}%
+	TotBoss: vs bosses {0}%
+	TotOnFire: vs burning {0}%
+	TotUlt: Ultimate damage {0}%
+	TotMelee: Melee moves {0}%
+	TotFireMove: Fire moves {0}%
+	TotPsychicDragon: Psychic/Dragon moves {0}%
+	TotEvioliteDmg: Eviolite damage {0}%
+	TotEvioliteDef: Eviolite defense {0}%
+	TotMoveSpeed: Move speed {0}%
+	TotWaterSpeed: Water speed {0}%
+	TotXpHeld: Held XP {0}%
+	TotXpShare: Hotbar XP share {0}%
+	TotCrit: Crit upgrade {0}%
+	TotOnFireCrit: Crit upgrade vs burning {0}%
+	TotPassiveEnergy: Passive energy {0}%
+	TotIncoming: Incoming damage ×{0}%
+	TotCooldown: Move cooldown ×{0}%
+	TotDashCd: Dash cooldown ×{0}%
+	TotLungeCd: Lunge cooldown ×{0}%
+	TotEnergyGain: Combat energy gain ×{0}%
+	TotUltRetain: Energy kept after ult {0}%
+	TotFlightSec: Flight energy +{0}s
+	TotFall: Fall reduction {0}%
+	TotPenetrate: Pierce +{0}
+	TotDashSpeed: Dash speed +{0}
+	TotLungeIFrame: Lunge i-frames +{0}
+	TotLeftovers: +{0} HP/s
+	TotLeftoversLow: extra +{0} HP/s below half HP
+	TotShellBell: Heal {0} HP on hit
+	TotRocky: Thorns {0}% of form attack
+	TotLifeOrbDrain: Life Orb: attacks cost HP
+	TotSash: Focus Sash: lethal save at ≥{0}% HP, {1}s CD
+	TotNone: (no extra numeric bonuses)
+	DelBolt: bolt
+	DelSpread: spread
+	DelBarrage: barrage
+	DelDoT: bind
+	DelBeam: beam
+	TotHoming: Homing: {0}
+	TotPierce: Tile pierce: {0}
+	SectionAcc: Equipped accessories
+	AccNone: (no Henshin accessories)
+	AccOn: "{0}  [ON]"
+	AccOff: "{0}  [{1}]"
+	AccReasonForm: henshin only
+	AccReasonResonance: resonance unmet
+	SectionRuntime: Now
+	RunMoxie: Moxie x{0} ({1}% damage)
+	RunDashCd: Dash CD {0}s
+	RunLungeCd: Lunge CD {0}s
+	RunSashCd: Focus Sash CD {0}s
+	RunSashReady: Focus Sash ready
+	RunShellCd: Shell Bell CD {0}s
+	RunRockyCd: Rocky Helmet CD {0}s
+	RunAftermath: Ult aftermath {0}s (damage ×{1}%)
+	RunGuard: Guard bonus {0}s
+	RunAccGuard: Focus Band cut {0}s
+	RunSolarDrain: Solar Power: attacks drain HP
+	RunNone: (no cooldowns or stacks)
+}
+
 Keybinds: {
 	HenshinUltimate: {
 		$parentVal: Fire Henshin Ultimate
