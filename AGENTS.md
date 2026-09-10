@@ -58,12 +58,14 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 7. **SpawnAtMouse：** `NewProjectile` 坐标是左上角；大 hitbox 须事后 `Center = MouseWorld`；改尺寸先存 Center。
 8. **CWR：** 只读抄逻辑；贴图拷入 `Assets/Fx`；`build.txt` **不得** `modReferences` 大修。
 9. **勿硬套自管位移原版 AI**（Nebula 等）：壳弹自管飞行，亡时再真生成爆炸碎片。`RetargetAsHenshin` 的原版弹默认按完整命中给能；要削弱须显式 `MarkCrumb`（现役仅龙之波动 620）。
+10. **HJSON：** 值以 `{` 或 `[` 开头必须双引号（如 `PassiveAlways: "{0}：{1}"`），否则当对象/数组解析，模组加载失败并被禁用。
 
 ## 当前状态与下一步
 
 - **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
 - **数值（2026-09-09～10）：** v1.4 已接线。击杀 XP × 世界档；`ExpNeeded` × 物品带。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。DPS 抽检仍待本地。
 - **饰品（2026-09-10）：** 28 家族逻辑已接线；A01–A28 普通/超级/碎片 64×64 pixeloe。广角镜菱形索敌碎片 8 / 成品 16 / 超级 32 格，新锁 60° 半角、锁死后可掉头（需求 §6；`HenshinProjUtil.HomingAI`）。重跑：`python tools/pixelize_accessories.py`。**游戏内图标/合成/掉落/索敌手感验收仍待本地**。
-- **已知缺口：** 联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。污泥毒云等未打标 Retarget 弹仍走完整命中能。未接线代码见 `docs/requirements.md` §12.1。变身属性面板（物品栏右侧）与神奇糖果待游戏内验收。
+- **2026-09-10～11：** 中文 loc 以 `{` 开头的 StatsUI 行已加引号。属性面板入口下移 64px 避开原版图鉴。御三家改 `AddStartingItems` + `PostUpdateMiscEffects` 入包（角色档 `starterGranted`；禁止 `OnEnterWorld`）；**进世界发放已本地验收**。
+- **已知缺口：** 联机双端实测 / DPS 抽检 PS7/9/12 / Rage pending。污泥毒云等未打标 Retarget 弹仍走完整命中能。未接线代码见 `docs/requirements.md` §12.1。饰品图标/合成/掉落与神奇糖果待游戏内验收。
 - **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`；`tools/HenshinStatVerify`。
 - **下一步：** 游戏内验饰品（含新图标）与神奇糖果 → 联机 → DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。

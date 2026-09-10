@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.12**（数值表 `docs/balance-stats.md`） |
+| 对齐需求 | `docs/requirements.md` **v1.4.15**（数值表 `docs/balance-stats.md`） |
 | 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
@@ -86,7 +86,7 @@ PokemonHenshin/                # 仓库根 = 模组根
   build.txt                    # modReferences = CalamityMod；buildIgnore 含 docs、tools、*.md…
   description.txt / description_workshop.txt / icon.png
   PokemonHenshinMod.cs
-  Localization/                # en-US / zh-Hans hjson（特殊字符须引号或 ''' 多行）
+  Localization/                # en-US / zh-Hans hjson；值以 `{`/`[` 开头必须双引号，否则模组加载失败
   Assets/
     Forms/                     # 36 形态精灵图，按 FormId 命名
     Accessories/               # A01–A28：`Axx` / `_Super` / `_Shard` 64×64（非 FX）
@@ -249,7 +249,7 @@ sortAfter = CalamityMod
 | 进化确认 UI | 无对应；建议简易 `UIState` 确认框 + 仅服务端 Apply |
 | 穿障卡墙安全传送 | 无完美对应；建议结束时 `Collision.SolidCollision` 检测，螺旋搜最近空位，失败则短定身 |
 | 地形砖/分预算与临时还原 | 无预算系统；建议 `TerrainBudgetPlayer` 计数器 + 临时 Tile 倒计时列表 |
-| 开局发三件御三家 | 近似 `ArbiterManifestationNet` 发物；建议 `ModPlayer.OnEnterWorld` + 世界/玩家 flag 防重复 |
+| 开局发三件御三家 | 角色档 `starterGranted`；建角 `AddStartingItems`；旧档 `PostUpdateMiscEffects` + `GetItem` 入包。禁止 `OnEnterWorld`（仅本地客户端） |
 
 ---
 
@@ -469,8 +469,8 @@ TryEditTile(player, action) →
 
 #### M1.5 开局御三家
 
-- [x] `PlayerState/StarterGrantPlayer.cs`
-- **验收：** **待游戏内 A1**
+- [x] `PlayerState/StarterGrantPlayer.cs`（`AddStartingItems` + `PostUpdateMiscEffects` 补发；非 `OnEnterWorld`）
+- **验收：** 进世界发放已本地确认（2026-09-11）
 
 **M1 总验收：** 待用户 A1。
 
@@ -680,3 +680,4 @@ TryEditTile(player, action) →
 | **1.4.10** | 广角镜菱形索敌：碎片 8 / 成品 16 / 超级 32 格；新锁 60° 半角；锁死后可掉头，断锁 2×。洁癖：施工图 `HomingAI 不变` 已废；入口指向需求 §6 |
 | **1.4.11** | 神奇糖果：合成/使用/Boss 5%；`RequestRareCandy` / `ApplyForceProgress` |
 | **1.4.12** | 洁癖：目录树对齐 Consumables / AccItem；NetOp 指针不再指向 §12.1 |
+| **1.4.15** | 对齐 requirements v1.4.15：御三家发放钩子、属性面板下移 64px、HJSON `{` 引号 |

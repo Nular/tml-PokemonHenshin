@@ -17,7 +17,7 @@ namespace PokemonHenshin.Content.Visual
 {
 	/// <summary>
 	/// 物品栏右侧入口 + 当前变身属性面板。仅本地客户端；开背包时绘制。
-	/// 锚定原版 10×5 物品栏右缘（与盔甲列之间的空隙、头盔上方），不跟灾厄额外饰品栏抢位。
+	/// 锚定原版 10×5 物品栏右缘（与盔甲列之间的空隙），再下移 64px 避开原版图鉴按钮；不跟灾厄额外饰品栏抢位。
 	/// API：<see cref="ModSystem.UpdateUI"/> / <see cref="ModSystem.ModifyInterfaceLayers"/> /
 	/// <see cref="UserInterface"/> / <see cref="UIState"/>（tML stable）。
 	/// </summary>
@@ -103,6 +103,7 @@ namespace PokemonHenshin.Content.Visual
 		/// 不用 <see cref="Main.inventoryScale"/>——该字段在绘制箱子/商店时会被改掉。
 		/// tML 未暴露原版 <c>mH</c>，小地图推挤按 1.4.4 惯例重算；若本帧已画过装备栏则改用
 		/// <see cref="AccessorySlotLoader.DrawVerticalAlignment"/> 反推（装备栏顶 = 物品栏顶 + 154）。
+		/// Y 再下移 64，避开原版图鉴按钮（与物品栏右上同列）。
 		/// </summary>
 		internal static void GetInventoryButtonPos(out int x, out int y)
 		{
@@ -120,6 +121,7 @@ namespace PokemonHenshin.Content.Visual
 			int equipY = AccessorySlotLoader.DrawVerticalAlignment;
 			if (equipY > 40)
 				y = Math.Max(20, equipY - 154);
+			y += 64;
 		}
 	}
 
