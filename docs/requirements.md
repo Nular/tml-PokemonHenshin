@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |----|------|
-| 版本 | **1.4.9** |
+| 版本 | **1.4.10** |
 | 状态 | 现役开发基线：换皮武器；被动 + 技能1/2 + 能量大招；v1.4 等级/攻防/能量/进化/XP 已接线。游戏内 DPS 抽检与弹出验收待本地。 |
 | 平台 | 泰拉瑞亚 + tModLoader + 灾厄（Calamity） |
 | 联机 | 必须支持多人 |
@@ -393,7 +393,8 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 1. **开局发放**御三家（`StarterGrantPlayer`）  
 2. **Boss 掉落**（`ModifyNPCLoot` / 宝藏袋 `ModifyItemLoot`：克眼皮卡丘、蜂后腕力、骷髅王波波/凯西、肉山大岩蛇、机械迷你龙、世花鬼斯通、石巨人金属怪、月总超梦/胡地）  
-3. **合成**（地鼠：金/铂锭+土；鲤鱼王：鲈鱼×5+坠落之星×3；圆陆鲨/洛奇亚/烈空坐：月后锭与碎片；饰品见 §6：碎片主题合成 + Ⅰ–Ⅳ 成品 + 超级）
+3. **合成**（地鼠：金/铂锭+土；鲤鱼王：鲈鱼×5+坠落之星×3；圆陆鲨/洛奇亚/烈空坐：月后锭与碎片；饰品见 §6：碎片主题合成 + Ⅰ–Ⅳ 成品 + 超级）  
+4. **神奇糖果**（消耗品 `RareCandy`）：烹饪锅 / 大锅，材料与原版金美味相同（任意 1 只金小动物或金鲤鱼）。使用后使**物品栏第一格**（`inventory[0]`）的之力 **+1 级**、该级内 XP 清零；已达世界档硬顶或 100 级则不能用、不消耗。不吃幸运蛋 / 学习装置。跨进化 `BandMin` 且进度够则走现有确认 UI。任意 `npc.boss`（原版+灾厄，排除手/拳头等非掉落节）**5%**；有宝藏袋则经典直掉、专家/大师只从袋出（**不**额外 roll）。
 
 ---
 
@@ -440,7 +441,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 必须保证主机与客户端一致：变身形态、招式伤害、Buff、进化结果、地形实际变更。
 
-最小同步包：`SyncForm`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、**`SyncForceProgress`（level、xp、energy）**。其它 `NetOp` 见 §12.1。
+最小同步包：`SyncForm`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、**`SyncEnergy`（level、xp、energy）**、**`RequestRareCandy` / `ApplyForceProgress`**（糖果改第一格之力，持握同步管不到）。其它 `NetOp` 见 §12.1。
 
 ---
 
@@ -672,3 +673,4 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 | **1.4.7** | 饰品重构：28 家族碎片/普通/超级；52poke 官方名；不变之石未变身也挡进化；广角镜按 Delivery 追踪；掉率匣 10% / 事件 2% / Boss 25% |
 | **1.4.8** | 龙之波动爆炸碎片（原版 620）命中改为 `1 × EnergyGainFactor`；击杀能量不变。洁癖：明确**仅打标弹**走碎屑；入口文档对齐 A28 / 页眉版本 |
 | **1.4.9** | 变身属性面板：物品栏右侧入口，汇总当前形态/特性/属性/饰品加成（§2.9） |
+| **1.4.10** | 神奇糖果：金美味同材料合成；使用令物品栏第一格之力 +1 级（守硬顶）；每个 `npc.boss` 5%（袋内不额外 roll） |

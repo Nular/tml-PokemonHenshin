@@ -264,6 +264,16 @@ Evolution: {
 	ConfirmNo: 取消
 }
 
+RareCandy: {
+	NoForce: 物品栏第一格没有宝可梦之力
+	Capped: 该之力已达当前进度等级上限
+	MaxLevel: 该之力已满级
+}
+
+Recipes: {
+	AnyGoldCritter: 任意金小动物
+}
+
 Accessories: {
 	ActiveTag: 【仅变身生效·当前生效】
 	InactiveTag: 【仅变身生效·当前未生效】
@@ -673,6 +683,16 @@ Items: {
 	RayquazaForce: {
 		DisplayName: 烈空坐之力
 		Tooltip: 传说·龙/飞。龙之波动、咬碎、画龙点睛。
+	}
+
+	RareCandy: {
+		DisplayName: 神奇糖果
+		Tooltip:
+			'''
+			使用后使物品栏第一格的宝可梦之力提升 1 级
+			已达当前进度上限或满级时无法使用
+			烹饪锅：任意金小动物或金鲤鱼
+			'''
 	}
 
 	A01AbilityCapsuleBelt: {

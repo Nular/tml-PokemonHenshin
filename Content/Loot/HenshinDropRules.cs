@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
@@ -45,6 +46,26 @@ namespace PokemonHenshin.Content.Loot
 	{
 		public bool CanDrop(DropAttemptInfo info) => Main.expertMode || Main.masterMode;
 		public bool CanShowItemDropInUI() => true;
+		public string GetConditionDescription() => null;
+	}
+
+	/// <summary>蠕虫体节：只在 realLife 头（或无 realLife）结算。</summary>
+	public sealed class HenshinBossFinalSegmentCondition : IItemDropRuleCondition
+	{
+		public bool CanDrop(DropAttemptInfo info)
+		{
+			NPC npc = info.npc;
+			if (npc == null)
+				return true;
+			if (npc.SpawnedFromStatue)
+				return false;
+			if (npc.realLife >= 0 && npc.realLife != npc.whoAmI)
+				return false;
+			return true;
+		}
+
+		public bool CanShowItemDropInUI() => true;
+
 		public string GetConditionDescription() => null;
 	}
 
@@ -96,6 +117,104 @@ namespace PokemonHenshin.Content.Loot
 				itemLoot.Add(Chance(itemType, chance));
 		}
 
+		/// <summary>Boss 糖果：无专家袋额外 roll。有宝藏袋则仅经典模式从 NPC 掉。</summary>
+		public static void AddBossCandyDrop(NPCLoot npcLoot, int itemType, float chance, int[] related, bool hasTreasureBag)
+		{
+			IItemDropRule Make()
+			{
+				IItemDropRule inner = Chance(itemType, chance);
+				var finalSeg = new LeadingConditionRule(new HenshinBossFinalSegmentCondition());
+				finalSeg.OnSuccess(inner);
+				inner = finalSeg;
+				if (related == null || related.Length <= 1)
+					return inner;
+				var last = new LeadingConditionRule(new HenshinLastOfTypesCondition(related));
+				last.OnSuccess(inner);
+				return last;
+			}
+
+			if (hasTreasureBag)
+			{
+				var notExpert = new LeadingConditionRule(new Conditions.NotExpert());
+				notExpert.OnSuccess(Make());
+				npcLoot.Add(notExpert);
+				return;
+			}
+
+			npcLoot.Add(Make());
+		}
+
+		public static bool IsNonLootBossPart(int npcType)
+		{
+			switch (npcType)
+			{
+				case NPCID.SkeletronHand:
+				case NPCID.WallofFleshEye:
+				case NPCID.GolemHead:
+				case NPCID.GolemHeadFree:
+				case NPCID.GolemFistLeft:
+				case NPCID.GolemFistRight:
+				case NPCID.PrimeCannon:
+				case NPCID.PrimeSaw:
+				case NPCID.PrimeVice:
+				case NPCID.PrimeLaser:
+				case NPCID.MoonLordHand:
+				case NPCID.MoonLordHead:
+				case NPCID.MoonLordFreeEye:
+				case NPCID.CultistBossClone:
+				case NPCID.MartianSaucerCannon:
+				case NPCID.MartianSaucerTurret:
+				case NPCID.PirateShipCannon:
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		public static bool IsBossBagItem(int itemType)
+		{
+			if ((uint)itemType >= (uint)ItemID.Sets.BossBag.Length)
+				return false;
+			return ItemID.Sets.BossBag[itemType];
+		}
+
+		public static bool LootContainsBossBag(NPCLoot npcLoot)
+		{
+			if (npcLoot == null)
+				return false;
+			var seen = new HashSet<IItemDropRule>();
+			foreach (IItemDropRule rule in npcLoot.Get())
+			{
+				if (RuleDropsBossBag(rule, seen))
+					return true;
+			}
+
+			return false;
+		}
+
+		private static bool RuleDropsBossBag(IItemDropRule rule, HashSet<IItemDropRule> seen)
+		{
+			if (rule == null || !seen.Add(rule))
+				return false;
+			if (rule is CommonDrop common && IsBossBagItem(common.itemId))
+				return true;
+			if (rule is DropBasedOnExpertMode expert
+				&& (RuleDropsBossBag(expert.ruleForNormalMode, seen) || RuleDropsBossBag(expert.ruleForExpertMode, seen)))
+				return true;
+			if (rule is DropBasedOnMasterMode master
+				&& (RuleDropsBossBag(master.ruleForDefault, seen) || RuleDropsBossBag(master.ruleForMasterMode, seen)))
+				return true;
+			if (rule.ChainedRules == null)
+				return false;
+			foreach (IItemDropRuleChainAttempt chain in rule.ChainedRules)
+			{
+				if (chain != null && RuleDropsBossBag(chain.RuleToChain, seen))
+					return true;
+			}
+
+			return false;
+		}
+
 		public static int[] SegmentGroup(int npcType)
 		{
 			switch (npcType)
@@ -137,10 +256,12 @@ namespace PokemonHenshin.Content.Loot
 				case NPCID.EaterofWorldsBody:
 				case NPCID.EaterofWorldsTail:
 					return ItemID.EaterOfWorldsBossBag;
+				case NPCID.BrainofCthulhu: return ItemID.BrainOfCthulhuBossBag;
 				case NPCID.QueenBee: return ItemID.QueenBeeBossBag;
 				case NPCID.SkeletronHead: return ItemID.SkeletronBossBag;
 				case NPCID.Deerclops: return ItemID.DeerclopsBossBag;
 				case NPCID.WallofFlesh: return ItemID.WallOfFleshBossBag;
+				case NPCID.QueenSlimeBoss: return ItemID.QueenSlimeBossBag;
 				case NPCID.TheDestroyer:
 				case NPCID.TheDestroyerBody:
 				case NPCID.TheDestroyerTail:
@@ -152,6 +273,8 @@ namespace PokemonHenshin.Content.Loot
 				case NPCID.Plantera: return ItemID.PlanteraBossBag;
 				case NPCID.Golem: return ItemID.GolemBossBag;
 				case NPCID.DukeFishron: return ItemID.FishronBossBag;
+				case NPCID.HallowBoss: return ItemID.FairyQueenBossBag;
+				case NPCID.DD2Betsy: return ItemID.BossBagBetsy;
 				case NPCID.MoonLordCore: return ItemID.MoonLordBossBag;
 				default: return 0;
 			}
