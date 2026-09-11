@@ -188,8 +188,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			public MoveDelivery Delivery { get; set; }
 			public MoveSlot SourceMoveSlot { get; set; }
 			public bool HasSourceMoveSlot { get; set; }
-			public float CombatEnergyFactor { get; set; }
-			public bool HasCombatEnergyFactor { get; set; }
 			public virtual bool HandlesOwnHoming => false;
 
 		public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
@@ -203,9 +201,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			writer.Write(HasSourceMoveSlot);
 			if (HasSourceMoveSlot)
 				writer.Write((byte)SourceMoveSlot);
-			writer.Write(HasCombatEnergyFactor);
-			if (HasCombatEnergyFactor)
-				writer.Write(CombatEnergyFactor);
 		}
 
 		public override void ReceiveExtraAI(BinaryReader reader)
@@ -213,9 +208,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			HasSourceMoveSlot = reader.ReadBoolean();
 			if (HasSourceMoveSlot)
 				SourceMoveSlot = (MoveSlot)reader.ReadByte();
-			HasCombatEnergyFactor = reader.ReadBoolean();
-			if (HasCombatEnergyFactor)
-				CombatEnergyFactor = reader.ReadSingle();
 		}
 	}
 

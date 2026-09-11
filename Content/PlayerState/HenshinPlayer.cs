@@ -165,6 +165,16 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public MoveSlot LastMoveSlot { get; set; } = MoveSlot.Skill1;
 
+		/// <summary>大招后充能锁定剩余 tick。延迟散射+追踪弹命中可晚于 1s，用 ~2.5s 硬门控兜底。</summary>
+		public const int UltEnergyLockoutDuration = 150; // ~2.5s
+
+		public int UltEnergyLockoutTicks { get; private set; }
+
+		public void BeginUltEnergyLockout()
+		{
+			UltEnergyLockoutTicks = UltEnergyLockoutDuration;
+		}
+
 		private readonly float[] combatEnergyRing = new float[60];
 		private int combatEnergyIndex;
 
@@ -287,6 +297,7 @@ namespace PokemonHenshin.Content.PlayerState
 			FlightEnergy = 0f;
 			UltimateEnergy = 0f;
 			MoxieStacks = 0;
+			UltEnergyLockoutTicks = 0;
 		}
 
 		private float leftoversAcc;
@@ -603,6 +614,8 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			if (!IsTransformed || amount <= 0f)
 				return;
+			if (UltEnergyLockoutTicks > 0)
+				return;
 			UltimateEnergy = System.Math.Clamp(UltimateEnergy + amount, 0f, UltimateEnergyMax);
 			if (CurrentForm != null)
 				energyByForm[CurrentForm.FormId] = UltimateEnergy;
@@ -611,6 +624,8 @@ namespace PokemonHenshin.Content.PlayerState
 		public void AddCombatEnergy(float amount)
 		{
 			if (!IsTransformed || amount <= 0f)
+				return;
+			if (UltEnergyLockoutTicks > 0)
 				return;
 			float scaled = amount * EnergyGainMultiplier;
 			float used = 0f;
@@ -630,6 +645,8 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			combatEnergyIndex = (combatEnergyIndex + 1) % combatEnergyRing.Length;
 			combatEnergyRing[combatEnergyIndex] = 0f;
+			if (UltEnergyLockoutTicks > 0)
+				UltEnergyLockoutTicks--;
 		}
 
 		public bool TryConsumeUltimate()
@@ -1057,7 +1074,8 @@ namespace PokemonHenshin.Content.PlayerState
 			text.crit = true;
 		}
 
-		/// <summary>优先读弹上钉死的出弹槽；近战无弹或未钉槽时回退 LastMoveSlot。</summary>
+		/// <summary>优先读弹上钉死的出弹槽（UltDamageBonus）；未钉时回退 LastMoveSlot。
+		/// 大招充能由 UltEnergyLockoutTicks 门控，不在此按槽位判 0。</summary>
 		private MoveSlot ResolveHitMoveSlot(Projectile proj)
 		{
 			if (proj != null)
@@ -1071,26 +1089,6 @@ namespace PokemonHenshin.Content.PlayerState
 			return LastMoveSlot;
 		}
 
-		private static bool TryGetStampedCombatEnergyFactor(Projectile proj, out float factor)
-		{
-			factor = 0f;
-			if (proj == null)
-				return false;
-			HenshinAccGlobalProjectile gp = proj.GetGlobalProjectile<HenshinAccGlobalProjectile>();
-			if (gp.HasCombatEnergyFactor)
-			{
-				factor = gp.CombatEnergyFactor;
-				return true;
-			}
-			// ModProjectile 轨：Global ExtraAI 时序不稳时的后备。
-			if (proj.ModProjectile is IHenshinMoveProj tagged && tagged.HasCombatEnergyFactor)
-			{
-				factor = tagged.CombatEnergyFactor;
-				return true;
-			}
-			return false;
-		}
-
 		private void ProcessHenshinNpcHit(NPC target, int damageDone, Projectile proj)
 		{
 			if (!IsTransformed)
@@ -1101,37 +1099,9 @@ namespace PokemonHenshin.Content.PlayerState
 			MoveSlot slot = ResolveHitMoveSlot(proj);
 			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
 			MoveSpec move = force?.GetMove(slot);
-			float factor;
-			bool grantsCombatEnergy;
-
-			if (proj != null)
-			{
-				// 有射弹：禁止回退 LastMoveSlot 决定能量。
-				// 延迟散射大招在按住技能时 LastMoveSlot=Skill；未钉槽若 fail-open 会把大招命中当成技能充能。
-				// 钉槽设计可行，但「未钉则回退玩家槽」不可行——改为 fail-closed。
-				if (TryGetStampedCombatEnergyFactor(proj, out float stamped))
-				{
-					factor = stamped;
-					grantsCombatEnergy = stamped > 0f;
-				}
-				else
-				{
-					factor = 0f;
-					grantsCombatEnergy = false;
-				}
-
-				if (slot == MoveSlot.Ultimate)
-				{
-					factor = 0f;
-					grantsCombatEnergy = false;
-				}
-			}
-			else
-			{
-				// 无射弹的近战接触：仍用 LastMoveSlot（之力物品通常 noMelee，此路径很少）。
-				factor = slot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
-				grantsCombatEnergy = factor > 0f && slot != MoveSlot.Ultimate;
-			}
+			// 能量量用出弹槽 Factor；大招 Factor 为 0。延迟大招误充能靠 UltEnergyLockout，不 fail-closed。
+			float factor = slot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
+			bool grantsCombatEnergy = factor > 0f;
 
 			if (grantsCombatEnergy)
 			{
