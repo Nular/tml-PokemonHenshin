@@ -133,7 +133,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
 | `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |
 | `tools/make_super_accessory_sprites.py` | **已弃用**：转发到 `pixelize_accessories.py` | WP-H |
-| `docs/requirements.md` §6 §10 | 已回写（含 1.4.19 广角镜圆形索敌 + 自带追踪不叠饰品）；冲突以需求 + 代码为准 | 收尾 |
+| `docs/requirements.md` §6 §10 | 已回写（广角镜圆形索敌等）；现役页眉 **v1.4.20**；冲突以需求 + 代码为准 | 收尾 |
 | `docs/accessory-rework-plan.md` | 本文件 | 主 Agent |
 
 `Items/Accessories/HenshinAccessories.cs`：脚手架完成后删除，避免 21 个 class 与 Loader 抢同一个 Name。
@@ -376,7 +376,7 @@ S1 ChoiceDamage +12.5% 不锁；S2 +12.5% 不锁；S3 锁技能2；S4 锁大招�
 锁是 OR：只戴 S3 仍能放大招。普通/超级锁两项。
 
 **A15 焦点镜** Min 5 / Super 8  
-普通 CritUpgrade +10%；超级 +20%。碎片各 +2.5%。S5 +2.5%；S6 EasyCrit 再 +5%（加到现有 EasyCrit 升档池）。
+普通 CritUpgrade +10%；超级 +20%。碎片各 +2.5%。S5 +2.5%；S6 CritUpgrade +5%（升档池；**仅已 Crit** 时再 ×2，见需求 §2.6）。与招式 `EasyCrit`（抬暴击率 +35）分离，不进同一升档池。
 
 **A16 生命宝珠** Min 5 / Super 8  
 普通：LifeOrbDamage +20% + 扣 1HP。超级：+40% + 扣 1HP（扣血不 ×2，附加价值改成闸门 8 tick→4 tick）。  

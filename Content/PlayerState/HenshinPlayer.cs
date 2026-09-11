@@ -8,6 +8,7 @@ using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
 using PokemonHenshin.Content.Net;
+using PokemonHenshin.Content.Prefixes;
 using PokemonHenshin.Content.Visual;
 using Terraria;
 using Terraria.Audio;
@@ -116,6 +117,12 @@ namespace PokemonHenshin.Content.PlayerState
 		public float PsychicDragonDamage { get; set; }
 		public int AccGuardCutTicks { get; set; }
 		public int AccGuardActiveTimer { get; set; }
+		/// <summary>铁壁前缀：形态防御结算后再乘的额外比例（如 0.20）。</summary>
+		public float PrefixFormDefenseMul { get; set; }
+
+		private static readonly Color SuperCritCombatColor = new(255, 55, 20);
+		private const float SuperCritCombatScale = 1.45f;
+		private bool _superCritPending;
 
 		// —— 被动运行时 ——
 		public float TypeMoveBonus { get; set; }
@@ -473,6 +480,7 @@ namespace PokemonHenshin.Content.PlayerState
 			LungeIFrameBonus = 0;
 			PsychicDragonDamage = 0f;
 			AccGuardCutTicks = 0;
+			PrefixFormDefenseMul = 0f;
 			TypeMoveBonus = 0f;
 			SynchronizePassive = false;
 			RoughSkinPassive = false;
@@ -723,6 +731,7 @@ namespace PokemonHenshin.Content.PlayerState
 		public override void PostUpdateEquips()
 		{
 			FinalizeAccStats();
+			ApplyHeldForcePrefix();
 			if (!IsTransformed)
 				return;
 			EnforceNoMount();
@@ -736,6 +745,30 @@ namespace PokemonHenshin.Content.PlayerState
 				if (BossEngageTimer > 0 || NearBoss())
 					passive *= 3f;
 				AddPassiveEnergy(passive);
+			}
+		}
+
+		/// <summary>持握之力专属前缀：仅变身生效。</summary>
+		private void ApplyHeldForcePrefix()
+		{
+			if (!IsTransformed)
+				return;
+			if (Player.HeldItem?.ModItem is not HenshinForceItem)
+				return;
+
+			int prefix = Player.HeldItem.prefix;
+			if (prefix == ModContent.PrefixType<HenshinPrefixStored>())
+			{
+				EnergyGainMultiplier *= HenshinPrefixStored.EnergyMul;
+			}
+			else if (prefix == ModContent.PrefixType<HenshinPrefixIronwall>())
+			{
+				PrefixFormDefenseMul += HenshinPrefixIronwall.FormDefenseMul;
+			}
+			else if (prefix == ModContent.PrefixType<HenshinPrefixAssault>())
+			{
+				HenshinDamageBonus += HenshinPrefixAssault.DamageBonus;
+				MoveCooldownMultiplier *= HenshinPrefixAssault.CooldownMul;
 			}
 		}
 
@@ -768,6 +801,11 @@ namespace PokemonHenshin.Content.PlayerState
 			{
 				int extra = (int)Math.Round(formDef * EvioliteDefMul);
 				Player.statDefense += extra;
+			}
+			if (PrefixFormDefenseMul > 0f && formDef > 0)
+			{
+				int prefixExtra = (int)Math.Round(formDef * PrefixFormDefenseMul);
+				Player.statDefense += prefixExtra;
 			}
 		}
 
@@ -989,13 +1027,34 @@ namespace PokemonHenshin.Content.PlayerState
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
-			=> ProcessHenshinNpcHit(target, damageDone, proj: null);
+		{
+			TrySpawnSuperCritCombatText(target, damageDone);
+			ProcessHenshinNpcHit(target, damageDone, proj: null);
+		}
 
 		public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			if (!CountsAsHenshinMoveHit(proj))
 				return;
+			TrySpawnSuperCritCombatText(target, damageDone);
 			ProcessHenshinNpcHit(target, damageDone, proj);
+		}
+
+		private void TrySpawnSuperCritCombatText(NPC target, int damageDone)
+		{
+			if (!_superCritPending)
+				return;
+			_superCritPending = false;
+			if (Main.netMode == NetmodeID.Server || damageDone <= 0 || target == null)
+				return;
+
+			int id = CombatText.NewText(target.Hitbox, SuperCritCombatColor, damageDone, dramatic: true);
+			if (id < 0 || id >= Main.combatText.Length)
+				return;
+			CombatText text = Main.combatText[id];
+			text.color = SuperCritCombatColor;
+			text.scale = SuperCritCombatScale;
+			text.crit = true;
 		}
 
 		private void ProcessHenshinNpcHit(NPC target, int damageDone, Projectile proj)
@@ -1197,10 +1256,30 @@ namespace PokemonHenshin.Content.PlayerState
 			ModifyHenshinHit(target, proj, ref modifiers);
 		}
 
+		/// <summary>EasyCrit 招式：抬高本模伤害类暴击率，交给原版一次判定。</summary>
+		public override void ModifyWeaponCrit(Item item, ref float crit)
+		{
+			if (!IsTransformed || item?.ModItem is not HenshinForceItem force)
+				return;
+			MoveSpec move = force.GetMove(LastMoveSlot);
+			if (move?.EasyCrit == true)
+				crit += 35f;
+		}
+
 		private void ModifyHenshinHit(NPC target, Projectile proj, ref NPC.HitModifiers modifiers)
 		{
 			if (!IsTransformed)
 				return;
+
+			if (proj != null)
+			{
+				if (!CountsAsHenshinMoveHit(proj))
+					return;
+			}
+			else if (Player.HeldItem?.ModItem is not HenshinForceItem)
+			{
+				return;
+			}
 
 			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
 			MoveSpec move = force?.GetMove(LastMoveSlot);
@@ -1236,39 +1315,29 @@ namespace PokemonHenshin.Content.PlayerState
 			ApplyCritTier(target, ref modifiers);
 		}
 
+		/// <summary>
+		/// 基底暴击走原版 Crit；A15/着火升档仅在已 Crit 时再 ×2（合计约 ×4），并刷超暴击飘字。
+		/// </summary>
 		private void ApplyCritTier(NPC target, ref NPC.HitModifiers modifiers)
 		{
-			bool easy = false;
-			if (Player.HeldItem?.ModItem is HenshinForceItem force)
-			{
-				MoveSpec move = force.GetMove(LastMoveSlot);
-				easy = move?.EasyCrit == true;
-			}
-
 			float upgradeChance = CritUpgradeChance;
 			if (OnFireCritUpgrade > 0f && target.onFire)
 				upgradeChance += OnFireCritUpgrade;
-			if (easy)
-				upgradeChance += 0.25f;
+			if (upgradeChance <= 0f)
+				return;
 
-			float critChance = Player.GetTotalCritChance(Damage.HenshinDamage.Instance) / 100f;
-			if (easy)
-				critChance += 0.35f;
-
-			bool baseCrit = Main.rand.NextFloat() < critChance;
-			modifiers.DisableCrit();
-
-			if (!baseCrit)
+			modifiers.ModifyHitInfo += (ref NPC.HitInfo info) =>
 			{
-				if (Main.rand.NextFloat() < upgradeChance)
-					modifiers.FinalDamage *= 2f;
-			}
-			else
-			{
-				modifiers.FinalDamage *= 2f;
-				if (Main.rand.NextFloat() < upgradeChance)
-					modifiers.FinalDamage *= 2f;
-			}
+				if (!info.Crit)
+					return;
+				if (Main.rand.NextFloat() >= upgradeChance)
+					return;
+
+				long doubled = (long)info.Damage * 2L;
+				info.Damage = (int)Math.Clamp(doubled, 1L, int.MaxValue);
+				info.HideCombatText = true;
+				_superCritPending = true;
+			};
 		}
 
 		public void ApplyRecoil(float fraction)
