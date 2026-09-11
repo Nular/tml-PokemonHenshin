@@ -133,10 +133,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 							texId, EasyCrit ? 1f : 0f, 0f);
 					}
 
-					if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+					if (id >= 0)
 					{
-						tagged.EasyCrit = EasyCrit;
-						tagged.IgnoreDefensePartial = IgnoreDefensePartial;
+						PokemonHenshin.Content.Accessories.HenshinAccGlobalProjectile.CopyMoveOrigin(Projectile, Main.projectile[id]);
+						if (Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+						{
+							tagged.EasyCrit = EasyCrit;
+							tagged.IgnoreDefensePartial = IgnoreDefensePartial;
+						}
 					}
 					_fired++;
 				}
@@ -1331,10 +1335,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 					int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, vel,
 						ModContent.ProjectileType<BorrowedVisualBoltProj>(), _shotDamage, Projectile.knockBack, Projectile.owner,
 						ProjectileID.RainbowRodBullet, 0f, 1f); // ai2=1 → 共鸣：延迟追踪
-					if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+					if (id >= 0)
 					{
-						tagged.EasyCrit = EasyCrit;
-						tagged.IgnoreDefensePartial = IgnoreDefensePartial;
+						// 延迟散射：按住技能时 LastMoveSlot 早已不是 Ultimate，必须从导演弹显式复制。
+						PokemonHenshin.Content.Accessories.HenshinAccGlobalProjectile.CopyMoveOrigin(Projectile, Main.projectile[id]);
+						if (Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
+						{
+							tagged.EasyCrit = EasyCrit;
+							tagged.IgnoreDefensePartial = IgnoreDefensePartial;
+						}
 					}
 					_fired++;
 				}

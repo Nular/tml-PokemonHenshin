@@ -481,7 +481,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				ShootSpeed = 0f,
 				Knockback = 2f,
 				SpawnAtMouse = true,
-				KeyConflict = KeyConflictLevel.ModKeybind
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
 			};
 
 		public static MoveSpec BubbleBarrage(string nameKey, int count, float mult, int use = 36)
