@@ -12,8 +12,8 @@ using Terraria.ModLoader.IO;
 namespace PokemonHenshin.Content.Accessories
 {
 	/// <summary>子弹继承 Delivery/Homing；诅咒之符穿墙与穿透；广角镜漏网弹在 PostAI 转向。
-	/// SourceMoveSlot / CombatEnergyFactor：出弹瞬间钉死，命中不读玩家当前 LastMoveSlot
-	///（凯西精神强念等延迟散射在按住技能时也会误充能）。</summary>
+	/// SourceMoveSlot：出弹瞬间钉死，供 UltDamageBonus 等读出弹槽（勿回退到按住技能时的 LastMoveSlot）。
+	/// 大招充能门控见 HenshinPlayer.UltEnergyLockoutTicks，不在弹上钉能量系数。</summary>
 	public sealed class HenshinAccGlobalProjectile : GlobalProjectile
 	{
 		public override bool InstancePerEntity => true;
@@ -21,31 +21,22 @@ namespace PokemonHenshin.Content.Accessories
 		/// <summary>原版 Flames/Leaf 等可能每帧把 tileCollide 拨回；PostAI 再保一次。</summary>
 		public bool HoldTilePierce { get; set; }
 
-		/// <summary>出弹时的 MoveSlot；命中能量 / UltDamageBonus 读此字段。</summary>
+		/// <summary>出弹时的 MoveSlot；UltDamageBonus 等读此字段。</summary>
 		public MoveSlot SourceMoveSlot { get; set; }
 
 		public bool HasSourceMoveSlot { get; set; }
 
-		/// <summary>出弹时钉死的战斗能量系数；大招为 0。命中优先用此值。</summary>
-		public float CombatEnergyFactor { get; set; }
-
-		public bool HasCombatEnergyFactor { get; set; }
-
-		public static void StampMoveOrigin(Projectile projectile, MoveSlot slot, float combatEnergyFactor)
+		public static void StampMoveOrigin(Projectile projectile, MoveSlot slot)
 		{
 			if (projectile == null || !projectile.active)
 				return;
 			HenshinAccGlobalProjectile gp = projectile.GetGlobalProjectile<HenshinAccGlobalProjectile>();
 			gp.SourceMoveSlot = slot;
 			gp.HasSourceMoveSlot = true;
-			gp.CombatEnergyFactor = combatEnergyFactor;
-			gp.HasCombatEnergyFactor = true;
 			if (projectile.ModProjectile is IHenshinMoveProj tagged)
 			{
 				tagged.SourceMoveSlot = slot;
 				tagged.HasSourceMoveSlot = true;
-				tagged.CombatEnergyFactor = combatEnergyFactor;
-				tagged.HasCombatEnergyFactor = true;
 			}
 			projectile.netUpdate = true;
 		}
@@ -55,22 +46,13 @@ namespace PokemonHenshin.Content.Accessories
 			if (from == null || to == null || !to.active)
 				return;
 			HenshinAccGlobalProjectile src = from.GetGlobalProjectile<HenshinAccGlobalProjectile>();
-			if (src.HasSourceMoveSlot || src.HasCombatEnergyFactor)
+			if (src.HasSourceMoveSlot)
 			{
-				MoveSlot slot = src.HasSourceMoveSlot ? src.SourceMoveSlot : MoveSlot.Skill1;
-				float factor = src.HasCombatEnergyFactor
-					? src.CombatEnergyFactor
-					: (slot == MoveSlot.Ultimate ? 0f : 1f);
-				StampMoveOrigin(to, slot, factor);
+				StampMoveOrigin(to, src.SourceMoveSlot);
 				return;
 			}
 			if (from.ModProjectile is IHenshinMoveProj parent && parent.HasSourceMoveSlot)
-			{
-				float factor = parent.HasCombatEnergyFactor
-					? parent.CombatEnergyFactor
-					: (parent.SourceMoveSlot == MoveSlot.Ultimate ? 0f : 1f);
-				StampMoveOrigin(to, parent.SourceMoveSlot, factor);
-			}
+				StampMoveOrigin(to, parent.SourceMoveSlot);
 		}
 
 		public override void OnSpawn(Projectile projectile, IEntitySource source)
@@ -86,22 +68,12 @@ namespace PokemonHenshin.Content.Accessories
 					SourceMoveSlot = parentGp.SourceMoveSlot;
 					HasSourceMoveSlot = true;
 				}
-				if (parentGp.HasCombatEnergyFactor)
-				{
-					CombatEnergyFactor = parentGp.CombatEnergyFactor;
-					HasCombatEnergyFactor = true;
-				}
 				if (parent.ModProjectile is IHenshinMoveProj p)
 				{
 					if (!HasSourceMoveSlot && p.HasSourceMoveSlot)
 					{
 						SourceMoveSlot = p.SourceMoveSlot;
 						HasSourceMoveSlot = true;
-						if (!HasCombatEnergyFactor)
-						{
-							CombatEnergyFactor = p.SourceMoveSlot == MoveSlot.Ultimate ? 0f : 1f;
-							HasCombatEnergyFactor = true;
-						}
 					}
 					if (child != null)
 					{
@@ -121,11 +93,6 @@ namespace PokemonHenshin.Content.Accessories
 							child.SourceMoveSlot = SourceMoveSlot;
 							child.HasSourceMoveSlot = true;
 						}
-						if (!child.HasCombatEnergyFactor && HasCombatEnergyFactor)
-						{
-							child.CombatEnergyFactor = CombatEnergyFactor;
-							child.HasCombatEnergyFactor = true;
-						}
 					}
 					if (delivery == MoveDelivery.None)
 						delivery = p.Delivery;
@@ -139,30 +106,16 @@ namespace PokemonHenshin.Content.Accessories
 				return;
 
 			HenshinPlayer hp = owner.GetModPlayer<HenshinPlayer>();
-			// 有父弹时不要回退 LastMoveSlot：延迟散射出子弹时玩家往往已按住技能，
-			// 否则会先被钉成 Skill 能量系数；应由父继承或导演侧 CopyMoveOrigin 负责。
+			// 有父弹时不要回退 LastMoveSlot：延迟散射出子弹时玩家往往已按住技能。
 			bool hasProjectileParent = source is EntitySource_Parent { Entity: Projectile };
-			if (!hasProjectileParent && !HasSourceMoveSlot && owner.HeldItem?.ModItem is HenshinForceItem forceForSlot)
+			if (!hasProjectileParent && !HasSourceMoveSlot && owner.HeldItem?.ModItem is HenshinForceItem)
 			{
 				SourceMoveSlot = hp.LastMoveSlot;
 				HasSourceMoveSlot = true;
-				if (!HasCombatEnergyFactor)
-				{
-					MoveSpec stamped = forceForSlot.GetMove(hp.LastMoveSlot);
-					CombatEnergyFactor = hp.LastMoveSlot == MoveSlot.Ultimate
-						? 0f
-						: (stamped?.GetEnergyGainFactor() ?? 1f);
-					HasCombatEnergyFactor = true;
-				}
 				if (child != null && !child.HasSourceMoveSlot)
 				{
 					child.SourceMoveSlot = SourceMoveSlot;
 					child.HasSourceMoveSlot = true;
-				}
-				if (child != null && !child.HasCombatEnergyFactor && HasCombatEnergyFactor)
-				{
-					child.CombatEnergyFactor = CombatEnergyFactor;
-					child.HasCombatEnergyFactor = true;
 				}
 			}
 
@@ -209,9 +162,6 @@ namespace PokemonHenshin.Content.Accessories
 			bitWriter.WriteBit(HasSourceMoveSlot);
 			if (HasSourceMoveSlot)
 				binaryWriter.Write((byte)SourceMoveSlot);
-			bitWriter.WriteBit(HasCombatEnergyFactor);
-			if (HasCombatEnergyFactor)
-				binaryWriter.Write(CombatEnergyFactor);
 			if (projectile.ModProjectile is IHenshinMoveProj child)
 				binaryWriter.Write(child.HomingTargetWhoAmI);
 		}
@@ -221,9 +171,6 @@ namespace PokemonHenshin.Content.Accessories
 			HasSourceMoveSlot = bitReader.ReadBit();
 			if (HasSourceMoveSlot)
 				SourceMoveSlot = (MoveSlot)binaryReader.ReadByte();
-			HasCombatEnergyFactor = bitReader.ReadBit();
-			if (HasCombatEnergyFactor)
-				CombatEnergyFactor = binaryReader.ReadSingle();
 			if (projectile.ModProjectile is IHenshinMoveProj child)
 				child.HomingTargetWhoAmI = binaryReader.ReadInt32();
 		}

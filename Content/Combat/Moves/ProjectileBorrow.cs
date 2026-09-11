@@ -74,10 +74,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			proj.DamageType = HenshinDamage.Instance;
 		}
 
-		/// <summary>
-		/// 从父弹复制出弹槽/能量系数后再 Retarget。大招亡时碎片必须走这条，
-		/// 否则 fail-closed 下不充能，或按住技能时误用 LastMoveSlot。
-		/// </summary>
+		/// <summary>从父弹复制出弹槽后再 Retarget（UltDamageBonus 等）。</summary>
 		public static void RetargetAsHenshinFrom(Projectile parent, Projectile proj)
 		{
 			RetargetAsHenshin(proj);

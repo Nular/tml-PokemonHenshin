@@ -63,7 +63,7 @@
 | **手法** | 连发约 ×10；壳弹自管飞行（**不**跑原版 Nebula AI）；`LoadProjectile(NebulaArcanum)`（**617**）；亡时 `NewProjectile(NebulaArcanumExplosionShotShard)`（**620**）紫染；scale≈0.7、不追踪 |
 | **踩坑** | 跳过自管位移只留爆炸 →「远处紫碎片有伤无弹」。`RetargetAsHenshin` 后的 620 走 `HenshinDamage`，若不打 `CrumbHitEnergy` 会按完整 `EnergyOnHit` 结算（10×12 碎片瞬间灌满能量条） |
 | **能量** | 碎片命中 `1 × EnergyGainFactor`（须 `MarkCrumb` / ExtraAI）；击杀仍 `55 × Factor`。主弹 10 发仍 `12 × Factor`。其它 `RetargetAsHenshin` 弹（污泥毒云、真 Flames 等）**不会**自动走碎屑 |
-| **延迟散射大招** | 导演弹钉 `CombatEnergyFactor=0` + 子弹 `CopyMoveOrigin`；有射弹未钉则 fail-closed。另：**大招后 ~2.5s 禁止一切充能**（`UltEnergyLockoutTicks`），兜住延迟命中 |
+| **延迟散射大招** | **大招后 ~2.5s 禁止一切充能**（`UltEnergyLockoutTicks`）。勿再钉弹上能量系数 / fail-closed；`SourceMoveSlot` 仅供 UltDamageBonus 等读出弹槽 |
 | **勿做** | 直接挂原版 Nebula AI；灾厄龙弹；整招改 MultiHit 来压碎片充能（会误伤主弹） |
 
 ### 2.4 天雷 — `SkyBoltLightning` + ThunderTrail Additive 保 Alpha
