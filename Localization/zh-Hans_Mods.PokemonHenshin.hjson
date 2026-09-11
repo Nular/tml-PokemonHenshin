@@ -18,6 +18,23 @@ Common: {
 	ForceEvolveReady: 可进化为「{0}」（进度与等级均已满足）
 }
 
+Prefixes: {
+	HenshinPrefixStored: {
+		DisplayName: 蓄能
+		EffectTooltip: 能量获取 +20%
+	}
+
+	HenshinPrefixIronwall: {
+		DisplayName: 铁壁
+		EffectTooltip: 变身防御 +20%
+	}
+
+	HenshinPrefixAssault: {
+		DisplayName: 猛攻
+		EffectTooltip: 变身伤害 +15%，招式间隔 ×0.88
+	}
+}
+
 StatsUI: {
 	ButtonHover: 变身属性
 	NotTransformed: 未持握之力。持握热键栏中的「xxx之力」后，这里显示当前加成与特性。

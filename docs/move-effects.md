@@ -231,7 +231,7 @@
 ## 5. 实现备注（给编码）
 
 1. **键位：** 技能1=`None`（左键），技能2=`RightClick`，大招=`ModKeybind`。表中 Lunge/Charge 注意与原版右键交互的冲突等级。
-2. **EasyCrit：** 与 A15 焦点镜共用升档管线；超暴击伤害 ×4。
+2. **EasyCrit：** 抬高 `GetCritChance(HenshinDamage)`（+35）；与 A15 焦点镜升档分离——升档仅在已 Crit 时再 ×2（超暴 ×4，偏红橙大飘字）。
 3. **Recoil：** 统一走安全自损；坚硬脑袋免疫；生命宝珠（A16）的 −1HP 与 Recoil 分开结算。
 4. **Boss：** Sleep/长 Stun 须衰减；DoTBind 对 Boss 缩短时长或降 DoT。
 5. **联机 High：** 挖洞、地裂、大型场、强位移须服务端生成与拒绝超预算。

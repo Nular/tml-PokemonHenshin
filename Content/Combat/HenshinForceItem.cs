@@ -8,12 +8,14 @@ using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
 using PokemonHenshin.Content.Evolution;
 using PokemonHenshin.Content.PlayerState;
+using PokemonHenshin.Content.Prefixes;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using Terraria.Utilities;
 
 namespace PokemonHenshin.Content.Combat
 {
@@ -199,6 +201,32 @@ namespace PokemonHenshin.Content.Combat
 		}
 
 		public override bool AltFunctionUse(Player player) => true;
+
+		/// <summary>之力只走本模三专属；不进原版通用武器前缀池。</summary>
+		public override bool WeaponPrefix() => false;
+
+		public override bool MeleePrefix() => false;
+
+		public override bool RangedPrefix() => false;
+
+		public override bool MagicPrefix() => false;
+
+		public override int ChoosePrefix(UnifiedRandom rand)
+			=> HenshinForcePrefix.RollExclusive(rand);
+
+		public override bool AllowPrefix(int pre)
+			=> HenshinForcePrefix.IsExclusive(pre);
+
+		public override bool? PrefixChance(int pre, UnifiedRandom rand)
+		{
+			// 允许哥布林重铸槽与自然/重铸 roll。
+			if (pre == -3 || pre == -2 || pre == -1)
+				return true;
+			// 加载时剥掉原版（或其它模组）非专属前缀。
+			if (pre > 0 && !HenshinForcePrefix.IsExclusive(pre))
+				return false;
+			return null;
+		}
 
 		public MoveSpec GetMove(MoveSlot slot) => slot switch
 		{
@@ -387,6 +415,12 @@ namespace PokemonHenshin.Content.Combat
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
 		{
 			RefreshDamage();
+			// 防御：剥前缀后仍可能残留的原版 Prefix* 行（专属效果由 ModPrefix.GetTooltipLines 提供）。
+			tooltips.RemoveAll(static t =>
+				t.Mod == "Terraria" && t.Name is "PrefixDamage" or "PrefixSpeed" or "PrefixCritChance"
+					or "PrefixUseAnimation" or "PrefixShootSpeed" or "PrefixKnockback" or "PrefixSize"
+					or "PrefixManaCost");
+
 			int world = SafeWorldStage();
 			int cap = HenshinStatService.LevelCap(world);
 			int need = HenshinStatService.ExpNeeded(Level);

@@ -18,6 +18,23 @@ Common: {
 	ForceEvolveReady: Ready to evolve into {0}
 }
 
+Prefixes: {
+	HenshinPrefixStored: {
+		DisplayName: Stored
+		EffectTooltip: Energy gain +20%
+	}
+
+	HenshinPrefixIronwall: {
+		DisplayName: Ironwall
+		EffectTooltip: Form defense +20%
+	}
+
+	HenshinPrefixAssault: {
+		DisplayName: Assault
+		EffectTooltip: Form damage +15%, move interval x0.88
+	}
+}
+
 StatsUI: {
 	ButtonHover: Henshin stats
 	NotTransformed: Not transformed. Hold a force item in the hotbar to see live bonuses and abilities.
