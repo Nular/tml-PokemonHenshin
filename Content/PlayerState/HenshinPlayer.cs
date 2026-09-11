@@ -1057,6 +1057,18 @@ namespace PokemonHenshin.Content.PlayerState
 			text.crit = true;
 		}
 
+		/// <summary>优先读弹上钉死的出弹槽；近战无弹或未钉槽时回退 LastMoveSlot。</summary>
+		private MoveSlot ResolveHitMoveSlot(Projectile proj)
+		{
+			if (proj != null)
+			{
+				HenshinAccGlobalProjectile gp = proj.GetGlobalProjectile<HenshinAccGlobalProjectile>();
+				if (gp.HasSourceMoveSlot)
+					return gp.SourceMoveSlot;
+			}
+			return LastMoveSlot;
+		}
+
 		private void ProcessHenshinNpcHit(NPC target, int damageDone, Projectile proj)
 		{
 			if (!IsTransformed)
@@ -1064,10 +1076,11 @@ namespace PokemonHenshin.Content.PlayerState
 			if (target.boss)
 				NotifyBossEngage();
 
+			MoveSlot slot = ResolveHitMoveSlot(proj);
 			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
-			MoveSpec move = force?.GetMove(LastMoveSlot);
-			float factor = LastMoveSlot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
-			if (LastMoveSlot != MoveSlot.Ultimate)
+			MoveSpec move = force?.GetMove(slot);
+			float factor = slot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
+			if (slot != MoveSlot.Ultimate)
 			{
 				bool fragment = HenshinNebulaShardTintGlobal.UsesCrumbHitEnergy(proj);
 				AddCombatEnergy(HenshinStatService.CombatHitEnergy(factor, fragment));
@@ -1077,7 +1090,7 @@ namespace PokemonHenshin.Content.PlayerState
 			{
 				if (ShouldGrantKillRewards(target) && TryClaimKillXp(target))
 				{
-					if (LastMoveSlot != MoveSlot.Ultimate)
+					if (slot != MoveSlot.Ultimate)
 						AddCombatEnergy(EnergyOnKill * factor);
 					if (force != null)
 						GrantKillExperience(force, target);
@@ -1281,8 +1294,9 @@ namespace PokemonHenshin.Content.PlayerState
 				return;
 			}
 
+			MoveSlot slot = ResolveHitMoveSlot(proj);
 			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
-			MoveSpec move = force?.GetMove(LastMoveSlot);
+			MoveSpec move = force?.GetMove(slot);
 			MoveDelivery delivery = MoveDelivery.None;
 			if (proj?.ModProjectile is IHenshinMoveProj tagged)
 				delivery = tagged.Delivery;
@@ -1296,7 +1310,7 @@ namespace PokemonHenshin.Content.PlayerState
 				mult += OnFireTargetBonus;
 			if (TypeMoveBonus > 0f)
 				mult += TypeMoveBonus;
-			if (LastMoveSlot == MoveSlot.Ultimate)
+			if (slot == MoveSlot.Ultimate)
 				mult += UltDamageBonus;
 			if (FireMoveDamage > 0f && move?.CountsAsFireMove == true)
 				mult += FireMoveDamage;
