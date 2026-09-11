@@ -5,6 +5,7 @@ using PokemonHenshin.Content.Accessories;
 using PokemonHenshin.Content.Affinity;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
+using PokemonHenshin.Content.Damage;
 using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.ID;
@@ -45,15 +46,16 @@ namespace PokemonHenshin.Content.Visual
 
 	/// <summary>
 	/// 变身属性面板的数据层：从 <see cref="HenshinPlayer"/> / 形态定义 / 已装备本模饰品
-	/// 汇总「当前」加成与特性。不是图鉴。
+	/// 汇总「当前」加成与特性。不是图鉴。按真实出伤乘区分组展示。
 	/// </summary>
 	internal static class HenshinStatSheet
 	{
 		private const string Prefix = "Mods.PokemonHenshin.StatsUI.";
+		private const float EasyCritBonus = 35f;
 
 		public static HenshinStatSnapshot Capture(Player player)
 		{
-			var lines = new List<StatLine>(48);
+			var lines = new List<StatLine>(64);
 			if (player == null || !player.active)
 			{
 				return new HenshinStatSnapshot
@@ -157,7 +159,8 @@ namespace PokemonHenshin.Content.Visual
 			AppendMoves(lines, force, form, hp);
 			AppendPassive(lines, player, hp, form);
 			AppendTypeEffects(lines, player, hp, form);
-			AppendCombatTotals(lines, hp);
+			AppendCrit(lines, player, hp, force, form);
+			AppendCombatZones(lines, hp);
 			AppendAccessories(lines, accs);
 			AppendRuntime(lines, hp);
 		}
@@ -172,13 +175,18 @@ namespace PokemonHenshin.Content.Visual
 
 			lines.Add(new StatLine(StatLineKind.Header, T("SectionMoves")));
 			if (m1 != null)
+			{
 				lines.Add(new StatLine(StatLineKind.Body, T("Skill1", Language.GetTextValue(m1.NameKey))));
+				lines.Add(new StatLine(StatLineKind.Body, FormatMoveDetail(m1, ultimate: false)));
+			}
+
 			if (m2 != null)
 			{
 				lines.Add(new StatLine(hp.ChoiceLockSkill2 ? StatLineKind.Warn : StatLineKind.Body,
 					hp.ChoiceLockSkill2
 						? T("Skill2Locked", Language.GetTextValue(m2.NameKey))
 						: T("Skill2", Language.GetTextValue(m2.NameKey))));
+				lines.Add(new StatLine(StatLineKind.Body, FormatMoveDetail(m2, ultimate: false)));
 			}
 
 			if (ult != null)
@@ -187,7 +195,24 @@ namespace PokemonHenshin.Content.Visual
 					hp.ChoiceLockUlt
 						? T("UltLocked", Language.GetTextValue(ult.NameKey))
 						: T("Ult", Language.GetTextValue(ult.NameKey))));
+				lines.Add(new StatLine(StatLineKind.Body, FormatMoveDetail(ult, ultimate: true)));
 			}
+		}
+
+		private static string FormatMoveDetail(MoveSpec move, bool ultimate)
+		{
+			string power = T("MovePower", MultPct(move.DamageMultiplier));
+			string second = ultimate
+				? T("MoveUltCost")
+				: T("MoveInterval", move.UseTime);
+			string line = power + T("MoveSep") + second;
+			if (move.EasyCrit)
+				line += T("MoveSep") + T("MoveEasyCrit", Pct(EasyCritBonus / 100f));
+			if (move.RecoilSelf)
+				line += T("MoveSep") + T("MoveRecoil");
+			if (move.AftermathDamagePenaltyTicks > 0)
+				line += T("MoveSep") + T("MoveAftermath");
+			return "　　" + line;
 		}
 
 		private static void AppendPassive(List<StatLine> lines, Player player, HenshinPlayer hp, FormDefinition form)
@@ -322,30 +347,88 @@ namespace PokemonHenshin.Content.Visual
 			}
 		}
 
-		private static void AppendCombatTotals(List<StatLine> lines, HenshinPlayer hp)
+		private static void AppendCrit(List<StatLine> lines, Player player, HenshinPlayer hp, HenshinForceItem force, FormDefinition form)
 		{
-			int before = lines.Count;
-			lines.Add(new StatLine(StatLineKind.Header, T("SectionCombat")));
+			lines.Add(new StatLine(StatLineKind.Header, T("SectionCrit")));
+			float crit = player.GetTotalCritChance(HenshinDamage.Instance);
+			lines.Add(new StatLine(StatLineKind.Body, T("CritChance", Pct(crit / 100f))));
 
+			bool anyEasy = (force?.Move1 ?? form.Move1)?.EasyCrit == true
+				|| (force?.Move2 ?? form.Move2)?.EasyCrit == true
+				|| (force?.Ultimate ?? form.Ultimate)?.EasyCrit == true;
+			if (anyEasy)
+				lines.Add(new StatLine(StatLineKind.Body, T("CritEasyNote", Pct(EasyCritBonus / 100f))));
+
+			if (hp.CritUpgradeChance > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("CritUpgrade", Pct(hp.CritUpgradeChance))));
+			else
+				lines.Add(new StatLine(StatLineKind.Inactive, T("CritUpgradeNone")));
+
+			if (hp.OnFireCritUpgrade > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("CritOnFire", Pct(hp.OnFireCritUpgrade))));
+
+			lines.Add(new StatLine(StatLineKind.Body, T("CritDamageNote")));
+		}
+
+		private static void AppendCombatZones(List<StatLine> lines, HenshinPlayer hp)
+		{
+			lines.Add(new StatLine(StatLineKind.Header, T("SectionCombat")));
+			AppendWeaponZone(lines, hp);
+			AppendHitZone(lines, hp);
+			AppendOtherZone(lines, hp);
+		}
+
+		private static void AppendWeaponZone(List<StatLine> lines, HenshinPlayer hp)
+		{
+			lines.Add(new StatLine(StatLineKind.Body, T("ZoneWeapon")));
+			int before = lines.Count;
 			AddSignedPct(lines, "TotDamage", hp.HenshinDamageBonus);
 			AddSignedPct(lines, "TotFactor", hp.HenshinDamageFactorBonus);
 			AddSignedPct(lines, "TotChoice", hp.ChoiceDamage);
 			AddSignedPct(lines, "TotLifeOrb", hp.LifeOrbDamage);
-			AddSignedPct(lines, "TotTypeMove", hp.TypeMoveBonus);
+			if (lines.Count == before)
+			{
+				lines.Add(new StatLine(StatLineKind.Inactive, T("ZoneEmpty")));
+				return;
+			}
+
+			float product = 1f;
+			product *= 1f + hp.HenshinDamageBonus;
+			product *= 1f + hp.HenshinDamageFactorBonus;
+			product *= 1f + hp.ChoiceDamage;
+			product *= 1f + hp.LifeOrbDamage;
+			lines.Add(new StatLine(StatLineKind.Active, T("ZoneWeaponTotal", MultPct(product))));
+		}
+
+		private static void AppendHitZone(List<StatLine> lines, HenshinPlayer hp)
+		{
+			lines.Add(new StatLine(StatLineKind.Body, T("ZoneHit")));
+			int before = lines.Count;
 			AddSignedPct(lines, "TotBoss", hp.BossDamageBonus);
 			AddSignedPct(lines, "TotOnFire", hp.OnFireTargetBonus);
+			AddSignedPct(lines, "TotTypeMove", hp.TypeMoveBonus);
 			AddSignedPct(lines, "TotUlt", hp.UltDamageBonus);
-			AddSignedPct(lines, "TotMelee", hp.MeleeDeliveryDamage);
 			AddSignedPct(lines, "TotFireMove", hp.FireMoveDamage);
+			AddSignedPct(lines, "TotMelee", hp.MeleeDeliveryDamage);
 			AddSignedPct(lines, "TotPsychicDragon", hp.PsychicDragonDamage);
 			AddSignedPct(lines, "TotEvioliteDmg", hp.EvioliteDamage);
+			if (hp.AftermathPenaltyTimer > 0 && Math.Abs(hp.AftermathPenaltyMult - 1f) > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Warn, T("TotAftermathNow", Pct(hp.AftermathPenaltyMult))));
+
+			if (lines.Count == before)
+				lines.Add(new StatLine(StatLineKind.Inactive, T("ZoneEmpty")));
+		}
+
+		private static void AppendOtherZone(List<StatLine> lines, HenshinPlayer hp)
+		{
+			lines.Add(new StatLine(StatLineKind.Body, T("ZoneOther")));
+			int before = lines.Count;
+
 			AddSignedPct(lines, "TotEvioliteDef", hp.EvioliteDefMul);
 			AddSignedPct(lines, "TotMoveSpeed", hp.MoveSpeedBonus);
 			AddSignedPct(lines, "TotWaterSpeed", hp.WaterSpeedBonus);
 			AddSignedPct(lines, "TotXpHeld", hp.XpHeldMul);
 			AddSignedPct(lines, "TotXpShare", hp.XpHotbarShareMul);
-			AddSignedPct(lines, "TotCrit", hp.CritUpgradeChance);
-			AddSignedPct(lines, "TotOnFireCrit", hp.OnFireCritUpgrade);
 			AddSignedPct(lines, "TotPassiveEnergy", hp.PassiveEnergyMul);
 
 			if (Math.Abs(hp.IncomingDamageMultiplier - 1f) > 0.0005f)
@@ -389,8 +472,8 @@ namespace PokemonHenshin.Content.Visual
 
 			AppendDeliveryFlags(lines, hp);
 
-			if (lines.Count == before + 1)
-				lines.Add(new StatLine(StatLineKind.Inactive, T("TotNone")));
+			if (lines.Count == before)
+				lines.Add(new StatLine(StatLineKind.Inactive, T("ZoneEmpty")));
 		}
 
 		private static void AppendDeliveryFlags(List<StatLine> lines, HenshinPlayer hp)
@@ -579,20 +662,33 @@ namespace PokemonHenshin.Content.Visual
 
 		private static string Fingerprint(Player player, HenshinPlayer hp, List<AccRow> accs, bool transformed)
 		{
-			var sb = new StringBuilder(128);
+			var sb = new StringBuilder(160);
 			sb.Append(transformed ? '1' : '0').Append('|');
 			sb.Append(hp.CurrentForm?.FormId ?? "-").Append('|');
 			if (player.HeldItem?.ModItem is HenshinForceItem force)
+			{
 				sb.Append(force.Level).Append('|').Append(force.Xp).Append('|');
+				sb.Append(force.Move1?.DamageMultiplier.ToString("0.###") ?? "-").Append('|');
+				sb.Append(force.Move2?.DamageMultiplier.ToString("0.###") ?? "-").Append('|');
+				sb.Append(force.Ultimate?.DamageMultiplier.ToString("0.###") ?? "-").Append('|');
+			}
+
 			sb.Append((int)hp.UltimateEnergy).Append('|');
 			sb.Append((int)hp.FlightEnergy).Append('|');
 			sb.Append(player.statLife).Append('|').Append(player.statDefense).Append('|');
+			sb.Append(player.GetTotalCritChance(HenshinDamage.Instance).ToString("0.#")).Append('|');
 			sb.Append(Main.dayTime ? 'D' : 'N').Append(Main.raining ? 'R' : '_');
 			sb.Append(player.wet ? 'W' : '_').Append(player.ZoneOverworldHeight ? 'O' : '_').Append('|');
 			sb.Append(hp.MoxieStacks).Append('|');
 			sb.Append(hp.DashCooldown).Append('|').Append(hp.LungeCooldown).Append('|');
 			sb.Append(hp.FocusSashCooldown).Append('|').Append(hp.AftermathPenaltyTimer).Append('|');
 			sb.Append(hp.HenshinDamageBonus.ToString("0.###")).Append('|');
+			sb.Append(hp.HenshinDamageFactorBonus.ToString("0.###")).Append('|');
+			sb.Append(hp.ChoiceDamage.ToString("0.###")).Append('|');
+			sb.Append(hp.LifeOrbDamage.ToString("0.###")).Append('|');
+			sb.Append(hp.BossDamageBonus.ToString("0.###")).Append('|');
+			sb.Append(hp.CritUpgradeChance.ToString("0.###")).Append('|');
+			sb.Append(hp.OnFireCritUpgrade.ToString("0.###")).Append('|');
 			sb.Append(hp.IncomingDamageMultiplier.ToString("0.###")).Append('|');
 			foreach (AccRow row in accs)
 			{
@@ -631,6 +727,7 @@ namespace PokemonHenshin.Content.Visual
 		private static string T(string key, object arg0, object arg1, object arg2)
 			=> Language.GetTextValue(Prefix + key, arg0, arg1, arg2);
 
+		/// <summary>小数比例 → 百分数文案（0.25 → 25）。</summary>
 		private static string Pct(float v)
 		{
 			float p = v * 100f;
@@ -638,6 +735,10 @@ namespace PokemonHenshin.Content.Visual
 				return ((int)MathF.Round(p)).ToString();
 			return p.ToString("0.#");
 		}
+
+		/// <summary>倍率 → 百分数（1.5 → 150）。</summary>
+		private static string MultPct(float multiplier)
+			=> Pct(multiplier);
 
 		private static string SignedPct(float v)
 		{
