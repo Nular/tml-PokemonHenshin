@@ -183,7 +183,6 @@ StatsUI: {
 	}
 
 	SectionType: Type habits
-	AmpNote: Soul Dew: habit amplitude +{0}%
 	TypeFireOk: "{0}: immune to lava / burning / On Fire"
 	TypeFireWet: "{0}: lava / burn immunity; in water move damage -{1}%"
 	TypeWaterDry: "{0}: breathe underwater; bonus speed in water"
@@ -214,7 +213,6 @@ StatsUI: {
 	TypeSecWaterWet: Secondary {0}: +{1}% speed in water
 	TypeSecWaterDry: Secondary {0}: small speed bonus in water
 	TypeSecNone: Secondary {0}
-
 	SectionCrit: Crit
 	CritChance: Crit chance  {0}%
 	CritEasyNote: Easy-crit moves  +{0}% while firing (not in standing rate above)
@@ -222,6 +220,7 @@ StatsUI: {
 	CritUpgradeNone: Super-crit upgrade  0% (no Focus Band etc.)
 	CritOnFire: vs burning  +{0}% more
 	CritDamageNote: Crit damage  ×200% · Super-crit ~×400%
+	CritDamageBonus: Acc crit damage  +{0}%
 
 	Type: {
 		None: —
@@ -277,10 +276,16 @@ StatsUI: {
 	TotEnergyGain: "   Combat energy gain  ×{0}%"
 	TotUltRetain: "   Energy kept after ult  {0}%"
 	TotFlightSec: "   Flight energy +{0}s"
-	TotFall: "   Fall reduction  {0}%"
+	TotFlightMul: "   Flight duration +{0}%"
 	TotPenetrate: "   Pierce +{0}"
 	TotDashSpeed: "   Dash speed +{0}"
 	TotLungeIFrame: "   Lunge i-frames +{0}"
+	TotDodge: "   Dodge {0}%"
+	TotAccDef: "   Acc defense +{0}"
+	TotWaterMove: "   Water-form moves {0}%"
+	TotFlyingMove: "   Flying-form moves {0}%"
+	TotCritChance: "   Crit chance +{0}%"
+	TotCritDamage: "   Crit damage +{0}%"
 	TotLeftovers: "   +{0} HP/s"
 	TotLeftoversLow: "   extra +{0} HP/s below half HP"
 	TotShellBell: "   Heal {0} HP on hit"
@@ -295,7 +300,6 @@ StatsUI: {
 	DelBarrage: barrage
 	DelDoT: bind
 	DelBeam: beam
-	DelField: field
 	TotHoming: "   Homing: {0}"
 	TotPierce: "   Tile pierce: {0}"
 	SectionAcc: Held items
@@ -323,6 +327,7 @@ StatsUI: {
 Configs: {
 	HenshinClientConfig: {
 		DisplayName: Pokemon Henshin · Client
+
 		UseCustomPanelPos: {
 			Label: Custom stat panel position
 			Tooltip: Written when you drag the panel in-game; turn off here to reset
@@ -330,10 +335,12 @@ Configs: {
 
 		PanelPosX: {
 			Label: Panel position X
+			Tooltip: ""
 		}
 
 		PanelPosY: {
 			Label: Panel position Y
+			Tooltip: ""
 		}
 	}
 }
@@ -387,8 +394,7 @@ Accessories: {
 	StatMoveSpeedBonus: Movement speed +{0}%
 	StatWaterSpeedBonus: Water speed +{0}%
 	StatFlightEnergySec: Flight energy +{0}s
-	StatFallDmgTakenMul: Fall damage taken ×{0}%
-	StatAffinityAmp: Type-match amplitude +{0}%
+	StatFlightEnergyMul: Flight duration +{0}%
 	StatEnergyGainAdd: Combat energy gain +{0}%
 	StatEnergyGainMul: Combat energy gain ×{0}%
 	StatUltRetain: Keep {0}% ultimate energy
@@ -405,7 +411,6 @@ Accessories: {
 	StatTilePierceBarrage: Tile pierce: barrage
 	StatTilePierceDoTBind: Tile pierce: bind shots
 	StatTilePierceBeam: Tile pierce: beams
-	StatTilePierceField: Tile pierce: fields
 	StatCursedInfernoSec: Cursed Inferno on wear, then every 30s for {0}s (even untransformed)
 	StatCursedInfernoImmune: Immune to Spell Tag burn
 	StatPenetrateAdd: Pierce +{0}
@@ -430,12 +435,19 @@ Accessories: {
 	StatEverstoneBlock: Blocks evolution
 	StatCritUpgradeChance: Crit-upgrade chance +{0}%
 	StatOnFireCritUpgrade: Crit-upgrade vs burning +{0}%
-	StatFireMoveDamage: Fire moves +{0}%
+	StatFireMoveDamage: Fire-form moves +{0}%
 	StatPassiveEnergyMul: Passive energy +{0}%
 	StatDashSpeedBonus: Dash speed +{0}
 	StatLungeIFrameBonus: Lunge i-frames +{0}
 	StatPsychicDragonDamage: Psychic/Dragon moves +{0}%
-	StatGuardCutTimer: Extra damage cut for {0}s after being hit
+	StatAffinityPower: Affinity power (move damage) +{0}%
+	StatCritChance: Crit chance +{0}%
+	StatCritDamage: Crit damage +{0}%
+	StatWaterMoveDamage: Water-form moves +{0}%
+	StatFlyingMoveDamage: Flying-form moves +{0}%
+	StatUntransformedDefense: Defense +{0} (works untransformed)
+	StatAccDefense: Transformed defense +{0}
+	StatDodgeChance: Dodge chance +{0}%
 }
 
 Buffs: {

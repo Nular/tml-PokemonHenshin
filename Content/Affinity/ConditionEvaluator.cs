@@ -181,14 +181,12 @@ namespace PokemonHenshin.Content.Affinity
 			if (form == null)
 				return;
 
-			float amp = 1f + hp.AffinityAmplitudeBonus;
-
-			ApplyPrimary(hp, player, form.Primary, amp);
+			ApplyPrimary(hp, player, form.Primary);
 			if (form.Secondary != PokemonType.None)
-				ApplySecondaryWeak(hp, player, form.Secondary, amp);
+				ApplySecondaryWeak(hp, player, form.Secondary);
 		}
 
-		private static void ApplyPrimary(HenshinPlayer hp, Player player, PokemonType type, float amp)
+		private static void ApplyPrimary(HenshinPlayer hp, Player player, PokemonType type)
 		{
 			switch (type)
 			{
@@ -198,21 +196,18 @@ namespace PokemonHenshin.Content.Affinity
 					player.buffImmune[BuffID.OnFire] = true;
 					player.buffImmune[BuffID.Burning] = true;
 					if (ConditionEvaluator.Evaluate(player, ConditionId.InWater))
-						hp.HenshinDamageBonus -= 0.10f * amp;
+						hp.HenshinDamageBonus -= 0.10f;
 					break;
 				case PokemonType.Water:
 					player.gills = true;
 					player.accMerman = true;
 					if (player.wet)
-						player.moveSpeed += 0.25f * amp + hp.WaterSpeedBonus;
+						player.moveSpeed += 0.25f + hp.WaterSpeedBonus;
 					break;
 				case PokemonType.Flying:
 				{
-					float fallRed = System.Math.Min(0.75f, 0.5f + hp.FallDamageReduction);
-					if (fallRed >= 0.75f)
-						player.noFallDmg = true;
-					else
-						player.extraFall += (int)(25 * fallRed);
+					const float fallRed = 0.5f;
+					player.extraFall += (int)(25 * fallRed);
 					break;
 				}
 				case PokemonType.Grass:
@@ -223,7 +218,7 @@ namespace PokemonHenshin.Content.Affinity
 					// 短 CD 冲刺：见 HenshinPlayer 双击方向键
 					break;
 				case PokemonType.Ground:
-					player.pickSpeed -= 0.40f * amp;
+					player.pickSpeed -= 0.40f;
 					player.kbBuff = true;
 					break;
 				case PokemonType.Rock:
@@ -238,16 +233,16 @@ namespace PokemonHenshin.Content.Affinity
 					player.kbBuff = true;
 					break;
 				case PokemonType.Dark:
-					player.GetCritChance(DamageClass.Generic) += 5f * amp;
+					player.GetCritChance(DamageClass.Generic) += 5f;
 					break;
 				case PokemonType.Fighting:
-					hp.HenshinDamageBonus += 0.05f * amp;
+					hp.HenshinDamageBonus += 0.05f;
 					break;
 				case PokemonType.Psychic:
 					player.slowFall = true;
 					break;
 				case PokemonType.Bug:
-					player.moveSpeed += 0.10f * amp;
+					player.moveSpeed += 0.10f;
 					break;
 				case PokemonType.Poison:
 					player.buffImmune[BuffID.Poisoned] = true;
@@ -256,7 +251,7 @@ namespace PokemonHenshin.Content.Affinity
 					// 减益缩短占位
 					break;
 				case PokemonType.Normal:
-					hp.HenshinDamageBonus += 0.03f * amp;
+					hp.HenshinDamageBonus += 0.03f;
 					break;
 				case PokemonType.Ghost:
 					// 穿障只来自招式
@@ -268,19 +263,13 @@ namespace PokemonHenshin.Content.Affinity
 			}
 		}
 
-		private static void ApplySecondaryWeak(HenshinPlayer hp, Player player, PokemonType type, float amp)
+		private static void ApplySecondaryWeak(HenshinPlayer hp, Player player, PokemonType type)
 		{
 			switch (type)
 			{
 				case PokemonType.Flying:
-				{
-					float fallRed = System.Math.Min(0.75f, 0.5f + hp.FallDamageReduction);
-					if (fallRed >= 0.75f)
-						player.noFallDmg = true;
-					else
-						player.extraFall += (int)(25 * fallRed);
+					player.extraFall += (int)(25 * 0.5f);
 					break;
-				}
 				case PokemonType.Poison:
 					player.buffImmune[BuffID.Poisoned] = true;
 					break;
@@ -291,14 +280,14 @@ namespace PokemonHenshin.Content.Affinity
 					hp.IncomingDamageMultiplier *= 0.97f;
 					break;
 				case PokemonType.Ground:
-					player.pickSpeed -= 0.10f * amp;
+					player.pickSpeed -= 0.10f;
 					break;
 				case PokemonType.Dragon:
 					player.kbBuff = true;
 					break;
 				case PokemonType.Water:
 					if (player.wet)
-						player.moveSpeed += 0.05f * amp + hp.WaterSpeedBonus;
+						player.moveSpeed += 0.05f + hp.WaterSpeedBonus;
 					break;
 			}
 		}

@@ -67,7 +67,7 @@ namespace PokemonHenshin.Content.Accessories
 			{
 				AccStat.HomingBolt or AccStat.HomingSpread or AccStat.HomingBarrage or AccStat.HomingDoTBind
 					or AccStat.TilePierceBolt or AccStat.TilePierceSpread or AccStat.TilePierceBarrage
-					or AccStat.TilePierceDoTBind or AccStat.TilePierceBeam or AccStat.TilePierceField
+					or AccStat.TilePierceDoTBind or AccStat.TilePierceBeam
 					or AccStat.CursedInfernoImmune
 					or AccStat.ChoiceLockSkill2 or AccStat.ChoiceLockUlt
 					or AccStat.LifeOrbHpDrain or AccStat.FocusSash or AccStat.EverstoneBlock
@@ -76,11 +76,12 @@ namespace PokemonHenshin.Content.Accessories
 					or AccStat.DashSpeedBonus or AccStat.LungeIFrameBonus
 					or AccStat.ShellBellHeal or AccStat.LeftoversHpPerSec or AccStat.LeftoversLowHpBonus
 					or AccStat.FocusSashCdSec or AccStat.CursedInfernoSec
+					or AccStat.UntransformedDefense or AccStat.AccDefense
 					=> Language.GetTextValue(key, Num(line.Value)),
 				AccStat.LifeOrbGateTicks or AccStat.ShellBellCdTicks or AccStat.RockyHelmetCdTicks
-					or AccStat.FocusSashImmuneTicks or AccStat.GuardCutTimer
+					or AccStat.FocusSashImmuneTicks
 					=> Language.GetTextValue(key, Num(line.Value / 60f)),
-				AccStat.FallDmgTakenMul or AccStat.EnergyGainMul
+				AccStat.EnergyGainMul
 					=> Language.GetTextValue(key, Pct(line.Value)),
 				_ => Language.GetTextValue(key, Pct(line.Value))
 			};

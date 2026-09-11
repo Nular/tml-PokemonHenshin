@@ -6,20 +6,21 @@
 
 | 文档 | 说明 |
 |------|------|
-| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，页眉版本） |
+| [docs/requirements.md](docs/requirements.md) | 需求规格（权威，页眉版本；饰品 §6/§10） |
 | [docs/balance-stats.md](docs/balance-stats.md) | 等级/攻防/经验/招式数值真源 |
 | [docs/move-effects.md](docs/move-effects.md) | 招式 / 被动 / 大招泰拉适配表 |
 | [docs/dev-plan.md](docs/dev-plan.md) | 开发计划（冲突以需求为准） |
 | [docs/fx-knowledge.md](docs/fx-knowledge.md) | Stage 6+ FX 目录 / cookbook / 踩坑（Living） |
+| [docs/accessory-rework-plan.md](docs/accessory-rework-plan.md) | 饰品施工/掉落归档（效果数字以 Catalog 为准） |
 | [AGENTS.md](AGENTS.md) | AI Agent 项目入口 |
 | [`.cursor/skills/henshin-moves`](.cursor/skills/henshin-moves/SKILL.md) | 招式/特效迭代 Skill（预期效果确认门） |
 | [`.cursor/rules/tml-api-docs.mdc`](.cursor/rules/tml-api-docs.mdc) | **alwaysApply**：设计须查 [tModLoader API 类表](https://docs.tmodloader.net/docs/stable/annotated.html) |
 
 ## 状态
 
-**现役代码（2026-09-11，需求 v1.4.22）：** 36 形态 + A01–A28（碎片/普通/超级）；被动+技能1/2+能量大招；**v1.4 已接线**（含龙之波动爆炸碎片命中 `1×Factor`；广角镜按档圆形索敌、自带追踪不叠饰品见需求 §6）；大招后约 **2.5s** 禁止一切充能（`UltEnergyLockoutTicks`）；世界档/`100` **只挡获取经验**（不截存档；卡顶/满级不飘 `EXP +X`）；**神奇糖果**已接线；御三家建角发放 + 旧档补发（需求 §4.4，进世界已本地验收）；属性面板在图鉴按钮下方；变身地图头像用形态全身图缩小填入原版头像框（需求 §2.3）。之力**专属前缀**蓄能/铁壁/猛攻（禁用原版词缀）+ 暴击对齐原版 Crit（超暴击偏红橙飘字）**已接线**，游戏内验收 pending。联机瞄准（`SyncAim`）与壳弹旁观端贴图重建**已接线**，双端验收 pending。游戏内 DPS 抽检、联机双端（含地图头像/虫洞药水）、饰品图标/合成/掉落/索敌与糖果验收仍待本地。
+**现役代码（2026-09-12，需求 v1.4.23）：** 36 形态 + A01–A28（碎片/普通/超级）；被动+技能1/2+能量大招；**v1.4 已接线**（含龙之波动爆炸碎片命中 `1×Factor`；广角镜按档圆形索敌、自带追踪不叠饰品见需求 §6）。**饰品效果重平衡已接线**（肉前纯伤 A02 +10%；A15 暴击三轴；A10 飞伤+飞行时间%；A25 闪避等；数字见 `HenshinAccCatalog` / 需求 §10）。大招后约 **2.5s** 禁止一切充能（`UltEnergyLockoutTicks`）；世界档/`100` **只挡获取经验**（不截存档；卡顶/满级不飘 `EXP +X`）；**神奇糖果**已接线；御三家建角发放 + 旧档补发（需求 §4.4，进世界已本地验收）；属性面板在图鉴按钮下方；变身地图头像用形态全身图缩小填入原版头像框（需求 §2.3）。之力**专属前缀**蓄能/铁壁/猛攻（禁用原版词缀）+ 暴击对齐原版 Crit（超暴击偏红橙飘字）**已接线**，游戏内验收 pending。联机瞄准（`SyncAim`）与壳弹旁观端贴图重建**已接线**，双端验收 pending。游戏内饰品数值/闪避手感、DPS 抽检、联机双端（含地图头像/虫洞药水）、图标/合成/掉落与糖果验收仍待本地。
 
-**下一步：** 游戏内验专属前缀与超暴击飘字 → 饰品（含新图标）与神奇糖果 → 联机双端实测（含瞄准/壳弹、地图头像/虫洞药水）→ DPS 对标 PS7/9/12 → Rage。调试 `/henshin stage`、`/henshin evolve`、`/henshin stats`、`/henshin setlevel`。
+**下一步：** 游戏内验饰品重平衡与专属前缀/超暴击飘字 → 神奇糖果与图标/合成/掉落 → 联机双端实测（含瞄准/壳弹、地图头像/虫洞药水）→ DPS 对标 PS7/9/12 → Rage。调试 `/henshin stage`、`/henshin evolve`、`/henshin stats`、`/henshin setlevel`。
 
 ## 构建
 

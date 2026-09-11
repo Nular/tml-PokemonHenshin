@@ -100,7 +100,6 @@ namespace PokemonHenshin.Content.Accessories
 				return;
 
 			if (transformed)
-				hp.AccActive = true;
 
 			if (def.Resonance != PokemonType.None)
 			{

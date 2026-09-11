@@ -256,6 +256,8 @@ namespace PokemonHenshin.Content.Combat
 				return false;
 
 			float cdMul = hp.IsTransformed ? hp.MoveCooldownMultiplier : 1f;
+			if (hp.IsTransformed && MoveDeliverySets.MeleeShort(move.Delivery))
+				cdMul *= hp.LungeCooldownMultiplier;
 			int use = (int)Math.Max(1, Math.Round(move.UseTime * cdMul));
 			Item.useTime = use;
 			Item.useAnimation = use;

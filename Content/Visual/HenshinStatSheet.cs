@@ -235,27 +235,24 @@ namespace PokemonHenshin.Content.Visual
 		private static void AppendTypeEffects(List<StatLine> lines, Player player, HenshinPlayer hp, FormDefinition form)
 		{
 			lines.Add(new StatLine(StatLineKind.Header, T("SectionType")));
-			float amp = 1f + hp.AffinityAmplitudeBonus;
-			AppendTypePrimary(lines, player, hp, form.Primary, amp);
+			AppendTypePrimary(lines, player, hp, form.Primary);
 			if (form.Secondary != PokemonType.None)
-				AppendTypeSecondary(lines, player, hp, form.Secondary, amp);
-			if (hp.AffinityAmplitudeBonus > 0.0005f)
-				lines.Add(new StatLine(StatLineKind.Body, T("AmpNote", Pct(hp.AffinityAmplitudeBonus))));
+				AppendTypeSecondary(lines, player, hp, form.Secondary);
 		}
 
-		private static void AppendTypePrimary(List<StatLine> lines, Player player, HenshinPlayer hp, PokemonType type, float amp)
+		private static void AppendTypePrimary(List<StatLine> lines, Player player, HenshinPlayer hp, PokemonType type)
 		{
 			string typeName = TypeName(type);
 			switch (type)
 			{
 				case PokemonType.Fire:
 					lines.Add(Cond(ConditionEvaluator.Evaluate(player, ConditionId.InWater),
-						T("TypeFireWet", typeName, Pct(0.10f * amp)),
+						T("TypeFireWet", typeName, Pct(0.10f)),
 						T("TypeFireOk", typeName)));
 					break;
 				case PokemonType.Water:
 					lines.Add(Cond(player.wet,
-						T("TypeWaterWet", typeName, Pct(0.25f * amp)),
+						T("TypeWaterWet", typeName, Pct(0.25f)),
 						T("TypeWaterDry", typeName)));
 					break;
 				case PokemonType.Grass:
@@ -265,13 +262,13 @@ namespace PokemonHenshin.Content.Visual
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeElectric", typeName, Pct(1f - hp.DashCooldownMultiplier))));
 					break;
 				case PokemonType.Flying:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeFlying", typeName, Pct(Math.Min(0.75f, 0.5f + hp.FallDamageReduction)))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeFlying", typeName, Pct(0.5f))));
 					break;
 				case PokemonType.Ice:
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeIce", typeName)));
 					break;
 				case PokemonType.Ground:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeGround", typeName, Pct(0.40f * amp))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeGround", typeName, Pct(0.40f))));
 					break;
 				case PokemonType.Rock:
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeRock", typeName)));
@@ -284,22 +281,22 @@ namespace PokemonHenshin.Content.Visual
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeDragon", typeName)));
 					break;
 				case PokemonType.Dark:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeDark", typeName, Num(5f * amp))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeDark", typeName, Num(5f))));
 					break;
 				case PokemonType.Fighting:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeFighting", typeName, Pct(0.05f * amp))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeFighting", typeName, Pct(0.05f))));
 					break;
 				case PokemonType.Psychic:
 					lines.Add(new StatLine(StatLineKind.Body, T("TypePsychic", typeName)));
 					break;
 				case PokemonType.Bug:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeBug", typeName, Pct(0.10f * amp))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeBug", typeName, Pct(0.10f))));
 					break;
 				case PokemonType.Poison:
 					lines.Add(new StatLine(StatLineKind.Body, T("TypePoison", typeName)));
 					break;
 				case PokemonType.Normal:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeNormal", typeName, Pct(0.03f * amp))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeNormal", typeName, Pct(0.03f))));
 					break;
 				case PokemonType.Ghost:
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeGhost", typeName)));
@@ -310,13 +307,13 @@ namespace PokemonHenshin.Content.Visual
 			}
 		}
 
-		private static void AppendTypeSecondary(List<StatLine> lines, Player player, HenshinPlayer hp, PokemonType type, float amp)
+		private static void AppendTypeSecondary(List<StatLine> lines, Player player, HenshinPlayer hp, PokemonType type)
 		{
 			string typeName = TypeName(type);
 			switch (type)
 			{
 				case PokemonType.Flying:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeSecFlying", typeName, Pct(Math.Min(0.75f, 0.5f + hp.FallDamageReduction)))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeSecFlying", typeName, Pct(0.5f))));
 					break;
 				case PokemonType.Poison:
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeSecPoison", typeName)));
@@ -328,14 +325,14 @@ namespace PokemonHenshin.Content.Visual
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeSecSteel", typeName)));
 					break;
 				case PokemonType.Ground:
-					lines.Add(new StatLine(StatLineKind.Body, T("TypeSecGround", typeName, Pct(0.10f * amp))));
+					lines.Add(new StatLine(StatLineKind.Body, T("TypeSecGround", typeName, Pct(0.10f))));
 					break;
 				case PokemonType.Dragon:
 					lines.Add(new StatLine(StatLineKind.Body, T("TypeSecDragon", typeName)));
 					break;
 				case PokemonType.Water:
 					lines.Add(Cond(player.wet,
-						T("TypeSecWaterWet", typeName, Pct(0.05f * amp)),
+						T("TypeSecWaterWet", typeName, Pct(0.05f)),
 						T("TypeSecWaterDry", typeName)));
 					break;
 				case PokemonType.Electric:
@@ -366,6 +363,9 @@ namespace PokemonHenshin.Content.Visual
 
 			if (hp.OnFireCritUpgrade > 0.0005f)
 				lines.Add(new StatLine(StatLineKind.Body, T("CritOnFire", Pct(hp.OnFireCritUpgrade))));
+
+			if (hp.CritDamageBonus > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("CritDamageBonus", Pct(hp.CritDamageBonus))));
 
 			lines.Add(new StatLine(StatLineKind.Body, T("CritDamageNote")));
 		}
@@ -445,14 +445,26 @@ namespace PokemonHenshin.Content.Visual
 				lines.Add(new StatLine(StatLineKind.Body, T("TotUltRetain", Pct(hp.UltRetainFraction))));
 			if (hp.ExtraFlightEnergy > 0.0005f)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotFlightSec", Num(hp.ExtraFlightEnergy))));
-			if (hp.FallDamageReduction > 0.0005f)
-				lines.Add(new StatLine(StatLineKind.Body, T("TotFall", Pct(hp.FallDamageReduction))));
+			if (hp.FlightEnergyMul > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("TotFlightMul", Pct(hp.FlightEnergyMul))));
 			if (hp.PenetrateAdd > 0)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotPenetrate", hp.PenetrateAdd)));
 			if (hp.DashSpeedBonus > 0.0005f)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotDashSpeed", Num(hp.DashSpeedBonus))));
 			if (hp.LungeIFrameBonus > 0)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotLungeIFrame", hp.LungeIFrameBonus)));
+			if (hp.DodgeChance > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("TotDodge", Pct(hp.DodgeChance))));
+			if (hp.AccDefense > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("TotAccDef", Num(hp.AccDefense))));
+			if (hp.WaterMoveDamage > 0.0005f)
+				AddSignedPct(lines, "TotWaterMove", hp.WaterMoveDamage);
+			if (hp.FlyingMoveDamage > 0.0005f)
+				AddSignedPct(lines, "TotFlyingMove", hp.FlyingMoveDamage);
+			if (hp.CritChanceBonus > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("TotCritChance", Pct(hp.CritChanceBonus))));
+			if (hp.CritDamageBonus > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("TotCritDamage", Pct(hp.CritDamageBonus))));
 			if (hp.LeftoversHpPerSec > 0.0005f)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotLeftovers", Num(hp.LeftoversHpPerSec))));
 			if (hp.LeftoversLowHpBonus > 0.0005f)
@@ -492,7 +504,6 @@ namespace PokemonHenshin.Content.Visual
 			if (hp.TilePierceBarrage) pierce.Add(T("DelBarrage"));
 			if (hp.TilePierceDoTBind) pierce.Add(T("DelDoT"));
 			if (hp.TilePierceBeam) pierce.Add(T("DelBeam"));
-			if (hp.TilePierceField) pierce.Add(T("DelField"));
 			if (pierce.Count > 0)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotPierce", string.Join("/", pierce))));
 		}
@@ -537,8 +548,6 @@ namespace PokemonHenshin.Content.Visual
 				lines.Add(new StatLine(StatLineKind.Warn, T("RunAftermath", Secs(hp.AftermathPenaltyTimer), Pct(hp.AftermathPenaltyMult))));
 			if (hp.GuardBonusTimer > 0)
 				lines.Add(new StatLine(StatLineKind.Active, T("RunGuard", Secs(hp.GuardBonusTimer))));
-			if (hp.AccGuardActiveTimer > 0)
-				lines.Add(new StatLine(StatLineKind.Active, T("RunAccGuard", Secs(hp.AccGuardActiveTimer))));
 			if (hp.SolarPowerDrain)
 				lines.Add(new StatLine(StatLineKind.Warn, T("RunSolarDrain")));
 			if (lines.Count == before + 1)
@@ -689,6 +698,9 @@ namespace PokemonHenshin.Content.Visual
 			sb.Append(hp.BossDamageBonus.ToString("0.###")).Append('|');
 			sb.Append(hp.CritUpgradeChance.ToString("0.###")).Append('|');
 			sb.Append(hp.OnFireCritUpgrade.ToString("0.###")).Append('|');
+			sb.Append(hp.CritChanceBonus.ToString("0.###")).Append('|');
+			sb.Append(hp.CritDamageBonus.ToString("0.###")).Append('|');
+			sb.Append(hp.DodgeChance.ToString("0.###")).Append('|');
 			sb.Append(hp.IncomingDamageMultiplier.ToString("0.###")).Append('|');
 			foreach (AccRow row in accs)
 			{

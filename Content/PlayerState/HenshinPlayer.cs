@@ -45,8 +45,8 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public float MoveCooldownMultiplier { get; set; } = 1f;
 		public float HenshinDamageBonus { get; set; }
-		public float AffinityAmplitudeBonus { get; set; }
 		public float ExtraFlightEnergy { get; set; }
+		public float FlightEnergyMul { get; set; }
 		public float MoveSpeedBonus { get; set; }
 		public float IncomingDamageMultiplier { get; set; } = 1f;
 		public float HenshinDamageFactorBonus { get; set; }
@@ -54,15 +54,12 @@ namespace PokemonHenshin.Content.PlayerState
 		public float WaterSpeedBonus { get; set; }
 		public float DashCooldownMultiplier { get; set; } = 1f;
 		public float LungeCooldownMultiplier { get; set; } = 1f;
-		public float FallDamageReduction { get; set; }
 		public float BossDamageBonus { get; set; }
-		public bool AccActive { get; set; }
 
 		public float IncomingCut { get; set; }
 		public float CooldownCut { get; set; }
 		public float DashCooldownCut { get; set; }
 		public float LungeCooldownCut { get; set; }
-		public float FallDmgTakenMul { get; set; } = 1f;
 		public float EnergyGainAdd { get; set; }
 		public float EnergyGainMulProduct { get; set; } = 1f;
 		public float EnergyGainMultiplier { get; set; } = 1f;
@@ -80,7 +77,6 @@ namespace PokemonHenshin.Content.PlayerState
 		public bool TilePierceBarrage { get; set; }
 		public bool TilePierceDoTBind { get; set; }
 		public bool TilePierceBeam { get; set; }
-		public bool TilePierceField { get; set; }
 		public int PenetrateAdd { get; set; }
 		public bool CurseTagSuperImmune { get; set; }
 		public int CurseTagBurnTicks { get; set; }
@@ -115,8 +111,13 @@ namespace PokemonHenshin.Content.PlayerState
 		public float DashSpeedBonus { get; set; }
 		public int LungeIFrameBonus { get; set; }
 		public float PsychicDragonDamage { get; set; }
-		public int AccGuardCutTicks { get; set; }
-		public int AccGuardActiveTimer { get; set; }
+		public float CritChanceBonus { get; set; }
+		public float CritDamageBonus { get; set; }
+		public float WaterMoveDamage { get; set; }
+		public float FlyingMoveDamage { get; set; }
+		public float UntransformedDefense { get; set; }
+		public float AccDefense { get; set; }
+		public float DodgeChance { get; set; }
 		/// <summary>铁壁前缀：形态防御结算后再乘的额外比例（如 0.20）。</summary>
 		public float PrefixFormDefenseMul { get; set; }
 
@@ -319,7 +320,6 @@ namespace PokemonHenshin.Content.PlayerState
 			MoveDelivery.Barrage => TilePierceBarrage,
 			MoveDelivery.DoTBind => TilePierceDoTBind,
 			MoveDelivery.Beam => TilePierceBeam,
-			MoveDelivery.Field => TilePierceField,
 			_ => false
 		};
 
@@ -342,6 +342,7 @@ namespace PokemonHenshin.Content.PlayerState
 			switch (line.Stat)
 			{
 				case AccStat.DamageBonus: HenshinDamageBonus += line.Value; break;
+				case AccStat.AffinityPower: HenshinDamageBonus += line.Value; break;
 				case AccStat.DamageFactorBonus: HenshinDamageFactorBonus += line.Value; break;
 				case AccStat.MeleeDeliveryDamage: MeleeDeliveryDamage += line.Value; break;
 				case AccStat.BossDamageBonus: BossDamageBonus += line.Value; break;
@@ -354,10 +355,7 @@ namespace PokemonHenshin.Content.PlayerState
 				case AccStat.MoveSpeedBonus: MoveSpeedBonus += line.Value; break;
 				case AccStat.WaterSpeedBonus: WaterSpeedBonus += line.Value; break;
 				case AccStat.FlightEnergySec: ExtraFlightEnergy += line.Value; break;
-				case AccStat.FallDmgTakenMul:
-					FallDmgTakenMul = Math.Min(FallDmgTakenMul, line.Value);
-					break;
-				case AccStat.AffinityAmp: AffinityAmplitudeBonus += line.Value; break;
+				case AccStat.FlightEnergyMul: FlightEnergyMul += line.Value; break;
 				case AccStat.EnergyGainAdd: EnergyGainAdd += line.Value; break;
 				case AccStat.EnergyGainMul: EnergyGainMulProduct *= line.Value; break;
 				case AccStat.UltRetain: UltRetainFraction = Math.Max(UltRetainFraction, line.Value); break;
@@ -374,7 +372,6 @@ namespace PokemonHenshin.Content.PlayerState
 				case AccStat.TilePierceBarrage: TilePierceBarrage = true; break;
 				case AccStat.TilePierceDoTBind: TilePierceDoTBind = true; break;
 				case AccStat.TilePierceBeam: TilePierceBeam = true; break;
-				case AccStat.TilePierceField: TilePierceField = true; break;
 				case AccStat.CursedInfernoImmune: CurseTagSuperImmune = true; break;
 				case AccStat.CursedInfernoSec:
 					CurseTagBurnTicks = Math.Max(CurseTagBurnTicks, (int)(line.Value * 60f));
@@ -406,7 +403,13 @@ namespace PokemonHenshin.Content.PlayerState
 				case AccStat.DashSpeedBonus: DashSpeedBonus += line.Value; break;
 				case AccStat.LungeIFrameBonus: LungeIFrameBonus += (int)line.Value; break;
 				case AccStat.PsychicDragonDamage: PsychicDragonDamage += line.Value; break;
-				case AccStat.GuardCutTimer: AccGuardCutTicks = Math.Max(AccGuardCutTicks, (int)line.Value); break;
+				case AccStat.CritChance: CritChanceBonus += line.Value; break;
+				case AccStat.CritDamage: CritDamageBonus += line.Value; break;
+				case AccStat.WaterMoveDamage: WaterMoveDamage += line.Value; break;
+				case AccStat.FlyingMoveDamage: FlyingMoveDamage += line.Value; break;
+				case AccStat.UntransformedDefense: UntransformedDefense += line.Value; break;
+				case AccStat.AccDefense: AccDefense += line.Value; break;
+				case AccStat.DodgeChance: DodgeChance += line.Value; break;
 			}
 		}
 
@@ -417,20 +420,16 @@ namespace PokemonHenshin.Content.PlayerState
 			DashCooldownMultiplier *= 1f - Math.Min(0.30f, DashCooldownCut);
 			LungeCooldownMultiplier *= 1f - Math.Min(0.30f, LungeCooldownCut);
 			EnergyGainMultiplier = (1f + EnergyGainAdd) * EnergyGainMulProduct;
-			if (FallDmgTakenMul < 1f)
-				FallDamageReduction = Math.Max(FallDamageReduction, 1f - FallDmgTakenMul);
 			if (HomingTurn > 0f)
 				HomingTurnRate = HomingTurn;
-			if (AccGuardActiveTimer > 0)
-				IncomingDamageMultiplier *= 0.97f;
 		}
 
 		private void ClearFrameBonuses()
 		{
 			MoveCooldownMultiplier = 1f;
 			HenshinDamageBonus = 0f;
-			AffinityAmplitudeBonus = 0f;
 			ExtraFlightEnergy = 0f;
+			FlightEnergyMul = 0f;
 			MoveSpeedBonus = 0f;
 			IncomingDamageMultiplier = 1f;
 			HenshinDamageFactorBonus = 0f;
@@ -438,16 +437,13 @@ namespace PokemonHenshin.Content.PlayerState
 			WaterSpeedBonus = 0f;
 			DashCooldownMultiplier = 1f;
 			LungeCooldownMultiplier = 1f;
-			FallDamageReduction = 0f;
 			BossDamageBonus = 0f;
 			PhasingBonusTicks = 0f;
 			PhasingCooldownMultiplier = 1f;
-			AccActive = false;
 			IncomingCut = 0f;
 			CooldownCut = 0f;
 			DashCooldownCut = 0f;
 			LungeCooldownCut = 0f;
-			FallDmgTakenMul = 1f;
 			EnergyGainAdd = 0f;
 			EnergyGainMulProduct = 1f;
 			EnergyGainMultiplier = 1f;
@@ -457,7 +453,7 @@ namespace PokemonHenshin.Content.PlayerState
 			HomingTurnRate = 0.08f;
 			HomingRangeTiles = 0f;
 			HomingBolt = HomingSpread = HomingBarrage = HomingDoTBind = false;
-			TilePierceBolt = TilePierceSpread = TilePierceBarrage = TilePierceDoTBind = TilePierceBeam = TilePierceField = false;
+			TilePierceBolt = TilePierceSpread = TilePierceBarrage = TilePierceDoTBind = TilePierceBeam = false;
 			PenetrateAdd = 0;
 			CurseTagSuperImmune = false;
 			CurseTagBurnTicks = 0;
@@ -490,7 +486,13 @@ namespace PokemonHenshin.Content.PlayerState
 			DashSpeedBonus = 0f;
 			LungeIFrameBonus = 0;
 			PsychicDragonDamage = 0f;
-			AccGuardCutTicks = 0;
+			CritChanceBonus = 0f;
+			CritDamageBonus = 0f;
+			WaterMoveDamage = 0f;
+			FlyingMoveDamage = 0f;
+			UntransformedDefense = 0f;
+			AccDefense = 0f;
+			DodgeChance = 0f;
 			PrefixFormDefenseMul = 0f;
 			TypeMoveBonus = 0f;
 			SynchronizePassive = false;
@@ -703,8 +705,6 @@ namespace PokemonHenshin.Content.PlayerState
 			if (RockyHelmetCooldown > 0) RockyHelmetCooldown--;
 			if (LifeOrbGate > 0) LifeOrbGate--;
 			if (FocusSashCooldown > 0) FocusSashCooldown--;
-			if (AccGuardActiveTimer > 0)
-				AccGuardActiveTimer--;
 			if (GuardBonusTimer > 0)
 			{
 				GuardBonusTimer--;
@@ -749,10 +749,12 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			FinalizeAccStats();
 			ApplyHeldForcePrefix();
+			if (UntransformedDefense > 0f)
+				Player.statDefense += (int)Math.Round(UntransformedDefense);
 			if (!IsTransformed)
 				return;
 			EnforceNoMount();
-			FlightEnergyMax = (LevitateFlight ? 10f : 4f) * 60f + ExtraFlightEnergy * 60f;
+			FlightEnergyMax = ((LevitateFlight ? 10f : 4f) * 60f + ExtraFlightEnergy * 60f) * (1f + FlightEnergyMul);
 			FormPassiveApplier.Apply(this);
 			TypePassiveApplier.Apply(this);
 			ApplyFormDefense();
@@ -813,6 +815,8 @@ namespace PokemonHenshin.Content.PlayerState
 			}
 
 			Player.statDefense += formDef;
+			if (AccDefense > 0f)
+				Player.statDefense += (int)Math.Round(AccDefense);
 			if (EvioliteDefMul > 0f && CurrentForm != null
 				&& FormRegistry.FindEvolutionOf(CurrentForm.FormId) != null)
 			{
@@ -1039,8 +1043,6 @@ namespace PokemonHenshin.Content.PlayerState
 					n.SimpleStrikeNPC(dmg, n.Center.X < Player.Center.X ? -1 : 1, false, 2f, ModContent.GetInstance<Damage.HenshinDamage>());
 				}
 			}
-			if (AccGuardCutTicks > 0)
-				AccGuardActiveTimer = Math.Max(AccGuardActiveTimer, AccGuardCutTicks);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -1265,6 +1267,17 @@ namespace PokemonHenshin.Content.PlayerState
 			modifiers.ModifyHurtInfo += ApplyFocusSashHurt;
 		}
 
+		public override bool FreeDodge(Player.HurtInfo info)
+		{
+			if (!IsTransformed || DodgeChance <= 0f)
+				return false;
+			if (Main.rand.NextFloat() >= DodgeChance)
+				return false;
+			Player.immune = true;
+			Player.immuneTime = Math.Max(Player.immuneTime, 30 + LungeIFrameBonus);
+			return true;
+		}
+
 		private void ApplyFocusSashHurt(ref Player.HurtInfo info)
 		{
 			if (!FocusSash || FocusSashCooldown > 0 || !IsTransformed)
@@ -1292,11 +1305,13 @@ namespace PokemonHenshin.Content.PlayerState
 			ModifyHenshinHit(target, proj, ref modifiers);
 		}
 
-		/// <summary>EasyCrit 招式：抬高本模伤害类暴击率，交给原版一次判定。</summary>
+		/// <summary>EasyCrit 招式与饰品暴击率：抬高本模伤害类暴击率，交给原版一次判定。</summary>
 		public override void ModifyWeaponCrit(Item item, ref float crit)
 		{
 			if (!IsTransformed || item?.ModItem is not HenshinForceItem force)
 				return;
+			if (CritChanceBonus > 0f)
+				crit += CritChanceBonus * 100f;
 			MoveSpec move = force.GetMove(LastMoveSlot);
 			if (move?.EasyCrit == true)
 				crit += 35f;
@@ -1335,8 +1350,15 @@ namespace PokemonHenshin.Content.PlayerState
 				mult += TypeMoveBonus;
 			if (slot == MoveSlot.Ultimate)
 				mult += UltDamageBonus;
-			if (FireMoveDamage > 0f && move?.CountsAsFireMove == true)
+			if (FireMoveDamage > 0f && CurrentForm != null
+				&& (CurrentForm.Primary == PokemonType.Fire || CurrentForm.Secondary == PokemonType.Fire))
 				mult += FireMoveDamage;
+			if (WaterMoveDamage > 0f && CurrentForm != null
+				&& (CurrentForm.Primary == PokemonType.Water || CurrentForm.Secondary == PokemonType.Water))
+				mult += WaterMoveDamage;
+			if (FlyingMoveDamage > 0f && CurrentForm != null
+				&& (CurrentForm.Primary == PokemonType.Flying || CurrentForm.Secondary == PokemonType.Flying))
+				mult += FlyingMoveDamage;
 			if (MeleeDeliveryDamage > 0f && MoveDeliverySets.MeleeShort(delivery))
 				mult += MeleeDeliveryDamage;
 			if (PsychicDragonDamage > 0f && CurrentForm != null
@@ -1348,6 +1370,9 @@ namespace PokemonHenshin.Content.PlayerState
 			mult *= AftermathPenaltyMult;
 			if (mult != 1f)
 				modifiers.FinalDamage *= mult;
+
+			if (CritDamageBonus > 0f)
+				modifiers.CritDamage += CritDamageBonus;
 
 			ApplyCritTier(target, ref modifiers);
 		}

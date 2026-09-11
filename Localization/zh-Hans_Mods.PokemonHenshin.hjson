@@ -38,7 +38,7 @@ Prefixes: {
 StatsUI: {
 	ButtonHover: 变身属性
 	PanelTitle: ≡ 变身状态报告
-	PanelReset: "〔复位〕"
+	PanelReset: 〔复位〕
 	PanelDragHint: 拖动标题栏可移动面板；双击复位
 	PanelResetHint: 恢复到物品栏旁默认位置
 	NotTransformed: 未持握之力。持握热键栏中的「xxx之力」后，这里显示当前加成与特性。
@@ -183,7 +183,6 @@ StatsUI: {
 	}
 
 	SectionType: 属性习性
-	AmpNote: 心之水滴：习性幅度 +{0}%
 	TypeFireOk: "{0}：免疫熔岩与着火"
 	TypeFireWet: "{0}：免疫熔岩与着火；浸水中招式虚弱 -{1}%"
 	TypeWaterDry: "{0}：水下呼吸；入水后移速提升"
@@ -214,7 +213,6 @@ StatsUI: {
 	TypeSecWaterWet: 副属性 {0}：水中移速 +{1}%
 	TypeSecWaterDry: 副属性 {0}：入水后少量移速
 	TypeSecNone: 副属性 {0}
-
 	SectionCrit: 会心
 	CritChance: 会心率　{0}%
 	CritEasyNote: 易会心招　释放时另 +{0}%（不计入上方常驻率）
@@ -222,6 +220,7 @@ StatsUI: {
 	CritUpgradeNone: 超会心升档　0%（未装备焦点镜等）
 	CritOnFire: 着火目标再 +{0}%
 	CritDamageNote: 会心伤害　×200% · 超会心约 ×400%
+	CritDamageBonus: 饰品暴击伤害　+{0}%
 
 	Type: {
 		None: —
@@ -249,55 +248,60 @@ StatsUI: {
 	ZoneWeapon: ◆ 武器乘区（出弹前，各项相乘）
 	ZoneHit: ◆ 命中乘区（条件加成先相加）
 	ZoneOther: ◆ 其它乘区
-	ZoneEmpty: 　　（无额外）
-	ZoneWeaponTotal: 　　合计　约 ×{0}%
-	TotDamage: 　　招式伤害　{0}%
-	TotFactor: 　　变身因子　{0}%
-	TotChoice: 　　讲究头带　{0}%
-	TotLifeOrb: 　　生命宝珠　{0}%
-	TotTypeMove: 　　特性招式　{0}%
-	TotBoss: 　　对 Boss 单位　{0}%
-	TotOnFire: 　　对燃烧单位　{0}%
-	TotUlt: 　　大招额外伤害　{0}%
-	TotMelee: 　　近战招式　{0}%
-	TotFireMove: 　　火系招式　{0}%
-	TotPsychicDragon: 　　超能/龙招式　{0}%
-	TotEvioliteDmg: 　　进化奇石伤害　{0}%
-	TotAftermathNow: 　　（后摇中）当前再 ×{0}%
-	TotEvioliteDef: 　　进化奇石防御　{0}%
-	TotMoveSpeed: 　　移动速度　{0}%
-	TotWaterSpeed: 　　水中移速　{0}%
-	TotXpHeld: 　　持握经验　{0}%
-	TotXpShare: 　　热键栏经验分享　{0}%
-	TotPassiveEnergy: 　　被动充能　{0}%
-	TotIncoming: 　　承伤　×{0}%
-	TotCooldown: 　　招式冷却　×{0}%
-	TotDashCd: 　　冲刺冷却　×{0}%
-	TotLungeCd: 　　撞击冷却　×{0}%
-	TotEnergyGain: 　　战斗能量获取　×{0}%
-	TotUltRetain: 　　大招后保留能量　{0}%
-	TotFlightSec: 　　飞行能量 +{0} 秒
-	TotFall: 　　坠落减免　{0}%
-	TotPenetrate: 　　穿透 +{0}
-	TotDashSpeed: 　　冲刺速度 +{0}
-	TotLungeIFrame: 　　撞击无敌帧 +{0}
-	TotLeftovers: 　　每秒回复 {0} HP
-	TotLeftoversLow: 　　半血额外每秒回复 {0} HP
-	TotShellBell: 　　命中回复 {0} HP
-	TotRocky: 　　受击反伤 {0}% 持握攻击
-	TotLifeOrbDrain: 　　生命宝珠：攻击扣 HP
-	TotSash: 　　气势披带：HP≥{0}% 可挡致死，CD {1}s
-	TotCurseBurn: 　　诅咒焰每 30 秒灼烧 {0} 秒
-	TotCurseImmune: 　　免疫诅咒之符灼烧
+	ZoneEmpty: （无额外）
+	ZoneWeaponTotal: 合计　约 ×{0}%
+	TotDamage: 招式伤害　{0}%
+	TotFactor: 变身因子　{0}%
+	TotChoice: 讲究头带　{0}%
+	TotLifeOrb: 生命宝珠　{0}%
+	TotTypeMove: 特性招式　{0}%
+	TotBoss: 对 Boss 单位　{0}%
+	TotOnFire: 对燃烧单位　{0}%
+	TotUlt: 大招额外伤害　{0}%
+	TotMelee: 近战招式　{0}%
+	TotFireMove: 火系招式　{0}%
+	TotPsychicDragon: 超能/龙招式　{0}%
+	TotEvioliteDmg: 进化奇石伤害　{0}%
+	TotAftermathNow: （后摇中）当前再 ×{0}%
+	TotEvioliteDef: 进化奇石防御　{0}%
+	TotMoveSpeed: 移动速度　{0}%
+	TotWaterSpeed: 水中移速　{0}%
+	TotXpHeld: 持握经验　{0}%
+	TotXpShare: 热键栏经验分享　{0}%
+	TotPassiveEnergy: 被动充能　{0}%
+	TotIncoming: 承伤　×{0}%
+	TotCooldown: 招式冷却　×{0}%
+	TotDashCd: 冲刺冷却　×{0}%
+	TotLungeCd: 撞击冷却　×{0}%
+	TotEnergyGain: 战斗能量获取　×{0}%
+	TotUltRetain: 大招后保留能量　{0}%
+	TotFlightSec: 飞行能量 +{0} 秒
+	TotFlightMul: 飞行时间 +{0}%
+	TotPenetrate: 穿透 +{0}
+	TotDashSpeed: 冲刺速度 +{0}
+	TotLungeIFrame: 撞击无敌帧 +{0}
+	TotDodge: 受击闪避 {0}%
+	TotAccDef: 饰品防御 +{0}
+	TotWaterMove: 水形态招式 {0}%
+	TotFlyingMove: 飞行形态招式 {0}%
+	TotCritChance: 暴击率 +{0}%
+	TotCritDamage: 暴击伤害 +{0}%
+	TotLeftovers: 每秒回复 {0} HP
+	TotLeftoversLow: 半血额外每秒回复 {0} HP
+	TotShellBell: 命中回复 {0} HP
+	TotRocky: 受击反伤 {0}% 持握攻击
+	TotLifeOrbDrain: 生命宝珠：攻击扣 HP
+	TotSash: 气势披带：HP≥{0}% 可挡致死，CD {1}s
+	TotCurseBurn: 诅咒焰每 30 秒灼烧 {0} 秒
+	TotCurseImmune: 免疫诅咒之符灼烧
 	TotNone: （无额外数值加成）
 	DelBolt: 单体弹
 	DelSpread: 扇形
 	DelBarrage: 连发
 	DelDoT: 缠绕
 	DelBeam: 光束
-	DelField: 场地
-	TotHoming: 　　追踪：{0}
-	TotPierce: 　　穿墙：{0}
+	TotHoming: 追踪：{0}
+	TotPierce: 穿墙：{0}
 	SectionAcc: 携带道具
 	AccNone: （未装备本模饰品）
 	AccOn: "{0}　【生效】"
@@ -323,6 +327,7 @@ StatsUI: {
 Configs: {
 	HenshinClientConfig: {
 		DisplayName: 宝可梦变身 · 客户端
+
 		UseCustomPanelPos: {
 			Label: 自定义属性面板位置
 			Tooltip: 由游戏内拖动面板写入；也可在此关闭以复位
@@ -330,10 +335,12 @@ Configs: {
 
 		PanelPosX: {
 			Label: 面板位置 X
+			// Tooltip: ""
 		}
 
 		PanelPosY: {
 			Label: 面板位置 Y
+			// Tooltip: ""
 		}
 	}
 }
@@ -387,8 +394,7 @@ Accessories: {
 	StatMoveSpeedBonus: 移动速度 +{0}%
 	StatWaterSpeedBonus: 水中移速 +{0}%
 	StatFlightEnergySec: 飞行能量 +{0} 秒
-	StatFallDmgTakenMul: 坠落承伤 ×{0}%
-	StatAffinityAmp: 属性克制幅度 +{0}%
+	StatFlightEnergyMul: 飞行时间 +{0}%
 	StatEnergyGainAdd: 战斗能量获取 +{0}%
 	StatEnergyGainMul: 战斗能量获取 ×{0}%
 	StatUltRetain: 大招后保留能量 {0}%
@@ -405,7 +411,6 @@ Accessories: {
 	StatTilePierceBarrage: 穿墙：连发弹幕
 	StatTilePierceDoTBind: 穿墙：缠绕弹
 	StatTilePierceBeam: 穿墙：直线光束
-	StatTilePierceField: 穿墙：场地
 	StatCursedInfernoSec: 戴上即受诅咒焰，每 30 秒灼烧 {0} 秒（未变身也会触发）
 	StatCursedInfernoImmune: 免疫诅咒之符灼烧
 	StatPenetrateAdd: 穿透 +{0}
@@ -430,12 +435,19 @@ Accessories: {
 	StatEverstoneBlock: 阻止进化
 	StatCritUpgradeChance: 暴击升级率 +{0}%
 	StatOnFireCritUpgrade: 对燃烧目标暴击升级 +{0}%
-	StatFireMoveDamage: 火招式 +{0}%
+	StatFireMoveDamage: 火形态招式 +{0}%
 	StatPassiveEnergyMul: 被动充能 +{0}%
 	StatDashSpeedBonus: 冲刺速度 +{0}
 	StatLungeIFrameBonus: 撞击无敌帧 +{0}
 	StatPsychicDragonDamage: 超能/龙招式 +{0}%
-	StatGuardCutTimer: 受击后 {0} 秒额外减伤
+	StatAffinityPower: 属性战力（招式伤害） +{0}%
+	StatCritChance: 暴击率 +{0}%
+	StatCritDamage: 暴击伤害 +{0}%
+	StatWaterMoveDamage: 水形态招式 +{0}%
+	StatFlyingMoveDamage: 飞行形态招式 +{0}%
+	StatUntransformedDefense: 防御 +{0}（未变身也生效）
+	StatAccDefense: 变身防御 +{0}
+	StatDodgeChance: 受击闪避 +{0}%
 }
 
 Buffs: {

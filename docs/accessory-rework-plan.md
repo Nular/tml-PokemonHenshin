@@ -2,13 +2,13 @@
 
 | 项 | 内容 |
 |----|------|
-| 状态 | **已实现，待游戏内验收** |
-| 日期 | 2026-09-09 |
-| 基线 | `origin/main` @ `06509c0`（neat-freak 文档对齐）。能量软顶 90→1000 在 PR #7，合入与否不阻塞本计划（实现时按当时 main 的常量）。 |
-| 权威 | **产品规则以 `docs/requirements.md` §6 / §10 为准。** 本文件是饰品重构施工图归档；冲突时以 requirements + 现役代码为准，不再用本文件覆盖产品口径。 |
+| 状态 | **施工归档**（2026-09-12：效果数字以 Catalog + requirements §10 **v1.4.23** 为准；游戏内验收仍 pending） |
+| 日期 | 2026-09-09（初稿）；效果重平衡 2026-09-12 |
+| 基线 | 初稿相对 `origin/main` @ `06509c0`。现役数字以仓库内 `HenshinAccCatalog` 为准。 |
+| 权威 | **产品规则：** `docs/requirements.md` §6 / §10。**效果数字：** `Content/Accessories/HenshinAccCatalog.cs`。本文件保留名称/贴图/合成/掉落/施工决策；**中部 AccStat 与家族数值表含已删字段（AffinityAmp、FallDmgReductionSet、GuardCut、TilePierceField、AccActive 等），勿当现役抄。** |
 | 道具名/图 | [52poke 道具列表](https://wiki.52poke.com/wiki/道具列表) 官方中文名 + `Bag {中文名} SV Sprite.png` |
 
-本文是饰品重构施工图归档，对照数字/掉落/合成时查阅。**不要在聊天里另发明一套。** 冲突时：用户审阅批注 > `docs/requirements.md` + 现役代码 > 本文件。
+本文是饰品重构施工图归档。冲突时：用户审阅批注 > `docs/requirements.md` + `HenshinAccCatalog` > 本文件。
 
 ---
 
@@ -133,7 +133,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
 | `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |
 | `tools/make_super_accessory_sprites.py` | **已弃用**：转发到 `pixelize_accessories.py` | WP-H |
-| `docs/requirements.md` §6 §10 | 已回写（广角镜圆形索敌等）；现役页眉以需求文档为准（洁癖时 **v1.4.22**）；冲突以需求 + 代码为准 | 收尾 |
+| `docs/requirements.md` §6 §10 | 已回写；现役页眉 **v1.4.23**；冲突以需求 + `HenshinAccCatalog` 为准 | 收尾 |
 | `docs/accessory-rework-plan.md` | 本文件 | 主 Agent |
 
 `Items/Accessories/HenshinAccessories.cs`：脚手架完成后删除，避免 21 个 class 与 Loader 抢同一个 Name。
@@ -167,6 +167,8 @@ AccFamilyDef {
 ### 2.5 `AccStatLine`（唯一允许的运行时效果种类）
 
 实现一个 `void Apply(HenshinPlayer hp, AccStatLine line)`。禁止家族 class 私自加字段却不登记。
+
+> **v1.4.23 退役（已从现役 `AccStat` / Catalog 删除）：** `AffinityAmp`、`FallDmgReductionSet`、`GuardCut*`、`TilePierceField`、`AccActive`。下表与后文家族数值若仍出现这些名，仅为施工史；现役枚举与接线见 `AccFamilyId.cs` / `HenshinAccCatalog.cs` / `HenshinPlayer.ApplyAccStat`。
 
 | `AccStat` | 叠法 | 面板？ | 说明 |
 |-----------|------|--------|------|
@@ -757,10 +759,10 @@ tML API：https://docs.tmodloader.net/docs/stable/annotated.html 按需打开 Mo
 
 | 进度 | 灾厄近似 | 本模普通件 |
 |------|----------|------------|
-| 肉前 | 早期徽章 5–8% 类伤 | 力量头带 +6% |
-| 机械后 | 复仇者 12% 全伤 | 超级力量头带 +12% |
-| 世花–石巨人 | 毁灭者 10%+8% 暴 | 焦点镜 10% 升档（更稀有） |
-| 月总后 | 多种 10–20% 包 | 达人带 +5% factor 叠种族 |
+| 肉前 | 早期徽章 ~10% 类伤 | 力量头带 +10% |
+| 机械后 | 复仇者 12% 全伤 | 超级力量头带 +20% |
+| 世花–石巨人 | 毁灭者 10%+8% 暴 | 焦点镜 20% 暴击 +10% 升档 +10% 暴伤 |
+| 月总后 | 多种 10–20% 包 | 达人带 +8% factor 叠种族 |
 
 讲究头带 +50% 锁技能是抉择件，超级 +100% 仍锁，对标「剪选项换爆发」。栏位够就可以碎片+成品再叠，这是玩家用栏位买的，不削。
 

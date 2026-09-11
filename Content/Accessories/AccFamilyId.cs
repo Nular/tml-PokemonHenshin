@@ -59,8 +59,6 @@ namespace PokemonHenshin.Content.Accessories
 		MoveSpeedBonus,
 		WaterSpeedBonus,
 		FlightEnergySec,
-		FallDmgTakenMul,
-		AffinityAmp,
 		EnergyGainAdd,
 		EnergyGainMul,
 		UltRetain,
@@ -76,7 +74,6 @@ namespace PokemonHenshin.Content.Accessories
 		TilePierceBarrage,
 		TilePierceDoTBind,
 		TilePierceBeam,
-		TilePierceField,
 		CursedInfernoSec,
 		CursedInfernoImmune,
 		PenetrateAdd,
@@ -106,8 +103,16 @@ namespace PokemonHenshin.Content.Accessories
 		DashSpeedBonus,
 		LungeIFrameBonus,
 		PsychicDragonDamage,
-		GuardCutTimer,
-		HomingRange
+		HomingRange,
+		AffinityPower,
+		CritChance,
+		CritDamage,
+		WaterMoveDamage,
+		FlyingMoveDamage,
+		FlightEnergyMul,
+		UntransformedDefense,
+		AccDefense,
+		DodgeChance
 	}
 
 	public readonly struct AccStatLine
