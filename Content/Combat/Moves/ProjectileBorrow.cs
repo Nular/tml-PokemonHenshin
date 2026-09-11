@@ -1,4 +1,6 @@
 using Microsoft.Xna.Framework.Graphics;
+using PokemonHenshin.Content.Accessories;
+using PokemonHenshin.Content.Damage;
 using ReLogic.Content;
 using Terraria;
 using Terraria.GameContent;
@@ -69,7 +71,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			proj.friendly = true;
 			proj.hostile = false;
-			proj.DamageType = Damage.HenshinDamage.Instance;
+			proj.DamageType = HenshinDamage.Instance;
+		}
+
+		/// <summary>
+		/// 从父弹复制出弹槽/能量系数后再 Retarget。大招亡时碎片必须走这条，
+		/// 否则 fail-closed 下不充能，或按住技能时误用 LastMoveSlot。
+		/// </summary>
+		public static void RetargetAsHenshinFrom(Projectile parent, Projectile proj)
+		{
+			RetargetAsHenshin(proj);
+			if (parent != null && proj != null)
+				HenshinAccGlobalProjectile.CopyMoveOrigin(parent, proj);
 		}
 	}
 }

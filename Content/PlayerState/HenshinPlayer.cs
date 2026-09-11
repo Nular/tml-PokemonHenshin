@@ -1077,10 +1077,18 @@ namespace PokemonHenshin.Content.PlayerState
 			if (proj == null)
 				return false;
 			HenshinAccGlobalProjectile gp = proj.GetGlobalProjectile<HenshinAccGlobalProjectile>();
-			if (!gp.HasCombatEnergyFactor)
-				return false;
-			factor = gp.CombatEnergyFactor;
-			return true;
+			if (gp.HasCombatEnergyFactor)
+			{
+				factor = gp.CombatEnergyFactor;
+				return true;
+			}
+			// ModProjectile 轨：Global ExtraAI 时序不稳时的后备。
+			if (proj.ModProjectile is IHenshinMoveProj tagged && tagged.HasCombatEnergyFactor)
+			{
+				factor = tagged.CombatEnergyFactor;
+				return true;
+			}
+			return false;
 		}
 
 		private void ProcessHenshinNpcHit(NPC target, int damageDone, Projectile proj)
@@ -1095,14 +1103,32 @@ namespace PokemonHenshin.Content.PlayerState
 			MoveSpec move = force?.GetMove(slot);
 			float factor;
 			bool grantsCombatEnergy;
-			if (TryGetStampedCombatEnergyFactor(proj, out float stamped))
+
+			if (proj != null)
 			{
-				// 出弹时钉死的系数是权威来源：大招=0 即永不充能，即使槽位解析被技能覆盖。
-				factor = stamped;
-				grantsCombatEnergy = stamped > 0f;
+				// 有射弹：禁止回退 LastMoveSlot 决定能量。
+				// 延迟散射大招在按住技能时 LastMoveSlot=Skill；未钉槽若 fail-open 会把大招命中当成技能充能。
+				// 钉槽设计可行，但「未钉则回退玩家槽」不可行——改为 fail-closed。
+				if (TryGetStampedCombatEnergyFactor(proj, out float stamped))
+				{
+					factor = stamped;
+					grantsCombatEnergy = stamped > 0f;
+				}
+				else
+				{
+					factor = 0f;
+					grantsCombatEnergy = false;
+				}
+
+				if (slot == MoveSlot.Ultimate)
+				{
+					factor = 0f;
+					grantsCombatEnergy = false;
+				}
 			}
 			else
 			{
+				// 无射弹的近战接触：仍用 LastMoveSlot（之力物品通常 noMelee，此路径很少）。
 				factor = slot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
 				grantsCombatEnergy = factor > 0f && slot != MoveSlot.Ultimate;
 			}
