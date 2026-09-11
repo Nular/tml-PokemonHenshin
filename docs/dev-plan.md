@@ -3,8 +3,8 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.19**（数值表 `docs/balance-stats.md`） |
-| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**（获取硬顶，不截存档）。变身地图头像已接线。`SyncAim` / 壳弹旁观端贴图重建已接线（双端验收 pending）。DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
+| 对齐需求 | `docs/requirements.md` **v1.4.20**（数值表 `docs/balance-stats.md`） |
+| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**（获取硬顶，不截存档）。变身地图头像已接线。`SyncAim` / 壳弹旁观端贴图重建已接线（双端验收 pending）。之力专属前缀（蓄能/铁壁/猛攻）+ 暴击对齐原版 Crit（游戏内验收 pending）。DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -689,3 +689,4 @@ TryEditTile(player, action) →
 | **1.4.17** | 对齐 requirements v1.4.17：`SyncAim` / `Ensure*` 已接线；N10 恢复、藤鞭为 N12；双端验收 pending |
 | **1.4.18** | 对齐 requirements v1.4.18：世界档只挡获取；不 Truncate 写回；卡顶不飘 EXP |
 | **1.4.19** | 广角镜圆形索敌（仍 8/16/32）；招式自带追踪不叠广角镜 |
+| **1.4.20** | 对齐 requirements v1.4.20：之力专属前缀；暴击对齐原版 Crit；超暴击偏红橙飘字 |
