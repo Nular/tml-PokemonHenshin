@@ -18,8 +18,8 @@ description: >-
 
 | 权威                               | 管什么                                                  |
 | -------------------------------- | ---------------------------------------------------- |
-| `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP；广角镜；**暴击/EasyCrit/专属前缀** §2.6 §2.9） |
-| `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量、MoveRefRate；世界档只挡获取 |
+| `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP；广角镜；**暴击/EasyCrit/专属前缀** §2.6 §2.9；大招后 `UltEnergyLockout` §2.5） |
+| `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量（含大招后锁定 tick）、MoveRefRate；世界档只挡获取 |
 | `docs/move-effects.md`           | 招式玩法语义 / 接线状态                                        |
 | `docs/fx-knowledge.md`           | FX cookbook、贴图踩坑、**联机视觉/指向检验清单**                 |
 | `AGENTS.md`                      | 构建、目录、硬约束入口                                          |

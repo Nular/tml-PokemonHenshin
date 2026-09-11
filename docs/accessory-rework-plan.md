@@ -133,7 +133,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
 | `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |
 | `tools/make_super_accessory_sprites.py` | **已弃用**：转发到 `pixelize_accessories.py` | WP-H |
-| `docs/requirements.md` §6 §10 | 已回写（广角镜圆形索敌等）；现役页眉 **v1.4.20**；冲突以需求 + 代码为准 | 收尾 |
+| `docs/requirements.md` §6 §10 | 已回写（广角镜圆形索敌等）；现役页眉以需求文档为准（洁癖时 **v1.4.22**）；冲突以需求 + 代码为准 | 收尾 |
 | `docs/accessory-rework-plan.md` | 本文件 | 主 Agent |
 
 `Items/Accessories/HenshinAccessories.cs`：脚手架完成后删除，避免 21 个 class 与 Loader 抢同一个 Name。
