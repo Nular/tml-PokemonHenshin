@@ -371,10 +371,17 @@ namespace PokemonHenshin.Content.Combat
 				shootVel = Vector2.Normalize(shootVel) * move.ShootSpeed;
 			}
 
+			MoveSlot slot = hp.LastMoveSlot;
+			float energyFactor = slot == MoveSlot.Ultimate ? 0f : move.GetEnergyGainFactor();
 			int id = Projectile.NewProjectile(source, spawn, shootVel, move.ProjectileType, damage, knockback, player.whoAmI, move.Ai0, move.Ai1, move.Ai2);
 			// NewProjectile 的 position 是左上角；大 AoE 若不校正会偏到鼠标右下。
 			if (id >= 0 && id < Main.maxProjectiles && move.SpawnAtMouse)
 				Main.projectile[id].Center = HenshinPlayer.GetMouseWorld(player);
+			if (id >= 0 && id < Main.maxProjectiles)
+			{
+				// OnSpawn 可能已按 LastMoveSlot 钉过；此处再显式钉一次，保证导演弹槽位/能量系数正确。
+				PokemonHenshin.Content.Accessories.HenshinAccGlobalProjectile.StampMoveOrigin(Main.projectile[id], slot, energyFactor);
+			}
 			if (id >= 0 && id < Main.maxProjectiles && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
 			{
 				tagged.Delivery = move.Delivery;
@@ -546,5 +553,8 @@ namespace PokemonHenshin.Content.Combat
 		bool InherentHoming { get; set; }
 		bool IgnoreDefensePartial { get; set; }
 		MoveDelivery Delivery { get; set; }
+		/// <summary>出弹槽；导演→子弹须显式复制，勿只靠 Global OnSpawn。</summary>
+		MoveSlot SourceMoveSlot { get; set; }
+		bool HasSourceMoveSlot { get; set; }
 	}
 }

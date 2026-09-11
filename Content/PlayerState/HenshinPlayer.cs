@@ -1062,11 +1062,25 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			if (proj != null)
 			{
+				if (proj.ModProjectile is IHenshinMoveProj tagged && tagged.HasSourceMoveSlot)
+					return tagged.SourceMoveSlot;
 				HenshinAccGlobalProjectile gp = proj.GetGlobalProjectile<HenshinAccGlobalProjectile>();
 				if (gp.HasSourceMoveSlot)
 					return gp.SourceMoveSlot;
 			}
 			return LastMoveSlot;
+		}
+
+		private static bool TryGetStampedCombatEnergyFactor(Projectile proj, out float factor)
+		{
+			factor = 0f;
+			if (proj == null)
+				return false;
+			HenshinAccGlobalProjectile gp = proj.GetGlobalProjectile<HenshinAccGlobalProjectile>();
+			if (!gp.HasCombatEnergyFactor)
+				return false;
+			factor = gp.CombatEnergyFactor;
+			return true;
 		}
 
 		private void ProcessHenshinNpcHit(NPC target, int damageDone, Projectile proj)
@@ -1079,8 +1093,21 @@ namespace PokemonHenshin.Content.PlayerState
 			MoveSlot slot = ResolveHitMoveSlot(proj);
 			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
 			MoveSpec move = force?.GetMove(slot);
-			float factor = slot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
-			if (slot != MoveSlot.Ultimate)
+			float factor;
+			bool grantsCombatEnergy;
+			if (TryGetStampedCombatEnergyFactor(proj, out float stamped))
+			{
+				// 出弹时钉死的系数是权威来源：大招=0 即永不充能，即使槽位解析被技能覆盖。
+				factor = stamped;
+				grantsCombatEnergy = stamped > 0f;
+			}
+			else
+			{
+				factor = slot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
+				grantsCombatEnergy = factor > 0f && slot != MoveSlot.Ultimate;
+			}
+
+			if (grantsCombatEnergy)
 			{
 				bool fragment = HenshinNebulaShardTintGlobal.UsesCrumbHitEnergy(proj);
 				AddCombatEnergy(HenshinStatService.CombatHitEnergy(factor, fragment));
@@ -1090,7 +1117,7 @@ namespace PokemonHenshin.Content.PlayerState
 			{
 				if (ShouldGrantKillRewards(target) && TryClaimKillXp(target))
 				{
-					if (slot != MoveSlot.Ultimate)
+					if (grantsCombatEnergy)
 						AddCombatEnergy(EnergyOnKill * factor);
 					if (force != null)
 						GrantKillExperience(force, target);

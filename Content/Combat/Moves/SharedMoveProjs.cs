@@ -185,6 +185,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			public bool InherentHoming { get; set; }
 			public bool IgnoreDefensePartial { get; set; }
 			public MoveDelivery Delivery { get; set; }
+			public MoveSlot SourceMoveSlot { get; set; }
+			public bool HasSourceMoveSlot { get; set; }
 			public virtual bool HandlesOwnHoming => false;
 
 		public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
