@@ -128,7 +128,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			owner.velocity *= 0.94f;
 
 			_from = owner.MountedCenter;
-			Vector2 aim = Main.MouseWorld - _from;
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - _from;
 			if (aim.LengthSquared() < 1f)
 				aim = new Vector2(owner.direction, 0f);
 			aim.Normalize();
@@ -227,7 +227,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				int interval = IsUlt ? 1 : 2;
 				Projectile.localAI[1] = interval;
 				Projectile.timeLeft = _total * interval + 12;
-				_dir = Main.MouseWorld - owner.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();
@@ -235,7 +235,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 
 			Projectile.Center = owner.MountedCenter;
-			Vector2 aim = Main.MouseWorld - owner.MountedCenter;
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 			if (aim.LengthSquared() > 1f)
 				_dir = Vector2.Normalize(aim);
 			owner.direction = _dir.X >= 0f ? 1 : -1;
@@ -503,7 +503,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			_from = owner.MountedCenter;
 			if (!_stopped)
 			{
-				Vector2 aim = Main.MouseWorld - _from;
+				Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - _from;
 				if (aim.LengthSquared() < 1f)
 					aim = new Vector2(owner.direction, 0f);
 				_aimDir = Vector2.Normalize(aim);
@@ -833,7 +833,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			if (Projectile.timeLeft == 8 && Projectile.owner == Main.myPlayer)
 			{
-				Vector2 dir = Main.MouseWorld - owner.Center;
+				Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.Center;
 				if (dir == Vector2.Zero) dir = new Vector2(owner.direction, 0f);
 				dir.Normalize();
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter, dir * 16f,
@@ -905,7 +905,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				SoundEngine.PlaySound(SoundID.Item67 with { Pitch = 0.2f }, owner.MountedCenter);
 			}
 			_from = owner.MountedCenter;
-			Vector2 aim = Main.MouseWorld - _from;
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - _from;
 			if (aim.LengthSquared() < 1f)
 				aim = new Vector2(owner.direction, 0f);
 			aim.Normalize();
@@ -1214,7 +1214,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int total = (int)System.Math.Max(1, Projectile.ai[1]);
 			if (Projectile.owner == Main.myPlayer && _fired < total && Projectile.timeLeft % 2 == 0)
 			{
-				Vector2 dir = Main.MouseWorld - owner.Center;
+				Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.Center;
 				if (dir == Vector2.Zero) dir = new Vector2(owner.direction, 0f);
 				dir.Normalize();
 				float spread = (_fired / (float)total - 0.5f) * 0.28f;
@@ -1243,7 +1243,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			Player owner = Main.player[Projectile.owner];
-			Vector2 dir = Main.MouseWorld - owner.Center;
+			Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.Center;
 			if (dir.LengthSquared() < 1f)
 				dir = new Vector2(owner.direction, 0f);
 			dir.Normalize();
@@ -1282,7 +1282,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				Player owner = Main.player[Projectile.owner];
-				Vector2 dir = Main.MouseWorld - owner.Center;
+				Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.Center;
 				if (dir == Vector2.Zero) dir = new Vector2(owner.direction, 0f);
 				dir.Normalize();
 				int per = System.Math.Max(1, Projectile.damage / 3);
@@ -1695,7 +1695,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				Main.instance.LoadProjectile(ProjectileID.ShadowBeamFriendly);
-				_dir = Main.MouseWorld - owner.Center;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.Center;
 				if (_dir == Vector2.Zero) _dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();
 			}
@@ -2051,7 +2051,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			Projectile.localAI[1] = 1f;
 
-			Vector2 dir = Main.MouseWorld - owner.MountedCenter;
+			Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 			if (dir.LengthSquared() < 1f)
 				dir = new Vector2(owner.direction, 0f);
 			dir.Normalize();
@@ -2111,7 +2111,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.velocity.LengthSquared() < 1f)
 			{
 				Player owner = Main.player[Projectile.owner];
-				Vector2 dir = Main.MouseWorld - owner.MountedCenter;
+				Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (dir.LengthSquared() < 1f)
 					dir = new Vector2(owner.direction, 0f);
 				Projectile.velocity = Vector2.Normalize(dir) * 12f;
@@ -2296,7 +2296,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 
 			_from = owner.MountedCenter;
-			Vector2 aim = Main.MouseWorld - _from;
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - _from;
 			if (aim.LengthSquared() < 1f)
 				aim = new Vector2(owner.direction, 0f);
 			aim.Normalize();
@@ -2664,7 +2664,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				Main.instance.LoadProjectile(ProjectileID.BoxingGlove);
-				_dir = Main.MouseWorld - owner.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();
@@ -2859,7 +2859,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				Main.instance.LoadProjectile(ProjectileID.BoxingGlove);
-				_dir = Main.MouseWorld - owner.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();

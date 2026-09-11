@@ -54,7 +54,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - p.Center;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();
@@ -266,7 +266,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Main.instance.LoadProjectile(ProjectileID.StardustDragon3);
 				Main.instance.LoadProjectile(ProjectileID.StardustDragon4);
 
-				_dir = Main.MouseWorld - p.Center;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();
@@ -709,7 +709,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.localAI[0] = 1f;
 				Main.instance.LoadProjectile(ProjectileID.BoxingGlove);
 				Main.instance.LoadProjectile(ProjectileID.StarWrath);
-				_dir = Main.MouseWorld - owner.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();
@@ -1067,7 +1067,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - p.Center;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();
@@ -1218,10 +1218,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				_goAt = (int)Main.GameUpdateCount + SpawnTicks;
-				_targetWho = FindNearestHostile(Main.MouseWorld, SelectRadius);
+				_targetWho = FindNearestHostile(HenshinProjUtil.OwnerMouseWorld(Projectile), SelectRadius);
 				if (_targetWho < 0)
 				{
-					Projectile.Kill();
+					if (Projectile.owner == Main.myPlayer)
+						Projectile.Kill();
 					return;
 				}
 				SoundEngine.PlaySound(SoundID.Item8 with { Pitch = -0.2f }, Main.npc[_targetWho].Center);
@@ -1232,7 +1233,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_targetWho = FindNearestHostile(Projectile.Center, SelectRadius * 1.5f);
 				if (_targetWho < 0)
 				{
-					Projectile.Kill();
+					if (Projectile.owner == Main.myPlayer)
+						Projectile.Kill();
 					return;
 				}
 			}
@@ -1325,14 +1327,22 @@ namespace PokemonHenshin.Content.Combat.Moves
 			HomingTurnRate = 0.16f;
 		}
 
-		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
+		public override void OnSpawn(Terraria.DataStructures.IEntitySource source) => EnsureAnchor();
+
+		private bool _anchorReady;
+
+		private void EnsureAnchor()
 		{
+			if (_anchorReady)
+				return;
+			_anchorReady = true;
 			Main.instance.LoadProjectile(ProjectileID.ShadowBeamHostile);
 			_anchor = Projectile.Center;
 		}
 
 		public override void AI()
 		{
+			EnsureAnchor();
 			int goAt = (int)Projectile.ai[1];
 			_appear = MathHelper.Clamp(_appear + 0.08f, 0f, 1f);
 

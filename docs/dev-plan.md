@@ -3,8 +3,8 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.15**（数值表 `docs/balance-stats.md`） |
-| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
+| 对齐需求 | `docs/requirements.md` **v1.4.18**（数值表 `docs/balance-stats.md`） |
+| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**（获取硬顶，不截存档）。变身地图头像已接线。`SyncAim` / 壳弹旁观端贴图重建已接线（双端验收 pending）。DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -144,7 +144,7 @@ sortAfter = CalamityMod
 
 - 单入口 `PokemonHenshinMod.HandlePacket` + `NetOp : byte` 枚举
 - **不要**照搬按类型全名自动编号（小模组用显式枚举更稳、可读）
-- 最小包（需求 §8）：`SyncForm`、`SyncPhasing`、`SyncWeatherField`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、`RequestRareCandy` / `ApplyForceProgress`
+- 最小包（需求 §8）：`SyncForm`、`SyncPhasing`、`SyncWeatherField`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、`RequestRareCandy` / `ApplyForceProgress`、`SyncAim`（变身时主人鼠标；对齐大修 `HalibutPlayer.MouseWorld`，无 InnoVault）
 
 ---
 
@@ -303,6 +303,7 @@ class HenshinDamage : DamageClass
 - 读 `HenshinPlayer.FormId` + 动画状态（Idle/Move/Jump/MoveA/MoveB）。
 - 隐身：`drawInfo.shadow` / 原版 invis 规则；其他玩家可见相同 FormId（靠 SyncForm）。
 - 退出同 tick：`FormId=0` → Layer 不可见。
+- **地图头像：** `HenshinMapHeadLayer`（`IsHeadLayer`）把全身图缩进原版 84×84 头像 RT；`HideDrawLayers` 按 `headOnlyRender` 只留 Overlay 或该层。虫洞药水不另写点击。
 
 ### 4.4 FormDefinition 数据驱动
 
@@ -411,7 +412,7 @@ TryEditTile(player, action) →
 
 #### M0.5 Overlay
 
-- [x] `Visual/HenshinOverlayLayer.cs`（`AfterLastVanillaLayer`，脚底锚点，按朝向翻转）+ `HenshinPlayer.HideDrawLayers` 隐藏除本层外的全部层
+- [x] `Visual/HenshinOverlayLayer.cs`（`AfterLastVanillaLayer`，脚底锚点，按朝向翻转）+ `HenshinPlayer.HideDrawLayers`：世界只留 Overlay，地图头像只留 `HenshinMapHeadLayer`
 - [x] 退出无残留
 - **验收：** 本地可见贴图、取消持握立刻消失 —— 通过
 
@@ -438,6 +439,7 @@ TryEditTile(player, action) →
 | 出现第二只镜像宝可梦 | **WeaponDisplay** 在 `ModPlayer.ModifyDrawInfo` 直接把手持物品贴图塞进 `DrawDataCache`，绕过层系统（原版 `HeldItem` 与 WeaponOut 走层，能被 `HideDrawLayers` 隐藏） | `HenshinOverlayLayer.Draw` 先移除 `DrawDataCache` 中引用形态贴图 / 物品贴图的条目再画自己 |
 | `Hide()` 对 `HeldItem` / `FrontAccFront` 的注意点 | 这两个 `Multiple` 层在 `DrawOrder` 里被包成 `PlayerDrawLayerSlot`，原层挂为 slot 的子层；对 `Layers` 中原层 `Hide()` 有效（子层不可见即不画） | 隐藏原皮遍历 `PlayerDrawLayerLoader.Layers` 即可，无需碰 `DrawOrder` |
 | 绘制坐标 | 原版各层直接用 `drawInfo.Position`，不再加 `gfxOffY` | Overlay 亦不加 `gfxOffY` |
+| 变身后地图无头像 | `HideDrawLayers` 连原版 `Head` 一起藏；Overlay 不是 `IsHeadLayer`，`MapHeadRenderer` 84×84 RT 为空。虫洞药水点的是原版头像坐标，不能改用 `ModMapLayer` 顶替 | `HenshinMapHeadLayer`：`IsHeadLayer`、顶层 `AfterLastVanillaLayer`（勿 `AfterParent(Head)`）；`headOnlyRender` 时只留该层；全身图按最长边缩到 60px |
 
 ---
 
@@ -571,11 +573,13 @@ TryEditTile(player, action) →
 | N8 | 穿障中 | 双方见状态；结束卡墙安全处理不desync |
 | N9 | 挖掘超预算 | 发起方收到 Reject；世界砖未改 |
 | N10 | 高延迟下快速切物品 | 最终形态与热键栏选中一致（服务端权威） |
+| N11 | 双方变身看小地图/全屏地图；虫洞药水点队友 | 双方头像为缩小形态图；点队友可传送并耗药 |
+| N12 | 客户端持握妙蛙种子对指针甩藤鞭；主机在另一方向看 | 主机看到鞭指向**释放者**鼠标，不跟主机指针；伤害仍在释放者端结算 |
 
 ### 7.3 回归节奏
 
 - 每完成 M0/M1/M3 网同步相关任务跑 N1～N4
-- M1 加 N5～N6；M3 加 N7～N9；M5 全跑 + N10
+- M1 加 N5～N6；M3 加 N7～N9；M5 全跑 + N10～N12
 
 ---
 
@@ -650,8 +654,8 @@ TryEditTile(player, action) →
 |------|------|
 | 与 requirements **v1.4** 对齐 | **规则层通过**；**代码已接线**等级/Xp/`StageXpScale`/`FinalAttack`/`FinalDefense`/能量 1000/进化双条件/世界字（DPS 与弹出验收待本地） |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
-| 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
-| 总评 | **v1.4 数值已接线**；下一步联机与 DPS 抽检 |
+| 主要残留风险 | ① 联机双端验收 pending（瞄准/壳弹**代码已接线**；地图头像/虫洞/能量XP 未双端签收）；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
+| 总评 | **v1.4 数值已接线**（获取硬顶）；联机视觉代码已接线。下一步双端实测与 DPS 抽检 |
 
 ---
 
@@ -681,3 +685,6 @@ TryEditTile(player, action) →
 | **1.4.11** | 神奇糖果：合成/使用/Boss 5%；`RequestRareCandy` / `ApplyForceProgress` |
 | **1.4.12** | 洁癖：目录树对齐 Consumables / AccItem；NetOp 指针不再指向 §12.1 |
 | **1.4.15** | 对齐 requirements v1.4.15：御三家发放钩子、属性面板下移 64px、HJSON `{` 引号 |
+| **1.4.16** | 变身地图头像：`HenshinMapHeadLayer` + `HideDrawLayers` 分 `headOnlyRender`；N11 虫洞药水 |
+| **1.4.17** | 对齐 requirements v1.4.17：`SyncAim` / `Ensure*` 已接线；N10 恢复、藤鞭为 N12；双端验收 pending |
+| **1.4.18** | 对齐 requirements v1.4.18：世界档只挡获取；不 Truncate 写回；卡顶不飘 EXP |

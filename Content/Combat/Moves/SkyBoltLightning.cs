@@ -91,7 +91,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					}
 					else
 					{
-						Vector2 aim = Main.MouseWorld;
+						Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile);
 						Vector2 dir = aim - _from;
 						if (dir.LengthSquared() < 1f)
 							dir = new Vector2(owner.direction, 0f);
@@ -294,7 +294,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			if (count == 0)
 			{
-				Projectile.NewProjectile(Projectile.GetSource_FromThis(), Main.MouseWorld, Vector2.Zero,
+				Projectile.NewProjectile(Projectile.GetSource_FromThis(), HenshinProjUtil.OwnerMouseWorld(Projectile), Vector2.Zero,
 					ModContent.ProjectileType<SkyBoltLightningProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner,
 					1f, 1.85f, 1f);
 			}

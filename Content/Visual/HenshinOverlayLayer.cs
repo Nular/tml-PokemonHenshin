@@ -13,7 +13,8 @@ namespace PokemonHenshin.Content.Visual
 {
 	/// <summary>
 	/// 变身 Overlay（需求 §2.3，dev-plan §4.3）：在玩家脚底居中绘制宝可梦贴图。
-	/// 原版各层由 <see cref="HenshinPlayer.HideDrawLayers"/> 隐藏；未变身时本层不可见，退出同 tick 无残留。
+	/// 世界绘制时 <see cref="HenshinPlayer.HideDrawLayers"/> 只保留本层；地图头像见 <see cref="HenshinMapHeadLayer"/>。
+	/// 未变身时本层不可见，退出同 tick 无残留。
 	/// M0 单帧：移动时轻微浮动、离地时微抬，按朝向翻转。
 	/// </summary>
 	public sealed class HenshinOverlayLayer : PlayerDrawLayer
@@ -22,7 +23,7 @@ namespace PokemonHenshin.Content.Visual
 
 		public override bool GetDefaultVisibility(PlayerDrawSet drawInfo)
 		{
-			if (Main.gameMenu || drawInfo.shadow != 0f)
+			if (Main.gameMenu || drawInfo.headOnlyRender || drawInfo.shadow != 0f)
 				return false;
 			Player player = drawInfo.drawPlayer;
 			if (!player.active || player.dead || player.ghost)

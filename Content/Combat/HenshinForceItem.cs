@@ -79,6 +79,7 @@ namespace PokemonHenshin.Content.Combat
 			HenshinForceItem clone = (HenshinForceItem)base.Clone(newEntity);
 			clone.Level = Level;
 			clone.Xp = Xp;
+			clone.RefreshDamage();
 			return clone;
 		}
 
@@ -133,10 +134,6 @@ namespace PokemonHenshin.Content.Combat
 		public void RefreshDamage()
 		{
 			InitializeNewIfNeeded();
-			int world = SafeWorldStage();
-			ForceProgress capped = HenshinStatService.TruncateToCap(Level, Xp, world);
-			Level = capped.Level;
-			Xp = capped.Xp;
 			Item.damage = ComputeFinalAttack();
 		}
 
@@ -155,19 +152,27 @@ namespace PokemonHenshin.Content.Combat
 			return HenshinStatService.FinalDefense(Level, defMod);
 		}
 
-		public bool TryAddExperience(Player player, int amount, out int levelsGained, out bool crossedEvolveBand)
+		public bool TryAddExperience(Player player, int amount, out int levelsGained, out bool crossedEvolveBand, out int xpApplied)
 		{
 			levelsGained = 0;
 			crossedEvolveBand = false;
+			xpApplied = 0;
 			if (amount <= 0)
 				return false;
 
 			InitializeNewIfNeeded();
-			int oldLevel = Level;
 			int world = SafeWorldStage();
+			if (!HenshinStatService.CanGainExperience(Level, world))
+				return false;
+
+			int oldLevel = Level;
 			ForceProgress next = HenshinStatService.AddExperience(Level, Xp, amount, world, out levelsGained);
+			if (next.Level == Level && next.Xp == Xp)
+				return false;
+
 			Level = next.Level;
 			Xp = next.Xp;
+			xpApplied = amount;
 			RefreshDamage();
 
 			FormDefinition nextForm = FormRegistry.FindEvolutionOf(Definition?.FormId);
@@ -178,7 +183,7 @@ namespace PokemonHenshin.Content.Combat
 				&& HenshinStatService.MeetsEvolution(world, Level, nextForm.Stage))
 				player.GetModPlayer<EvolutionOfferPlayer>().TryOfferAfterLevelUp(this);
 
-			return levelsGained > 0 || amount > 0;
+			return true;
 		}
 
 		private static int SafeWorldStage()
@@ -192,10 +197,6 @@ namespace PokemonHenshin.Content.Combat
 				return 1;
 			}
 		}
-
-		public override void UpdateInventory(Player player) => RefreshDamage();
-
-		public override void HoldItem(Player player) => RefreshDamage();
 
 		public override bool AltFunctionUse(Player player) => true;
 
@@ -240,7 +241,7 @@ namespace PokemonHenshin.Content.Combat
 
 		public override void ModifyWeaponDamage(Player player, ref StatModifier damage)
 		{
-			// HenshinDamageFactor 已计入 Item.damage = FinalAttack，这里只叠饰品乘区。
+			// HenshinDamageFactor 已计入 Item.damage = FinalAttack（存档等级）；这里只叠饰品乘区。
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
 			if (hp.IsTransformed)
 			{
@@ -284,7 +285,7 @@ namespace PokemonHenshin.Content.Combat
 			Vector2 velocity = Vector2.Zero;
 			if (Ultimate.ShootSpeed > 0f)
 			{
-				velocity = Main.MouseWorld - player.MountedCenter;
+				velocity = HenshinPlayer.GetMouseWorld(player) - player.MountedCenter;
 				if (velocity == Vector2.Zero)
 					velocity = new Vector2(player.direction, 0f);
 				velocity = Vector2.Normalize(velocity) * Ultimate.ShootSpeed;
@@ -327,7 +328,7 @@ namespace PokemonHenshin.Content.Combat
 
 			Vector2 spawn;
 			if (move.SpawnAtMouse)
-				spawn = Main.MouseWorld;
+				spawn = HenshinPlayer.GetMouseWorld(player);
 			else if (move.ShootSpeed <= 0f)
 				spawn = player.MountedCenter;
 			else
@@ -336,7 +337,7 @@ namespace PokemonHenshin.Content.Combat
 			Vector2 shootVel = velocity;
 			if (move.SpawnAtMouse && move.ShootSpeed > 0f && shootVel == Vector2.Zero)
 			{
-				shootVel = Main.MouseWorld - player.MountedCenter;
+				shootVel = HenshinPlayer.GetMouseWorld(player) - player.MountedCenter;
 				if (shootVel == Vector2.Zero)
 					shootVel = new Vector2(player.direction, 0f);
 				shootVel = Vector2.Normalize(shootVel) * move.ShootSpeed;
@@ -345,7 +346,7 @@ namespace PokemonHenshin.Content.Combat
 			int id = Projectile.NewProjectile(source, spawn, shootVel, move.ProjectileType, damage, knockback, player.whoAmI, move.Ai0, move.Ai1, move.Ai2);
 			// NewProjectile 的 position 是左上角；大 AoE 若不校正会偏到鼠标右下。
 			if (id >= 0 && id < Main.maxProjectiles && move.SpawnAtMouse)
-				Main.projectile[id].Center = Main.MouseWorld;
+				Main.projectile[id].Center = HenshinPlayer.GetMouseWorld(player);
 			if (id >= 0 && id < Main.maxProjectiles && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
 			{
 				tagged.Delivery = move.Delivery;
@@ -389,7 +390,7 @@ namespace PokemonHenshin.Content.Combat
 			int world = SafeWorldStage();
 			int cap = HenshinStatService.LevelCap(world);
 			int need = HenshinStatService.ExpNeeded(Level);
-			bool capped = Level >= cap || Level >= HenshinStatService.MaxLevel;
+			bool capped = !Main.gameMenu && (Level >= cap || Level >= HenshinStatService.MaxLevel);
 
 			tooltips.Add(new TooltipLine(Mod, "HenshinTransform", Language.GetTextValue("Mods.PokemonHenshin.Common.HoldToTransform")));
 			tooltips.Add(new TooltipLine(Mod, "HenshinLevel", Language.GetTextValue(

@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-10
+**版本日期：** 2026-09-11
 
 ## 1. 权威与硬约束
 
@@ -18,7 +18,7 @@
 1. **禁止 CWR 运行时依赖**（`build.txt` 不得 `modReferences` 大修；禁止 `GetMod("CalamityOverhaul")`）。
 2. **允许**把 CWR 贴图**拷贝**进本模 `Assets/Fx/`（见 §7；2026-09-06 已扩拷一批）。
 3. **禁止擅自降级：** 跳过原版自管 AI 只留爆炸、`BlendState.Additive` + `color.A = 0`「假发光」、纯尘冒充成品等，未经用户确认不得当作成品。MagicPixel **可用**（须控制 destination/scale；无封顶通天拉伸易白屏，属实现错误而非禁令）。
-4. **懒加载贴图：** 壳弹只画原版图、从不 `NewProjectile` 该 type 时，必须 `Main.instance.LoadProjectile` / `ProjectileBorrow.RequestProjectileTexture`（见 Bubble 踩坑）。
+4. **懒加载贴图：** 壳弹只画原版图、从不 `NewProjectile` 该 type 时，必须 `ProjectileBorrow.SafeLoadProjectile` / `RequestProjectileTexture`（见 Bubble 踩坑）。**禁止**在 `Main.dedServ` 或 `Main.instance==null` 时调 `LoadProjectile`（listen/专用服 NRE）。
 5. **优先**原版 `NewProjectile` 真弹，或壳弹 + `LoadProjectile` 画同贴图 + 自管 AI；**禁止**生成灾厄弹。
 6. **Sprite sheet：** `Fire`（4×4）、`Flashimpact`（4×2）、`HitJagged01`（1×2）禁止整图 `DrawAdditiveCentered`；用 `HenshinFxDraw.Draw*Frame` / `SheetFrame`，帧=`AgeFrame(lifetime,timeLeft,ticksPerFrame,total)`。SoftGlow/Cyclone/Fog/DiffusionCircle/LightShot/LightBeam/TearFlame 可整图。
 
@@ -51,8 +51,8 @@
 | **文件** | `RedesignedMoveProjs.cs`（`BarrageDirectorProj` ModeBubble）+ `BorrowedVisualBoltProj`；`ProjectileBorrow.cs` |
 | **形态** | `L02_F02` 卡咪龟 Skill1；杰尼龟大招等同管线 |
 | **手法** | **禁止**裸 `NewProjectile(Bubble)` 当伤害弹；壳弹 `ai` 传贴图 ID=`ProjectileID.Bubble`（**410**）；强制 `LoadProjectile(Bubble)` |
-| **踩坑** | 未用过泡泡枪时 `TextureAssets.Projectile[Bubble]` 是 1×1 占位 → 无图 |
-| **勿做** | 等玩家先用泡泡枪；用水尘线冒充泡沫束 |
+| **踩坑** | 未用过泡泡枪时 `TextureAssets.Projectile[Bubble]` 是 1×1 占位 → 无图。**联机：** `OnSpawn` 只在 `NewProjectile` 端调用；壳弹 `_texType` 若只在 OnSpawn 赋值，旁观端为 0，PreDraw 回退 `ProjectileID.Seed` → 别人的泡沫光线看起来像种子机关枪。须在 AI/PreDraw 从已同步的 `ai0` 再解析并 `SafeLoadProjectile`。专用服/`Main.instance==null` 跳过 Load。 |
+| **勿做** | 等玩家先用泡泡枪；用水尘线冒充泡沫束；把贴图身份只写在 OnSpawn 的私有字段里 |
 
 ### 2.3 龙之波动 — NebulaArcanum 壳 + 爆炸碎片
 
@@ -315,6 +315,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ### 经验世界字（`HenshinXpPopupSystem`，2026-09-09）
 - `EXP +X` 钉击杀坐标；`LEVEL UP!` 跟玩家、连升连弹（错开 22 tick）。Boss 更厚描边+金白闪光。文案固定英文，不绑 buff、不绑已死 NPC。画法对齐睡眠 zzZ（`MouseText` + 描边）。
+- **已达获取硬顶或满级：不生成 `EXP +X`**（`applied==0`）；击杀能量照给。口径见需求 §4.6.2。
 - 时长约 1.5–2.2 秒（普通 EXP 90 tick / Boss 132 / 升级 108）；前 8% 淡入，45% 起渐隐到 0，到期移除（不突然消失）。
 
 ---
@@ -501,7 +502,27 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 ### SpawnAtMouse 中心校正（踩坑）
 
 - `Projectile.NewProjectile(spawn,…)` 的 `spawn` 是 **左上角**。大 width/height（过热 480、流沙 256 等）会偏到鼠标右下。
-- **修正：** `HenshinForceItem.FireMove` 在 `SpawnAtMouse` 时 `Main.projectile[id].Center = Main.MouseWorld`；AI 内改尺寸须先存 `Center` 再还原。
+- **修正：** `HenshinForceItem.FireMove` 在 `SpawnAtMouse` 时把弹幕 `Center` 校正到**主人**鼠标（`HenshinPlayer.GetMouseWorld`）；AI 内改尺寸须先存 `Center` 再还原。
+
+### 联机视觉/指向（踩坑 + 检验清单）
+
+根因：**钩子在所有端跑，但读到的状态只有本机才有。** 伤害常在主人端结算所以「打人是对的」，画面按旁观者的本地默认值画。
+
+tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `SetDefaults` + 已同步的 `ai[]` / `velocity` / `Center`。大修瞄准走 InnoVault `PlayerNetwork`；本模禁止该依赖，用 `NetOp.SyncAim` + `HenshinProjUtil.OwnerMouseWorld`。UI（`Main.mouseItem`）仍用本机鼠标。
+
+| 类别 | 本机才有的状态 | 旁观端表现 | 已见例子 | 怎么写 |
+|------|----------------|------------|----------|--------|
+| **A. 本机指针** | `Main.MouseWorld`、`Main.screenPosition`（当索敌/落点） | 别人的鞭/束跟着我的鼠标 | 藤鞭、龙息、水炮 | AI/Draw/Colliding 用 `OwnerMouseWorld`；变身时 `SyncAim` |
+| **B. OnSpawn 私有字段** | `_texType` `_dir` `_anchor` `_center` `_startOff` | 默认贴图/方向/原点；或长成另一招 | 泡沫→种子；尖石短刺；岩封锁不收拢；精神击破球飘向原点 | 从 `ai[]`/`velocity`/`Center` 重建（`Ensure*`）；禁止 OnSpawn 清零 velocity 再当唯一方向源 |
+| **C. 无主端生成** | `NewProjectile` 未挡 `owner == myPlayer` | 弹数翻倍、声音叠 | 导演弹、破裂碎片 | 生成/改砖/传送只主人端 |
+| **D. 旁观端 Kill** | 用本地失败条件 `Kill()` | 我这边招式提前消失 | 精神击破导演找不到怪 | 无目标/失败只主人 `Kill` |
+| **E. 懒加载贴图** | `TextureAssets` 未 Load | 1×1 空白；专用服裸 `LoadProjectile` 会 NRE | 泡沫未用过泡泡枪；listen 服 EnsureVisuals | 绘制前 `SafeLoadProjectile` / `RequestProjectileTexture` |
+
+写招式过一遍：私有字段旁观端第一帧从哪来；有无本机鼠标/屏幕当玩法输入；生成是否只主人；`Kill` 是否本地失败条件；贴图有无 Load；默认回退会不会长成另一招。
+
+**可接受：** 尘粒 `Main.rand`、折线电形状每端略不同；主人位移靠原版弹幕包插值。
+
+**代码已接线、双端验收 pending：** `SyncAim`、壳弹 `EnsureVisuals`、尖石/岩封锁/精神击破锚点重建。
 
 ### DrawOpaqueDisk / Extra98（鬼斯通）
 
@@ -600,6 +621,10 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 2.1 Living | 2026-09-10 | 龙之波动 620 碎片命中能量改为碎屑 `1×Factor`；击杀不变 |
 | 2.2 Living | 2026-09-10 | 诅咒之符 + 诅咒焰；火焰漩涡停飞不 Kill；水炮墙=怪；暴风默认贴地；龙息截断；技能龙怒撞实心 |
 | 2.3 Living | 2026-09-10 | 暴风 Delivery=Barrage（不是 Field）；诅咒符穿墙不含 Field |
+| 2.4 Living | 2026-09-11 | 联机 `SyncAim`：招式指向效果读主人鼠标，禁止射弹 AI 直接 `Main.MouseWorld` |
+| 2.5 Living | 2026-09-11 | 壳弹 `BorrowedVisualBoltProj` 旁观端从 `ai0` 解析贴图；修泡沫光线联机画成种子 |
+| 2.6 Living | 2026-09-11 | 联机检验清单（与瞄准/OnSpawn 踩坑合并为单节）；尖石/岩封锁/精神击破球同样按 OnSpawn 字段重建 |
+| 2.7 Living | 2026-09-11 | `SafeLoadProjectile` 跳过专用服；卡顶不生成 `EXP +X` |
 
 ---
 

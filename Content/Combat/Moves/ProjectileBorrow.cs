@@ -26,6 +26,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return sample.shoot;
 		}
 
+		public static void SafeLoadProjectile(int projectileType)
+		{
+			if (Main.dedServ || Main.instance == null || projectileType <= 0)
+				return;
+			Main.instance.LoadProjectile(projectileType);
+		}
+
 		/// <summary>
 		/// 强制加载原版弹贴图。TextureAssets.Projectile 懒加载：
 		/// 未用过泡泡枪时 Bubble 仍是 1×1 占位 → Borrow 壳弹「无图」；
@@ -35,7 +42,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			if (projectileType <= 0)
 				projectileType = ProjectileID.WoodenArrowFriendly;
-			Main.instance.LoadProjectile(projectileType);
+			SafeLoadProjectile(projectileType);
 			Asset<Texture2D> asset = TextureAssets.Projectile[projectileType];
 			return asset.Value;
 		}

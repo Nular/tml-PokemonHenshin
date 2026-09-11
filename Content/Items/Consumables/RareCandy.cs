@@ -13,7 +13,7 @@ namespace PokemonHenshin.Content.Items.Consumables
 {
 	/// <summary>
 	/// 神奇糖果：使用后令物品栏第一格（<c>inventory[0]</c>）的之力 +1 级、XP 清零。
-	/// 遵守世界档硬顶与 100 级上限。
+	/// 遵守获取硬顶（<c>CanGainExperience</c>：世界档顶与 100 级不加、不截已有等级）。
 	/// </summary>
 	public sealed class RareCandy : ModItem
 	{
@@ -103,16 +103,11 @@ namespace PokemonHenshin.Content.Items.Consumables
 				return false;
 
 			force.InitializeNewIfNeeded();
-			if (force.Level >= HenshinStatService.MaxLevel)
+			if (!HenshinStatService.CanGainExperience(force.Level, SafeWorldStage()))
 			{
-				failKey = "Mods.PokemonHenshin.RareCandy.MaxLevel";
-				return false;
-			}
-
-			int cap = HenshinStatService.LevelCap(SafeWorldStage());
-			if (force.Level >= cap)
-			{
-				failKey = "Mods.PokemonHenshin.RareCandy.Capped";
+				failKey = force.Level >= HenshinStatService.MaxLevel
+					? "Mods.PokemonHenshin.RareCandy.MaxLevel"
+					: "Mods.PokemonHenshin.RareCandy.Capped";
 				return false;
 			}
 

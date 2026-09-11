@@ -2,8 +2,8 @@
 
 | 项 | 内容 |
 |----|------|
-| 版本 | **1.4.15** |
-| 状态 | 现役开发基线：换皮武器；被动 + 技能1/2 + 能量大招；v1.4 等级/攻防/能量/进化/XP 已接线。游戏内 DPS 抽检与弹出验收待本地。 |
+| 版本 | **1.4.18** |
+| 状态 | 现役开发基线：换皮武器；被动 + 技能1/2 + 能量大招；v1.4 等级/攻防/能量/进化/XP 已接线。世界档/`100` **只挡获取**（不截存档等级）。变身地图头像已接线。联机瞄准/壳弹旁观端重建**已接线**（双端验收 pending）。游戏内 DPS 抽检与弹出验收待本地。 |
 | 平台 | 泰拉瑞亚 + tModLoader + 灾厄（Calamity） |
 | 联机 | 必须支持多人 |
 | 读者 | 策划 / 程序 / 其他实现 Agent |
@@ -92,6 +92,7 @@
 - 其他玩家必须看到相同形态；隐身时遵循原版隐身规则。  
 - Overlay 不吃盔甲染料。  
 - 退出变身的同一 tick 必须停止 Overlay，禁止残留。
+- **地图头像：** 变身后小地图 / 叠加地图 / 全屏地图改画当前形态全身图（缩进原版 `MapHeadRenderer` 头像框，不另做 `ModMapLayer`）。队色描边与**虫洞药水**点队友头像仍走原版判定。取消持握当帧恢复原版人头。
 
 ### 2.4 碰撞
 
@@ -309,7 +310,7 @@ Tooltip 须说明：形态防御取代盔甲防御；饰品防御仍生效。
 - 新生成物品：`Level = BandMin[form.Stage]`（传说掉落不从 1 级爬）；`Xp = 0`。  
 - 联机：服务端权威；持握同步须含 level、xp、energy。
 
-#### 4.6.2 等级带（连续等级 + 阶段硬顶）
+#### 4.6.2 等级带（连续等级 + 获取硬顶）
 
 | ProgressStage | 等级带 | 段长 |
 |---:|:---|---:|
@@ -326,9 +327,10 @@ Tooltip 须说明：形态防御取代盔甲防御；饰品防御仍生效。
 | 11 | 81–90 | 10 |
 | 12 | 91–100 | 10 |
 
-- `GetProgressStage() = S` 时，该物品 `Level` 最高为 `BandMax[S]`。  
-- 卡顶：经验截断到「升下级所需 − 1」，UI 显示「阶段上限」。  
-- 世界阶段上升**不**自动加等级，只抬高硬顶。  
+- `GetProgressStage() = S` 时，**不能再获取经验、不能用糖果升过** `BandMax[S]`（`CanGainExperience`）。已有 `Level`/`Xp` **不**按世界档截断写回（禁止背包 tick Truncate）。高于当前世界顶的物品同样不能再涨。  
+- 本次升级碰到顶：多余经验留在「升下级所需 − 1」，世界档抬高后继续。已在顶上再击杀：**不加 XP、不飘** `EXP +X`（击杀能量照给）。满级 100 同样。  
+- 攻防始终按存档 `Level` 所在带；无法再获取时 Tooltip/面板走 `ForceLevelCapped` / `LevelCapped`（已达当前进度上限）。  
+- 世界阶段上升**不**自动加等级，只抬高获取顶。  
 - **不做** Boss 首杀额外经验；**不做**卡顶/满级经验溢出转能量。
 
 #### 4.6.3 升级所需经验
@@ -363,7 +365,7 @@ BossXP   = Clamp(round(14 * lifeTerm * defTerm * stageMul), StageMin, StageMax)
 旧 `StageDamage = 8 + stage * 6` **废弃**。阶段基准对齐灾厄大修比目鱼的**有效 DPS 成长形状**（只读参考，无运行时依赖），再按本模「标准技 UseTime 20 ≈ 3 APS、倍率 1.0」反推面板。
 
 ```
-S = BandForLevel(Level)   // 攻防插值用物品等级所在带；世界 GetProgressStage() 只做等级硬顶与进化进度条件
+S = BandForLevel(Level)   // 攻防插值用物品等级所在带；世界 GetProgressStage() 只做获取硬顶与进化进度条件
 t = (Level - BandMin[S]) / max(1, BandMax[S] - BandMin[S])
 tw = t ^ LevelCurve[S]
 StageAttack  = lerp(MidAtk[S]*FloorMult[S], MidAtk[S]*CeilMult[S], tw)
@@ -382,11 +384,11 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 1. `FormStatTable` + `MoveSpec.BalanceTag` / `EnergyGainFactor` — **已接线**
 2. `HenshinForceItem`：`Level`/`Xp` Save/Load/Net；Tooltip；进化拷贝 — **已接线**
-3. `HenshinStatService`：`ExpNeeded`（×物品带）、Boss XP、`StageXpScale`（击杀×世界档）、Stage→Final — **已接线**
-4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验；世界字 `EXP +X` / `LEVEL UP!` — **已接线**
+3. `HenshinStatService`：`ExpNeeded`（×物品带）、Boss XP、`StageXpScale`（击杀×世界档）、`CanGainExperience`（只挡获取）、Stage→Final — **已接线**
+4. 面板 `FinalAttack`；盔甲防御剥离 + `FinalDefense`；击杀加经验；世界字 `EXP +X` / `LEVEL UP!`（卡顶/满级不飘 EXP）— **已接线**
 5. 能量池 1000 + 每秒软顶 + Factor；打标碎片命中 1×Factor（现役龙之波动 620）— **已接线**
 6. 进化双条件 — **已接线**
-7. 联机同步 level/xp/energy — **SyncEnergy 含三项；服务端写入持握物品并 TruncateToCap**；双端实测 pending
+7. 联机同步 level/xp/energy — **SyncEnergy 含三项；服务端持握进度取较高侧（不因客户端偏低覆盖）**；双端实测 pending
 8. 游戏内 DPS 抽检 PS7/9/12 — pending  
 
 ---
@@ -445,7 +447,7 @@ FinalDefense = max(0, round(StageDefense * DefenseMod))
 
 必须保证主机与客户端一致：变身形态、招式伤害、Buff、进化结果、地形实际变更。
 
-最小同步包：`SyncForm`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、**`SyncEnergy`（level、xp、energy）**、**`RequestRareCandy` / `ApplyForceProgress`**（糖果改第一格之力，持握同步管不到）。完整枚举见 `Content/Net/HenshinNet.cs` 的 `NetOp`。未接线玩法见 §12.1。
+最小同步包：`SyncForm`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、**`SyncEnergy`（level、xp、energy）**、**`RequestRareCandy` / `ApplyForceProgress`**（糖果改第一格之力，持握同步管不到）、**`SyncAim`（变身时主人鼠标世界坐标，供鞭/束等指向效果）**。完整枚举见 `Content/Net/HenshinNet.cs` 的 `NetOp`。未接线玩法见 §12.1。
 
 ---
 
@@ -684,3 +686,6 @@ DisplayName = 52poke 官方名。存档内部名仍用旧 class（`A01AbilityCap
 | **1.4.13** | 神奇糖果：金美味同材料合成；使用令物品栏第一格之力 +1 级（守硬顶）；每个 `npc.boss` 5%（袋内不额外 roll） |
 | **1.4.14** | 洁癖：入口文档对齐糖果；§8 NetOp 指向代码枚举；施工图 `SyncForceProgress` 更正为现役 `SyncEnergy` |
 | **1.4.15** | 御三家改绑角色档：建角 `AddStartingItems` + 旧档 `PostUpdateMiscEffects` 入包（不用 `OnEnterWorld`）。属性面板入口下移 64px 避开原版图鉴。HJSON 以 `{`/`[` 开头的值须加引号。`TilePierceEligible` 去掉 Field，与 §6 对齐 |
+| **1.4.16** | 变身地图头像：形态全身图缩小填入原版玩家头像 RT（`HenshinMapHeadLayer` + `headOnlyRender` 分上下文藏层）。虫洞药水仍点原版头像坐标 |
+| **1.4.17** | 联机：`SyncAim` + 壳弹/OnSpawn 字段重建**已接线**（双端验收 pending）。清单 `docs/fx-knowledge.md`。洁癖：入口文档区分「已接线」与「已双端验收」 |
+| **1.4.18** | 世界档/`100` 改为**获取硬顶**（`CanGainExperience`）：不截存档等级；卡顶/满级不加 XP、不飘 `EXP +X`。攻防跟存档 Level。洁癖对齐入口文档 |

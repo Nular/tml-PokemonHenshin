@@ -169,7 +169,73 @@ namespace PokemonHenshin.Content.PlayerState
 		private int dashDoubleTapTimer;
 		private int lastDashDir;
 
+		// 联机瞄准：对齐大修 HalibutPlayer.MouseWorld（InnoVault PlayerNetwork），本模用 NetOp.SyncAim。
+		private Vector2 _syncedMouseWorld;
+		private bool _aimReceived;
+		private Vector2 _lastSentAim;
+		private int _aimMoveCd;
+		private int _aimHeartCd;
+		private const float AimSyncMinMoveSq = 16f;
+		private const int AimSyncMoveInterval = 2;
+		private const int AimSyncHeartbeat = 12;
+
 		private bool IsRemotePlayerOnClient => Main.netMode == NetmodeID.MultiplayerClient && Player.whoAmI != Main.myPlayer;
+
+		/// <summary>该玩家的瞄准世界坐标。本地用 <see cref="Main.MouseWorld"/>；旁观/服务器用已同步近似值。</summary>
+		public Vector2 MouseWorld => GetMouseWorld(Player);
+
+		public static Vector2 GetMouseWorld(Player player)
+		{
+			if (player == null || !player.active)
+				return Main.dedServ ? Vector2.Zero : Main.MouseWorld;
+			if (player.whoAmI == Main.myPlayer && !Main.dedServ)
+				return Main.MouseWorld;
+			HenshinPlayer mp = player.GetModPlayer<HenshinPlayer>();
+			if (mp._aimReceived)
+				return mp._syncedMouseWorld;
+			return player.MountedCenter + new Vector2(player.direction * 176f, 0f);
+		}
+
+		internal Vector2 SerializeAimWorld() => GetMouseWorld(Player);
+
+		internal void ApplyRemoteAim(Vector2 world)
+		{
+			_syncedMouseWorld = world;
+			_aimReceived = true;
+		}
+
+		private void TickAimSync()
+		{
+			if (Player.whoAmI != Main.myPlayer || Main.dedServ)
+				return;
+
+			Vector2 now = Main.MouseWorld;
+			_syncedMouseWorld = now;
+			_aimReceived = true;
+
+			if (Main.netMode == NetmodeID.SinglePlayer || !IsTransformed)
+				return;
+
+			if (_aimMoveCd > 0)
+				_aimMoveCd--;
+			if (_aimHeartCd > 0)
+				_aimHeartCd--;
+
+			bool moved = Vector2.DistanceSquared(now, _lastSentAim) > AimSyncMinMoveSq;
+			if (moved && _aimMoveCd <= 0)
+			{
+				HenshinNet.SendAim(this);
+				_lastSentAim = now;
+				_aimMoveCd = AimSyncMoveInterval;
+				_aimHeartCd = AimSyncHeartbeat;
+			}
+			else if (_aimHeartCd <= 0)
+			{
+				HenshinNet.SendAim(this);
+				_lastSentAim = now;
+				_aimHeartCd = AimSyncHeartbeat;
+			}
+		}
 
 		public FormDefinition ResolveHeldForm()
 		{
@@ -197,6 +263,8 @@ namespace PokemonHenshin.Content.PlayerState
 			TransformTicks = 0;
 			FlightEnergy = FlightEnergyMax;
 			UltimateEnergy = energyByForm.TryGetValue(form.FormId, out float e) ? e : 0f;
+			_aimMoveCd = 0;
+			_aimHeartCd = 0;
 			EnforceNoMount();
 		}
 
@@ -637,6 +705,8 @@ namespace PokemonHenshin.Content.PlayerState
 
 			if (IsTransformed && !IsRemotePlayerOnClient)
 				TickCombatEnergyWindow();
+
+			TickAimSync();
 		}
 
 		private bool NearBoss()
@@ -1024,9 +1094,8 @@ namespace PokemonHenshin.Content.PlayerState
 			}
 
 			Vector2 popupAt = target.Center;
-			int oldLevel = force.Level;
 			int held = Math.Max(0, (int)Math.Round(amount * (1f + XpHeldMul)));
-			force.TryAddExperience(Player, held, out int levelsGained, out _);
+			force.TryAddExperience(Player, held, out int levelsGained, out _, out int applied);
 			if (XpHotbarShareMul > 0f)
 			{
 				int share = Math.Max(0, (int)Math.Round(amount * XpHotbarShareMul));
@@ -1037,7 +1106,7 @@ namespace PokemonHenshin.Content.PlayerState
 						if (i == Player.selectedItem)
 							continue;
 						if (Player.inventory[i]?.ModItem is HenshinForceItem other)
-							other.TryAddExperience(Player, share, out _, out _);
+							other.TryAddExperience(Player, share, out _, out _, out _);
 					}
 				}
 			}
@@ -1047,9 +1116,10 @@ namespace PokemonHenshin.Content.PlayerState
 			if (Player.whoAmI != Main.myPlayer)
 				return;
 
-			HenshinXpPopupSystem.ShowExp(popupAt, held, boss);
-			if (levelsGained > 0 || force.Level > oldLevel)
-				HenshinXpPopupSystem.ShowLevelUps(Player, System.Math.Max(levelsGained, force.Level - oldLevel));
+			if (applied > 0)
+				HenshinXpPopupSystem.ShowExp(popupAt, applied, boss);
+			if (levelsGained > 0)
+				HenshinXpPopupSystem.ShowLevelUps(Player, levelsGained);
 		}
 
 		/// <summary>持握 + 本模招式（含本模弹幕 / HenshinDamage）。原版壳碎片若未改 DamageType 则不计。</summary>
@@ -1256,10 +1326,13 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			if (!IsTransformed)
 				return;
-			HenshinOverlayLayer overlay = ModContent.GetInstance<HenshinOverlayLayer>();
+			// 世界：只留 Overlay。地图头像：只留 IsHeadLayer 的缩小形态图（否则藏掉 Head 后 RT 全透明）。
+			PlayerDrawLayer keep = drawInfo.headOnlyRender
+				? ModContent.GetInstance<HenshinMapHeadLayer>()
+				: ModContent.GetInstance<HenshinOverlayLayer>();
 			foreach (PlayerDrawLayer layer in PlayerDrawLayerLoader.Layers)
 			{
-				if (!ReferenceEquals(layer, overlay))
+				if (!ReferenceEquals(layer, keep))
 					layer.Hide();
 			}
 		}
@@ -1269,6 +1342,8 @@ namespace PokemonHenshin.Content.PlayerState
 			HenshinNet.SendForm(this, toWho, fromWho);
 			HenshinNet.SendPhasing(this, toWho, fromWho);
 			HenshinNet.SendEnergy(this, toWho, fromWho);
+			if (IsTransformed)
+				HenshinNet.SendAim(this, toWho, fromWho);
 		}
 
 		public override void CopyClientState(ModPlayer targetCopy)

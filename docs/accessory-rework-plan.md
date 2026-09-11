@@ -603,7 +603,7 @@ if (XpHotbarShareMul > 0)
 SendEnergy 持握（含 level/xp）；热键栏其它格靠物品 NetSend
 ```
 
-满级截断已有。
+已达世界顶或 100 级：`TryAddExperience` 失败、字段不动（需求 §4.6.2 获取硬顶；不截已有 Level）。
 
 ### 9.4 诅咒之符穿透与灼烧
 

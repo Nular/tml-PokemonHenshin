@@ -4,7 +4,7 @@ namespace PokemonHenshin.Content.Core
 {
 	/// <summary>
 	/// v1.4 数值真源实现（<c>docs/balance-stats.md</c>）。无 Terraria 依赖，可供独立校验。
-	/// 攻防插值用「当前 Level 所在等级带」，世界 <c>ProgressStage</c> 只做等级硬顶。
+	/// 攻防插值用「当前 Level 所在等级带」，世界 <c>ProgressStage</c> 只做<strong>获取硬顶</strong>与进化进度。
 	/// MidAtk 形状只读对齐灾厄大修比目鱼 <c>HalibutOverride.DamageDictionary</c> Level0–14 = 4,5,6,8,11,15,20,27,35,48,65,80,110,170,280（无运行时依赖）。
 	/// </summary>
 	public static class HenshinStatService
@@ -100,6 +100,18 @@ namespace PokemonHenshin.Content.Core
 		public static int StartingLevelForFormStage(int formStage) => BandMinOf(formStage);
 
 		/// <summary>
+		/// 世界档 / 满级只挡<strong>获取</strong>：已达顶则击杀经验与糖果不加。
+		/// 不把已有 <c>Level</c> 往下截。高于当前世界顶的物品（跨世界、读档竞态残留）同样不能再涨。
+		/// </summary>
+		public static bool CanGainExperience(int level, int worldStage)
+		{
+			int lv = Math.Clamp(level, MinLevel, MaxLevel);
+			if (lv >= MaxLevel)
+				return false;
+			return lv < Math.Min(MaxLevel, LevelCap(worldStage));
+		}
+
+		/// <summary>
 		/// 击杀经验随<strong>世界档</strong>放大：档 1 = 1，档 12 = 300。
 		/// 小怪 1～3 → 300～900；Boss 结算后再乘同一系数。
 		/// </summary>
@@ -143,38 +155,22 @@ namespace PokemonHenshin.Content.Core
 			return Math.Max(1, (int)Math.Round(raw * (double)StageXpScale(band)));
 		}
 
-		public static ForceProgress TruncateToCap(int level, int xp, int worldStage)
-		{
-			int cap = Math.Min(MaxLevel, LevelCap(worldStage));
-			int lv = Math.Clamp(level, MinLevel, cap);
-			int need = ExpNeeded(lv);
-			int nextXp = xp;
-			if (lv >= cap || lv >= MaxLevel)
-			{
-				if (need > 0)
-					nextXp = Math.Min(Math.Max(0, xp), need - 1);
-				else
-					nextXp = 0;
-			}
-			else
-				nextXp = Math.Max(0, xp);
-
-			return new ForceProgress(lv, nextXp);
-		}
-
-		/// <summary>叠加经验并处理升级 / 硬顶截断。返回新进度与本段内升了几级。</summary>
+		/// <summary>
+		/// 叠加经验并处理升级。已达世界顶 / 100 级则原样返回（不写回、不截已有等级）。
+		/// 本次涨到顶时，多余经验留在「升下级所需 − 1」，等世界档抬高后继续。
+		/// </summary>
 		public static ForceProgress AddExperience(int level, int xp, int amount, int worldStage, out int levelsGained)
 		{
 			levelsGained = 0;
+			int nextLevel = Math.Clamp(level, MinLevel, MaxLevel);
+			int nextXp = Math.Max(0, xp);
 			if (amount < 0)
 				amount = 0;
+			if (amount == 0 || !CanGainExperience(nextLevel, worldStage))
+				return new ForceProgress(nextLevel, nextXp);
 
 			int cap = Math.Min(MaxLevel, LevelCap(worldStage));
-			int nextLevel = Math.Clamp(level, MinLevel, MaxLevel);
-			int nextXp = Math.Max(0, xp) + amount;
-			if (nextLevel >= MaxLevel)
-				return new ForceProgress(MaxLevel, 0);
-
+			nextXp += amount;
 			while (nextLevel < cap && nextLevel < MaxLevel)
 			{
 				int need = ExpNeeded(nextLevel);
@@ -185,7 +181,16 @@ namespace PokemonHenshin.Content.Core
 				levelsGained++;
 			}
 
-			return TruncateToCap(nextLevel, nextXp, worldStage);
+			if (nextLevel >= MaxLevel)
+				return new ForceProgress(MaxLevel, 0);
+
+			if (nextLevel >= cap)
+			{
+				int need = ExpNeeded(nextLevel);
+				nextXp = need > 0 ? Math.Min(nextXp, need - 1) : 0;
+			}
+
+			return new ForceProgress(nextLevel, Math.Max(0, nextXp));
 		}
 
 		public static bool CrossedBandMin(int oldLevel, int newLevel, int nextFormStage)

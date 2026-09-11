@@ -50,7 +50,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.velocity.LengthSquared() < 1f)
 			{
 				Player p = Main.player[Projectile.owner];
-				Vector2 dir = Main.MouseWorld - p.Center;
+				Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
 				if (dir.LengthSquared() < 1f)
 					dir = new Vector2(p.direction, 0f);
 				Projectile.velocity = Vector2.Normalize(dir) * FlightSpeed;
@@ -347,7 +347,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				_origin = p.Center;
-				Vector2 cursor = Main.MouseWorld;
+				Vector2 cursor = HenshinProjUtil.OwnerMouseWorld(Projectile);
 				NPC target = null;
 				float best = SearchRange * SearchRange;
 				for (int i = 0; i < Main.maxNPCs; i++)
@@ -569,7 +569,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - p.Center;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();

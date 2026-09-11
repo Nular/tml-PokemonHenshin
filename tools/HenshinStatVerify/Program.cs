@@ -89,10 +89,26 @@ internal static class Program
 		True(HenshinStatService.CrossedBandMin(18, 19, 4), "cross BandMin 19");
 		True(!HenshinStatService.CrossedBandMin(19, 20, 4), "already past BandMin");
 
-		ForceProgress cap = HenshinStatService.AddExperience(5, 0, 9999, 1, out int gained);
-		Expect(5, cap.Level, "S1 cap level");
-		Expect(HenshinStatService.ExpNeeded(5) - 1, cap.Xp, "S1 cap xp-1");
-		True(gained == 0, "already at cap no extra levels from 0 xp");
+		True(HenshinStatService.CanGainExperience(4, 1), "can gain below S1 cap");
+		True(!HenshinStatService.CanGainExperience(5, 1), "S1 cap blocks gain");
+		True(!HenshinStatService.CanGainExperience(18, 1), "over world cap cannot gain");
+		True(!HenshinStatService.CanGainExperience(100, 12), "max level cannot gain");
+		True(HenshinStatService.CanGainExperience(5, 2), "S2 cap allows L5");
+
+		ForceProgress stay = HenshinStatService.AddExperience(5, 12, 9999, 1, out int noGain);
+		Expect(5, stay.Level, "already at cap keeps level");
+		Expect(12, stay.Xp, "already at cap keeps xp");
+		True(noGain == 0, "already at cap no levels");
+
+		ForceProgress over = HenshinStatService.AddExperience(18, 40, 100, 1, out int overG);
+		Expect(18, over.Level, "overlevel not truncated");
+		Expect(40, over.Xp, "overlevel xp not wiped");
+		True(overG == 0, "overlevel no gain");
+
+		ForceProgress fill = HenshinStatService.AddExperience(1, 0, 9999, 1, out int fillLv);
+		Expect(5, fill.Level, "S1 climb stops at cap");
+		Expect(HenshinStatService.ExpNeeded(5) - 1, fill.Xp, "hit cap leftover need-1");
+		True(fillLv > 0, "climb to cap gained levels");
 
 		ForceProgress climb = HenshinStatService.AddExperience(1, 0, 50, 12, out int lv1);
 		Expect(2, climb.Level, "L1 +50 -> L2");
