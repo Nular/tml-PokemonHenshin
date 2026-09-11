@@ -109,7 +109,8 @@
   - 击杀：`EnergyOnKill = 55` × `EnergyGainFactor`（打标碎片击杀仍走本条）  
   - 被动：`0.15 / tick`（Boss 附近 ×3）  
   - 大招命中**不**充能  
-  - **无**按 tick 的命中 ICD；改为滚动 1 秒窗口内命中+击杀能量合计 **≤ 1000**（软顶，只兜极端连击；被动不受限）  
+  - **大招释放后约 2.5s（150 tick）禁止一切能量回复**（战斗命中/击杀/被动 tick），用于兜住延迟散射弹在按住技能时的误充能；与射弹钉槽并行，不依赖钉槽是否成功  
+  - **无**按 tick 的命中 ICD；改为滚动 1 秒窗口内命中+击杀能量合计 **≤ 1000**（软顶，只兜极端连击；被动在锁定期外不受限）  
   - `EnergyGainFactor` 默认：Standard 1.0 / HighFrequency 0.35 / MultiHit 0.25 / WideAoE 0.45 / Ultimate 0  
   - 数值表与异常倍率见 `docs/balance-stats.md`；玩法语义见 `docs/move-effects.md`  
 - 招式风格可因宝可梦而异（近战、远程、突进、AOE、缠绕 DoT、地鼠线改地形等）。  

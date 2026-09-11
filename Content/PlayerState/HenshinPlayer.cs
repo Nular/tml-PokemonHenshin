@@ -165,6 +165,16 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public MoveSlot LastMoveSlot { get; set; } = MoveSlot.Skill1;
 
+		/// <summary>大招后充能锁定剩余 tick。延迟散射+追踪弹命中可晚于 1s，用 ~2.5s 硬门控兜底。</summary>
+		public const int UltEnergyLockoutDuration = 150; // ~2.5s
+
+		public int UltEnergyLockoutTicks { get; private set; }
+
+		public void BeginUltEnergyLockout()
+		{
+			UltEnergyLockoutTicks = UltEnergyLockoutDuration;
+		}
+
 		private readonly float[] combatEnergyRing = new float[60];
 		private int combatEnergyIndex;
 
@@ -287,6 +297,7 @@ namespace PokemonHenshin.Content.PlayerState
 			FlightEnergy = 0f;
 			UltimateEnergy = 0f;
 			MoxieStacks = 0;
+			UltEnergyLockoutTicks = 0;
 		}
 
 		private float leftoversAcc;
@@ -603,6 +614,8 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			if (!IsTransformed || amount <= 0f)
 				return;
+			if (UltEnergyLockoutTicks > 0)
+				return;
 			UltimateEnergy = System.Math.Clamp(UltimateEnergy + amount, 0f, UltimateEnergyMax);
 			if (CurrentForm != null)
 				energyByForm[CurrentForm.FormId] = UltimateEnergy;
@@ -611,6 +624,8 @@ namespace PokemonHenshin.Content.PlayerState
 		public void AddCombatEnergy(float amount)
 		{
 			if (!IsTransformed || amount <= 0f)
+				return;
+			if (UltEnergyLockoutTicks > 0)
 				return;
 			float scaled = amount * EnergyGainMultiplier;
 			float used = 0f;
@@ -630,6 +645,8 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			combatEnergyIndex = (combatEnergyIndex + 1) % combatEnergyRing.Length;
 			combatEnergyRing[combatEnergyIndex] = 0f;
+			if (UltEnergyLockoutTicks > 0)
+				UltEnergyLockoutTicks--;
 		}
 
 		public bool TryConsumeUltimate()

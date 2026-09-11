@@ -309,6 +309,7 @@ namespace PokemonHenshin.Content.Combat
 				return false;
 
 			hp.LastMoveSlot = MoveSlot.Ultimate;
+			hp.BeginUltEnergyLockout();
 			var source = player.GetSource_ItemUse(Item);
 			Vector2 velocity = Vector2.Zero;
 			if (Ultimate.ShootSpeed > 0f)
