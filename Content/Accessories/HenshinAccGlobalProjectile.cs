@@ -14,25 +14,35 @@ namespace PokemonHenshin.Content.Accessories
 	/// <summary>子弹继承 Delivery/Homing；诅咒之符穿墙与穿透；广角镜漏网弹在 PostAI 转向。</summary>
 	public sealed class HenshinAccGlobalProjectile : GlobalProjectile
 	{
+		public override bool InstancePerEntity => true;
+
+		/// <summary>原版 Flames/Leaf 等可能每帧把 tileCollide 拨回；PostAI 再保一次。</summary>
+		public bool HoldTilePierce { get; set; }
+
 		public override void OnSpawn(Projectile projectile, IEntitySource source)
 		{
-			if (projectile.ModProjectile is not IHenshinMoveProj child)
-				return;
+			MoveDelivery delivery = MoveDelivery.None;
+			IHenshinMoveProj child = projectile.ModProjectile as IHenshinMoveProj;
 
 			if (source is EntitySource_Parent { Entity: Projectile parent }
 				&& parent.ModProjectile is IHenshinMoveProj p)
 			{
-				if (!HenshinProjUtil.BlocksAccessoryHoming(child))
+				if (child != null)
 				{
-					child.Homing |= p.Homing;
-					child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
-					child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+					if (!HenshinProjUtil.BlocksAccessoryHoming(child))
+					{
+						child.Homing |= p.Homing;
+						child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
+						child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+					}
+					child.HomingTargetWhoAmI = -1;
+					if (child.Delivery == MoveDelivery.None)
+						child.Delivery = p.Delivery;
+					child.EasyCrit |= p.EasyCrit;
+					child.IgnoreDefensePartial |= p.IgnoreDefensePartial;
 				}
-				child.HomingTargetWhoAmI = -1;
-				if (child.Delivery == MoveDelivery.None)
-					child.Delivery = p.Delivery;
-				child.EasyCrit |= p.EasyCrit;
-				child.IgnoreDefensePartial |= p.IgnoreDefensePartial;
+				if (delivery == MoveDelivery.None)
+					delivery = p.Delivery;
 			}
 
 			if (projectile.owner < 0 || projectile.owner >= Main.maxPlayers)
@@ -42,7 +52,7 @@ namespace PokemonHenshin.Content.Accessories
 				return;
 
 			HenshinPlayer hp = owner.GetModPlayer<HenshinPlayer>();
-			if (child.Delivery == MoveDelivery.None
+			if (child != null && child.Delivery == MoveDelivery.None
 				&& owner.HeldItem?.ModItem is HenshinForceItem force)
 			{
 				MoveSpec move = force.GetMove(hp.LastMoveSlot);
@@ -50,17 +60,27 @@ namespace PokemonHenshin.Content.Accessories
 					child.Delivery = move.Delivery;
 			}
 
-			HenshinProjUtil.ApplyAccessoryHoming(child, hp.ShouldHoming(child.Delivery), hp.HomingTurn, hp.HomingRangeTiles);
+			if (child != null && child.Delivery != MoveDelivery.None)
+				delivery = child.Delivery;
 
-			if (hp.ShouldTilePierce(child.Delivery))
+			if (child != null)
+				HenshinProjUtil.ApplyAccessoryHoming(child, hp.ShouldHoming(child.Delivery), hp.HomingTurn, hp.HomingRangeTiles);
+
+			if (hp.ShouldTilePierce(delivery))
+			{
 				projectile.tileCollide = false;
+				HoldTilePierce = true;
+			}
 
-			if (hp.PenetrateAdd > 0 && projectile.penetrate > 0)
+			if (child != null && hp.PenetrateAdd > 0 && projectile.penetrate > 0)
 				projectile.penetrate += hp.PenetrateAdd;
 		}
 
 		public override void PostAI(Projectile projectile)
 		{
+			if (HoldTilePierce)
+				projectile.tileCollide = false;
+
 			if (projectile.ModProjectile is not IHenshinMoveProj child || !child.Homing)
 				return;
 			if (projectile.ModProjectile is HenshinMoveProj self && self.HandlesOwnHoming)

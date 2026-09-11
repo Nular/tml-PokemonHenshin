@@ -4,7 +4,7 @@
 | 项        | 内容                                                                                                        |
 | -------- | --------------------------------------------------------------------------------------------------------- |
 | 版本       | **1.4**                                                                                                   |
-| 状态       | 设计定稿；**核心公式与物品等级已接线**（击杀 XP×世界档、`ExpNeeded`×物品带；攻防按 Level 所在带；游戏内 DPS/弹出验收仍待本地） |
+| 状态       | 设计定稿；**核心公式与物品等级已接线**（击杀 XP×世界档、`ExpNeeded`×物品带；攻防按 Level 所在带；世界档只挡获取；游戏内 DPS/弹出验收仍待本地） |
 | 权威关系     | 产品规则以 `docs/requirements.md` §2.5–2.7 / §4.3 / §4.6 为准；**数字以本文件为准**，代码入口 `Content/Core/HenshinStatService.cs` |
 | 种族值来源    | [52poke 种族值列表（第九世代）](https://wiki.52poke.com/wiki/种族值列表（第九世代）)（非超级进化）                                     |
 | DPS 形状参考 | 只读：`../CalamityOverhaul` 比目鱼 `HalibutOverride` 伤害表 Level0–14 = 4…280 + 高射速 + 分身补 DPS；**禁止**运行时依赖          |
@@ -33,7 +33,7 @@
 
 进化到 `next.Stage = T` 要求：`GetProgressStage() >= T` 且 `Level >= BandMin[T]`。
 
-攻防插值的 `S` 取 **当前 Level 所在等级带**（`BandForLevel`）；世界 `GetProgressStage()` 只做等级硬顶与进化进度条件。这样开局御三家进后期世界不会因 `t` 为负或夹到后期 Floor 而跳面板。
+攻防插值的 `S` 取 **当前 Level 所在等级带**（`BandForLevel`）；世界 `GetProgressStage()` 只做**获取硬顶**（`CanGainExperience`）与进化进度条件，不截已有 Level。这样开局御三家进后期世界不会因 `t` 为负或夹到后期 Floor 而跳面板。
 
 ---
 
@@ -78,7 +78,7 @@ ExpNeeded(L) = round(BaseExpNeeded(L) * StageXpScale(BandForLevel(L)))
 世界已经很难、物品仍在低带：给的是终局大数字，需求仍是 50、65… → 一只怪可连升。  
 物品已到终局带：给与需求同阶放大 → 又变回「打不少才升一级」。
 
-过档**不**折算当前 `Xp`（需求不跟世界档，进度条不会突然变空）。
+过档**不**折算当前 `Xp`（需求不跟世界档，进度条不会突然变空）。已达世界顶或 100 级：**不再加经验**（字段不动），击杀不飘 `EXP +X`。本次升级碰到顶时多余经验留 `need-1`。
 
 ### 3.2 Boss 动态公式
 
@@ -281,7 +281,7 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 - [x] 进化：PS 够但 Level < BandMin[next] → 不进化  
 - [x] 进化：双条件满足 → 继承 Level/Xp  
 - [x] 变身：盔甲 defense 被扣、饰品 defense 保留、FinalDefense 加上  
-- [x] 能量：1000 池、软顶、无 6tick ICD  
+- [x] 获取硬顶：`CanGainExperience`；已在顶不加 XP、不截已有 Level；爬到顶 leftover `need-1`  
 - [ ] 异常倍率按 §7.1 调整后 DPS 抽检 PS7/9/12（代码已改点名项；游戏内抽检待本地）  
 
 ---
@@ -297,5 +297,6 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 | 1.4.3 | 击杀 XP × 世界档（1～3 → 300～900）；ExpNeeded × 物品等级带；LEVEL UP / EXP 世界字 |
 | 1.4.4 | 战斗能量软顶 90→1000 / 秒：只兜极端连击；25～40s 打满仍由 Factor 负责 |
 | 1.4.5 | 龙之波动爆炸碎片命中 `1 × Factor`（须打标；现役仅 620）；主弹仍 `12 × Factor`；击杀不变 |
+| 1.4.6 | 世界档改为获取硬顶（`CanGainExperience`）；不截已有 Level；卡顶/满级不加 XP |
 
 

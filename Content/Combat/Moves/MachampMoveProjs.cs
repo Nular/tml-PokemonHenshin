@@ -42,7 +42,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			_fired = true;
 
 			Player owner = Main.player[Projectile.owner];
-			Vector2 aim = Main.MouseWorld - owner.MountedCenter;
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 			if (aim.LengthSquared() < 1f)
 				aim = new Vector2(owner.direction, 0f);
 			aim.Normalize();
@@ -104,8 +104,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool ShouldUpdatePosition() => false;
 
-		public override void OnSpawn(IEntitySource source)
+		public override void OnSpawn(IEntitySource source) => EnsureSpike();
+
+		private void EnsureSpike()
 		{
+			if (_reach > 1f)
+				return;
 			Main.instance.LoadProjectile(ProjectileID.Boulder);
 			Player owner = Main.player[Projectile.owner];
 			_dir = Projectile.velocity.LengthSquared() > 0.01f
@@ -113,12 +117,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				: new Vector2(owner.direction, 0f);
 			float mul = Projectile.ai[1] > 0.1f ? Projectile.ai[1] : 1f;
 			_reach = BaseReach * mul;
-			Projectile.velocity = Vector2.Zero;
 			Projectile.knockBack = Math.Max(12f, Projectile.knockBack);
+			// 方向留在 velocity 里给旁观端读；ShouldUpdatePosition=false 不会飞走。
 		}
 
 		public override void AI()
 		{
+			EnsureSpike();
 			Player owner = Main.player[Projectile.owner];
 			if (!owner.active)
 			{
@@ -135,6 +140,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
+			EnsureSpike();
 			Player owner = Main.player[Projectile.owner];
 			Vector2 origin = owner.MountedCenter;
 			Vector2 tip = origin + _dir * _reach;
@@ -179,6 +185,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
+			EnsureSpike();
 			Player owner = Main.player[Projectile.owner];
 			float age = Lifetime - Projectile.timeLeft;
 			float jab = MathHelper.Clamp(age / 5f, 0f, 1f);
@@ -279,7 +286,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (!_aimLocked)
 			{
 				_aimLocked = true;
-				_aim = Main.MouseWorld - owner.MountedCenter;
+				_aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_aim.LengthSquared() < 1f)
 					_aim = new Vector2(owner.direction, 0f);
 				_aim.Normalize();

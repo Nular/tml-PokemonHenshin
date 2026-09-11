@@ -352,15 +352,15 @@ namespace PokemonHenshin.Content.Accessories
 					Boss(NPCID.Golem)
 				}),
 
-			Fam(AccFamilyId.A11, "A11SpellTagCloth", "诅咒之符", "Spell Tag", "Bag 诅咒之符 SV Sprite.png", 6, 9, PokemonType.Ghost,
-				s1: new[] { F(AccStat.TilePierceBolt) },
-				s2: new[] { F(AccStat.TilePierceSpread) },
-				s3: new[] { F(AccStat.TilePierceBarrage) },
-				s4: new[] { F(AccStat.TilePierceDoTBind) },
-				s5: new[] { F(AccStat.TilePierceBeam) },
-				s6: new[] { S(AccStat.PenetrateAdd, 1f) },
-				normal: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam) },
-				super: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam), S(AccStat.PenetrateAdd, 1f) },
+			Fam(AccFamilyId.A11, "A11SpellTagCloth", "诅咒之符", "Spell Tag", "Bag 诅咒之符 SV Sprite.png", 6, 9, PokemonType.None,
+				s1: new[] { F(AccStat.TilePierceBolt), S(AccStat.CursedInfernoSec, 3f) },
+				s2: new[] { F(AccStat.TilePierceSpread), S(AccStat.CursedInfernoSec, 3f) },
+				s3: new[] { F(AccStat.TilePierceBarrage), S(AccStat.CursedInfernoSec, 3f) },
+				s4: new[] { F(AccStat.TilePierceDoTBind), S(AccStat.CursedInfernoSec, 3f) },
+				s5: new[] { F(AccStat.TilePierceBeam), S(AccStat.CursedInfernoSec, 3f) },
+				s6: new[] { S(AccStat.PenetrateAdd, 1f), S(AccStat.CursedInfernoSec, 3f) },
+				normal: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam), S(AccStat.CursedInfernoSec, 5f) },
+				super: new[] { F(AccStat.TilePierceBolt), F(AccStat.TilePierceSpread), F(AccStat.TilePierceBarrage), F(AccStat.TilePierceDoTBind), F(AccStat.TilePierceBeam), S(AccStat.PenetrateAdd, 1f), F(AccStat.CursedInfernoImmune) },
 				loot: new[]
 				{
 					Craft(TileID.MythrilAnvil, (ItemID.SoulofNight, 5), (ItemID.RottenChunk, 10)),

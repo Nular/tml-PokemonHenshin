@@ -1,6 +1,6 @@
 namespace PokemonHenshin.Content.Core
 {
-	/// <summary>招式交付类型。饰品按集合过滤（广角镜不含 Beam）。</summary>
+	/// <summary>招式交付类型。广角镜追踪不含 Beam / Field；诅咒符穿墙另加 Beam、不含 Field。</summary>
 	public enum MoveDelivery : byte
 	{
 		None = 0,
@@ -24,7 +24,7 @@ namespace PokemonHenshin.Content.Core
 			d is MoveDelivery.Bolt or MoveDelivery.Spread or MoveDelivery.Barrage or MoveDelivery.DoTBind;
 
 		public static bool TilePierceEligible(MoveDelivery d) =>
-			HomingEligible(d) || d == MoveDelivery.Beam;
+			HomingEligible(d) || d is MoveDelivery.Beam;
 
 		public static bool MeleeShort(MoveDelivery d) =>
 			d is MoveDelivery.MeleeArc or MoveDelivery.Lunge or MoveDelivery.StrikeFall;

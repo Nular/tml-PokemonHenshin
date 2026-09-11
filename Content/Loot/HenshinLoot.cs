@@ -1,12 +1,35 @@
+using PokemonHenshin.Content.Items.Consumables;
 using PokemonHenshin.Content.Items.Forms;
 using Terraria;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Loot
 {
 	public sealed class HenshinRecipes : ModSystem
 	{
+		public override void AddRecipeGroups()
+		{
+			var group = new RecipeGroup(
+				() => Language.GetTextValue("Mods.PokemonHenshin.Recipes.AnyGoldCritter"),
+				ItemID.GoldBird,
+				ItemID.GoldBunny,
+				ItemID.GoldButterfly,
+				ItemID.GoldDragonfly,
+				ItemID.GoldFrog,
+				ItemID.GoldGoldfish,
+				ItemID.GoldGrasshopper,
+				ItemID.GoldLadyBug,
+				ItemID.GoldMouse,
+				ItemID.GoldSeahorse,
+				ItemID.GoldWaterStrider,
+				ItemID.GoldWorm,
+				ItemID.SquirrelGold,
+				ItemID.GoldenCarp);
+			RecipeGroup.RegisterGroup(RareCandy.GoldCritterGroup, group);
+		}
+
 		public override void AddRecipes()
 		{
 			Recipe.Create(ModContent.ItemType<DiglettForce>())

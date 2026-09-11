@@ -19,9 +19,9 @@ description: >-
 | 权威                               | 管什么                                                  |
 | -------------------------------- | ---------------------------------------------------- |
 | `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP；广角镜索敌） |
-| `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量、MoveRefRate |
+| `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量、MoveRefRate；世界档只挡获取 |
 | `docs/move-effects.md`           | 招式玩法语义 / 接线状态                                        |
-| `docs/fx-knowledge.md`           | FX cookbook、本模已用手法、贴图与踩坑                             |
+| `docs/fx-knowledge.md`           | FX cookbook、贴图踩坑、**联机视觉/指向检验清单**                 |
 | `AGENTS.md`                      | 构建、目录、硬约束入口                                          |
 | `.cursor/rules/tml-api-docs.mdc` | **全局 alwaysApply**：tModLoader stable API（类表入口见下）     |
 
@@ -75,7 +75,8 @@ description: >-
 - **MagicPixel 可用**：合法工具。失控的通天 `scale`/无界拉伸会造成白屏或黑条——用 destination 矩形、封顶宽高，或 SoftGlow 密叠等可控画法。失败案例不等于禁用工具。
 - **大贴图按世界直径缩放**：如 `DiffusionCircle`（360px）用「目标直径 / 贴图边长」，禁止凭感觉裸 `scale`。
 - **Sheet 按帧采**：`Fire` / `Flashimpact` / `HitJagged01` 禁止整表当一帧画。
-- **生成点**：`NewProjectile` 坐标是左上角；大 hitbox 事后设 `Center`（含 `SpawnAtMouse`）。
+- **生成点**：`NewProjectile` 坐标是左上角；大 hitbox 事后设 `Center` 到主人鼠标（`GetMouseWorld` / `SpawnAtMouse`）。
+- **联机**：指向用 `OwnerMouseWorld`，不读本机 `Main.MouseWorld`；绘制身份从已同步字段 `Ensure*`，不把私有字段只写在 `OnSpawn`。清单见 `docs/fx-knowledge.md`。
 
 ## 红线（写死）
 
@@ -84,6 +85,7 @@ description: >-
 3. **禁止生成灾厄弹**当本模伤害载体（进度反射除外，见 AGENTS）。
 4. **壳弹贴图必须 `LoadProjectile`**（或等价 Request），勿赌玩家先用过原版武器。
 5. **玩法数值冲突以 `requirements` / `balance-stats` / `move-effects` 为准**；本 Skill 不另立第二套数值表。禁止只做特效而忽视充能与同档 DPS 窗；MoveRefRate 是参考，允许按风险/命中难度合理偏离。
+6. **联机视觉过 `docs/fx-knowledge.md`「联机视觉/指向」清单**；射弹禁止裸 `Main.MouseWorld`；贴图/方向/锚点禁止只写在 `OnSpawn`。
 
 ## 实现落点（启发，非强制结构）
 
@@ -94,4 +96,5 @@ description: >-
 - **主观**：对照开工前用户确认的「最终预期效果」描述。
 - **数值**：MoveRefRate / 充能手感符合 `balance-stats`；同档 DPS 窗见 requirements §2.6。
 - **客观习惯**：游戏运行中 → 游戏内 Build + Reload（TML003）；大招默认 Mouse3。
+- **联机**：改指向/壳弹/导演弹后，单机验收不等于双端通过；对照 fx-knowledge 清单。
 

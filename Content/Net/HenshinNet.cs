@@ -1,7 +1,10 @@
+using System;
 using System.IO;
+using Microsoft.Xna.Framework;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Evolution;
+using PokemonHenshin.Content.Items.Consumables;
 using PokemonHenshin.Content.PlayerState;
 using PokemonHenshin.Content.TerrainEdit;
 using PokemonHenshin.Content.WeatherField;
@@ -20,7 +23,11 @@ namespace PokemonHenshin.Content.Net
 		SyncPhasing = 4,
 		SyncWeatherField = 5,
 		TerrainBudgetReject = 6,
-		SyncEnergy = 7
+		SyncEnergy = 7,
+		RequestRareCandy = 8,
+		ApplyForceProgress = 9,
+		/// <summary>变身时同步主人鼠标世界坐标，供旁观端画鞭/束等指向效果。</summary>
+		SyncAim = 10
 	}
 
 	/// <summary>单入口网络层。形态同步遵循服务端权威。</summary>
@@ -132,6 +139,57 @@ namespace PokemonHenshin.Content.Net
 			packet.Send(playerId);
 		}
 
+		/// <summary>客户端请求对物品栏第一格之力使用神奇糖果。单机走本地。</summary>
+		public static void RequestRareCandy()
+		{
+			if (Main.netMode == NetmodeID.MultiplayerClient)
+			{
+				NewPacket(NetOp.RequestRareCandy).Send();
+				return;
+			}
+
+			if (!RareCandy.TryApply(Main.LocalPlayer, out _, out _, out int gained, out HenshinForceItem force))
+				return;
+			RareCandy.NotifyLocal(Main.LocalPlayer, force, gained);
+		}
+
+		/// <summary>
+		/// 同步瞄准点。客户端只发给服务器；服务器广播（<paramref name="fromWho"/> 为忽略端）。
+		/// Listen 主机的本地玩家由调用方直接广播，不经客户端包。
+		/// </summary>
+		public static void SendAim(HenshinPlayer mp, int toWho = -1, int fromWho = -1)
+		{
+			if (Main.netMode == NetmodeID.SinglePlayer)
+				return;
+
+			Vector2 mouse = mp.SerializeAimWorld();
+			ModPacket packet = NewPacket(NetOp.SyncAim);
+			packet.Write((byte)mp.Player.whoAmI);
+			packet.Write(mouse.X);
+			packet.Write(mouse.Y);
+
+			if (Main.netMode == NetmodeID.MultiplayerClient)
+			{
+				packet.Send();
+				return;
+			}
+
+			packet.Send(toWho, fromWho);
+		}
+
+		public static void SendForceProgress(int playerId, int slot, int level, int xp, int levelsGained)
+		{
+			if (Main.netMode != NetmodeID.Server)
+				return;
+			ModPacket packet = NewPacket(NetOp.ApplyForceProgress);
+			packet.Write((byte)playerId);
+			packet.Write((short)slot);
+			packet.Write(level);
+			packet.Write(xp);
+			packet.Write((byte)System.Math.Clamp(levelsGained, 0, 255));
+			packet.Send(playerId);
+		}
+
 		public static void Handle(BinaryReader reader, int whoAmI)
 		{
 			NetOp op = (NetOp)reader.ReadByte();
@@ -157,6 +215,15 @@ namespace PokemonHenshin.Content.Net
 					break;
 				case NetOp.SyncEnergy:
 					HandleSyncEnergy(reader, whoAmI);
+					break;
+				case NetOp.RequestRareCandy:
+					HandleRequestRareCandy(whoAmI);
+					break;
+				case NetOp.ApplyForceProgress:
+					HandleApplyForceProgress(reader, whoAmI);
+					break;
+				case NetOp.SyncAim:
+					HandleSyncAim(reader, whoAmI);
 					break;
 				default:
 					PokemonHenshinMod.Instance.Logger.Warn($"未知 NetOp {(byte)op}，来自 {whoAmI}");
@@ -365,7 +432,11 @@ namespace PokemonHenshin.Content.Net
 					return;
 				mp.ApplyServerEnergy(energy);
 				if (level >= HenshinStatService.MinLevel && player.HeldItem?.ModItem is HenshinForceItem owned)
-					owned.SetProgress(level, xp);
+				{
+					int lv = Math.Max(owned.Level, level);
+					int x = lv > owned.Level ? xp : Math.Max(owned.Xp, xp);
+					owned.SetProgress(lv, x);
+				}
 				SendEnergy(mp, -1, whoAmI);
 				return;
 			}
@@ -373,6 +444,77 @@ namespace PokemonHenshin.Content.Net
 			mp.ApplyServerEnergy(energy);
 			if (player.whoAmI != Main.myPlayer && player.HeldItem?.ModItem is HenshinForceItem remoteForce)
 				remoteForce.SetProgress(level, xp);
+		}
+
+		private static void HandleRequestRareCandy(int whoAmI)
+		{
+			if (Main.netMode != NetmodeID.Server)
+				return;
+			if (whoAmI < 0 || whoAmI >= Main.maxPlayers)
+				return;
+			Player player = Main.player[whoAmI];
+			if (player == null || !player.active)
+				return;
+			if (!RareCandy.TryApply(player, out int level, out int xp, out int gained, out _))
+				return;
+			SendForceProgress(whoAmI, RareCandy.TargetSlot, level, xp, gained);
+		}
+
+		private static void HandleSyncAim(BinaryReader reader, int whoAmI)
+		{
+			int playerIndex = reader.ReadByte();
+			float x = reader.ReadSingle();
+			float y = reader.ReadSingle();
+			if (playerIndex < 0 || playerIndex >= Main.maxPlayers)
+				return;
+			Player player = Main.player[playerIndex];
+			if (player == null || !player.active)
+				return;
+			if (!float.IsFinite(x) || !float.IsFinite(y))
+				return;
+
+			x = MathHelper.Clamp(x, 0f, Main.maxTilesX * 16f);
+			y = MathHelper.Clamp(y, 0f, Main.maxTilesY * 16f);
+			Vector2 mouse = new(x, y);
+
+			if (Main.netMode == NetmodeID.Server)
+			{
+				if (playerIndex != whoAmI)
+					return;
+				player.GetModPlayer<HenshinPlayer>().ApplyRemoteAim(mouse);
+				ModPacket relay = NewPacket(NetOp.SyncAim);
+				relay.Write((byte)playerIndex);
+				relay.Write(x);
+				relay.Write(y);
+				relay.Send(-1, whoAmI);
+				return;
+			}
+
+			if (playerIndex == Main.myPlayer)
+				return;
+			player.GetModPlayer<HenshinPlayer>().ApplyRemoteAim(mouse);
+		}
+
+		private static void HandleApplyForceProgress(BinaryReader reader, int whoAmI)
+		{
+			if (Main.netMode != NetmodeID.MultiplayerClient)
+				return;
+
+			int playerIndex = reader.ReadByte();
+			short slot = reader.ReadInt16();
+			int level = reader.ReadInt32();
+			int xp = reader.ReadInt32();
+			int gained = reader.ReadByte();
+			if (playerIndex != Main.myPlayer)
+				return;
+			if (slot < 0 || slot >= Main.LocalPlayer.inventory.Length)
+				return;
+
+			Item item = Main.LocalPlayer.inventory[slot];
+			if (item?.ModItem is not HenshinForceItem force)
+				return;
+			force.SetProgress(level, xp);
+			RareCandy.NotifyLocal(Main.LocalPlayer, force, gained);
 		}
 	}
 }

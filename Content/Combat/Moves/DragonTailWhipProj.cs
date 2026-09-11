@@ -62,7 +62,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Main.instance.LoadProjectile(ProjectileID.StardustDragon3);
 				Main.instance.LoadProjectile(ProjectileID.StardustDragon4);
 
-				_aim = Main.MouseWorld - owner.MountedCenter;
+				_aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_aim.LengthSquared() < 1f)
 					_aim = new Vector2(owner.direction, 0f);
 				_aim.Normalize();

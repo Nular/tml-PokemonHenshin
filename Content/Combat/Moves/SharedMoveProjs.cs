@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
+using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.Audio;
 using Terraria.GameContent;
@@ -22,6 +23,27 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		/// <summary>广角镜锁上后欧氏距离超过索敌半径该倍数则断锁。</summary>
 		public const float HomingLockBreakMul = 2f;
+
+		/// <summary>
+		/// 招式主人的瞄准世界坐标。本地读 <c>Main.MouseWorld</c>；
+		/// 联机旁观/服务器读 <c>NetOp.SyncAim</c>（对齐大修 HalibutPlayer.MouseWorld，无 InnoVault）。
+		/// 射弹 AI/绘制禁止直接用 <c>Main.MouseWorld</c>，否则别人的鞭/束会跟着旁观者指针。
+		/// </summary>
+		public static Vector2 OwnerMouseWorld(Player owner)
+			=> HenshinPlayer.GetMouseWorld(owner);
+
+		public static Vector2 OwnerMouseWorld(Projectile proj)
+			=> HenshinPlayer.GetMouseWorld(Main.player[proj.owner]);
+
+		/// <summary>指向主人鼠标的单位向量；过近时用玩家朝向。</summary>
+		public static Vector2 OwnerAimDir(Player owner, Vector2 from)
+		{
+			Vector2 aim = OwnerMouseWorld(owner) - from;
+			if (aim.LengthSquared() < 1f)
+				return new Vector2(owner != null ? owner.direction : 1, 0f);
+			aim.Normalize();
+			return aim;
+		}
 
 		public static bool InForwardCone(Vector2 aim, Vector2 toTarget, float minDot)
 		{
@@ -336,7 +358,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 1;
 			Projectile.timeLeft = 90;
-			Projectile.tileCollide = false;
+			Projectile.tileCollide = true;
 			Projectile.light = 0.6f;
 		}
 
@@ -670,7 +692,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Kill();
 				return;
 			}
-			Projectile.Center = p.MountedCenter + Vector2.Normalize(Main.MouseWorld - p.MountedCenter) * 32f;
+			Projectile.Center = p.MountedCenter + HenshinProjUtil.OwnerAimDir(p, p.MountedCenter) * 32f;
 			if (Projectile.owner == Main.myPlayer && Projectile.timeLeft == 7)
 			{
 				int tx = (int)(Projectile.Center.X / 16f);
@@ -744,7 +766,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - p.Center;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();
@@ -831,7 +853,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			if (Projectile.ai[0] == 0f && Projectile.owner == Main.myPlayer)
 			{
-				Projectile.Center = Main.MouseWorld;
+				Projectile.Center = HenshinProjUtil.OwnerMouseWorld(Projectile);
 				Projectile.ai[0] = 1f;
 				Projectile.netUpdate = true;
 			}
@@ -929,7 +951,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - p.Center;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
 				if (_dir == Vector2.Zero)
 					_dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();

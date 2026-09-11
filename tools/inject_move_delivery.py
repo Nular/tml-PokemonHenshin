@@ -83,7 +83,7 @@ DELIVERY = {
 	"SkyAttack": "AoEBurst",
 	"PetalDance": "Field",
 	"HurricaneField": "Field",
-	"WeatherPainHurricane": "Field",
+	"WeatherPainHurricane": "Barrage",
 	"Field": "Field",
 	"Sleep": "Field",
 	"HypnosisUlt": "Field",

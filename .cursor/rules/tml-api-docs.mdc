@@ -10,4 +10,4 @@ alwaysApply: true
 - **类表导航（入口）：** https://docs.tmodloader.net/docs/stable/annotated.html  
 - 从类表点进**当前用到的**具体类页（同目录下如 `class_mod_projectile.html`、`class_projectile.html`、`class_mod_item.html`、`class_mod_player.html`）。有目的查阅，勿整表灌进上下文。
 
-招式/特效迭代另见项目 Skill `.cursor/skills/henshin-moves`（语义确认门 + 其它外链）。
+招式/特效迭代另见项目 Skill `.cursor/skills/henshin-moves`（语义确认门 + 其它外链）。联机：`ModProjectile.OnSpawn` 只在 `NewProjectile` 端调用；瞄准勿用本机 `Main.MouseWorld`（清单 `docs/fx-knowledge.md`）。

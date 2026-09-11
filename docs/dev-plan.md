@@ -3,8 +3,8 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.11**（数值表 `docs/balance-stats.md`） |
-| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
+| 对齐需求 | `docs/requirements.md` **v1.4.19**（数值表 `docs/balance-stats.md`） |
+| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**（获取硬顶，不截存档）。变身地图头像已接线。`SyncAim` / 壳弹旁观端贴图重建已接线（双端验收 pending）。DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -86,24 +86,26 @@ PokemonHenshin/                # 仓库根 = 模组根
   build.txt                    # modReferences = CalamityMod；buildIgnore 含 docs、tools、*.md…
   description.txt / description_workshop.txt / icon.png
   PokemonHenshinMod.cs
-  Localization/                # en-US / zh-Hans hjson（特殊字符须引号或 ''' 多行）
+  Localization/                # en-US / zh-Hans hjson；值以 `{`/`[` 开头必须双引号，否则模组加载失败
   Assets/
     Forms/                     # 36 形态精灵图，按 FormId 命名
     Accessories/               # A01–A28：`Axx` / `_Super` / `_Shard` 64×64（非 FX）
+    Items/                     # RareCandy.png
+    Fx/                        # CWR 拷贝贴图（无运行时依赖）
   Content/
     Core/                      # FormDefinition、FormRegistry、MoveSpec、ProgressStage、CalamityProgressAdapter
     Damage/                    # HenshinDamage
     PlayerState/               # HenshinPlayer、StarterGrantPlayer
-    Visual/                    # HenshinOverlayLayer
+    Visual/                    # Overlay、能量条、XP 字、属性面板
     Combat/                    # HenshinForceItem；Moves/
     Affinity/                  # ConditionEvaluator、TypePassiveApplier
     Evolution/                 # EvolutionService、确认 UI
-    Accessories/               # HenshinAccessoryItem 基类
+    Accessories/               # HenshinAccItem + Catalog（无独立 Items/Accessories）
     Items/Forms/               # 36 形态物品（StarterLines / CombatLinesA / UtilityAndLegend）
-    Items/Accessories/         # A01–A28 碎片/普通/超级
-    WeatherField/              # 天气场
+    Items/Consumables/         # RareCandy
+    WeatherField/              # 天气场（无形态调用，见需求 §12.1）
     TerrainEdit/               # 挖掘预算
-    Loot/                      # Boss 掉落 + 合成
+    Loot/                      # 之力/碎片/糖果掉落 + 合成
     Net/                       # HenshinNet + NetOp
 ```
 
@@ -142,7 +144,7 @@ sortAfter = CalamityMod
 
 - 单入口 `PokemonHenshinMod.HandlePacket` + `NetOp : byte` 枚举
 - **不要**照搬按类型全名自动编号（小模组用显式枚举更稳、可读）
-- 最小包（需求 §8）：`SyncForm`、`SyncPhasing`、`SyncWeatherField`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`
+- 最小包（需求 §8）：`SyncForm`、`SyncPhasing`、`SyncWeatherField`、`RequestEvolve` / `ApplyEvolve`、`TerrainBudgetReject`、`RequestRareCandy` / `ApplyForceProgress`、`SyncAim`（变身时主人鼠标；对齐大修 `HalibutPlayer.MouseWorld`，无 InnoVault）
 
 ---
 
@@ -247,7 +249,7 @@ sortAfter = CalamityMod
 | 进化确认 UI | 无对应；建议简易 `UIState` 确认框 + 仅服务端 Apply |
 | 穿障卡墙安全传送 | 无完美对应；建议结束时 `Collision.SolidCollision` 检测，螺旋搜最近空位，失败则短定身 |
 | 地形砖/分预算与临时还原 | 无预算系统；建议 `TerrainBudgetPlayer` 计数器 + 临时 Tile 倒计时列表 |
-| 开局发三件御三家 | 近似 `ArbiterManifestationNet` 发物；建议 `ModPlayer.OnEnterWorld` + 世界/玩家 flag 防重复 |
+| 开局发三件御三家 | 角色档 `starterGranted`；建角 `AddStartingItems`；旧档 `PostUpdateMiscEffects` + `GetItem` 入包。禁止 `OnEnterWorld`（仅本地客户端） |
 
 ---
 
@@ -301,6 +303,7 @@ class HenshinDamage : DamageClass
 - 读 `HenshinPlayer.FormId` + 动画状态（Idle/Move/Jump/MoveA/MoveB）。
 - 隐身：`drawInfo.shadow` / 原版 invis 规则；其他玩家可见相同 FormId（靠 SyncForm）。
 - 退出同 tick：`FormId=0` → Layer 不可见。
+- **地图头像：** `HenshinMapHeadLayer`（`IsHeadLayer`）把全身图缩进原版 84×84 头像 RT；`HideDrawLayers` 按 `headOnlyRender` 只留 Overlay 或该层。虫洞药水不另写点击。
 
 ### 4.4 FormDefinition 数据驱动
 
@@ -409,7 +412,7 @@ TryEditTile(player, action) →
 
 #### M0.5 Overlay
 
-- [x] `Visual/HenshinOverlayLayer.cs`（`AfterLastVanillaLayer`，脚底锚点，按朝向翻转）+ `HenshinPlayer.HideDrawLayers` 隐藏除本层外的全部层
+- [x] `Visual/HenshinOverlayLayer.cs`（`AfterLastVanillaLayer`，脚底锚点，按朝向翻转）+ `HenshinPlayer.HideDrawLayers`：世界只留 Overlay，地图头像只留 `HenshinMapHeadLayer`
 - [x] 退出无残留
 - **验收：** 本地可见贴图、取消持握立刻消失 —— 通过
 
@@ -436,6 +439,7 @@ TryEditTile(player, action) →
 | 出现第二只镜像宝可梦 | **WeaponDisplay** 在 `ModPlayer.ModifyDrawInfo` 直接把手持物品贴图塞进 `DrawDataCache`，绕过层系统（原版 `HeldItem` 与 WeaponOut 走层，能被 `HideDrawLayers` 隐藏） | `HenshinOverlayLayer.Draw` 先移除 `DrawDataCache` 中引用形态贴图 / 物品贴图的条目再画自己 |
 | `Hide()` 对 `HeldItem` / `FrontAccFront` 的注意点 | 这两个 `Multiple` 层在 `DrawOrder` 里被包成 `PlayerDrawLayerSlot`，原层挂为 slot 的子层；对 `Layers` 中原层 `Hide()` 有效（子层不可见即不画） | 隐藏原皮遍历 `PlayerDrawLayerLoader.Layers` 即可，无需碰 `DrawOrder` |
 | 绘制坐标 | 原版各层直接用 `drawInfo.Position`，不再加 `gfxOffY` | Overlay 亦不加 `gfxOffY` |
+| 变身后地图无头像 | `HideDrawLayers` 连原版 `Head` 一起藏；Overlay 不是 `IsHeadLayer`，`MapHeadRenderer` 84×84 RT 为空。虫洞药水点的是原版头像坐标，不能改用 `ModMapLayer` 顶替 | `HenshinMapHeadLayer`：`IsHeadLayer`、顶层 `AfterLastVanillaLayer`（勿 `AfterParent(Head)`）；`headOnlyRender` 时只留该层；全身图按最长边缩到 60px |
 
 ---
 
@@ -467,8 +471,8 @@ TryEditTile(player, action) →
 
 #### M1.5 开局御三家
 
-- [x] `PlayerState/StarterGrantPlayer.cs`
-- **验收：** **待游戏内 A1**
+- [x] `PlayerState/StarterGrantPlayer.cs`（`AddStartingItems` + `PostUpdateMiscEffects` 补发；非 `OnEnterWorld`）
+- **验收：** 进世界发放已本地确认（2026-09-11）
 
 **M1 总验收：** 待用户 A1。
 
@@ -569,11 +573,13 @@ TryEditTile(player, action) →
 | N8 | 穿障中 | 双方见状态；结束卡墙安全处理不desync |
 | N9 | 挖掘超预算 | 发起方收到 Reject；世界砖未改 |
 | N10 | 高延迟下快速切物品 | 最终形态与热键栏选中一致（服务端权威） |
+| N11 | 双方变身看小地图/全屏地图；虫洞药水点队友 | 双方头像为缩小形态图；点队友可传送并耗药 |
+| N12 | 客户端持握妙蛙种子对指针甩藤鞭；主机在另一方向看 | 主机看到鞭指向**释放者**鼠标，不跟主机指针；伤害仍在释放者端结算 |
 
 ### 7.3 回归节奏
 
 - 每完成 M0/M1/M3 网同步相关任务跑 N1～N4
-- M1 加 N5～N6；M3 加 N7～N9；M5 全跑 + N10
+- M1 加 N5～N6；M3 加 N7～N9；M5 全跑 + N10～N12
 
 ---
 
@@ -648,8 +654,8 @@ TryEditTile(player, action) →
 |------|------|
 | 与 requirements **v1.4** 对齐 | **规则层通过**；**代码已接线**等级/Xp/`StageXpScale`/`FinalAttack`/`FinalDefense`/能量 1000/进化双条件/世界字（DPS 与弹出验收待本地） |
 | 大修借鉴真实性 | **通过**：路径已核对；特效只学实现、不引运行时依赖 |
-| 主要残留风险 | ① 联机双端实测 pending；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
-| 总评 | **v1.4 数值已接线**；下一步联机与 DPS 抽检 |
+| 主要残留风险 | ① 联机双端验收 pending（瞄准/壳弹**代码已接线**；地图头像/虫洞/能量XP 未双端签收）；② Rage/肾上腺素是否计入；③ 招式观感受「无新 FX 图」约束；④ DPS 未精抽检 |
+| 总评 | **v1.4 数值已接线**（获取硬顶）；联机视觉代码已接线。下一步双端实测与 DPS 抽检 |
 
 ---
 
@@ -675,5 +681,11 @@ TryEditTile(player, action) →
 | **1.4.5** | 洁癖：M3 误标（水箭龟雨场 / 鬼斯通穿障）改为管线现状；对齐 requirements v1.4.5 |
 | **1.4.6** | 洁癖：页眉/M3/总评对齐 requirements v1.4.6；未接线集中到 §12.1 |
 | **1.4.8** | 洁癖：页眉/目标/管线对齐 A28 与 requirements v1.4.8；龙波碎片能量见需求 §2.5 |
-| **1.4.9** | 洁癖：页眉对齐 requirements v1.4.9（广角镜菱形索敌）；施工图 `HomingAI 不变` 已废 |
-| **1.4.11** | 页眉对齐 requirements v1.4.11：广角镜圆形索敌；招式自带追踪不叠广角镜 |
+| **1.4.10** | 广角镜菱形索敌：碎片 8 / 成品 16 / 超级 32 格；新锁 60° 半角；锁死后可掉头，断锁 2×。洁癖：施工图 `HomingAI 不变` 已废；入口指向需求 §6 |
+| **1.4.11** | 神奇糖果：合成/使用/Boss 5%；`RequestRareCandy` / `ApplyForceProgress` |
+| **1.4.12** | 洁癖：目录树对齐 Consumables / AccItem；NetOp 指针不再指向 §12.1 |
+| **1.4.15** | 对齐 requirements v1.4.15：御三家发放钩子、属性面板下移 64px、HJSON `{` 引号 |
+| **1.4.16** | 变身地图头像：`HenshinMapHeadLayer` + `HideDrawLayers` 分 `headOnlyRender`；N11 虫洞药水 |
+| **1.4.17** | 对齐 requirements v1.4.17：`SyncAim` / `Ensure*` 已接线；N10 恢复、藤鞭为 N12；双端验收 pending |
+| **1.4.18** | 对齐 requirements v1.4.18：世界档只挡获取；不 Truncate 写回；卡顶不飘 EXP |
+| **1.4.19** | 广角镜圆形索敌（仍 8/16/32）；招式自带追踪不叠广角镜 |

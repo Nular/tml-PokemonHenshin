@@ -46,7 +46,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			count = Math.Clamp(count, 1, 16);
 			bool pierceTiles = Projectile.ai[1] > 0.5f;
 
-			Vector2 mouse = Main.MouseWorld;
+			Vector2 mouse = HenshinProjUtil.OwnerMouseWorld(Projectile);
 			int boltDmg = Math.Max(1, Projectile.damage);
 			for (int i = 0; i < count; i++)
 			{
@@ -213,7 +213,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 
 			if (marked > 0)
-				SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.75f, Pitch = -0.1f }, Main.MouseWorld);
+				SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.75f, Pitch = -0.1f }, HenshinProjUtil.OwnerMouseWorld(Projectile));
 			Projectile.Kill();
 		}
 
@@ -456,7 +456,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				Main.instance.LoadProjectile(ProjectileID.BoxingGlove);
-				_dir = Main.MouseWorld - owner.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();

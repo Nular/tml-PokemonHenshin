@@ -10,8 +10,28 @@ namespace PokemonHenshin.Content.Core
 	{
 		public static int GetProgressStage()
 		{
-			CalamityProgressAdapter.EnsureInit();
+			uint tick = Main.GameUpdateCount;
+			if (cachedTick == tick && cachedStage > 0)
+				return cachedStage;
 
+			CalamityProgressAdapter.EnsureInit();
+			int stage = ComputeProgressStage();
+			cachedStage = stage;
+			cachedTick = tick;
+			return stage;
+		}
+
+		public static void InvalidateCache()
+		{
+			cachedTick = uint.MaxValue;
+			cachedStage = 0;
+		}
+
+		private static int cachedStage;
+		private static uint cachedTick = uint.MaxValue;
+
+		private static int ComputeProgressStage()
+		{
 			if (Meets12()) return 12;
 			if (Meets11()) return 11;
 			if (Meets10()) return 10;
@@ -96,5 +116,7 @@ namespace PokemonHenshin.Content.Core
 	{
 		public override void Load() => CalamityProgressAdapter.EnsureInit();
 		public override void Unload() => CalamityProgressAdapter.Unload();
+		public override void OnWorldLoad() => ProgressStageService.InvalidateCache();
+		public override void OnWorldUnload() => ProgressStageService.InvalidateCache();
 	}
 }

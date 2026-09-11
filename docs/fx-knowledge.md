@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-10
+**版本日期：** 2026-09-11
 
 ## 1. 权威与硬约束
 
@@ -18,7 +18,7 @@
 1. **禁止 CWR 运行时依赖**（`build.txt` 不得 `modReferences` 大修；禁止 `GetMod("CalamityOverhaul")`）。
 2. **允许**把 CWR 贴图**拷贝**进本模 `Assets/Fx/`（见 §7；2026-09-06 已扩拷一批）。
 3. **禁止擅自降级：** 跳过原版自管 AI 只留爆炸、`BlendState.Additive` + `color.A = 0`「假发光」、纯尘冒充成品等，未经用户确认不得当作成品。MagicPixel **可用**（须控制 destination/scale；无封顶通天拉伸易白屏，属实现错误而非禁令）。
-4. **懒加载贴图：** 壳弹只画原版图、从不 `NewProjectile` 该 type 时，必须 `Main.instance.LoadProjectile` / `ProjectileBorrow.RequestProjectileTexture`（见 Bubble 踩坑）。
+4. **懒加载贴图：** 壳弹只画原版图、从不 `NewProjectile` 该 type 时，必须 `ProjectileBorrow.SafeLoadProjectile` / `RequestProjectileTexture`（见 Bubble 踩坑）。**禁止**在 `Main.dedServ` 或 `Main.instance==null` 时调 `LoadProjectile`（listen/专用服 NRE）。
 5. **优先**原版 `NewProjectile` 真弹，或壳弹 + `LoadProjectile` 画同贴图 + 自管 AI；**禁止**生成灾厄弹。
 6. **Sprite sheet：** `Fire`（4×4）、`Flashimpact`（4×2）、`HitJagged01`（1×2）禁止整图 `DrawAdditiveCentered`；用 `HenshinFxDraw.Draw*Frame` / `SheetFrame`，帧=`AgeFrame(lifetime,timeLeft,ticksPerFrame,total)`。SoftGlow/Cyclone/Fog/DiffusionCircle/LightShot/LightBeam/TearFlame 可整图。
 
@@ -40,8 +40,9 @@
 | **文件** | `Wave2MoveProjs.cs` → `LeafSpreadProj`；`FormItemUtil.LeafSpread` |
 | **形态** | `L03_F02` 妙蛙草 Skill1 |
 | **手法** | Director 扇出 5 枚；`ProjectileBorrow.ItemShoot(ItemID.LeafBlower)` 回退 `ProjectileID.Leaf`（**206**）；`RetargetAsHenshin` |
+| **穿墙** | 真 Leaf 默认撞墙；诅咒之符 Spread 时 GlobalProjectile 继承 Delivery 并 `PostAI` 保 `tileCollide=false` |
 | **为何 Accepted** | 真生成会顺带加载贴图；与吹叶机同外观 |
-| **勿做** | 只刷 `DustID.Grass` 当成品；有伤无叶 |
+| **勿做** | 只刷 `DustID.Grass` 当成品；有伤无叶；为穿墙改成壳弹 |
 
 ### 2.2 泡沫光线 — `LoadProjectile(Bubble)` + `BorrowedVisualBoltProj`
 
@@ -50,8 +51,8 @@
 | **文件** | `RedesignedMoveProjs.cs`（`BarrageDirectorProj` ModeBubble）+ `BorrowedVisualBoltProj`；`ProjectileBorrow.cs` |
 | **形态** | `L02_F02` 卡咪龟 Skill1；杰尼龟大招等同管线 |
 | **手法** | **禁止**裸 `NewProjectile(Bubble)` 当伤害弹；壳弹 `ai` 传贴图 ID=`ProjectileID.Bubble`（**410**）；强制 `LoadProjectile(Bubble)` |
-| **踩坑** | 未用过泡泡枪时 `TextureAssets.Projectile[Bubble]` 是 1×1 占位 → 无图 |
-| **勿做** | 等玩家先用泡泡枪；用水尘线冒充泡沫束 |
+| **踩坑** | 未用过泡泡枪时 `TextureAssets.Projectile[Bubble]` 是 1×1 占位 → 无图。**联机：** `OnSpawn` 只在 `NewProjectile` 端调用；壳弹 `_texType` 若只在 OnSpawn 赋值，旁观端为 0，PreDraw 回退 `ProjectileID.Seed` → 别人的泡沫光线看起来像种子机关枪。须在 AI/PreDraw 从已同步的 `ai0` 再解析并 `SafeLoadProjectile`。专用服/`Main.instance==null` 跳过 Load。 |
+| **勿做** | 等玩家先用泡泡枪；用水尘线冒充泡沫束；把贴图身份只写在 OnSpawn 的私有字段里 |
 
 ### 2.3 龙之波动 — NebulaArcanum 壳 + 爆炸碎片
 
@@ -80,6 +81,7 @@
 |----|------|
 | **文件** | `FlareBoltUltProj`（小火龙大招）；`GroundCycloneProj`（波波起风） |
 | **贴图** | `ProjectileID.Typhoon`（**409**）；橙红 / 深蓝染色 + `LoadProjectile` |
+| **火焰漩涡** | 默认 `tileCollide`；撞实心 **停飞不 Kill**，继续转圈伤到 `timeLeft`。诅咒符 Bolt 穿墙则不停 |
 | **勿做** | 生成灾厄台风弹；Invisible hitbox 只伤 |
 
 ### 2.6 Boulder — 岩石封锁
@@ -180,7 +182,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 |------------|---------------|-----------|---------|-------------|------|--------|
 | Ember/火花 | L01_F01,1 | Bolt+OnFire | `EmberBoltProj`←BallofFire | BallofFire Shell | 可用 | Accepted |
 | Scratch/抓 | L01_F01,1 | MeleeArc | `ScratchSlashProj` | 自绘爪痕 | 平行爪 | Accepted |
-| FireSpin/火焰漩涡 | L01_F01 Ult | HomingLock | `FlareBoltUltProj` Typhoon | Typhoon Shell | 可见涡 | Accepted |
+| FireSpin/火焰漩涡 | L01_F01 Ult | HomingLock | `FlareBoltUltProj` Typhoon；**撞墙停飞不 Kill** | Typhoon Shell | 可见涡 | Accepted |
 | DragonPulse/龙之波动 | L01_F02,4 | Bolt×10 | NebulaPulse* **直线连发** | Nebula 617/620 | 紫炸 | Accepted |
 | FireFang/火焰牙 | L01_F02,4 | MeleeArc+OnFire | BiteArc **两对大弧牙**+OnFire | BiteArc cookbook | 火焰牙 | Accepted |
 | FlareBlitz/闪焰冲锋 | L01_F02,4 | Lunge+Recoil | `LungeProj` **32格** 多线火径+包裹焰+收尾减速 | 火尘残影 | 可见冲锋 | Accepted |
@@ -197,7 +199,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble **窄直线**速度随机+破裂小泡 | Bubble Load | 密泡 | Accepted |
 | Bite/咬住 | L02_F02,4 | BiteArc | `BiteArcProj` | cookbook | 尖牙 | Accepted |
 | Whirlpool/潮旋 | L02_F02 Ult | DoTBind | MouseVortex Cyclone 蓝 | Typhoon 蓝染 / `Assets/Fx/Cyclone` | 可见涡 | Implemented |
-| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中不穿透+渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
+| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中墙=怪渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
 | SkullBash/火箭头锤 | L02_F03,7 | Charge→Lunge | Lunge 长 use | — | OK | Accepted |
 | HydroCannon/加农水炮 | L02_F03 Ult | Beam | `WaterJet` cannon：穿透+每3击爆 | 同水炮加粗+流动 | 粗柱 | Accepted |
 
@@ -252,13 +254,13 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 | MoveKey/CN | Forms (Stage) | Playstyle | Current | Recommended | Feel | Status |
 |------------|---------------|-----------|---------|-------------|------|--------|
-| DragonBreath/龙息 | L07_F01,6 | Spread+Stun | **128格** Fire 帧线；禁飞散 Flames | Flames/紫火锥；`Assets/Fx/Fire` 按帧 | 火息线 | Implemented |
+| DragonBreath/龙息 | L07_F01,6 | Spread+Stun | **128格** Fire 帧线；禁飞散 Flames；**线在实心截断**（诅咒符 Spread 穿） | Flames/紫火锥；`Assets/Fx/Fire` 按帧 | 火息线 | Implemented |
 | Bite/咬住 | L07_F01,6 | BiteArc | BiteArc | cookbook | OK | Accepted |
-| DragonRage/龙之怒 | L07_F01 Ult / L15_F01 S1 | Barrage | `DragonRageBarrage` 技能12/大招32 抖动球 | SoftGlow≈1.5格（晕抬亮#2108ad/芯#e7ce39）+5格爆 | 球体连射 | Implemented |
+| DragonRage/龙之怒 | L07_F01 Ult / L15_F01 S1 | Barrage | `DragonRageBarrage` 技能12/大招32 抖动球；**技能球撞实心爆，大招仍穿墙** | SoftGlow≈1.5格（晕抬亮#2108ad/芯#e7ce39）+5格爆 | 球体连射 | Implemented |
 | DragonPulse | L07_F02,8 | Nebula×10 | NebulaPulse | cookbook | OK | Accepted |
 | DragonTail/龙尾 | L07_F02,8 | Melee | DragonTailWhip 星尘龙节链15格强击退 | StardustDragon1–4 | 鞭弧 | Accepted |
-| Hurricane/暴风 | L07_F02 Ult | Bolt+Orbit | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆 | WeatherPainShot | 大招风团 | Accepted |
-| Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Bolt+Orbit | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋） | WeatherPainShot | 天候棒 | Accepted |
+| Hurricane/暴风 | L07_F02 Ult | Barrage | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆；**默认撞实心贴地**（诅咒符 Barrage 穿墙） | WeatherPainShot | 大招风团 | Accepted |
+| Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Barrage | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋）；**默认撞实心贴地** | WeatherPainShot | 天候棒 | Accepted |
 | DragonDive/龙之俯冲 | L07_F03,11 | Lunge | StardustPathLunge 半透明星尘龙路径伤 | StardustDragon2–4 | 路径龙 | Accepted |
 | Outrage/逆鳞 | L07_F03 Ult | Barrage | 3s CultistBossFireBall 壳追踪爆+Confused | CultistBossFireBall | 身周火球 | Accepted |
 
@@ -313,6 +315,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ### 经验世界字（`HenshinXpPopupSystem`，2026-09-09）
 - `EXP +X` 钉击杀坐标；`LEVEL UP!` 跟玩家、连升连弹（错开 22 tick）。Boss 更厚描边+金白闪光。文案固定英文，不绑 buff、不绑已死 NPC。画法对齐睡眠 zzZ（`MouseText` + 描边）。
+- **已达获取硬顶或满级：不生成 `EXP +X`**（`applied==0`）；击杀能量照给。口径见需求 §4.6.2。
 - 时长约 1.5–2.2 秒（普通 EXP 90 tick / Boss 132 / 升级 108）；前 8% 淡入，45% 起渐隐到 0，到期移除（不突然消失）。
 
 ---
@@ -479,13 +482,13 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ### HydroPump / HydroCannon（水炮 / 加农水炮）— Implemented
 
-- **目标：** **粗水柱**，跟鼠标；枪口约 24 tick 渐进伸长；水炮宽 **≈1～1.5 格**（不穿透，命中渐缩）；加农 **≈2～2.5 格**（穿透，每 3 击半径 5 格水爆）。
+- **目标：** **粗水柱**，跟鼠标；枪口约 24 tick 渐进伸长；水炮宽 **≈1～1.5 格**（不穿透，**命中墙=命中怪**锁长渐缩）；加农 **≈2～2.5 格**（**仍穿墙穿怪**，每 3 击半径 5 格水爆）。诅咒符 Beam 让水炮穿墙但仍撞怪渐缩。
 - **复用：** `WaterJetProj`：`DrawContinuousBeam` + `DrawWaterFlowRipples`（流动波节）；工厂 `FormItemUtil.WaterJet`。
 - **Files：** `WaterJetProj`；Blastoise / Gyarados。
 
 ### DragonRage（龙之怒）— Implemented
 
-- **非光束：** 技能 **12** / 大招 **32** 发 SoftGlow 球体（直径 **≈1.5 格**），直线 + 垂直抖动；外晕抬亮蓝紫 + 金芯 `#e7ce39`；尘粒两色插值；命中直径 **5 格**。
+- **非光束：** 技能 **12** / 大招 **32** 发 SoftGlow 球体（直径 **≈1.5 格**），直线 + 垂直抖动；外晕抬亮蓝紫 + 金芯 `#e7ce39`；尘粒两色插值；命中直径 **5 格**。技能球撞实心即爆；**迷你龙大招仍穿墙**。诅咒符 Barrage 让技能球也穿墙。
 - **为何不用原版球弹：** 色/AI 绑死；要精确龙色 → SoftGlow 壳。
 - **Files：** `DragonRageBarrageProj` / `DragonRageOrbProj`；`FormItemUtil.DragonRage`。
 
@@ -499,7 +502,27 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 ### SpawnAtMouse 中心校正（踩坑）
 
 - `Projectile.NewProjectile(spawn,…)` 的 `spawn` 是 **左上角**。大 width/height（过热 480、流沙 256 等）会偏到鼠标右下。
-- **修正：** `HenshinForceItem.FireMove` 在 `SpawnAtMouse` 时 `Main.projectile[id].Center = Main.MouseWorld`；AI 内改尺寸须先存 `Center` 再还原。
+- **修正：** `HenshinForceItem.FireMove` 在 `SpawnAtMouse` 时把弹幕 `Center` 校正到**主人**鼠标（`HenshinPlayer.GetMouseWorld`）；AI 内改尺寸须先存 `Center` 再还原。
+
+### 联机视觉/指向（踩坑 + 检验清单）
+
+根因：**钩子在所有端跑，但读到的状态只有本机才有。** 伤害常在主人端结算所以「打人是对的」，画面按旁观者的本地默认值画。
+
+tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `SetDefaults` + 已同步的 `ai[]` / `velocity` / `Center`。大修瞄准走 InnoVault `PlayerNetwork`；本模禁止该依赖，用 `NetOp.SyncAim` + `HenshinProjUtil.OwnerMouseWorld`。UI（`Main.mouseItem`）仍用本机鼠标。
+
+| 类别 | 本机才有的状态 | 旁观端表现 | 已见例子 | 怎么写 |
+|------|----------------|------------|----------|--------|
+| **A. 本机指针** | `Main.MouseWorld`、`Main.screenPosition`（当索敌/落点） | 别人的鞭/束跟着我的鼠标 | 藤鞭、龙息、水炮 | AI/Draw/Colliding 用 `OwnerMouseWorld`；变身时 `SyncAim` |
+| **B. OnSpawn 私有字段** | `_texType` `_dir` `_anchor` `_center` `_startOff` | 默认贴图/方向/原点；或长成另一招 | 泡沫→种子；尖石短刺；岩封锁不收拢；精神击破球飘向原点 | 从 `ai[]`/`velocity`/`Center` 重建（`Ensure*`）；禁止 OnSpawn 清零 velocity 再当唯一方向源 |
+| **C. 无主端生成** | `NewProjectile` 未挡 `owner == myPlayer` | 弹数翻倍、声音叠 | 导演弹、破裂碎片 | 生成/改砖/传送只主人端 |
+| **D. 旁观端 Kill** | 用本地失败条件 `Kill()` | 我这边招式提前消失 | 精神击破导演找不到怪 | 无目标/失败只主人 `Kill` |
+| **E. 懒加载贴图** | `TextureAssets` 未 Load | 1×1 空白；专用服裸 `LoadProjectile` 会 NRE | 泡沫未用过泡泡枪；listen 服 EnsureVisuals | 绘制前 `SafeLoadProjectile` / `RequestProjectileTexture` |
+
+写招式过一遍：私有字段旁观端第一帧从哪来；有无本机鼠标/屏幕当玩法输入；生成是否只主人；`Kill` 是否本地失败条件；贴图有无 Load；默认回退会不会长成另一招。
+
+**可接受：** 尘粒 `Main.rand`、折线电形状每端略不同；主人位移靠原版弹幕包插值。
+
+**代码已接线、双端验收 pending：** `SyncAim`、壳弹 `EnsureVisuals`、尖石/岩封锁/精神击破锚点重建。
 
 ### DrawOpaqueDisk / Extra98（鬼斯通）
 
@@ -596,6 +619,12 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 1.9 Living | 2026-09-07 | Stage7+ 落地：钢尾铁罩；猛撞灰日耀；暗影抓/恶波动32；彗星拳 StarWrath；破灭自缓加粗；星尘路径俯冲/画龙点睛；逆鳞火球；64 StarWrath；空气三段；神鸟吟唱；气旋32格 |
 | 2.0 Living | 2026-09-07 | Stage7+ **Accepted**；画龙点睛改纯黑龙；气旋独立名键 `CycloneAttack`；超梦强念×6穿墙+精神击破64球 |
 | 2.1 Living | 2026-09-10 | 龙之波动 620 碎片命中能量改为碎屑 `1×Factor`；击杀不变 |
+| 2.2 Living | 2026-09-10 | 诅咒之符 + 诅咒焰；火焰漩涡停飞不 Kill；水炮墙=怪；暴风默认贴地；龙息截断；技能龙怒撞实心 |
+| 2.3 Living | 2026-09-10 | 暴风 Delivery=Barrage（不是 Field）；诅咒符穿墙不含 Field |
+| 2.4 Living | 2026-09-11 | 联机 `SyncAim`：招式指向效果读主人鼠标，禁止射弹 AI 直接 `Main.MouseWorld` |
+| 2.5 Living | 2026-09-11 | 壳弹 `BorrowedVisualBoltProj` 旁观端从 `ai0` 解析贴图；修泡沫光线联机画成种子 |
+| 2.6 Living | 2026-09-11 | 联机检验清单（与瞄准/OnSpawn 踩坑合并为单节）；尖石/岩封锁/精神击破球同样按 OnSpawn 字段重建 |
+| 2.7 Living | 2026-09-11 | `SafeLoadProjectile` 跳过专用服；卡顶不生成 `EXP +X` |
 
 ---
 

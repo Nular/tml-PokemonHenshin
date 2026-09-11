@@ -38,12 +38,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.penetrate = -1;
 		}
 
-		public override void OnSpawn(IEntitySource source)
+		public override void OnSpawn(IEntitySource source) => EnsureDirector();
+
+		private bool _directorReady;
+
+		private void EnsureDirector()
 		{
+			if (_directorReady)
+				return;
+			_directorReady = true;
+
 			_total = (int)System.Math.Max(1, Projectile.ai[1]);
 			_speed = Projectile.ai[2] > 0f ? Projectile.ai[2] : 16f;
 			Player owner = Main.player[Projectile.owner];
-			_dir = Main.MouseWorld - owner.MountedCenter;
+			_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 			if (_dir == Vector2.Zero)
 				_dir = new Vector2(owner.direction, 0f);
 			_dir.Normalize();
@@ -64,6 +72,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			EnsureDirector();
 			Player owner = Main.player[Projectile.owner];
 			if (!owner.active || owner.dead)
 			{
@@ -88,7 +97,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					Vector2 spawn;
 					if (scatter)
 					{
-						spawn = Main.MouseWorld + Main.rand.NextVector2Circular(48f, 48f);
+						spawn = HenshinProjUtil.OwnerMouseWorld(Projectile) + Main.rand.NextVector2Circular(48f, 48f);
 						vel = Main.rand.NextVector2Circular(2.5f, 2.5f);
 					}
 					else if (bubble)
@@ -133,7 +142,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				}
 			}
 
-			if (_fired >= _total)
+			if (Projectile.owner == Main.myPlayer && _fired >= _total)
 				Projectile.Kill();
 		}
 
@@ -149,6 +158,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private Color _tint = Color.White;
 		private Vector2 _baseVel;
 		private bool _popped;
+		private bool _visualsReady;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.WoodenArrowFriendly;
 
@@ -164,8 +174,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.extraUpdates = 1;
 		}
 
-		public override void OnSpawn(IEntitySource source)
+		public override void OnSpawn(IEntitySource source) => EnsureVisuals();
+
+		/// <summary>
+		/// OnSpawn 只在 NewProjectile 那一端调用；旁观端必须从已同步的 ai0 再解析贴图。
+		/// 未初始化时 PreDraw 会把 tex=0 画成种子，泡沫光线在别人屏幕上就会长成种子机关枪。
+		/// </summary>
+		private void EnsureVisuals()
 		{
+			if (_visualsReady)
+				return;
+			_visualsReady = true;
+
 			_texType = (int)Projectile.ai[0];
 			if (_texType <= 0)
 				_texType = ProjectileID.Seed;
@@ -180,11 +200,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_texType == ProjectileID.Bubble || _texType == ProjectileBorrow.ItemShoot(ItemID.BubbleGun))
 			{
 				_texType = ProjectileID.Bubble;
-				Main.instance.LoadProjectile(ProjectileID.Bubble);
-				Projectile.scale = Main.rand.NextFloat(0.85f, 1.25f);
+				ProjectileBorrow.SafeLoadProjectile(ProjectileID.Bubble);
+				Projectile.scale = 0.85f + (Projectile.identity % 9) * 0.05f;
 			}
 			else
-				Main.instance.LoadProjectile(_texType);
+				ProjectileBorrow.SafeLoadProjectile(_texType);
 
 			EasyCrit = Projectile.ai[1] > 0f;
 			Projectile.penetrate = _texType == ProjectileID.RainbowRodBullet ? 3 : 1;
@@ -203,6 +223,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			EnsureVisuals();
 			Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
 			if (_texType == ProjectileID.Seed || _texType == ProjectileID.Bubble)
 				Projectile.tileCollide = true;
@@ -279,6 +300,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
+			EnsureVisuals();
 			int drawId = _texType > 0 ? _texType : ProjectileID.Seed;
 			if (drawId == ProjectileBorrow.ItemShoot(ItemID.PrincessWeapon) || drawId <= 0)
 				drawId = ProjectileID.RainbowRodBullet;
@@ -322,8 +344,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.damage = 0;
 		}
 
-		public override void OnSpawn(IEntitySource source)
+		public override void OnSpawn(IEntitySource source) => EnsurePopVisuals();
+
+		private bool _popReady;
+
+		private void EnsurePopVisuals()
 		{
+			if (_popReady)
+				return;
+			_popReady = true;
 			Main.instance.LoadProjectile(ProjectileID.Bubble);
 			float life = Projectile.ai[1] > 1f ? Projectile.ai[1] : 14f;
 			Projectile.timeLeft = (int)life;
@@ -332,6 +361,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			EnsurePopVisuals();
 			Projectile.velocity *= 0.92f;
 			Projectile.alpha = (int)(255 * (1f - Projectile.timeLeft / (float)System.Math.Max(1, Projectile.ai[1] > 1f ? Projectile.ai[1] : 14f)));
 		}
@@ -340,6 +370,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
+			EnsurePopVisuals();
 			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.Bubble);
 			Rectangle frame = tex.Frame();
 			float fade = 1f - Projectile.alpha / 255f;
@@ -354,6 +385,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	{
 		public override bool HandlesOwnHoming => true;
 		private int _lockNpc = -1;
+		private bool _halted;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Typhoon;
 
@@ -365,7 +397,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 6;
 			Projectile.timeLeft = 240;
-			Projectile.tileCollide = false;
+			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 1;
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 12;
@@ -383,7 +415,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			Projectile.rotation += 0.25f;
-			if (_lockNpc >= 0)
+			if (_halted)
+			{
+				Projectile.velocity = Vector2.Zero;
+			}
+			else if (_lockNpc >= 0)
 			{
 				NPC n = Main.npc[_lockNpc];
 				if (!n.active || n.life <= 0)
@@ -414,9 +450,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Lighting.AddLight(Projectile.Center, 1f, 0.4f, 0.1f);
 		}
 
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			_halted = true;
+			_lockNpc = -1;
+			Projectile.velocity = Vector2.Zero;
+			return false;
+		}
+
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			if (_lockNpc < 0)
+			if (!_halted && _lockNpc < 0)
 				_lockNpc = target.whoAmI;
 			target.AddBuff(BuffID.OnFire, 180);
 		}
@@ -470,6 +514,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			if (_texType <= 0)
+				_texType = ProjectileID.WaterStream;
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.Water, Projectile.velocity * 0.2f, 100, default, 1.3f);
 			d.noGravity = true;
@@ -525,7 +571,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			float t = 1f - Projectile.timeLeft / (float)Lifetime;
 			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
-			Vector2 aim = Main.MouseWorld - owner.MountedCenter;
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 			if (aim == Vector2.Zero)
 				aim = new Vector2(owner.direction, 0f);
 			aim.Normalize();
@@ -548,7 +594,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Player owner = Main.player[Projectile.owner];
 			float t = 1f - Projectile.timeLeft / (float)Lifetime;
 			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
-			Vector2 aim = Main.MouseWorld - owner.MountedCenter;
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 			if (aim == Vector2.Zero)
 				aim = new Vector2(owner.direction, 0f);
 			aim.Normalize();
@@ -590,7 +636,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f && Projectile.owner == Main.myPlayer)
 			{
 				Projectile.localAI[0] = 1f;
-				Vector2 cursor = Main.MouseWorld;
+				Vector2 cursor = HenshinProjUtil.OwnerMouseWorld(Projectile);
 				NPC target = null;
 				float best = SearchRange * SearchRange;
 				for (int i = 0; i < Main.maxNPCs; i++)
@@ -804,8 +850,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = 20;
 		}
 
-		public override void OnSpawn(IEntitySource source)
+		public override void OnSpawn(IEntitySource source) => EnsureTomb();
+
+		private bool _tombReady;
+
+		private void EnsureTomb()
 		{
+			if (_tombReady)
+				return;
+			_tombReady = true;
 			_center = Projectile.Center;
 			_offsets[0] = new Vector2(0f, -56f);
 			_offsets[1] = new Vector2(0f, 56f);
@@ -815,6 +868,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			EnsureTomb();
 			if (!_spawned && Projectile.owner == Main.myPlayer)
 			{
 				_spawned = true;
@@ -861,14 +915,22 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = 20;
 		}
 
-		public override void OnSpawn(IEntitySource source)
+		public override void OnSpawn(IEntitySource source) => EnsureShard();
+
+		private bool _offReady;
+
+		private void EnsureShard()
 		{
+			if (_offReady)
+				return;
+			_offReady = true;
 			_startOff = new Vector2(Projectile.ai[0], Projectile.ai[1]);
 			Projectile.scale = 0.5f;
 		}
 
 		public override void AI()
 		{
+			EnsureShard();
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = Projectile.Center.X - _startOff.X;
@@ -939,7 +1001,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - owner.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir == Vector2.Zero)
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();
@@ -1134,7 +1196,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_dir = Main.MouseWorld - owner.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir == Vector2.Zero)
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();

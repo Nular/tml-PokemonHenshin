@@ -38,7 +38,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = 90;
-			Projectile.tileCollide = false;
+			Projectile.tileCollide = true;
 			Projectile.penetrate = 1;
 			Projectile.ignoreWater = true;
 		}
@@ -296,7 +296,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		private void ResolveAim(Player owner)
 		{
-			Vector2 prefer = Main.MouseWorld - owner.MountedCenter;
+			Vector2 prefer = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 			if (prefer.LengthSquared() < 1f)
 				prefer = new Vector2(owner.direction, 0f);
 			_aimDir = Vector2.Normalize(prefer);

@@ -67,14 +67,15 @@ namespace PokemonHenshin.Content.Accessories
 			{
 				AccStat.HomingBolt or AccStat.HomingSpread or AccStat.HomingBarrage or AccStat.HomingDoTBind
 					or AccStat.TilePierceBolt or AccStat.TilePierceSpread or AccStat.TilePierceBarrage
-					or AccStat.TilePierceDoTBind or AccStat.TilePierceBeam
+					or AccStat.TilePierceDoTBind or AccStat.TilePierceBeam or AccStat.TilePierceField
+					or AccStat.CursedInfernoImmune
 					or AccStat.ChoiceLockSkill2 or AccStat.ChoiceLockUlt
 					or AccStat.LifeOrbHpDrain or AccStat.FocusSash or AccStat.EverstoneBlock
 					=> Language.GetTextValue(key),
 				AccStat.FlightEnergySec or AccStat.HomingTurn or AccStat.HomingRange or AccStat.PenetrateAdd
 					or AccStat.DashSpeedBonus or AccStat.LungeIFrameBonus
 					or AccStat.ShellBellHeal or AccStat.LeftoversHpPerSec or AccStat.LeftoversLowHpBonus
-					or AccStat.FocusSashCdSec
+					or AccStat.FocusSashCdSec or AccStat.CursedInfernoSec
 					=> Language.GetTextValue(key, Num(line.Value)),
 				AccStat.LifeOrbGateTicks or AccStat.ShellBellCdTicks or AccStat.RockyHelmetCdTicks
 					or AccStat.FocusSashImmuneTicks or AccStat.GuardCutTimer
