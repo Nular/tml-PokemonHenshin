@@ -37,28 +37,39 @@ Prefixes: {
 
 StatsUI: {
 	ButtonHover: Henshin stats
+	PanelTitle: ≡ Henshin Status
+	PanelReset: [Reset]
+	PanelDragHint: Drag the title bar to move; double-click to reset
+	PanelResetHint: Restore default position beside the inventory
 	NotTransformed: Not transformed. Hold a force item in the hotbar to see live bonuses and abilities.
 	EverstoneOn: Everstone: evolution blocked
 	CurseTagBurnOn: Spell Tag: Cursed Inferno {0}s (while worn)
 	CurseTagImmuneOn: Super Spell Tag: immune to Cursed Inferno
-	NoMount: Mounts are disabled while transformed
+	NoMount: ※ Mounts are disabled while transformed
 	SectionForm: Form
-	TypesLine: Types: {0}
-	LevelLine: Level {0} (cap {1}, world stage {2})
-	LevelCapped: Level {0} (capped at {1}, world stage {2})
-	XpLine: XP {0} / {1}
-	AttackLine: Form attack {0}  Panel attack {1}
-	DefenseLine: Form defense {0}  Current defense {1}
-	EnergyLine: Ultimate energy {0} / {1}
-	FlightLine: Flight energy {0}s / {1}s
+	TypesLine: Types  {0}
+	LevelLine: Level  {0} (cap {1} · world stage {2})
+	LevelCapped: Level  {0} (capped at {1} · world stage {2})
+	XpLine: XP  {0} / {1}
+	AttackLine: Base attack  {0} → Current attack {1}
+	DefenseLine: Base defense  {0} → Current defense {1}
+	EnergyLine: Ultimate energy  {0} / {1}
+	FlightLine: Flight stamina  {0}s / {1}s
 	EvolveNeed: Evolve to {0} needs stage {1} and level ≥ {2}
 	EvolveReady: Ready to evolve into {0}
-	SectionMoves: Moves
+	SectionMoves: Move handbook
 	Skill1: Skill 1  {0}
 	Skill2: Skill 2  {0}
 	Skill2Locked: Skill 2  {0} (Choice Band locked)
 	Ult: Ultimate  {0}
 	UltLocked: Ultimate  {0} (Choice Band locked)
+	MovePower: Power {0}%
+	MoveInterval: Interval {0} frames
+	MoveUltCost: Costs a full energy bar
+	MoveEasyCrit: Crit lean (+{0}% on use)
+	MoveRecoil: Has recoil
+	MoveAftermath: Has aftermath
+	MoveSep: " · "
 	SectionPassive: Ability
 	PassiveAlways: "{0}: {1}"
 	PassiveOn: "{0}: {1}  [ACTIVE]"
@@ -171,10 +182,10 @@ StatsUI: {
 		}
 	}
 
-	SectionType: Type effects
-	AmpNote: Soul Dew: type amplitude +{0}%
+	SectionType: Type habits
+	AmpNote: Soul Dew: habit amplitude +{0}%
 	TypeFireOk: "{0}: immune to lava / burning / On Fire"
-	TypeFireWet: "{0}: lava / burn immunity; in water henshin damage -{1}%"
+	TypeFireWet: "{0}: lava / burn immunity; in water move damage -{1}%"
 	TypeWaterDry: "{0}: breathe underwater; bonus speed in water"
 	TypeWaterWet: "{0}: breathe underwater; +{1}% speed in water"
 	TypeGrass: "{0}: ~+1 HP/s while not at full health"
@@ -186,7 +197,7 @@ StatsUI: {
 	TypeSteelOn: "{0}: confuse immunity (low HP or boss nearby) [ACTIVE]"
 	TypeSteelOff: "{0}: confuse immunity at low HP or near a boss"
 	TypeDragon: "{0}: knockback resist"
-	TypeDark: "{0}: +{1}% crit"
+	TypeDark: "{0}: +{1}% crit chance"
 	TypeFighting: "{0}: +{1}% henshin damage"
 	TypePsychic: "{0}: slow fall"
 	TypeBug: "{0}: +{1}% move speed"
@@ -203,6 +214,14 @@ StatsUI: {
 	TypeSecWaterWet: Secondary {0}: +{1}% speed in water
 	TypeSecWaterDry: Secondary {0}: small speed bonus in water
 	TypeSecNone: Secondary {0}
+
+	SectionCrit: Crit
+	CritChance: Crit chance  {0}%
+	CritEasyNote: Easy-crit moves  +{0}% while firing (not in standing rate above)
+	CritUpgrade: Super-crit upgrade  {0}% (rolls only after a crit)
+	CritUpgradeNone: Super-crit upgrade  0% (no Focus Band etc.)
+	CritOnFire: vs burning  +{0}% more
+	CritDamageNote: Crit damage  ×200% · Super-crit ~×400%
 
 	Type: {
 		None: —
@@ -226,46 +245,50 @@ StatsUI: {
 		Fairy: Fairy
 	}
 
-	SectionCombat: Combat totals
-	TotDamage: Henshin damage {0}%
-	TotFactor: Damage factor {0}%
-	TotChoice: Choice Band damage {0}%
-	TotLifeOrb: Life Orb damage {0}%
-	TotTypeMove: Ability move damage {0}%
-	TotBoss: vs bosses {0}%
-	TotOnFire: vs burning {0}%
-	TotUlt: Ultimate damage {0}%
-	TotMelee: Melee moves {0}%
-	TotFireMove: Fire moves {0}%
-	TotPsychicDragon: Psychic/Dragon moves {0}%
-	TotEvioliteDmg: Eviolite damage {0}%
-	TotEvioliteDef: Eviolite defense {0}%
-	TotMoveSpeed: Move speed {0}%
-	TotWaterSpeed: Water speed {0}%
-	TotXpHeld: Held XP {0}%
-	TotXpShare: Hotbar XP share {0}%
-	TotCrit: Crit upgrade {0}%
-	TotOnFireCrit: Crit upgrade vs burning {0}%
-	TotPassiveEnergy: Passive energy {0}%
-	TotIncoming: Incoming damage ×{0}%
-	TotCooldown: Move cooldown ×{0}%
-	TotDashCd: Dash cooldown ×{0}%
-	TotLungeCd: Lunge cooldown ×{0}%
-	TotEnergyGain: Combat energy gain ×{0}%
-	TotUltRetain: Energy kept after ult {0}%
-	TotFlightSec: Flight energy +{0}s
-	TotFall: Fall reduction {0}%
-	TotPenetrate: Pierce +{0}
-	TotDashSpeed: Dash speed +{0}
-	TotLungeIFrame: Lunge i-frames +{0}
-	TotLeftovers: +{0} HP/s
-	TotLeftoversLow: extra +{0} HP/s below half HP
-	TotShellBell: Heal {0} HP on hit
-	TotRocky: Thorns {0}% of form attack
-	TotLifeOrbDrain: Life Orb: attacks cost HP
-	TotSash: Focus Sash: lethal save at ≥{0}% HP, {1}s CD
-	TotCurseBurn: Cursed Inferno every 30s for {0}s
-	TotCurseImmune: Immune to Spell Tag burn
+	SectionCombat: Damage zones (live totals)
+	ZoneWeapon: ◆ Weapon zone (before shot; multiplied)
+	ZoneHit: ◆ On-hit zone (conditional bonuses add first)
+	ZoneOther: ◆ Other zones
+	ZoneEmpty: "   (none)"
+	ZoneWeaponTotal: "   Combined  ~×{0}%"
+	TotDamage: "   Move damage  {0}%"
+	TotFactor: "   Form factor  {0}%"
+	TotChoice: "   Choice Band  {0}%"
+	TotLifeOrb: "   Life Orb  {0}%"
+	TotTypeMove: "   Ability moves  {0}%"
+	TotBoss: "   vs bosses  {0}%"
+	TotOnFire: "   vs burning  {0}%"
+	TotUlt: "   Ultimate bonus  {0}%"
+	TotMelee: "   Melee moves  {0}%"
+	TotFireMove: "   Fire moves  {0}%"
+	TotPsychicDragon: "   Psychic/Dragon moves  {0}%"
+	TotEvioliteDmg: "   Eviolite damage  {0}%"
+	TotAftermathNow: "   (aftermath) currently ×{0}%"
+	TotEvioliteDef: "   Eviolite defense  {0}%"
+	TotMoveSpeed: "   Move speed  {0}%"
+	TotWaterSpeed: "   Water speed  {0}%"
+	TotXpHeld: "   Held XP  {0}%"
+	TotXpShare: "   Hotbar XP share  {0}%"
+	TotPassiveEnergy: "   Passive energy  {0}%"
+	TotIncoming: "   Incoming  ×{0}%"
+	TotCooldown: "   Move cooldown  ×{0}%"
+	TotDashCd: "   Dash cooldown  ×{0}%"
+	TotLungeCd: "   Lunge cooldown  ×{0}%"
+	TotEnergyGain: "   Combat energy gain  ×{0}%"
+	TotUltRetain: "   Energy kept after ult  {0}%"
+	TotFlightSec: "   Flight energy +{0}s"
+	TotFall: "   Fall reduction  {0}%"
+	TotPenetrate: "   Pierce +{0}"
+	TotDashSpeed: "   Dash speed +{0}"
+	TotLungeIFrame: "   Lunge i-frames +{0}"
+	TotLeftovers: "   +{0} HP/s"
+	TotLeftoversLow: "   extra +{0} HP/s below half HP"
+	TotShellBell: "   Heal {0} HP on hit"
+	TotRocky: "   Thorns {0}% of form attack"
+	TotLifeOrbDrain: "   Life Orb: attacks cost HP"
+	TotSash: "   Focus Sash: lethal save at ≥{0}% HP, {1}s CD"
+	TotCurseBurn: "   Cursed Inferno every 30s for {0}s"
+	TotCurseImmune: "   Immune to Spell Tag burn"
 	TotNone: (no extra numeric bonuses)
 	DelBolt: bolt
 	DelSpread: spread
@@ -273,9 +296,9 @@ StatsUI: {
 	DelDoT: bind
 	DelBeam: beam
 	DelField: field
-	TotHoming: Homing: {0}
-	TotPierce: Tile pierce: {0}
-	SectionAcc: Equipped accessories
+	TotHoming: "   Homing: {0}"
+	TotPierce: "   Tile pierce: {0}"
+	SectionAcc: Held items
 	AccNone: (no Henshin accessories)
 	AccOn: "{0}  [ON]"
 	AccOff: "{0}  [{1}]"
@@ -295,6 +318,24 @@ StatsUI: {
 	RunAccGuard: Focus Band cut {0}s
 	RunSolarDrain: Solar Power: attacks drain HP
 	RunNone: (no cooldowns or stacks)
+}
+
+Configs: {
+	HenshinClientConfig: {
+		DisplayName: Pokemon Henshin · Client
+		UseCustomPanelPos: {
+			Label: Custom stat panel position
+			Tooltip: Written when you drag the panel in-game; turn off here to reset
+		}
+
+		PanelPosX: {
+			Label: Panel position X
+		}
+
+		PanelPosY: {
+			Label: Panel position Y
+		}
+	}
 }
 
 Keybinds: {

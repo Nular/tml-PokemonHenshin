@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PokemonHenshin.Content.Config;
 using ReLogic.Content;
 using Terraria;
 using Terraria.Audio;
@@ -17,7 +18,8 @@ namespace PokemonHenshin.Content.Visual
 {
 	/// <summary>
 	/// 物品栏右侧入口 + 当前变身属性面板。仅本地客户端；开背包时绘制。
-	/// 锚定原版 10×5 物品栏右缘（与盔甲列之间的空隙），再下移 64px 避开原版图鉴按钮；不跟灾厄额外饰品栏抢位。
+	/// 入口锚定原版 10×5 物品栏右缘（下移 64px 避开图鉴）；面板可拖动，位置写入
+	/// <see cref="HenshinClientConfig"/>。
 	/// API：<see cref="ModSystem.UpdateUI"/> / <see cref="ModSystem.ModifyInterfaceLayers"/> /
 	/// <see cref="UserInterface"/> / <see cref="UIState"/>（tML stable）。
 	/// </summary>
@@ -123,6 +125,20 @@ namespace PokemonHenshin.Content.Visual
 				y = Math.Max(20, equipY - 154);
 			y += 64;
 		}
+
+		internal static void GetDefaultPanelPos(out int x, out int y)
+		{
+			GetInventoryButtonPos(out int bx, out int by);
+			x = bx + 46;
+			y = by;
+			ClampPanelPos(ref x, ref y, 380, 520);
+		}
+
+		internal static void ClampPanelPos(ref int x, ref int y, int width, int height)
+		{
+			x = Math.Clamp(x, 12, Math.Max(12, Main.screenWidth - width - 12));
+			y = Math.Clamp(y, 12, Math.Max(12, Main.screenHeight - Math.Min(height, 220) - 12));
+		}
 	}
 
 	public sealed class HenshinStatUIState : UIState
@@ -131,10 +147,16 @@ namespace PokemonHenshin.Content.Visual
 
 		private StatToggleButton toggle;
 		private UIPanel panel;
+		private StatPanelHeader header;
 		private UIList list;
 		private UIScrollbar scrollbar;
 		private string lastFingerprint = string.Empty;
 		private string formTexturePath;
+		private bool dragging;
+		private Vector2 dragOffset;
+		private int lastClickTick = -999;
+		private const int PanelWidth = 380;
+		private const int TitleHeight = 30;
 
 		public override void OnInitialize()
 		{
@@ -150,7 +172,7 @@ namespace PokemonHenshin.Content.Visual
 			Append(toggle);
 
 			panel = new UIPanel();
-			panel.Width.Set(380f, 0f);
+			panel.Width.Set(PanelWidth, 0f);
 			panel.Height.Set(520f, 0f);
 			panel.BackgroundColor = new Color(28, 30, 48) * 0.94f;
 			panel.BorderColor = new Color(90, 110, 160);
@@ -158,15 +180,24 @@ namespace PokemonHenshin.Content.Visual
 			panel.OverflowHidden = true;
 			panel.OnUpdate += MouseBlock;
 
+			header = new StatPanelHeader();
+			header.Width.Set(0f, 1f);
+			header.Height.Set(TitleHeight, 0f);
+			header.OnDragStart += OnHeaderDragStart;
+			header.OnResetClicked += OnResetClicked;
+			panel.Append(header);
+
 			list = new UIList();
 			list.Width.Set(-22f, 1f);
-			list.Height.Set(0f, 1f);
+			list.Top.Set(TitleHeight + 2f, 0f);
+			list.Height.Set(-(TitleHeight + 2f), 1f);
 			list.ListPadding = 2f;
 			list.ManualSortMethod = _ => { };
 			panel.Append(list);
 
 			scrollbar = new UIScrollbar();
-			scrollbar.Height.Set(0f, 1f);
+			scrollbar.Top.Set(TitleHeight + 2f, 0f);
+			scrollbar.Height.Set(-(TitleHeight + 2f), 1f);
 			scrollbar.HAlign = 1f;
 			panel.Append(scrollbar);
 			list.SetScrollbar(scrollbar);
@@ -185,11 +216,21 @@ namespace PokemonHenshin.Content.Visual
 				if (panel.Parent == null)
 					Append(panel);
 
-				int px = bx + 46;
-				int py = by;
-				if (px + 380 > Main.screenWidth - 12)
-					px = Math.Max(12, Main.screenWidth - 392);
-				int height = Math.Min(520, Math.Max(220, Main.screenHeight - py - 24));
+				int height = Math.Min(520, Math.Max(220, Main.screenHeight - 36));
+				ResolvePanelPos(height, out int px, out int py);
+				if (dragging)
+				{
+					Vector2 mouse = Main.MouseScreen;
+					px = (int)(mouse.X - dragOffset.X);
+					py = (int)(mouse.Y - dragOffset.Y);
+					HenshinStatUISystem.ClampPanelPos(ref px, ref py, PanelWidth, height);
+					if (!Main.mouseLeft)
+					{
+						dragging = false;
+						HenshinClientConfig.Instance?.SavePanelPos(px, py);
+					}
+				}
+
 				panel.Left.Set(px, 0f);
 				panel.Top.Set(py, 0f);
 				panel.Height.Set(height, 0f);
@@ -197,12 +238,56 @@ namespace PokemonHenshin.Content.Visual
 				if (panel.IsMouseHovering)
 					PlayerInput.LockVanillaMouseScroll("PokemonHenshin/StatSheet");
 			}
-			else if (panel.Parent != null)
-				panel.Remove();
+			else
+			{
+				dragging = false;
+				if (panel.Parent != null)
+					panel.Remove();
+			}
 
 			RefreshSnapshot();
 			Recalculate();
 			base.Update(gameTime);
+		}
+
+		private void ResolvePanelPos(int height, out int px, out int py)
+		{
+			HenshinClientConfig cfg = HenshinClientConfig.Instance;
+			if (cfg != null && cfg.UseCustomPanelPos)
+			{
+				px = cfg.PanelPosX;
+				py = cfg.PanelPosY;
+			}
+			else
+				HenshinStatUISystem.GetDefaultPanelPos(out px, out py);
+
+			HenshinStatUISystem.ClampPanelPos(ref px, ref py, PanelWidth, height);
+		}
+
+		private void OnHeaderDragStart(UIMouseEvent evt, UIElement _)
+		{
+			if (!PanelOpen)
+				return;
+
+			int tick = (int)Main.GameUpdateCount;
+			if (tick - lastClickTick < 20)
+			{
+				OnResetClicked();
+				lastClickTick = -999;
+				return;
+			}
+
+			lastClickTick = tick;
+			dragging = true;
+			CalculatedStyle dims = panel.GetDimensions();
+			dragOffset = Main.MouseScreen - new Vector2(dims.X, dims.Y);
+		}
+
+		private void OnResetClicked()
+		{
+			dragging = false;
+			HenshinClientConfig.Instance?.ResetPanelPos();
+			SoundEngine.PlaySound(SoundID.MenuTick);
 		}
 
 		private void RefreshSnapshot()
@@ -241,6 +326,61 @@ namespace PokemonHenshin.Content.Visual
 		{
 			if (affected.ContainsPoint(Main.MouseScreen))
 				Main.LocalPlayer.mouseInterface = true;
+		}
+	}
+
+	internal sealed class StatPanelHeader : UIElement
+	{
+		public event Action<UIMouseEvent, UIElement> OnDragStart;
+		public event Action OnResetClicked;
+
+		private UIText title;
+		private UIText reset;
+
+		public StatPanelHeader()
+		{
+			OnLeftMouseDown += (evt, el) =>
+			{
+				if (reset != null && reset.ContainsPoint(Main.MouseScreen))
+					return;
+				OnDragStart?.Invoke(evt, el);
+			};
+		}
+
+		public override void OnInitialize()
+		{
+			title = new UIText(Language.GetTextValue("Mods.PokemonHenshin.StatsUI.PanelTitle"), 0.9f);
+			title.TextColor = new Color(255, 210, 90);
+			title.VAlign = 0.5f;
+			title.Left.Set(4f, 0f);
+			title.IgnoresMouseInteraction = true;
+			Append(title);
+
+			reset = new UIText(Language.GetTextValue("Mods.PokemonHenshin.StatsUI.PanelReset"), 0.78f);
+			reset.TextColor = new Color(160, 190, 230);
+			reset.VAlign = 0.5f;
+			reset.HAlign = 1f;
+			reset.Left.Set(-4f, 0f);
+			reset.OnLeftClick += (_, _) => OnResetClicked?.Invoke();
+			reset.OnMouseOver += (_, _) =>
+			{
+				reset.TextColor = Color.White;
+				SoundEngine.PlaySound(SoundID.MenuTick);
+			};
+			reset.OnMouseOut += (_, _) => reset.TextColor = new Color(160, 190, 230);
+			Append(reset);
+		}
+
+		protected override void DrawSelf(SpriteBatch spriteBatch)
+		{
+			CalculatedStyle dims = GetDimensions();
+			var underline = new Rectangle((int)dims.X, (int)(dims.Y + dims.Height - 1f), (int)dims.Width, 1);
+			spriteBatch.Draw(TextureAssets.MagicPixel.Value, underline, new Color(90, 110, 160) * 0.85f);
+
+			if (IsMouseHovering && (reset == null || !reset.IsMouseHovering))
+				Main.hoverItemName = Language.GetTextValue("Mods.PokemonHenshin.StatsUI.PanelDragHint");
+			else if (reset != null && reset.IsMouseHovering)
+				Main.hoverItemName = Language.GetTextValue("Mods.PokemonHenshin.StatsUI.PanelResetHint");
 		}
 	}
 
