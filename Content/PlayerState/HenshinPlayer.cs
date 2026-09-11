@@ -1094,13 +1094,19 @@ namespace PokemonHenshin.Content.PlayerState
 			HenshinForceItem force = Player.HeldItem?.ModItem as HenshinForceItem;
 			MoveSpec move = force?.GetMove(slot);
 			float factor;
+			bool grantsCombatEnergy;
 			if (TryGetStampedCombatEnergyFactor(proj, out float stamped))
+			{
+				// 出弹时钉死的系数是权威来源：大招=0 即永不充能，即使槽位解析被技能覆盖。
 				factor = stamped;
+				grantsCombatEnergy = stamped > 0f;
+			}
 			else
+			{
 				factor = slot == MoveSlot.Ultimate ? 0f : (move?.GetEnergyGainFactor() ?? 1f);
+				grantsCombatEnergy = factor > 0f && slot != MoveSlot.Ultimate;
+			}
 
-			// 优先信钉死的 CombatEnergyFactor（大招=0）；槽位 Ultimate 再兜底。
-			bool grantsCombatEnergy = factor > 0f && slot != MoveSlot.Ultimate;
 			if (grantsCombatEnergy)
 			{
 				bool fragment = HenshinNebulaShardTintGlobal.UsesCrumbHitEnergy(proj);

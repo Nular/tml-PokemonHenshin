@@ -126,7 +126,10 @@ namespace PokemonHenshin.Content.Accessories
 				return;
 
 			HenshinPlayer hp = owner.GetModPlayer<HenshinPlayer>();
-			if (!HasSourceMoveSlot && owner.HeldItem?.ModItem is HenshinForceItem forceForSlot)
+			// 有父弹时不要回退 LastMoveSlot：延迟散射出子弹时玩家往往已按住技能，
+			// 否则会先被钉成 Skill 能量系数；应由父继承或导演侧 CopyMoveOrigin 负责。
+			bool hasProjectileParent = source is EntitySource_Parent { Entity: Projectile };
+			if (!hasProjectileParent && !HasSourceMoveSlot && owner.HeldItem?.ModItem is HenshinForceItem forceForSlot)
 			{
 				SourceMoveSlot = hp.LastMoveSlot;
 				HasSourceMoveSlot = true;
