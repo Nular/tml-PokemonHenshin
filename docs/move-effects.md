@@ -52,6 +52,7 @@
 | 自然积攒 | `0.15 / tick`；Boss 附近 ×3 |
 | 每秒软顶 | 命中+击杀能量滚动 1s 内合计 **≤ 1000**（被动除外；极端兜底） |
 | EnergyGainFactor | Standard 1.0 / HF 0.35 / MultiHit 0.25 / WideAoE 0.45 / Ult 0 |
+| 大招后充能锁定 | 释放成功后约 **2.5s**（150 tick）禁止一切能量回复（`UltEnergyLockoutTicks`） |
 | 释放键 | `ModKeybind`（可配置；未满提示不足） |
 | 联机 | 能量与大招释放 **服务端权威** 同步（含 level/xp） |
 | UI | Tooltip 显示该形态能量；变身时**角色脚下**能量条；满充时金色向上发散尘（约 1 格） |
