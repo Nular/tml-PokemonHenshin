@@ -38,7 +38,7 @@ Prefixes: {
 StatsUI: {
 	ButtonHover: 变身属性
 	PanelTitle: ≡ 变身状态报告
-	PanelReset: 〔复位〕
+	PanelReset: "〔复位〕"
 	PanelDragHint: 拖动标题栏可移动面板；双击复位
 	PanelResetHint: 恢复到物品栏旁默认位置
 	NotTransformed: 未持握之力。持握热键栏中的「xxx之力」后，这里显示当前加成与特性。
