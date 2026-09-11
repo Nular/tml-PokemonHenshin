@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.9**（数值表 `docs/balance-stats.md`） |
+| 对齐需求 | `docs/requirements.md` **v1.4.11**（数值表 `docs/balance-stats.md`） |
 | 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**；联机双端 / DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
@@ -676,3 +676,4 @@ TryEditTile(player, action) →
 | **1.4.6** | 洁癖：页眉/M3/总评对齐 requirements v1.4.6；未接线集中到 §12.1 |
 | **1.4.8** | 洁癖：页眉/目标/管线对齐 A28 与 requirements v1.4.8；龙波碎片能量见需求 §2.5 |
 | **1.4.9** | 洁癖：页眉对齐 requirements v1.4.9（广角镜菱形索敌）；施工图 `HomingAI 不变` 已废 |
+| **1.4.11** | 页眉对齐 requirements v1.4.11：广角镜圆形索敌；招式自带追踪不叠广角镜 |

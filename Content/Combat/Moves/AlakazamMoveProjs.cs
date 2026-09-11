@@ -98,6 +98,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 1;
 			Projectile.scale = 1.25f;
+			InherentHoming = true;
 		}
 
 		public override void OnSpawn(IEntitySource source)
@@ -234,6 +235,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private int _explodeAge;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.FairyQueenMagicItemShot;
+		public override bool HandlesOwnHoming => true;
 
 		public override void SetDefaults()
 		{
@@ -247,6 +249,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = -1;
 			Projectile.scale = 1.15f;
+			InherentHoming = true;
 		}
 
 		public override void OnSpawn(IEntitySource source)

@@ -3308,6 +3308,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.tileCollide = false;
 			Projectile.penetrate = 2;
 			Projectile.scale = 1.25f;
+			InherentHoming = true;
 		}
 
 		public override void AI()

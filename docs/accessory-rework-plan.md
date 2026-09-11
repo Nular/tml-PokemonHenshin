@@ -124,7 +124,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `Content/Core/MoveSpec.cs` | 加 `MoveDelivery Delivery`；废弃作为判定的 `IsRangedProjectile`（可留字段但工厂改写 Delivery） | WP-B |
 | `Content/Items/Forms/StarterLines.cs` | 每个工厂赋 `Delivery` | WP-B **独占此文件工厂段** |
 | `Content/Combat/HenshinForceItem.cs` | FireMove 打标；ModifyWeaponDamage 吃无条件乘区；Tooltip | WP-B + WP-D |
-| `Content/Combat/Moves/SharedMoveProjs.cs` | `IHenshinMoveProj` 加 `Delivery`；`HomingAI` 叶绿弹式（菱形/60°/锁死；数字见需求 §6） | WP-B |
+| `Content/Combat/Moves/SharedMoveProjs.cs` | `IHenshinMoveProj` 加 `Delivery`；`HomingAI` 广角镜圆形/60°/锁死，自带索敌走全向（数字见需求 §6） | WP-B |
 | `Content/PlayerState/HenshinPlayer.cs` | 新字段、Reset、命中/受伤/XP/能量/披带/剩饭 | WP-D **独占运行时字段** |
 | `Content/Evolution/EvolutionService.cs` + ConfirmUI | 不变之石门闩 | WP-E |
 | `Content/Loot/HenshinLoot.cs` | **删光旧 AddAcc 占位配方**；只保留之力掉落；饰品掉落/配方走 Catalog | WP-F |
@@ -133,7 +133,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
 | `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |
 | `tools/make_super_accessory_sprites.py` | **已弃用**：转发到 `pixelize_accessories.py` | WP-H |
-| `docs/requirements.md` §6 §10 | 已回写（含 1.4.9 广角镜菱形索敌）；冲突以需求 + 代码为准 | 收尾 |
+| `docs/requirements.md` §6 §10 | 已回写（含 1.4.11 广角镜圆形索敌 + 自带追踪不叠饰品）；冲突以需求 + 代码为准 | 收尾 |
 | `docs/accessory-rework-plan.md` | 本文件 | 主 Agent |
 
 `Items/Accessories/HenshinAccessories.cs`：脚手架完成后删除，避免 21 个 class 与 Loader 抢同一个 Name。
@@ -190,7 +190,7 @@ AccFamilyDef {
 | `XpHeldMul` | `+=` | 否 | 幸运蛋，持握那只 |
 | `XpHotbarShareMul` | `+=` | 否 | 学习装置，其它 9 格各复制 |
 | `HomingTurn` | `max(现,值)` + 开标志 | 否 | 广角镜角速度 |
-| `HomingRange` | `max(现,值)` | 否 | 广角镜菱形索敌格数。碎片 8、成品 16、超级 32；断锁 2×。新锁 60° 半角 |
+| `HomingRange` | `max(现,值)` | 否 | 广角镜圆形索敌格数。碎片 8、成品 16、超级 32；断锁 2×。新锁 60° 半角。自带索敌不写入 |
 | `HomingEnableBoltSpreadBarrage` | OR | 否 | |
 | `TilePierceBoltSpreadBarrageDotBind` | OR | 否 | 诅咒之符（不含 Beam 以外再加 Beam） |
 | `TilePierceBeam` | OR | 否 | 诅咒之符梁 |
@@ -250,7 +250,7 @@ public enum MoveDelivery : byte
 | 黑带短距伤 | `{ MeleeArc, Lunge, StrikeFall }` |
 | 黑带撞击 CD | `Delivery==Lunge` **或** `RequiresLungeCooldown`（Blink / DigLunge / BraveBird 也吃 CD 减） |
 
-内置追踪（强念等 AI 写死 `HomingAI(..., true)`）**不关**。广角镜是额外转弯。实现时：`Homing = 招式自己要追 \|\| (AccHoming && set.Contains(Delivery))`。招式自己要追的，继续用自己的 turnRate 与饰品 `max`。
+内置追踪（强念等 AI 写死 `HomingAI(..., true)` 或自管索敌）**不吃广角镜**：不改 `Homing` / 转向 / 范围，也不走 60° 锥。广角镜只给本来不追的弹开追踪。实现：`InherentHoming` 或出生时已 `Homing` → `ApplyAccessoryHoming` 整段跳过；`Homing = 招式自己要追 \|\| (AccHoming && set.Contains(Delivery))`。
 
 `HomingAI` 在 `velocity≈0` 时 return —— Beam/场地本来就不该被广角镜弯折。
 
@@ -360,11 +360,11 @@ S1 移速 +1.25%；S2 移速 +1.25%；S3 飞行 +0.25s；S4 飞行 +0.25s；S5 �
 普通 DamageFactorBonus +0.05；超级 +0.10。碎片各 +0.0125。S5 +0.0125；S6 BossDamage +3%。
 
 **A13 广角镜** Min 3 / Super 6  
-普通：开启 Bolt/Spread/Barrage/DoTBind 追踪，Turn=0.12，菱形索敌 **16 格**。  
+普通：开启 Bolt/Spread/Barrage/DoTBind 追踪，Turn=0.12，圆形索敌 **16 格**。  
 超级：同上 Turn=0.20，索敌 **32 格**，并 +5% DamageBonus（附加价值）。  
 S1 只开 Bolt，Turn=0.06，索敌 8 格；S2 开 Spread，8 格；S3 开 Barrage，8 格；S4 开 DoTBind，8 格；S5 Turn max 0.08 + Bolt + 8 格；S6 DamageBonus +1.5%（无索敌）。  
 多件 Turn 与索敌格数取 **max**；Enable 集合 **并**。  
-追踪手感（叶绿弹式）：新锁须在**当前速度方向 60° 半角**内（出生帧即朝鼠标，不会锁身后）；锁死后可掉头追；曼哈顿距离超过索敌 **2×** 断锁；会撞墙的弹新锁要 `CanHit`。
+追踪手感（仅广角镜赋予的弹）：新锁须在**当前速度方向 60° 半角**内（出生帧即朝鼠标，不会锁身后）；锁死后可掉头追；欧氏距离超过索敌 **2×** 断锁；会撞墙的弹新锁要 `CanHit`。招式自带索敌不走这套规则。
 
 **A14 讲究头带** Min 4 / Super 7  
 普通：锁技能2+大招，ChoiceDamage +50%。  
@@ -607,11 +607,11 @@ OnSpawn：`penetrate>0 && penetrate!=-1` 才 `+= AccPenetrateAdd`。无限穿透
 
 ### 9.5 广角镜与写死 Homing
 
-`HomingAI(proj, homing || acc, max(turn, accTurn))` 其中 acc 仅当 Delivery 在集合内。招式写死 `true` 时即使无饰品也追。
+`HomingAI(proj, homing || acc, max(turn, accTurn))` 其中 acc 仅当 Delivery 在集合内，且该弹**没有**自带索敌。招式写死 `true` / `InherentHoming` 时即使戴广角镜也走自己的全向圆形追踪。
 
-索敌为**曼哈顿菱形**（`|dx|+|dy|`），格数来自饰品 `HomingRange`（碎片 8 / 成品 16 / 超级 32，叠戴 max）。无饰品的自带追踪默认 30 格。自带追踪与饰品格数取 max，避免碎片削短。
+广角镜索敌为**圆形**（欧氏距离），格数来自饰品 `HomingRange`（碎片 8 / 成品 16 / 超级 32，叠戴 max）。新锁：当前速度方向 **60° 半角**（`dot ≥ 0.5`）+ 圆内最近；`tileCollide` 时还要 `Collision.CanHit`。出生点在玩家、速度朝鼠标，因此不会第一帧锁背后。锁上后跟同一目标，可掉头；欧氏距离 ≥ 2× 索敌则断锁再找。
 
-新锁：当前速度方向 **60° 半角**（`dot ≥ 0.5`）+ 菱形半径内最近；`tileCollide` 时还要 `Collision.CanHit`。出生点在玩家、速度朝鼠标，因此不会第一帧锁背后。锁上后跟同一目标，可掉头；曼哈顿 ≥ 2× 索敌则断锁再找。
+招式自带追踪（强念、念力、恶波动等）不写入 `HomingRangeTiles`、不叠锥角：圆形默认 30 格、全向最近、每帧可掉头。
 
 ### 9.6 剩饭 vs 贝壳
 
@@ -666,7 +666,8 @@ Tooltip 结构：官网一句 + 本片效果 + 合成提示 + 生效标签。
 - [ ] 喷火龙火花 + 广角镜：转弯（重力仍在）  
 - [ ] 朝鼠标开火、身后有近怪：第一帧**不**锁身后  
 - [ ] 锁上后目标绕到身后：可以掉头继续追  
-- [ ] 碎片 / 成品 / 超级菱形索敌约 8 / 16 / 32 格（叠戴 max）  
+- [ ] 碎片 / 成品 / 超级圆形索敌约 8 / 16 / 32 格（叠戴 max）  
+- [ ] 凯西精神强念 / 念力 + 广角镜：仍全向掉头，不被锥角/短半径改写  
 - [ ] 水炮/日光束 + 广角镜：**不**转弯  
 - [ ] 水炮 + 诅咒之符：穿墙  
 - [ ] 爪击 + 广角镜：不追踪  

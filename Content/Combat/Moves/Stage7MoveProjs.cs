@@ -586,6 +586,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.ignoreWater = true;
 			Homing = true;
 			HomingTurnRate = 0.14f;
+			InherentHoming = true;
 		}
 
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
@@ -832,6 +833,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.ignoreWater = true;
 			Homing = true;
 			HomingTurnRate = 0.12f;
+			InherentHoming = true;
 		}
 
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
@@ -972,6 +974,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.ignoreWater = true;
 			Homing = true;
 			HomingTurnRate = 0.1f;
+			InherentHoming = true;
 		}
 
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
@@ -1323,6 +1326,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.penetrate = 1;
 			Projectile.ignoreWater = true;
 			HomingTurnRate = 0.16f;
+			InherentHoming = true;
 		}
 
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)

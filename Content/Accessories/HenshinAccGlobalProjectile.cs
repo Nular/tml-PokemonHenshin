@@ -22,9 +22,12 @@ namespace PokemonHenshin.Content.Accessories
 			if (source is EntitySource_Parent { Entity: Projectile parent }
 				&& parent.ModProjectile is IHenshinMoveProj p)
 			{
-				child.Homing |= p.Homing;
-				child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
-				child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+				if (!HenshinProjUtil.BlocksAccessoryHoming(child))
+				{
+					child.Homing |= p.Homing;
+					child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
+					child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+				}
 				child.HomingTargetWhoAmI = -1;
 				if (child.Delivery == MoveDelivery.None)
 					child.Delivery = p.Delivery;
