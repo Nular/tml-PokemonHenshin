@@ -38,7 +38,7 @@ Prefixes: {
 StatsUI: {
 	ButtonHover: Henshin stats
 	PanelTitle: ≡ Henshin Status
-	PanelReset: [Reset]
+	PanelReset: "[Reset]"
 	PanelDragHint: Drag the title bar to move; double-click to reset
 	PanelResetHint: Restore default position beside the inventory
 	NotTransformed: Not transformed. Hold a force item in the hotbar to see live bonuses and abilities.
