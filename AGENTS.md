@@ -67,7 +67,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 ## 当前状态与下一步
 
 - **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **单机已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
-- **数值（2026-09-09～11）：** v1.4 已接线。击杀 XP × 世界档；`ExpNeeded` × 物品带。世界档/`100` **只挡获取**（`CanGainExperience`）；不截存档。卡顶/满级不飘 `EXP +X`。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。DPS 抽检仍待本地。
+- **数值（2026-09-09～11）：** v1.4 已接线（需求 **v1.4.22**）。击杀 XP × 世界档；`ExpNeeded` × 物品带。世界档/`100` **只挡获取**（`CanGainExperience`）；不截存档。卡顶/满级不飘 `EXP +X`。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。**大招后 ~2.5s 禁止一切充能**（`UltEnergyLockoutTicks`；勿再钉弹上能量系数）。DPS 抽检仍待本地。
 - **饰品（2026-09-11）：** 28 家族逻辑已接线；A01–A28 普通/超级/碎片 64×64 pixeloe。广角镜圆形索敌碎片 8 / 成品 16 / 超级 32 格，新锁 60° 半角、锁死后可掉头；招式自带索敌不吃广角镜（需求 §6；`HenshinProjUtil.HomingAI`）。重跑：`python tools/pixelize_accessories.py`。**游戏内图标/合成/掉落/索敌手感验收仍待本地**。
 - **2026-09-10～11：** 中文 loc 以 `{` 开头的 StatsUI 行已加引号。属性面板入口下移 64px 避开原版图鉴。御三家改 `AddStartingItems` + `PostUpdateMiscEffects` 入包（角色档 `starterGranted`；禁止 `OnEnterWorld`）；**进世界发放已本地验收**。变身地图头像：`HenshinMapHeadLayer`（需求 §2.3）；**游戏内/联机头像与虫洞药水待本地验收**。
 - **2026-09-11（面板）：** 属性面板可拖动（`HenshinClientConfig`）+ 复位；招式威力%；会心/超会心；武器/命中/其它乘区。**游戏内拖动与文案验收待本地**。
