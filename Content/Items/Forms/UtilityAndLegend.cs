@@ -75,7 +75,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L12_F01", 28, "Mods.PokemonHenshin.Items.AbraForce.DisplayName", PokemonType.Psychic, 4, null, FormPassiveKind.Synchronize);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.Confusion", ModContent.ProjectileType<PsychicWaveBoltProj>(), 1.1f, 22, 20f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.ZenHammer("Mods.PokemonHenshin.Moves.ZenHeadbutt");
-		protected override MoveSpec CreateUltimate() => FormItemUtil.ResonanceScatterUlt("Mods.PokemonHenshin.Moves.Psychic");
+		protected override MoveSpec CreateUltimate() => FormItemUtil.ResonanceScatterUlt("Mods.PokemonHenshin.Moves.Psychic", 0.6f);
 	}
 
 	public class AlakazamForce : HenshinForceItem
