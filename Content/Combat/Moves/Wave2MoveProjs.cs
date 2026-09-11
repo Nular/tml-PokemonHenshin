@@ -2153,7 +2153,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (id < 0)
 					continue;
 				Projectile p = Main.projectile[id];
-				ProjectileBorrow.RetargetAsHenshin(p);
+				ProjectileBorrow.RetargetAsHenshinFrom(Projectile, p);
 				p.scale *= 0.7f;
 				p.DamageType = HenshinDamage.Instance;
 				p.penetrate = 1;

@@ -556,5 +556,8 @@ namespace PokemonHenshin.Content.Combat
 		/// <summary>出弹槽；导演→子弹须显式复制，勿只靠 Global OnSpawn。</summary>
 		MoveSlot SourceMoveSlot { get; set; }
 		bool HasSourceMoveSlot { get; set; }
+		/// <summary>出弹能量系数；大招为 0。与 Global 双写，命中 fail-closed 时作后备。</summary>
+		float CombatEnergyFactor { get; set; }
+		bool HasCombatEnergyFactor { get; set; }
 	}
 }

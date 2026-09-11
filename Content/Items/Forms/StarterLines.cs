@@ -293,7 +293,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				Ai1 = 64,
 				Ai2 = 18f,
 				CountsAsWaterMove = true,
-				KeyConflict = KeyConflictLevel.ModKeybind
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
 			};
 
 		public static MoveSpec SeedBarrageUlt(string nameKey, float mult = 2.5f)
@@ -311,7 +312,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				Ai2 = 17f,
 				EasyCrit = true,
 				CountsAsGrassMove = true,
-				KeyConflict = KeyConflictLevel.ModKeybind
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
 			};
 
 		public static MoveSpec VineWhip(string nameKey, float mult = 1.15f, int use = 20)

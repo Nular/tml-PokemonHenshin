@@ -44,7 +44,10 @@ namespace PokemonHenshin.Content.Accessories
 			{
 				tagged.SourceMoveSlot = slot;
 				tagged.HasSourceMoveSlot = true;
+				tagged.CombatEnergyFactor = combatEnergyFactor;
+				tagged.HasCombatEnergyFactor = true;
 			}
+			projectile.netUpdate = true;
 		}
 
 		public static void CopyMoveOrigin(Projectile from, Projectile to)
@@ -54,15 +57,20 @@ namespace PokemonHenshin.Content.Accessories
 			HenshinAccGlobalProjectile src = from.GetGlobalProjectile<HenshinAccGlobalProjectile>();
 			if (src.HasSourceMoveSlot || src.HasCombatEnergyFactor)
 			{
-				StampMoveOrigin(to,
-					src.HasSourceMoveSlot ? src.SourceMoveSlot : MoveSlot.Skill1,
-					src.HasCombatEnergyFactor ? src.CombatEnergyFactor : 1f);
-				if (!src.HasCombatEnergyFactor)
-					to.GetGlobalProjectile<HenshinAccGlobalProjectile>().HasCombatEnergyFactor = false;
+				MoveSlot slot = src.HasSourceMoveSlot ? src.SourceMoveSlot : MoveSlot.Skill1;
+				float factor = src.HasCombatEnergyFactor
+					? src.CombatEnergyFactor
+					: (slot == MoveSlot.Ultimate ? 0f : 1f);
+				StampMoveOrigin(to, slot, factor);
 				return;
 			}
 			if (from.ModProjectile is IHenshinMoveProj parent && parent.HasSourceMoveSlot)
-				StampMoveOrigin(to, parent.SourceMoveSlot, parent.SourceMoveSlot == MoveSlot.Ultimate ? 0f : 1f);
+			{
+				float factor = parent.HasCombatEnergyFactor
+					? parent.CombatEnergyFactor
+					: (parent.SourceMoveSlot == MoveSlot.Ultimate ? 0f : 1f);
+				StampMoveOrigin(to, parent.SourceMoveSlot, factor);
+			}
 		}
 
 		public override void OnSpawn(Projectile projectile, IEntitySource source)
@@ -113,6 +121,11 @@ namespace PokemonHenshin.Content.Accessories
 							child.SourceMoveSlot = SourceMoveSlot;
 							child.HasSourceMoveSlot = true;
 						}
+						if (!child.HasCombatEnergyFactor && HasCombatEnergyFactor)
+						{
+							child.CombatEnergyFactor = CombatEnergyFactor;
+							child.HasCombatEnergyFactor = true;
+						}
 					}
 					if (delivery == MoveDelivery.None)
 						delivery = p.Delivery;
@@ -145,6 +158,11 @@ namespace PokemonHenshin.Content.Accessories
 				{
 					child.SourceMoveSlot = SourceMoveSlot;
 					child.HasSourceMoveSlot = true;
+				}
+				if (child != null && !child.HasCombatEnergyFactor && HasCombatEnergyFactor)
+				{
+					child.CombatEnergyFactor = CombatEnergyFactor;
+					child.HasCombatEnergyFactor = true;
 				}
 			}
 
