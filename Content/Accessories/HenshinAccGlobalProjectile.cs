@@ -29,9 +29,12 @@ namespace PokemonHenshin.Content.Accessories
 			{
 				if (child != null)
 				{
-					child.Homing |= p.Homing;
-					child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
-					child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+					if (!HenshinProjUtil.BlocksAccessoryHoming(child))
+					{
+						child.Homing |= p.Homing;
+						child.HomingTurnRate = Math.Max(child.HomingTurnRate, p.HomingTurnRate);
+						child.HomingRangeTiles = Math.Max(child.HomingRangeTiles, p.HomingRangeTiles);
+					}
 					child.HomingTargetWhoAmI = -1;
 					if (child.Delivery == MoveDelivery.None)
 						child.Delivery = p.Delivery;

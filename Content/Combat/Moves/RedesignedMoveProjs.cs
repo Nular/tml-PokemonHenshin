@@ -194,6 +194,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				_texType = ProjectileID.RainbowRodBullet;
 				_tint = new Color(230, 140, 255);
+				InherentHoming = true;
 			}
 			// 泡泡：始终用 ProjectileID.Bubble，并立刻 Load（勿等玩家先用泡泡枪）
 			if (_texType == ProjectileID.Bubble || _texType == ProjectileBorrow.ItemShoot(ItemID.BubbleGun))
@@ -400,6 +401,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.extraUpdates = 1;
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 12;
+			InherentHoming = true;
 		}
 
 		public override void OnSpawn(IEntitySource source)

@@ -509,6 +509,7 @@ namespace PokemonHenshin.Content.Combat
 		float HomingTurnRate { get; set; }
 		float HomingRangeTiles { get; set; }
 		int HomingTargetWhoAmI { get; set; }
+		bool InherentHoming { get; set; }
 		bool IgnoreDefensePartial { get; set; }
 		MoveDelivery Delivery { get; set; }
 	}
