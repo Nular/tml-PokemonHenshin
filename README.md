@@ -35,5 +35,5 @@
 
 ## 资源约定
 
-- 宝可梦 / 饰品外观：52poke；拉取 `tools/fetch_assets.py`，饰品像素化 `tools/pixelize_accessories.py`（64×64：`Axx` / `_Super` / `_Shard`）
+- 宝可梦 / 饰品外观：52poke；拉取 `tools/fetch_assets.py`，饰品像素化 `tools/pixelize_accessories.py`（64×64：`Axx` / `_Super` / `_Shard`）；变身移动 sheet：`tools/extract_locomotion_gif.py` → `Assets/Forms/Locomotion/`
 - 特效：优先原版 `LoadProjectile`/真弹；CWR 只读抄逻辑，trail 可贴图拷入 `Assets/Fx/`（无运行时依赖）；**禁止擅自降级**（见 `AGENTS.md`）

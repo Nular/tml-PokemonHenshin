@@ -299,10 +299,11 @@ class HenshinDamage : DamageClass
 
 ### 4.3 Overlay 绘制
 
-- `HenshinOverlayLayer : PlayerDrawLayer`，位置建议 `AfterParent(PlayerDrawLayers.LastVanillaLayer)` 或 Wings 之后。
-- 读 `HenshinPlayer.FormId` + 动画状态（Idle/Move/Jump/MoveA/MoveB）。
-- 隐身：`drawInfo.shadow` / 原版 invis 规则；其他玩家可见相同 FormId（靠 SyncForm）。
-- 退出同 tick：`FormId=0` → Layer 不可见。
+- `HenshinOverlayLayer : PlayerDrawLayer`，现役位置 `AfterLastVanillaLayer`。
+- **缺省：** 静帧 `TexturePath` + 地面 bob / 空中微抬 + `TextureFacesLeft` 翻转。
+- **可选移动动画：** `FormDefinition.Locomotion`（`FormLocomotionSpec`：Idle/Run；Jump/Fall/Swim 槽位预留→Run）。脚底锚点、统一画高 64、地面 Run 随 `|vx|` 变速。物品栏/地图头像仍用静帧。流程见 `.cursor/skills/henshin-locomotion`。
+- 隐身：`drawInfo.shadow` / 原版 invis 规则；其他玩家可见相同 FormId（靠 SyncForm）。帧索引本地推算，不同步。
+- 退出同 tick：`CurrentForm=null` → Layer 不可见。
 - **地图头像：** `HenshinMapHeadLayer`（`IsHeadLayer`）把全身图缩进原版 84×84 头像 RT；`HideDrawLayers` 按 `headOnlyRender` 只留 Overlay 或该层。虫洞药水不另写点击。
 
 ### 4.4 FormDefinition 数据驱动
@@ -312,7 +313,8 @@ FormDefinition {
   string FormId;              // "L01_F01"
   int NetworkId;              // 稳定 ushort，联机用
   string DisplayNameKey;
-  string TexturePath;         // 可配置覆盖
+  string TexturePath;         // 静帧（物品/地图）
+  FormLocomotionSpec? Locomotion; // 可选 Idle/Run；见 henshin-locomotion
   PokemonType Primary, Secondary?;
   int Stage;
   string EvolvesFrom?;        // FormId

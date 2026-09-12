@@ -42,8 +42,9 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 | `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
 | `docs/fx-knowledge.md` | FX 目录 / cookbook / 踩坑（Living；特效改动先查这里） |
 | `.cursor/skills/henshin-moves/` | 招式迭代 Skill：语义→**数值门**→预期效果确认→实现 |
+| `.cursor/skills/henshin-locomotion/` | 变身移动动画 Skill：GIF→sheet→`FormLocomotionSpec`→Overlay 验收 |
 | `.cursor/rules/tml-api-docs.mdc` | **alwaysApply**：设计须查 tModLoader stable API |
-| `Assets/Forms/` · `Assets/Accessories/` · `Assets/Items/` | 36 形态 + 饰品 64×64（`Axx`/`_Super`/`_Shard`；高清 `_src_hires/`；脚本 `tools/pixelize_accessories.py`）；消耗品 `RareCandy.png` |
+| `Assets/Forms/` · `Assets/Forms/Locomotion/` · `Assets/Accessories/` · `Assets/Items/` | 36 形态静帧 + 可选移动精灵表（`{FormId}_Idle`/`_Run`；脚本 `tools/extract_locomotion_gif.py`）；饰品 64×64；消耗品 `RareCandy.png` |
 | `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame / Extra98 |
 | `Content/Combat/Moves/HenshinFxDraw.cs` | Additive 绘制：`DrawContinuousBeam` / SheetFrame / `ScaleForWorldDiameter` |
 | `Content/Combat/` · `Items/Forms/` · `Items/Consumables/` | HenshinForceItem + 36 形态；`RareCandy` |
@@ -69,8 +70,9 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 ## 当前状态与下一步
 
 - **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **单机已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
-- **数值（2026-09-09～12）：** v1.4 已接线（需求 **v1.4.23**）。击杀 XP × 世界档；`ExpNeeded` × 物品带。世界档/`100` **只挡获取**（`CanGainExperience`）；不截存档。卡顶/满级不飘 `EXP +X`。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。**大招后 ~2.5s 禁止一切充能**（`UltEnergyLockoutTicks`；勿再钉弹上能量系数）。DPS 抽检仍待本地。
+- **数值（2026-09-09～12）：** v1.4 已接线（需求 **v1.4.25**）。击杀 XP × 世界档；`ExpNeeded` × 物品带。世界档/`100` **只挡获取**（`CanGainExperience`）；不截存档。卡顶/满级不飘 `EXP +X`。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。**大招后 ~2.5s 禁止一切充能**（`UltEnergyLockoutTicks`；勿再钉弹上能量系数）。DPS 抽检仍待本地。
 - **饰品（2026-09-12）：** A01–A28 效果重平衡已接线；**A29 电气球**（仅皮卡丘：普通攻防 +100%/攻速 +10%；超级 +200%/+20%；碎片奇攻偶防 25%）已接线。数字以 `HenshinAccCatalog` 为准。**游戏内数值/闪避/电气球手感验收仍待本地**。
+- **移动动画（2026-09-12）：** `FormLocomotionSpec` + Overlay 采帧；皮卡丘 Idle/Run 已接线（空中/游泳复用 Run）；统一画高 64；资源朝右；地面 Run 随 `|vx|` 变速。Skill：`.cursor/skills/henshin-locomotion`。**用户确认手感 OK**；其它形态仍单帧+bob。
 - **2026-09-10～11：** 中文 loc 以 `{` 开头的 StatsUI 行已加引号。属性面板入口下移 64px 避开原版图鉴。御三家改 `AddStartingItems` + `PostUpdateMiscEffects` 入包（角色档 `starterGranted`；禁止 `OnEnterWorld`）；**进世界发放已本地验收**。变身地图头像：`HenshinMapHeadLayer`（需求 §2.3）；**游戏内/联机头像与虫洞药水待本地验收**。
 - **2026-09-11（面板）：** 属性面板可拖动（`HenshinClientConfig`）+ 复位；招式威力%；会心/超会心；武器/命中/其它乘区。**2026-09-12：** 入口与面板共用锚点拖动（面板始终贴入口右侧）。**游戏内拖动与文案验收待本地**。
 - **联机视觉（2026-09-11）：** `SyncAim` + `OwnerMouseWorld`；壳弹/尖石/岩封锁/精神击破 `Ensure*` **已接线**。**双端验收 pending**。清单 `docs/fx-knowledge.md`「联机视觉/指向」。

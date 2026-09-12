@@ -36,6 +36,11 @@ namespace PokemonHenshin.Content.PlayerState
 		public ushort CurrentFormNetId => CurrentForm?.NetworkId ?? 0;
 		public int TransformTicks { get; private set; }
 
+		/// <summary>本地移动动画帧（无需联机同步）。</summary>
+		public int LocomotionFrame { get; private set; }
+		public FormLocomotionState LocomotionState { get; private set; }
+		private int locomotionFrameTimer;
+
 		public bool IsPhasing { get; private set; }
 		public int PhasingTimeLeft { get; private set; }
 		public int PhasingCooldown { get; private set; }
@@ -285,6 +290,7 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			CurrentForm = form;
 			TransformTicks = 0;
+			ResetLocomotionAnim();
 			FlightEnergy = FlightEnergyMax;
 			UltimateEnergy = energyByForm.TryGetValue(form.FormId, out float e) ? e : 0f;
 			_aimMoveCd = 0;
@@ -300,11 +306,56 @@ namespace PokemonHenshin.Content.PlayerState
 				EndPhasing(safeTeleport: true);
 			CurrentForm = null;
 			TransformTicks = 0;
+			ResetLocomotionAnim();
 			ClearFrameBonuses();
 			FlightEnergy = 0f;
 			UltimateEnergy = 0f;
 			MoxieStacks = 0;
 			UltEnergyLockoutTicks = 0;
+		}
+
+		private void ResetLocomotionAnim()
+		{
+			LocomotionFrame = 0;
+			locomotionFrameTimer = 0;
+			LocomotionState = FormLocomotionState.Idle;
+		}
+
+		private void UpdateLocomotionAnim()
+		{
+			FormLocomotionSpec loco = CurrentForm?.Locomotion;
+			if (loco == null)
+			{
+				ResetLocomotionAnim();
+				return;
+			}
+
+			FormLocomotionState state = FormLocomotionSpec.ResolveState(Player);
+			if (state != LocomotionState)
+			{
+				LocomotionState = state;
+				LocomotionFrame = 0;
+				locomotionFrameTimer = 0;
+			}
+
+			FormAnimClip clip = loco.GetClip(state);
+			if (clip == null || clip.FrameCount <= 0)
+				return;
+
+			int need = clip.TicksForFrame(LocomotionFrame);
+			// 仅地面横向 Run：|vx| 越大，每帧持续越短。
+			if (state == FormLocomotionState.Run)
+			{
+				float scale = FormLocomotionSpec.RunPlaybackScale(Math.Abs(Player.velocity.X));
+				need = Math.Max(1, (int)Math.Round(need / scale));
+			}
+
+			locomotionFrameTimer++;
+			if (locomotionFrameTimer >= need)
+			{
+				locomotionFrameTimer = 0;
+				LocomotionFrame = (LocomotionFrame + 1) % clip.FrameCount;
+			}
 		}
 
 		private float leftoversAcc;
@@ -707,7 +758,10 @@ namespace PokemonHenshin.Content.PlayerState
 		{
 			ReconcileForm();
 			if (IsTransformed)
+			{
 				TransformTicks++;
+				UpdateLocomotionAnim();
+			}
 
 			if (PhasingCooldown > 0) PhasingCooldown--;
 			if (BossEngageTimer > 0) BossEngageTimer--;

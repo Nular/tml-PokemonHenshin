@@ -1,0 +1,32 @@
+{
+  "source": "Assets/TEMP_ASSETS/pikachu_idle.gif",
+  "flip_h": true,
+  "frameCount": 21,
+  "frameWidth": 87,
+  "frameHeight": 87,
+  "durationsMs": [
+    150,
+    100,
+    150,
+    150,
+    50,
+    450,
+    100,
+    50,
+    50,
+    150,
+    400,
+    50,
+    100,
+    50,
+    50,
+    100,
+    100,
+    50,
+    100,
+    50,
+    200
+  ],
+  "facesLeft": false,
+  "note": "C# FormAnimClip is hardcoded; this JSON is authoring evidence only."
+}

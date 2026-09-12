@@ -1,0 +1,15 @@
+{
+  "source": "Assets/TEMP_ASSETS/pikachu-running.gif",
+  "flip_h": false,
+  "frameCount": 4,
+  "frameWidth": 200,
+  "frameHeight": 146,
+  "durationsMs": [
+    70,
+    70,
+    70,
+    70
+  ],
+  "facesLeft": false,
+  "note": "C# FormAnimClip is hardcoded; this JSON is authoring evidence only."
+}
