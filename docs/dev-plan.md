@@ -3,8 +3,8 @@
 | 项 | 内容 |
 |----|------|
 | 版本 | 1.4 |
-| 对齐需求 | `docs/requirements.md` **v1.4.23**（数值表 `docs/balance-stats.md`；饰品数字 `HenshinAccCatalog`） |
-| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**（获取硬顶，不截存档；大招后 `UltEnergyLockout`）。**饰品效果重平衡 v1.4.23 已接线**（游戏内验收 pending）。变身地图头像已接线。`SyncAim` / 壳弹旁观端贴图重建已接线（双端验收 pending）。之力专属前缀（蓄能/铁壁/猛攻）+ 暴击对齐原版 Crit（游戏内验收 pending）。DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
+| 对齐需求 | `docs/requirements.md` **v1.4.25**（数值表 `docs/balance-stats.md`；饰品数字 `HenshinAccCatalog`） |
+| 状态 | **战斗模型 v1.3 已落地**；**v1.4 数值已接线**（获取硬顶，不截存档；大招后 `UltEnergyLockout`）。**饰品效果重平衡 + A29 电气球已接线**（游戏内验收 pending）。皮卡丘 Idle/Run 移动动画已接线（其它形态仍单帧+bob）。变身地图头像已接线。`SyncAim` / 壳弹旁观端贴图重建已接线（双端验收 pending）。之力专属前缀（蓄能/铁壁/猛攻）+ 暴击对齐原版 Crit（游戏内验收 pending）。DPS 抽检 / 弹出验收 / M5 后置。未接线代码见需求 §12.1。 |
 | 参考实现 | `C:\Dev\projects\misc_prj\CalamityOverhaul`（只学模式，不照搬玩法；**禁止修改该仓库任何文件**） |
 | 产出约束 | 本文件对齐现役代码 + 标明未实装设计；冲突以 `docs/requirements.md` 为准 |
 
@@ -34,7 +34,7 @@
 - 持握期间**禁止坐骑**
 - 独立伤害类型 `HenshinDamage`，职业专精按 **k = 0.35** 折算
 - 随 `ProgressStage` **与物品等级双条件**进化（需求 v1.4；代码已接线）
-- 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01–A28 饰品**（碎片/普通/超级）
+- 开局发放御三家；第一版约 **17 链 / 36 形态** + **A01–A29 饰品**（碎片/普通/超级；A29 电气球仅皮卡丘）
 - **联机必须一致**（形态、能量、伤害、进化、天气场伤害侧、地形变更；v1.4 另含 level/xp）
 - 招式泰拉适配：`docs/move-effects.md`；数值真源：`docs/balance-stats.md`（**已接线** `HenshinStatService` / `FormStatTable`）
 
@@ -89,7 +89,7 @@ PokemonHenshin/                # 仓库根 = 模组根
   Localization/                # en-US / zh-Hans hjson；值以 `{`/`[` 开头必须双引号，否则模组加载失败
   Assets/
     Forms/                     # 36 形态精灵图，按 FormId 命名
-    Accessories/               # A01–A28：`Axx` / `_Super` / `_Shard` 64×64（非 FX）
+    Accessories/               # A01–A29：`Axx` / `_Super` / `_Shard` 64×64（非 FX）
     Items/                     # RareCandy.png
     Fx/                        # CWR 拷贝贴图（无运行时依赖）
   Content/
@@ -501,7 +501,7 @@ TryEditTile(player, action) →
 ### M4 — 内容填满与平衡
 
 - [x] 36 形态物品与招式骨架 + 52poke 贴图
-- [x] 饰品 A01–A28（碎片/普通/超级；游戏内验收 pending）
+- [x] 饰品 A01–A29（碎片/普通/超级；含 A29 电气球；游戏内验收 pending）
 - [x] 掉落/合成占位；传说可创造/合成
 - [ ] DPS 抽检精表（占位数值，精调后置 M5）
 - **验收：** **待游戏内 A4**
@@ -534,7 +534,7 @@ TryEditTile(player, action) →
 | 阶段 | 形态表 | 招式 | 饰品 | 宝可梦图 | 特效 |
 |------|--------|------|------|----------|------|
 | M0 | 1 条 L01_F01 | A/B 占位 | 无 | 52poke 小火龙 | 仅原版/灾厄/大修复用 |
-| M1～M4（**现役**） | **36 形态满表** | 被动+技能1/2+大招已接线 | **A01–A28** | **36 Forms + 饰品 64×64 已入库**（游戏内图标验收 pending） | 逐招式映射已有 FX，禁止新图 |
+| M1～M4（**现役**） | **36 形态满表** | 被动+技能1/2+大招已接线 | **A01–A29** | **36 Forms + 饰品 64×64 已入库**（含 A29；游戏内图标验收 pending） | 逐招式映射已有 FX，禁止新图 |
 | M5 | 冻结 ID | 数值精调 | 微调 | 路径可替换验收 | 回归：仓库无新增 Fx 图片 |
 
 **仍待填写（不挡玩法骨架）：** 招式精确数值、对标 ItemID、DPS 抽检精表、商标策略（需求 §15）。
@@ -695,3 +695,5 @@ TryEditTile(player, action) →
 | **1.4.21** | 对齐 requirements v1.4.21：属性面板拖动/复位、威力%、会心段、乘区分组 |
 | **1.4.22** | 对齐 requirements v1.4.22：大招后充能锁定；去掉 fail-closed 能量路径口径 |
 | **1.4.23** | 对齐 requirements v1.4.23：饰品重平衡（AffinityPower/暴击三轴/闪避等）；Catalog 为饰品数字权威 |
+| **1.4.24** | 对齐 requirements v1.4.24：皮卡丘可选 Idle/Run 移动动画（`FormLocomotionSpec`） |
+| **1.4.25** | 对齐 requirements v1.4.25：A29 电气球（仅皮卡丘；`RequiredFormId` / `FormAtkMul` / `FormDefMul` / `UseTimeMul`） |

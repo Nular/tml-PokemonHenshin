@@ -2,13 +2,15 @@
 
 | 项 | 内容 |
 |----|------|
-| 状态 | **施工归档**（2026-09-12：效果数字以 Catalog + requirements §10 **v1.4.23** 为准；游戏内验收仍 pending） |
+| 状态 | **施工归档**（效果数字以 Catalog + requirements §10 **v1.4.25** 为准；A29 电气球已接线；游戏内验收仍 pending） |
 | 日期 | 2026-09-09（初稿）；效果重平衡 2026-09-12 |
 | 基线 | 初稿相对 `origin/main` @ `06509c0`。现役数字以仓库内 `HenshinAccCatalog` 为准。 |
 | 权威 | **产品规则：** `docs/requirements.md` §6 / §10。**效果数字：** `Content/Accessories/HenshinAccCatalog.cs`。本文件保留名称/贴图/合成/掉落/施工决策；**中部 AccStat 与家族数值表含已删字段（AffinityAmp、FallDmgReductionSet、GuardCut、TilePierceField、AccActive 等），勿当现役抄。** |
 | 道具名/图 | [52poke 道具列表](https://wiki.52poke.com/wiki/道具列表) 官方中文名 + `Bag {中文名} SV Sprite.png` |
 
 本文是饰品重构施工图归档。冲突时：用户审阅批注 > `docs/requirements.md` + `HenshinAccCatalog` > 本文件。
+
+> **v1.4.25：** 新增形态限定家族 **A29 电气球**（仅 `L04_F01`）。数字与门控以 Catalog / requirements §6·§10 为准；下文 A01–A28 施工史不必回改。
 
 ---
 
@@ -113,7 +115,7 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 
 | 路径 | 职责 | 谁改 |
 |------|------|------|
-| `Content/Accessories/AccFamilyId.cs` | `enum AccFamilyId : byte` A01–A28 | 脚手架 |
+| `Content/Accessories/AccFamilyId.cs` | `enum AccFamilyId : byte` A01–A29 | 脚手架 |
 | `Content/Accessories/AccPiece.cs` | `enum AccPiece { S1=1,…S6=6, Normal=10, Super=20 }` | 脚手架 |
 | `Content/Accessories/MoveDelivery.cs` | 招式交付枚举 | 脚手架 |
 | `Content/Accessories/HenshinAccCatalog.cs` | **唯一数字/拆分/掉落/合成/图/官方名表** | 脚手架先骨架，WP-C 填满 |
@@ -130,10 +132,10 @@ tML 用 `ModItem.Name` 存盘。旧名必须继续指向 **普通成品**：
 | `Content/Loot/HenshinLoot.cs` | **删光旧 AddAcc 占位配方**；只保留之力掉落；饰品掉落/配方走 Catalog | WP-F |
 | `Content/Loot/HenshinDropDatabase.cs` | `ModifyNPCLoot` / `ModifyItemLoot`：碎片 + 之力 Boss/匣/袋 | WP-F |
 | `Localization/zh-Hans_*.hjson` + `en-US_*.hjson` | 物品名/说明/角标/生效标签 | WP-G |
-| `tools/fetch_assets.py` | ACC_FILES A01–A28 → 袋内图 | WP-H |
+| `tools/fetch_assets.py` | ACC_FILES A01–A29 → 袋内图 | WP-H |
 | `tools/pixelize_accessories.py` | 64×64 pixeloe + Super 金边闪点 + `_Shard` 剪影 | WP-H |
 | `tools/make_super_accessory_sprites.py` | **已弃用**：转发到 `pixelize_accessories.py` | WP-H |
-| `docs/requirements.md` §6 §10 | 已回写；现役页眉 **v1.4.23**；冲突以需求 + `HenshinAccCatalog` 为准 | 收尾 |
+| `docs/requirements.md` §6 §10 | 已回写；现役页眉 **v1.4.25**；冲突以需求 + `HenshinAccCatalog` 为准 | 收尾 |
 | `docs/accessory-rework-plan.md` | 本文件 | 主 Agent |
 
 `Items/Accessories/HenshinAccessories.cs`：脚手架完成后删除，避免 21 个 class 与 Loader 抢同一个 Name。
