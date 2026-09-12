@@ -23,7 +23,7 @@ def placeholder(aid: str, idx: int) -> None:
 
 
 def main() -> None:
-	for i in range(1, 29):
+	for i in range(1, 30):
 		aid = f"A{i:02d}"
 		path = ACCS / f"{aid}.png"
 		if not path.exists():

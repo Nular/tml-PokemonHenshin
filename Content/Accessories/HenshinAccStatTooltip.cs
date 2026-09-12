@@ -29,6 +29,18 @@ namespace PokemonHenshin.Content.Accessories
 				});
 			}
 
+			if (!string.IsNullOrEmpty(def.RequiredFormId))
+			{
+				string formName = Language.GetTextValue("Mods.PokemonHenshin.Accessories.RequiredForm." + def.RequiredFormId);
+				if (string.IsNullOrEmpty(formName) || formName.StartsWith("Mods.", StringComparison.Ordinal))
+					formName = def.RequiredFormId;
+				tooltips.Add(new TooltipLine(mod, "HenshinAccRequiredForm",
+					Language.GetTextValue("Mods.PokemonHenshin.Accessories.RequiredFormLine", formName))
+				{
+					OverrideColor = new Color(255, 210, 120)
+				});
+			}
+
 			AccStatLine[] stats = def.Stats(piece);
 			if (stats == null || stats.Length == 0)
 				return;
@@ -83,6 +95,8 @@ namespace PokemonHenshin.Content.Accessories
 					=> Language.GetTextValue(key, Num(line.Value / 60f)),
 				AccStat.EnergyGainMul
 					=> Language.GetTextValue(key, Pct(line.Value)),
+				AccStat.UseTimeMul
+					=> Language.GetTextValue(key, Pct(1f - line.Value)),
 				_ => Language.GetTextValue(key, Pct(line.Value))
 			};
 		}

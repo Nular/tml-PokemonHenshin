@@ -34,6 +34,7 @@ FAMILIES = [
 	("A26Leftovers", "吃剩的东西", "Leftovers", "宝可梦的吃剩的东西。携带后，能在战斗中慢慢回复ＨＰ。", "Leftovers that slowly restore HP in battle."),
 	("A27FocusSash", "气势披带", "Focus Sash", "带着气势的头巾。在ＨＰ全满时，即便受到可能会导致濒死的招式，也能仅以１ＨＰ撑过去１次。", "Endures a would-be KO if HP is above a threshold, then cools down."),
 	("A28Eviolite", "进化奇石", "Eviolite", "有点不可思议的进化石。携带后，还能进化的宝可梦的防御和特防就会提高。", "Raises defense of forms that can still evolve."),
+	("A29LightBall", "电气球", "Light Ball", "让皮卡丘携带后，攻击和特攻就会提高的神奇球。", "An item to be held by Pikachu. It raises Attack and Sp. Atk."),
 ]
 
 ZH_NUM = "一二三四五六"

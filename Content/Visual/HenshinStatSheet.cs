@@ -386,6 +386,7 @@ namespace PokemonHenshin.Content.Visual
 			AddSignedPct(lines, "TotFactor", hp.HenshinDamageFactorBonus);
 			AddSignedPct(lines, "TotChoice", hp.ChoiceDamage);
 			AddSignedPct(lines, "TotLifeOrb", hp.LifeOrbDamage);
+			AddSignedPct(lines, "TotFormAtk", hp.FormAtkMul);
 			if (lines.Count == before)
 			{
 				lines.Add(new StatLine(StatLineKind.Inactive, T("ZoneEmpty")));
@@ -397,6 +398,7 @@ namespace PokemonHenshin.Content.Visual
 			product *= 1f + hp.HenshinDamageFactorBonus;
 			product *= 1f + hp.ChoiceDamage;
 			product *= 1f + hp.LifeOrbDamage;
+			product *= 1f + hp.FormAtkMul;
 			lines.Add(new StatLine(StatLineKind.Active, T("ZoneWeaponTotal", MultPct(product))));
 		}
 
@@ -425,6 +427,7 @@ namespace PokemonHenshin.Content.Visual
 			int before = lines.Count;
 
 			AddSignedPct(lines, "TotEvioliteDef", hp.EvioliteDefMul);
+			AddSignedPct(lines, "TotFormDef", hp.FormDefMul);
 			AddSignedPct(lines, "TotMoveSpeed", hp.MoveSpeedBonus);
 			AddSignedPct(lines, "TotWaterSpeed", hp.WaterSpeedBonus);
 			AddSignedPct(lines, "TotXpHeld", hp.XpHeldMul);
@@ -433,8 +436,9 @@ namespace PokemonHenshin.Content.Visual
 
 			if (Math.Abs(hp.IncomingDamageMultiplier - 1f) > 0.0005f)
 				lines.Add(KindBySign(hp.IncomingDamageMultiplier < 1f, T("TotIncoming", Pct(hp.IncomingDamageMultiplier))));
-			if (Math.Abs(hp.MoveCooldownMultiplier - 1f) > 0.0005f)
-				lines.Add(new StatLine(StatLineKind.Body, T("TotCooldown", Pct(hp.MoveCooldownMultiplier))));
+			float moveIntervalMul = hp.MoveCooldownMultiplier * hp.UseTimeMul;
+			if (Math.Abs(moveIntervalMul - 1f) > 0.0005f)
+				lines.Add(new StatLine(StatLineKind.Body, T("TotCooldown", Pct(moveIntervalMul))));
 			if (Math.Abs(hp.DashCooldownMultiplier - 1f) > 0.0005f)
 				lines.Add(new StatLine(StatLineKind.Body, T("TotDashCd", Pct(hp.DashCooldownMultiplier))));
 			if (Math.Abs(hp.LungeCooldownMultiplier - 1f) > 0.0005f)
@@ -580,18 +584,19 @@ namespace PokemonHenshin.Content.Visual
 
 				AccFamilyDef def = HenshinAccCatalog.Get(acc.FamilyId);
 				bool transformed = hp.IsTransformed;
-				bool resOk = def == null || def.Resonance == PokemonType.None
-					|| (hp.CurrentForm != null && (hp.CurrentForm.Primary == def.Resonance || hp.CurrentForm.Secondary == def.Resonance));
+				bool gateOk = HenshinAccItem.GateOk(def, hp);
 				bool everstone = def is { WorksUntransformed: true };
 				bool curseTag = acc.FamilyId == AccFamilyId.A11;
-				bool active = everstone ? resOk : transformed && resOk;
+				bool active = everstone ? gateOk : transformed && gateOk;
 				string reason = active
 					? string.Empty
 					: curseTag && !transformed
 						? T("AccReasonCurseTag")
 						: !transformed && !everstone
 							? T("AccReasonForm")
-							: T("AccReasonResonance");
+							: !string.IsNullOrEmpty(def?.RequiredFormId) && (hp.CurrentForm == null || hp.CurrentForm.FormId != def.RequiredFormId)
+								? T("AccReasonRequiredForm")
+								: T("AccReasonResonance");
 
 				rows.Add(new AccRow
 				{
@@ -695,6 +700,9 @@ namespace PokemonHenshin.Content.Visual
 			sb.Append(hp.HenshinDamageFactorBonus.ToString("0.###")).Append('|');
 			sb.Append(hp.ChoiceDamage.ToString("0.###")).Append('|');
 			sb.Append(hp.LifeOrbDamage.ToString("0.###")).Append('|');
+			sb.Append(hp.FormAtkMul.ToString("0.###")).Append('|');
+			sb.Append(hp.FormDefMul.ToString("0.###")).Append('|');
+			sb.Append(hp.UseTimeMul.ToString("0.###")).Append('|');
 			sb.Append(hp.BossDamageBonus.ToString("0.###")).Append('|');
 			sb.Append(hp.CritUpgradeChance.ToString("0.###")).Append('|');
 			sb.Append(hp.OnFireCritUpgrade.ToString("0.###")).Append('|');

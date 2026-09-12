@@ -344,7 +344,7 @@ def main() -> None:
 	os.makedirs(ACCS, exist_ok=True)
 	if not os.path.isdir(SRC_DIR):
 		print(f"NOTE: no {SRC_DIR}; using current Accessories/*.png as source")
-	for i in range(1, 29):
+	for i in range(1, 30):
 		process_one(f"A{i:02d}")
 
 

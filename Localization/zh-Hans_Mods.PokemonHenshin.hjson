@@ -254,6 +254,7 @@ StatsUI: {
 	TotFactor: 变身因子　{0}%
 	TotChoice: 讲究头带　{0}%
 	TotLifeOrb: 生命宝珠　{0}%
+	TotFormAtk: 形态攻击　{0}%
 	TotTypeMove: 特性招式　{0}%
 	TotBoss: 对 Boss 单位　{0}%
 	TotOnFire: 对燃烧单位　{0}%
@@ -264,6 +265,7 @@ StatsUI: {
 	TotEvioliteDmg: 进化奇石伤害　{0}%
 	TotAftermathNow: （后摇中）当前再 ×{0}%
 	TotEvioliteDef: 进化奇石防御　{0}%
+	TotFormDef: 形态防御　{0}%
 	TotMoveSpeed: 移动速度　{0}%
 	TotWaterSpeed: 水中移速　{0}%
 	TotXpHeld: 持握经验　{0}%
@@ -309,6 +311,7 @@ StatsUI: {
 	AccReasonForm: 仅变身生效
 	AccReasonCurseTag: 诅咒焰已生效；穿墙需变身
 	AccReasonResonance: 共鸣不符
+	AccReasonRequiredForm: 形态不符
 	SectionRuntime: 当前状态
 	RunMoxie: 自信过度 {0} 层（伤害 {1}%）
 	RunDashCd: 冲刺冷却 {0}s
@@ -375,6 +378,10 @@ Accessories: {
 	CurseTagWornTag: 【诅咒焰戴着即生效；穿墙仅变身】
 	ShardTag: 碎片 {0}/6
 	ResonanceLine: 共鸣：{0}
+	RequiredFormLine: 仅形态：{0}
+	RequiredForm: {
+		L04_F01: 皮卡丘
+	}
 	TypeFire: 火
 	TypeWater: 水
 	TypeElectric: 电
@@ -448,6 +455,9 @@ Accessories: {
 	StatUntransformedDefense: 防御 +{0}（未变身也生效）
 	StatAccDefense: 变身防御 +{0}
 	StatDodgeChance: 受击闪避 +{0}%
+	StatFormAtkMul: 形态攻击 +{0}%
+	StatFormDefMul: 形态防御 +{0}%
+	StatUseTimeMul: 招式攻速 +{0}%
 }
 
 Buffs: {
@@ -1915,6 +1925,46 @@ Items: {
 	A28Eviolite_Super: {
 		DisplayName: 超级进化奇石
 		Tooltip: 有点不可思议的进化石。携带后，还能进化的宝可梦的防御和特防就会提高。
+	}
+
+	A29LightBall: {
+		DisplayName: 电气球
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
+	}
+
+	A29LightBall_S1: {
+		DisplayName: 电气球碎片一
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
+	}
+
+	A29LightBall_S2: {
+		DisplayName: 电气球碎片二
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
+	}
+
+	A29LightBall_S3: {
+		DisplayName: 电气球碎片三
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
+	}
+
+	A29LightBall_S4: {
+		DisplayName: 电气球碎片四
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
+	}
+
+	A29LightBall_S5: {
+		DisplayName: 电气球碎片五
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
+	}
+
+	A29LightBall_S6: {
+		DisplayName: 电气球碎片六
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
+	}
+
+	A29LightBall_Super: {
+		DisplayName: 超级电气球
+		Tooltip: 让皮卡丘携带后，攻击和特攻就会提高的神奇球。
 	}
 }
 

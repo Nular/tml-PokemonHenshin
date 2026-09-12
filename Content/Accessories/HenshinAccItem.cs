@@ -99,18 +99,31 @@ namespace PokemonHenshin.Content.Accessories
 			if (!transformed && !def.WorksUntransformed)
 				return;
 
-			if (transformed)
-
-			if (def.Resonance != PokemonType.None)
-			{
-				if (hp.CurrentForm == null)
-					return;
-				if (hp.CurrentForm.Primary != def.Resonance && hp.CurrentForm.Secondary != def.Resonance)
-					return;
-			}
+			if (transformed && !GateOk(def, hp))
+				return;
 
 			foreach (AccStatLine line in def.Stats(Piece))
 				hp.ApplyAccStat(line);
+		}
+
+		/// <summary>形态门 + 属性共鸣；未变身路径（不变之石）跳过。</summary>
+		internal static bool GateOk(AccFamilyDef def, HenshinPlayer hp)
+		{
+			if (def == null)
+				return true;
+			if (!string.IsNullOrEmpty(def.RequiredFormId))
+			{
+				if (hp?.CurrentForm == null || hp.CurrentForm.FormId != def.RequiredFormId)
+					return false;
+			}
+			if (def.Resonance != PokemonType.None)
+			{
+				if (hp?.CurrentForm == null)
+					return false;
+				if (hp.CurrentForm.Primary != def.Resonance && hp.CurrentForm.Secondary != def.Resonance)
+					return false;
+			}
+			return true;
 		}
 
 		public override void ModifyTooltips(List<TooltipLine> tooltips)
@@ -120,8 +133,7 @@ namespace PokemonHenshin.Content.Accessories
 			AccFamilyDef def = Def;
 			HenshinAccStatTooltip.AddLines(tooltips, Mod, def, Piece);
 			bool transformed = hp != null && hp.IsTransformed;
-			bool resOk = def == null || def.Resonance == PokemonType.None
-				|| (hp?.CurrentForm != null && (hp.CurrentForm.Primary == def.Resonance || hp.CurrentForm.Secondary == def.Resonance));
+			bool gateOk = GateOk(def, hp);
 			bool everstone = def is { WorksUntransformed: true };
 			bool curseTag = FamilyId == AccFamilyId.A11;
 			string key;
@@ -134,8 +146,8 @@ namespace PokemonHenshin.Content.Accessories
 			else
 			{
 				bool active = everstone
-					? resOk
-					: transformed && resOk;
+					? gateOk
+					: transformed && gateOk;
 				key = everstone
 					? (active ? "Mods.PokemonHenshin.Accessories.AlwaysActiveTag" : "Mods.PokemonHenshin.Accessories.AlwaysInactiveTag")
 					: (active ? "Mods.PokemonHenshin.Accessories.ActiveTag" : "Mods.PokemonHenshin.Accessories.InactiveTag");
@@ -143,8 +155,8 @@ namespace PokemonHenshin.Content.Accessories
 			bool gateOn = curseTag
 				? transformed
 				: everstone
-					? resOk
-					: transformed && resOk;
+					? gateOk
+					: transformed && gateOk;
 			tooltips.Add(new TooltipLine(Mod, "HenshinAccGate", Language.GetTextValue(key))
 			{
 				OverrideColor = curseTag || gateOn ? Color.LightGreen : Color.OrangeRed
