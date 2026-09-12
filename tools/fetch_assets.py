@@ -66,6 +66,7 @@ ACC_FILES = {
     "A26": "Bag 吃剩的东西 SV Sprite.png",
     "A27": "Bag 气势披带 SV Sprite.png",
     "A28": "Bag 进化奇石 SV Sprite.png",
+    "A29": "Bag 电气球 SV Sprite.png",
 }
 
 UA = {"User-Agent": "PokemonHenshinModBot/1.0 (dev asset fetch)"}

@@ -12,6 +12,8 @@ namespace PokemonHenshin.Content.Accessories
 		public string OfficialEn { get; init; }
 		public string WikiBagFile { get; init; }
 		public PokemonType Resonance { get; init; }
+		/// <summary>非空时仅该 FormId（如 L04_F01）持握变身生效。</summary>
+		public string RequiredFormId { get; init; }
 		public bool WorksUntransformed { get; init; }
 		public int MinStage { get; init; }
 		public int SuperMinStage { get; init; }
@@ -123,7 +125,8 @@ namespace PokemonHenshin.Content.Accessories
 			int min, int superMin, PokemonType res = PokemonType.None, bool untransformed = false,
 			AccStatLine[] s1 = null, AccStatLine[] s2 = null, AccStatLine[] s3 = null,
 			AccStatLine[] s4 = null, AccStatLine[] s5 = null, AccStatLine[] s6 = null,
-			AccStatLine[] normal = null, AccStatLine[] super = null, AccLootSpec[] loot = null)
+			AccStatLine[] normal = null, AccStatLine[] super = null, AccLootSpec[] loot = null,
+			string requiredFormId = null)
 		{
 			return new AccFamilyDef
 			{
@@ -133,6 +136,7 @@ namespace PokemonHenshin.Content.Accessories
 				OfficialEn = en,
 				WikiBagFile = wiki,
 				Resonance = res,
+				RequiredFormId = requiredFormId,
 				WorksUntransformed = untransformed,
 				MinStage = min,
 				SuperMinStage = superMin,
@@ -692,7 +696,28 @@ namespace PokemonHenshin.Content.Accessories
 					Boss(NPCID.Deerclops),
 					Craft(TileID.MythrilAnvil, (ItemID.ChlorophyteBar, 8)),
 					Boss(NPCID.Plantera)
-				})
+				}),
+
+			// 仅皮卡丘（L04_F01）；接受永久毕业。攻速走 UseTimeMul，不占 CooldownCut 硬顶。
+			Fam(AccFamilyId.A29, "A29LightBall", "电气球", "Light Ball", "Bag 电气球 SV Sprite.png", 2, 5,
+				s1: new[] { S(AccStat.FormAtkMul, 0.25f) },
+				s2: new[] { S(AccStat.FormDefMul, 0.25f) },
+				s3: new[] { S(AccStat.FormAtkMul, 0.25f) },
+				s4: new[] { S(AccStat.FormDefMul, 0.25f) },
+				s5: new[] { S(AccStat.FormAtkMul, 0.25f) },
+				s6: new[] { S(AccStat.FormDefMul, 0.25f) },
+				normal: new[] { S(AccStat.FormAtkMul, 1.0f), S(AccStat.FormDefMul, 1.0f), S(AccStat.UseTimeMul, 0.90f) },
+				super: new[] { S(AccStat.FormAtkMul, 2.0f), S(AccStat.FormDefMul, 2.0f), S(AccStat.UseTimeMul, 0.80f) },
+				loot: new[]
+				{
+					Craft(TileID.Anvils, (ItemID.Wire, 15), (ItemID.FallenStar, 5)),
+					Crate(ItemID.GoldenCrate),
+					Event(NPCID.Pixie),
+					Boss(NPCID.QueenBee),
+					Craft(TileID.MythrilAnvil, (ItemID.Wire, 40), (ItemID.LightShard, 3), (ItemID.SoulofLight, 5)),
+					Boss(NPCID.TheDestroyer)
+				},
+				requiredFormId: "L04_F01")
 		};
 	}
 }

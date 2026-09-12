@@ -29,7 +29,8 @@ namespace PokemonHenshin.Content.Accessories
 		A25,
 		A26,
 		A27,
-		A28
+		A28,
+		A29
 	}
 
 	public enum AccPiece : byte
@@ -112,7 +113,13 @@ namespace PokemonHenshin.Content.Accessories
 		FlightEnergyMul,
 		UntransformedDefense,
 		AccDefense,
-		DodgeChance
+		DodgeChance,
+		/// <summary>形态 FinalAttack 额外比例（+1.0 = +100%）。</summary>
+		FormAtkMul,
+		/// <summary>形态 FinalDefense 额外比例（不绑进化条件）。</summary>
+		FormDefMul,
+		/// <summary>招式 useTime 乘区（0.90 = 攻速约 +10%；与 CooldownCut 独立）。</summary>
+		UseTimeMul
 	}
 
 	public readonly struct AccStatLine

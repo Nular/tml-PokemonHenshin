@@ -258,6 +258,8 @@ namespace PokemonHenshin.Content.Combat
 			float cdMul = hp.IsTransformed ? hp.MoveCooldownMultiplier : 1f;
 			if (hp.IsTransformed && MoveDeliverySets.MeleeShort(move.Delivery))
 				cdMul *= hp.LungeCooldownMultiplier;
+			if (hp.IsTransformed && hp.UseTimeMul != 1f)
+				cdMul *= hp.UseTimeMul;
 			int use = (int)Math.Max(1, Math.Round(move.UseTime * cdMul));
 			Item.useTime = use;
 			Item.useAnimation = use;
@@ -283,6 +285,8 @@ namespace PokemonHenshin.Content.Combat
 					damage *= 1f + hp.ChoiceDamage;
 				if (hp.LifeOrbDamage != 0f)
 					damage *= 1f + hp.LifeOrbDamage;
+				if (hp.FormAtkMul != 0f)
+					damage *= 1f + hp.FormAtkMul;
 			}
 		}
 

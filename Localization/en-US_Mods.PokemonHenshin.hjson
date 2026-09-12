@@ -254,6 +254,7 @@ StatsUI: {
 	TotFactor: "   Form factor  {0}%"
 	TotChoice: "   Choice Band  {0}%"
 	TotLifeOrb: "   Life Orb  {0}%"
+	TotFormAtk: "   Form attack  {0}%"
 	TotTypeMove: "   Ability moves  {0}%"
 	TotBoss: "   vs bosses  {0}%"
 	TotOnFire: "   vs burning  {0}%"
@@ -264,6 +265,7 @@ StatsUI: {
 	TotEvioliteDmg: "   Eviolite damage  {0}%"
 	TotAftermathNow: "   (aftermath) currently ×{0}%"
 	TotEvioliteDef: "   Eviolite defense  {0}%"
+	TotFormDef: "   Form defense  {0}%"
 	TotMoveSpeed: "   Move speed  {0}%"
 	TotWaterSpeed: "   Water speed  {0}%"
 	TotXpHeld: "   Held XP  {0}%"
@@ -309,6 +311,7 @@ StatsUI: {
 	AccReasonForm: henshin only
 	AccReasonCurseTag: burn active; tile pierce needs henshin
 	AccReasonResonance: resonance unmet
+	AccReasonRequiredForm: wrong form
 	SectionRuntime: Now
 	RunMoxie: Moxie x{0} ({1}% damage)
 	RunDashCd: Dash CD {0}s
@@ -375,6 +378,10 @@ Accessories: {
 	CurseTagWornTag: "[Cursed Inferno while worn; tile pierce requires henshin]"
 	ShardTag: Shard {0}/6
 	ResonanceLine: Resonance: {0}
+	RequiredFormLine: Form only: {0}
+	RequiredForm: {
+		L04_F01: Pikachu
+	}
 	TypeFire: Fire
 	TypeWater: Water
 	TypeElectric: Electric
@@ -448,6 +455,9 @@ Accessories: {
 	StatUntransformedDefense: Defense +{0} (works untransformed)
 	StatAccDefense: Transformed defense +{0}
 	StatDodgeChance: Dodge chance +{0}%
+	StatFormAtkMul: Form attack +{0}%
+	StatFormDefMul: Form defense +{0}%
+	StatUseTimeMul: Move attack speed +{0}%
 }
 
 Buffs: {
@@ -1915,6 +1925,46 @@ Items: {
 	A28Eviolite_Super: {
 		DisplayName: Super Eviolite
 		Tooltip: Raises defense of forms that can still evolve.
+	}
+
+	A29LightBall: {
+		DisplayName: Light Ball
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
+	}
+
+	A29LightBall_S1: {
+		DisplayName: Light Ball Shard I
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
+	}
+
+	A29LightBall_S2: {
+		DisplayName: Light Ball Shard II
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
+	}
+
+	A29LightBall_S3: {
+		DisplayName: Light Ball Shard III
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
+	}
+
+	A29LightBall_S4: {
+		DisplayName: Light Ball Shard IV
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
+	}
+
+	A29LightBall_S5: {
+		DisplayName: Light Ball Shard V
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
+	}
+
+	A29LightBall_S6: {
+		DisplayName: Light Ball Shard VI
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
+	}
+
+	A29LightBall_Super: {
+		DisplayName: Super Light Ball
+		Tooltip: An item to be held by Pikachu. It raises Attack and Sp. Atk.
 	}
 }
 

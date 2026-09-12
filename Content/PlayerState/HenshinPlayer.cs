@@ -118,6 +118,12 @@ namespace PokemonHenshin.Content.PlayerState
 		public float UntransformedDefense { get; set; }
 		public float AccDefense { get; set; }
 		public float DodgeChance { get; set; }
+		/// <summary>形态 FinalAttack 额外比例（电气球等；+1.0 = +100%）。</summary>
+		public float FormAtkMul { get; set; }
+		/// <summary>形态 FinalDefense 额外比例（不绑进化条件）。</summary>
+		public float FormDefMul { get; set; }
+		/// <summary>招式 useTime 乘区（默认 1；与 CooldownCut 独立）。</summary>
+		public float UseTimeMul { get; set; } = 1f;
 		/// <summary>铁壁前缀：形态防御结算后再乘的额外比例（如 0.20）。</summary>
 		public float PrefixFormDefenseMul { get; set; }
 
@@ -410,6 +416,9 @@ namespace PokemonHenshin.Content.PlayerState
 				case AccStat.UntransformedDefense: UntransformedDefense += line.Value; break;
 				case AccStat.AccDefense: AccDefense += line.Value; break;
 				case AccStat.DodgeChance: DodgeChance += line.Value; break;
+				case AccStat.FormAtkMul: FormAtkMul += line.Value; break;
+				case AccStat.FormDefMul: FormDefMul += line.Value; break;
+				case AccStat.UseTimeMul: UseTimeMul *= line.Value; break;
 			}
 		}
 
@@ -493,6 +502,9 @@ namespace PokemonHenshin.Content.PlayerState
 			UntransformedDefense = 0f;
 			AccDefense = 0f;
 			DodgeChance = 0f;
+			FormAtkMul = 0f;
+			FormDefMul = 0f;
+			UseTimeMul = 1f;
 			PrefixFormDefenseMul = 0f;
 			TypeMoveBonus = 0f;
 			SynchronizePassive = false;
@@ -817,6 +829,11 @@ namespace PokemonHenshin.Content.PlayerState
 			Player.statDefense += formDef;
 			if (AccDefense > 0f)
 				Player.statDefense += (int)Math.Round(AccDefense);
+			if (FormDefMul > 0f && formDef > 0)
+			{
+				int formExtra = (int)Math.Round(formDef * FormDefMul);
+				Player.statDefense += formExtra;
+			}
 			if (EvioliteDefMul > 0f && CurrentForm != null
 				&& FormRegistry.FindEvolutionOf(CurrentForm.FormId) != null)
 			{
