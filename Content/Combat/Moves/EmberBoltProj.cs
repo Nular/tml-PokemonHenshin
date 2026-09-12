@@ -27,7 +27,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.hostile = false;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 1;
-			Projectile.timeLeft = 120;
+			Projectile.timeLeft = 180;
 			Projectile.tileCollide = true;
 			Projectile.ignoreWater = false;
 			Projectile.aiStyle = -1;

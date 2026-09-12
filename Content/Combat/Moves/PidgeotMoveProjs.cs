@@ -21,8 +21,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool HandlesOwnHoming => true;
 
 		private const float FlightSpeed = 14f;
-		private const float SuckRange = 112f;
-		private const int FlightLife = 100;
+		private const float SuckRange = 168f;
+		private const int FlightLife = 150;
 		private bool _spawnedCompanions;
 		private bool _grounded;
 

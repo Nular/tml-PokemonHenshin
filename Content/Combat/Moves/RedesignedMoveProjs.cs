@@ -173,7 +173,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 1;
-			Projectile.timeLeft = 90;
+			Projectile.timeLeft = 135;
 			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 1;
 		}
@@ -218,7 +218,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.tileCollide = false;
 				Projectile.scale = 1.35f;
-				Projectile.timeLeft = 180;
+				Projectile.timeLeft = 270;
 			}
 			_baseVel = Projectile.velocity;
 		}
@@ -400,7 +400,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 6;
-			Projectile.timeLeft = 240;
+			Projectile.timeLeft = 360;
 			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 1;
 			Projectile.usesLocalNPCImmunity = true;
@@ -502,7 +502,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 3;
-			Projectile.timeLeft = 60;
+			Projectile.timeLeft = 90;
 			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 2;
 			Projectile.usesLocalNPCImmunity = true;
@@ -1094,7 +1094,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 8;
-			Projectile.timeLeft = 120;
+			Projectile.timeLeft = 180;
 			Projectile.tileCollide = false;
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 10;

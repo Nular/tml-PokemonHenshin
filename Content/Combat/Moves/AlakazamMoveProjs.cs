@@ -94,7 +94,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 1;
-			Projectile.timeLeft = 150;
+			Projectile.timeLeft = 225;
 			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 1;
 			Projectile.scale = 1.25f;

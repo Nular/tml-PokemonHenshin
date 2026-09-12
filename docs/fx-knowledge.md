@@ -270,7 +270,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 | MoveKey/CN | Forms (Stage) | Playstyle | Current | Recommended | Feel | Status |
 |------------|---------------|-----------|---------|-------------|------|--------|
-| Confusion/念力 | L08_F01 / L12_F01 | Bolt+Stun | `PsychicWaveBolt` 32格索敌弹射×2 + **命中紫环1格** | ShadowBeam 294 | 波动链 | Accepted |
+| Confusion/念力 | L08_F01 / L12_F01 | Bolt+Stun | `PsychicWaveBolt` 48格索敌弹射×2 + **命中紫环1格** | ShadowBeam 294 | 波动链 | Accepted |
 | TakeDown/猛撞 | L08_F01/L13 Ult | Lunge+Recoil | TakeDownLunge 闪焰式冲+灰 SolarWhipSwordExplosion×4–6 0伤+土黄尘 | SolarWhipSwordExplosion | 金属冲 | Accepted |
 | Psychic/精神强念 | L08_F02 | Bolt+DefDown | AlakazamPsychic 鼠位×3（同胡地） | RainbowRod | 三连追 | Accepted |
 | Psychic/精神强念 | L12_F02 | Bolt+DefDown | AlakazamPsychic 鼠位×3 穿墙穿怪否+延迟追 | RainbowRod | 三连追 | Accepted |
@@ -629,6 +629,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.6 Living | 2026-09-11 | 联机检验清单（与瞄准/OnSpawn 踩坑合并为单节）；尖石/岩封锁/精神击破球同样按 OnSpawn 字段重建 |
 | 2.7 Living | 2026-09-11 | `SafeLoadProjectile` 跳过专用服；卡顶不生成 `EXP +X` |
 | 2.8 Living | 2026-09-12 | 对齐 requirements v1.4.26：允许自制 FX；优先拷贝；入口改 backlog |
+| 2.9 Living | 2026-09-12 | Bolt/Barrage 外飞壳寿命约 ×1.5；念力索敌 **48 格**；暴风 `SuckRange` 同步；初速/伤倍不动 |
 
 ---
 

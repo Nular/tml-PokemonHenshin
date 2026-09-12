@@ -37,7 +37,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 22;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 90;
+			Projectile.timeLeft = 135;
 			Projectile.tileCollide = true;
 			Projectile.penetrate = 1;
 			Projectile.ignoreWater = true;

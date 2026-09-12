@@ -305,7 +305,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 1;
-			Projectile.timeLeft = 140;
+			Projectile.timeLeft = 210;
 			Projectile.tileCollide = true;
 			Projectile.light = 0.4f;
 		}
@@ -343,7 +343,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 2;
-			Projectile.timeLeft = 150;
+			Projectile.timeLeft = 225;
 			Projectile.tileCollide = true;
 		}
 
@@ -374,7 +374,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 1;
-			Projectile.timeLeft = 90;
+			Projectile.timeLeft = 135;
 			Projectile.tileCollide = true;
 			Projectile.light = 0.6f;
 		}
@@ -403,7 +403,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 3;
-			Projectile.timeLeft = 160;
+			Projectile.timeLeft = 240;
 			Projectile.tileCollide = false;
 		}
 
@@ -421,12 +421,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>
-	/// 念力：ShadowBeamFriendly 壳弹。32 格索敌；命中后弹射下一目标，最多 2 击；短 Confused。
+	/// 念力：ShadowBeamFriendly 壳弹。48 格索敌；命中后弹射下一目标，最多 2 击；短 Confused。
 	/// </summary>
 	public class PsychicWaveBoltProj : HenshinMoveProj
 	{
 		public override bool HandlesOwnHoming => true;
-		private const float SeekTiles = 32f;
+		private const float SeekTiles = 48f;
 		private const int MaxHits = 2;
 		private const float FlightSpeed = 20f;
 
@@ -444,7 +444,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = MaxHits;
-			Projectile.timeLeft = 90;
+			Projectile.timeLeft = 135;
 			Projectile.tileCollide = false;
 			Projectile.extraUpdates = 2;
 			Projectile.usesLocalNPCImmunity = true;

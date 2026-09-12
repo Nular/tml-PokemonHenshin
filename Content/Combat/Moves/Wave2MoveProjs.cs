@@ -276,7 +276,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public const float Speed = 15.5f;
 		public const float BurstDiameterTiles = 5f;
 		public const float OrbDiameterTiles = 1.5f;
-		public const int Life = 90;
+		public const int Life = 135;
 
 		private static readonly Color DragonEdge = new(33, 8, 173);   // #2108ad
 		private static readonly Color DragonCore = new(231, 206, 57); // #e7ce39
@@ -1327,7 +1327,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 14;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 90;
+			Projectile.timeLeft = 135;
 			Projectile.tileCollide = true;
 			Projectile.penetrate = 1;
 			Projectile.scale = 1.4f;
@@ -2096,7 +2096,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 1;
-			Projectile.timeLeft = 75;
+			Projectile.timeLeft = 113;
 			Projectile.tileCollide = true;
 			Projectile.scale = 0.7f;
 			Projectile.extraUpdates = 0;
@@ -2442,7 +2442,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 14;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 60;
+			Projectile.timeLeft = 90;
 			Projectile.tileCollide = true;
 			Projectile.penetrate = 1;
 		}
@@ -3033,7 +3033,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 4;
-			Projectile.timeLeft = 40;
+			Projectile.timeLeft = 60;
 			Projectile.tileCollide = true;
 			Projectile.extraUpdates = 2;
 			Projectile.scale = 1.3f;
@@ -3074,7 +3074,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 16;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 70;
+			Projectile.timeLeft = 105;
 			Projectile.tileCollide = true;
 			Projectile.penetrate = 1;
 			Projectile.scale = 1.2f;
@@ -3195,7 +3195,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 16;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 50;
+			Projectile.timeLeft = 75;
 			Projectile.tileCollide = true;
 			Projectile.penetrate = 1;
 			Projectile.scale = 0.35f;
@@ -3346,7 +3346,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 18;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 70;
+			Projectile.timeLeft = 105;
 			Projectile.tileCollide = false;
 			Projectile.penetrate = 2;
 			Projectile.scale = 1.25f;
