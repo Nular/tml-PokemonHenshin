@@ -379,9 +379,7 @@ Accessories: {
 	ShardTag: 碎片 {0}/6
 	ResonanceLine: 共鸣：{0}
 	RequiredFormLine: 仅形态：{0}
-	RequiredForm: {
-		L04_F01: 皮卡丘
-	}
+	RequiredForm.L04_F01: 皮卡丘
 	TypeFire: 火
 	TypeWater: 水
 	TypeElectric: 电

@@ -4,79 +4,53 @@
 
 泰拉瑞亚 + tModLoader + 灾厄：持握「{宝可梦}之力」换皮变身；**持握被动 + 技能1/2 + 能量大招**；仅变身生效饰品（不变之石、诅咒焰除外）；松手失效。联机必需。
 
+**开工顺序：** 本文件 → `docs/backlog.md`（要做什么）→ 按任务打开下表权威文档。**禁止读取或维护 `docs/archive/`。**
+
 ## 怎么跑
 
 仓库根即 tML 模组根（内部名 `PokemonHenshin`）。
 
-- **目录名必须是 `PokemonHenshin`**（tML 用源码目录名当内部名）。本地：`ModSources\PokemonHenshin` 联接本仓库后 `dotnet build`，或游戏内 Workshop → Develop Mods → Build + Reload（游戏运行且启用本模时命令行会 **TML003**）。
-- **Cloud：** `bash tools/build-mod.sh`（见下）。**不要**在名为 `workspace` 的根目录直接 `dotnet build`。
-- **公式校验：** `dotnet run --project tools/HenshinStatVerify`
-- 版本钉死：**tML 1.4.4.9 / 2026.07（net8.0）**，**CalamityMod 2.2.4**（必须启用）
-
-## Cursor Cloud specific instructions
-
-无头 Linux（Cloud Agent）环境下的构建与验证：
-
-- **环境准备（幂等）：** `bash tools/cloud-agent-setup.sh`。装 net8.0 SDK（`~/.dotnet`，软链到 `/usr/local/bin/dotnet`）、下载并解压 tModLoader `v2026.07.3.0`（`~/tModLoader`），并复刻 `ModSources` 开发布局：在 `~/Documents/My Games/Terraria/tModLoader/ModSources/` 生成 `tModLoader.targets` 并把 `PokemonHenshin` 软链指向本仓库。该脚本已配置为 environment.json 的 `install`。
-- **构建：** `bash tools/build-mod.sh`（等价 `dotnet build` 但走 `ModSources/PokemonHenshin` 软链）。**不要**在仓库根直接 `dotnet build`——tML 用**源码目录名**当模组内部名，直接在 `/workspace` 构建会产出错误的 `workspace.tmod`；走软链才得到 `PokemonHenshin.tmod`（输出到 `~/.local/share/Terraria/tModLoader/Mods/`）。
-- **CalamityMod 不阻断构建：** 代码只用**反射**访问灾厄，编译期无 `using CalamityMod`，故无灾厄也能编译打包成合法 `.tmod`。灾厄仅在**运行时**为强依赖。
-- **无头加载自检：** `dotnet ~/tModLoader/tModLoader.dll -server -nosteam` 会发现并尝试加载 `PokemonHenshin`，因缺 CalamityMod 报 `Missing mod: CalamityMod required by PokemonHenshin`（预期）——证明 `.tmod` 合法且依赖接线正确。
-- **无法在云端跑的部分：** 实际进游戏测试需图形 Terraria 客户端 + Steam 创意工坊的 CalamityMod 2.2.4，无头 VM 不具备；游戏内玩法/特效/DPS 验收仍须本地。公式可用 `tools/HenshinStatVerify`。
+- **目录名必须是 `PokemonHenshin`**。本地：`ModSources\PokemonHenshin` 联接后 `dotnet build`，或游戏内 Develop Mods → Build + Reload（游戏运行启用本模时命令行会 **TML003**）。
+- **Cloud：** `bash tools/build-mod.sh`（勿在名为 `workspace` 的根直接 `dotnet build`）。准备：`bash tools/cloud-agent-setup.sh`。
+- **公式：** `dotnet run --project tools/HenshinStatVerify`
+- 钉死：**tML 1.4.4.9 / 2026.07（net8.0）**，**CalamityMod 2.2.4**（运行时强依赖；编译期反射，无灾厄也能出 `.tmod`）
 
 ## 技术栈
 
-C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `CalamityProgressAdapter`（**无需** Extract dll）。只读参考 `../CalamityOverhaul`（禁止改、**禁止运行时依赖**）。
+C# / tModLoader / `modReferences = CalamityMod`。进度反射 `CalamityProgressAdapter`。只读参考 `../CalamityOverhaul`（禁止改、禁止运行时依赖）。API：[tModLoader stable 类表](https://docs.tmodloader.net/docs/stable/annotated.html)；Rule `.cursor/rules/tml-api-docs.mdc`。
 
-**全局 API 规范：** 设计/实现须参考 [tModLoader stable 类表](https://docs.tmodloader.net/docs/stable/annotated.html)，按需点进具体类页；项目 Rule `.cursor/rules/tml-api-docs.mdc`（alwaysApply）。
-
-## 目录与约定
+## 真相地图
 
 | 路径 | 角色 |
 |------|------|
-| `docs/requirements.md` | **产品唯一真相**（页眉版本；等级/攻防/能量/进化/XP；饰品 §6/§10） |
-| `docs/balance-stats.md` | **等级/攻防/XP/招式数字权威**（MidAtk/Def、种族 Mod、MoveRefRate） |
-| `Content/Accessories/HenshinAccCatalog.cs` | **饰品数字权威**（A01–A29 碎片/普通/超级） |
-| `docs/accessory-rework-plan.md` | 饰品施工/掉落归档；效果数字以 Catalog + requirements §10 为准 |
-| `Content/Core/HenshinStatService.cs` · `FormStatTable.cs` | 等级公式代码入口（无 Terraria 依赖，供 `tools/HenshinStatVerify`） |
-| `docs/move-effects.md` | 招式/被动/大招泰拉适配表 |
-| `docs/dev-plan.md` | 计划与任务（冲突以需求为准） |
-| `docs/fx-knowledge.md` | FX 目录 / cookbook / 踩坑（Living；特效改动先查这里） |
-| `.cursor/skills/henshin-moves/` | 招式迭代 Skill：语义→**数值门**→预期效果确认→实现 |
-| `.cursor/skills/henshin-locomotion/` | 变身移动动画 Skill：GIF→sheet→`FormLocomotionSpec`→Overlay 验收 |
-| `.cursor/rules/tml-api-docs.mdc` | **alwaysApply**：设计须查 tModLoader stable API |
-| `Assets/Forms/` · `Assets/Forms/Locomotion/` · `Assets/Accessories/` · `Assets/Items/` | 36 形态静帧 + 可选移动精灵表（`{FormId}_Idle`/`_Run`；脚本 `tools/extract_locomotion_gif.py`）；饰品 64×64；消耗品 `RareCandy.png` |
-| `Assets/Fx/` | CWR **拷贝**贴图（无运行时依赖）：SoftGlow / ThunderTrail / Fire(4×4) / Flashimpact(4×2) / HitJagged(1×2) / DiffusionCircle(360) / Cyclone / Fog / LightBeam / LightShot / TearFlame / Extra98 |
-| `Content/Combat/Moves/HenshinFxDraw.cs` | Additive 绘制：`DrawContinuousBeam` / SheetFrame / `ScaleForWorldDiameter` |
-| `Content/Combat/` · `Items/Forms/` · `Items/Consumables/` | HenshinForceItem + 36 形态；`RareCandy` |
-| `Content/Prefixes/` | 之力专属前缀：蓄能 / 铁壁 / 猛攻（禁用原版武器词缀） |
-| `Content/Net/HenshinNet.cs` | `NetOp` 单入口（含 `SyncAim`）；瞄准读 `HenshinPlayer.GetMouseWorld` |
-| `Content/PlayerState/` · `Visual/` · `Accessories/` · 其它 | HenshinPlayer / Overlay / 属性面板 / 饰品 / 进化 / 糖果掉落 Net |
+| `docs/backlog.md` | **状态 / 缺口 / 下一步 / 验收**（唯一） |
+| `docs/requirements.md` | **产品规则**（页眉版本；饰品 §6/§10；未接线 §12.1） |
+| `docs/balance-stats.md` | 等级/攻防/XP/招式**数字** |
+| `Content/Accessories/HenshinAccCatalog.cs` | 饰品**数字** |
+| `docs/accessories.md` | 饰品锁定决策 / Delivery / 掉落合成要点 |
+| `docs/move-effects.md` | 招式语义 |
+| `docs/fx-knowledge.md` | FX cookbook / 联机视觉清单 |
+| `docs/engineering.md` | 目录、Net、关键契约、联机用例 |
+| `.cursor/skills/henshin-moves/` · `henshin-locomotion/` | 招式 / 移动动画迭代流程 |
+| `docs/archive/` | 历史全文 — **Agent 禁止读/改**（Rule `.cursor/rules/archive-do-not-read.mdc`，`globs: docs/archive/**`） |
 
-## 特效踩坑与禁止降级（必读）
+代码入口：`HenshinStatService` / `FormStatTable`；`HenshinNet`；`HenshinFxDraw`；`Assets/Forms` · `Locomotion` · `Accessories` · `Items` · `Fx`。临时 GIF：`Assets/TEMP_ASSETS/`（gitignore，勿提交）。
 
-1. **禁止擅自降级：** 用户点名参考效果必须按规格落地；跳过原版 AI、A=0「假 Additive」、纯尘冒充成品等，**未经确认不得当作成品**。招式迭代流程见 `.cursor/skills/henshin-moves`。
-2. **懒加载贴图：** 壳弹只画不真生成 → 须 `ProjectileBorrow.SafeLoadProjectile`（Bubble 踩坑）。`Main.dedServ` / `Main.instance==null` 禁止 `LoadProjectile`。
-3. **Additive 保 Alpha；暗色抬亮：** `A=0` 全透明。`#2108ad` 等深色在 Additive 下几乎不可见 → 光晕用抬亮同色相（如 `DragonHaloLit`）。
-4. **连续光束：** 优先 `DrawContinuousBeam`（SoftGlow 沿路径拉长 + 密叠）；厚度以格为单位（水炮≈1.25、加农≈2.5、日光束≈2）。间距过大 → 虚线。MagicPixel 可用，但**无封顶通天拉伸**易白屏，须控制 destination/scale。
-5. **大图按世界直径缩放：** `DiffusionCircle` 360px 等须 `ScaleForWorldDiameter(tex, diameterPx)`；裸 `scale=1.7` / `width/96` 会画出超大圈。
-6. **Sprite sheet：** Fire / Flashimpact / HitJagged **禁止整图绘制**，用 `HenshinFxDraw.Draw*Frame`。
-7. **SpawnAtMouse：** `NewProjectile` 坐标是左上角；大 hitbox 须事后把 `Center` 设到**主人**鼠标（`HenshinPlayer.GetMouseWorld`）；改尺寸先存 Center。
-8. **CWR：** 只读抄逻辑；贴图拷入 `Assets/Fx`；`build.txt` **不得** `modReferences` 大修。
-9. **勿硬套自管位移原版 AI**（Nebula 等）：壳弹自管飞行，亡时再真生成爆炸碎片。`RetargetAsHenshin` 的原版弹默认按完整命中给能；要削弱须显式 `MarkCrumb`（现役仅龙之波动 620）。
-10. **HJSON：** 值以 `{` 或 `[` 开头必须双引号（如 `PassiveAlways: "{0}：{1}"`），否则当对象/数组解析，模组加载失败并被禁用。
-11. **联机视觉：** 射弹 AI/Draw/Colliding **禁止** `Main.MouseWorld`；贴图/方向/锚点 **禁止**只写在 `OnSpawn` 的私有字段。清单 `docs/fx-knowledge.md`「联机视觉/指向」。
-12. **等级存档：** 禁止在 `UpdateInventory`/`HoldItem` 按世界档 Truncate 写回 `Level`/`Xp`。硬顶只挡获取（`CanGainExperience`：击杀经验、糖果）。攻防用存档等级。满级/卡顶不飘 `EXP +X`。
+## 硬禁止（踩坑）
 
-## 当前状态与下一步
+1. **禁止擅自降级**点名规格；流程见 `henshin-moves`。  
+2. 壳弹懒加载：`SafeLoadProjectile`；禁在 `dedServ` / `Main.instance==null` 调 `LoadProjectile`。  
+3. Additive 保 Alpha；暗色抬亮。  
+4. 连续光束优先 `DrawContinuousBeam`；忌通天 MagicPixel。  
+5. 大图用 `ScaleForWorldDiameter`。  
+6. Fire / Flashimpact / HitJagged **禁止整图**，用 `Draw*Frame`。  
+7. `SpawnAtMouse`：事后把 `Center` 设到主人 `GetMouseWorld`。  
+8. CWR：只读抄逻辑；贴图拷 `Assets/Fx`；可自制 FX（优先拷贝）；禁大修 `modReferences`。  
+9. 勿硬套自管位移原版 AI；削弱能量须 `MarkCrumb`。  
+10. HJSON 以 `{`/`[` 开头的值须双引号。  
+11. 联机：禁 `Main.MouseWorld`；禁只写 `OnSpawn` 私有字段（见 fx-knowledge）。  
+12. 禁 Truncate 写回 `Level`/`Xp`；硬顶只挡获取。
 
-- **招式/FX（至 2026-09-07）：** 36 形态接线；Wave1～Wave3 / Stage7+ **单机已验收**。清单 `docs/move-effects.md`，cookbook `docs/fx-knowledge.md`。
-- **数值（2026-09-09～12）：** v1.4 已接线（需求 **v1.4.25**）。击杀 XP × 世界档；`ExpNeeded` × 物品带。世界档/`100` **只挡获取**（`CanGainExperience`）；不截存档。卡顶/满级不飘 `EXP +X`。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。**大招后 ~2.5s 禁止一切充能**（`UltEnergyLockoutTicks`；勿再钉弹上能量系数）。DPS 抽检仍待本地。
-- **饰品（2026-09-12）：** A01–A28 效果重平衡已接线；**A29 电气球**（仅皮卡丘：普通攻防 +100%/攻速 +10%；超级 +200%/+20%；碎片奇攻偶防 25%）已接线。数字以 `HenshinAccCatalog` 为准。**游戏内数值/闪避/电气球手感验收仍待本地**。
-- **移动动画（2026-09-12）：** `FormLocomotionSpec` + Overlay 采帧；皮卡丘 Idle/Run 已接线（空中/游泳复用 Run）；统一画高 64；资源朝右；地面 Run 随 `|vx|` 变速。Skill：`.cursor/skills/henshin-locomotion`。**用户确认手感 OK**；其它形态仍单帧+bob。
-- **2026-09-10～11：** 中文 loc 以 `{` 开头的 StatsUI 行已加引号。属性面板入口下移 64px 避开原版图鉴。御三家改 `AddStartingItems` + `PostUpdateMiscEffects` 入包（角色档 `starterGranted`；禁止 `OnEnterWorld`）；**进世界发放已本地验收**。变身地图头像：`HenshinMapHeadLayer`（需求 §2.3）；**游戏内/联机头像与虫洞药水待本地验收**。
-- **2026-09-11（面板）：** 属性面板可拖动（`HenshinClientConfig`）+ 复位；招式威力%；会心/超会心；武器/命中/其它乘区。**2026-09-12：** 入口与面板共用锚点拖动（面板始终贴入口右侧）。**游戏内拖动与文案验收待本地**。
-- **联机视觉（2026-09-11）：** `SyncAim` + `OwnerMouseWorld`；壳弹/尖石/岩封锁/精神击破 `Ensure*` **已接线**。**双端验收 pending**。清单 `docs/fx-knowledge.md`「联机视觉/指向」。
-- **词缀/暴击（2026-09-11）：** 之力禁用原版词缀；专属**蓄能**（能量 ×1.20）/ **铁壁**（形态防 +20%）/ **猛攻**（伤 +15%、间隔 ×0.88）。暴击对齐原版 Crit；EasyCrit 抬暴击率；A15 升档仅 Crit 后 ×4，超暴击偏红橙大飘字。**游戏内重铸/飘字验收待本地**。
-- **已知缺口：** 联机双端（瞄准/壳弹/地图头像/虫洞/能量XP）仍待本地；获取硬顶公式已验、进世界不再 Truncate 与卡顶不飘 EXP **待本地**；裸 `LoadProjectile` 专用服风险未扫完（泡沫壳弹已 `SafeLoadProjectile`）；DPS 抽检 PS7/9/12；Rage pending。污泥毒云等未打标 Retarget 弹仍走完整命中能。未接线代码见 `docs/requirements.md` §12.1。饰品图标/合成/掉落与神奇糖果待游戏内验收。
-- **验证：** 游戏内 Build + Reload（TML003）；大招默认 Mouse3；`/henshin stats`、`/henshin setlevel`；`tools/HenshinStatVerify`。
-- **下一步：** 游戏内验饰品重平衡 + 专属前缀/超暴击飘字 → 神奇糖果与图标/合成/掉落 → 联机双端（含 N12 藤鞭指向、地图头像/虫洞）→ DPS 抽检 → Rage。新形态：继承 `HenshinForceItem`，`NetworkId` 从 37 起；共享数据只放 `FormDefinition`。
+## 当前指针
+
+见 **`docs/backlog.md`**（需求 **v1.4.26**）。

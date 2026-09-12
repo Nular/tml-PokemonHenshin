@@ -1,4 +1,6 @@
-# 饰品重构实现计划（审阅稿）
+# 饰品重构实现计划（归档）
+
+> **ARCHIVED — Agent 禁止读取/维护。** 现役：`docs/accessories.md` + `HenshinAccCatalog`。
 
 | 项 | 内容 |
 |----|------|

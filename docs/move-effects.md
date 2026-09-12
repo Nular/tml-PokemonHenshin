@@ -31,10 +31,7 @@
 
 ### 1.3 特效（FX）约束
 
-- **优先原版复用：** 有现成 `Item.shoot` / `ProjectileID` 则 `NewProjectile` 或壳弹 + `LoadProjectile` 画同贴图（例：吹叶机 `Leaf`、泡泡 `Bubble`、星云奥秘外观/爆炸碎片）。
-- **CWR：** 只读参考写法与参数；**禁止**运行时依赖 / `GetMod("CalamityOverhaul")`。需要其 trail 贴图时，**拷贝**进本模 `Assets/Fx/`（现有：`ThunderTrail`、`SoftGlow`、`LightShot`）。
-- **禁止擅自降级：** 不得用 A=0 假 Additive、「跳过原版 AI 只留爆炸」、纯尘占位等简化顶替点名规格；改效果须用户确认。`MagicPixel` 可用但须可控尺寸（忌通天拉伸）。
-- 表中「VFX note」指定手法与参考方向；冲突时以代码 + `AGENTS.md` 特效踩坑为准并回写本表。
+对齐 requirements §1.5：**优先**原版复用 → 拷贝 CWR 至 `Assets/Fx/` → 可自制 FX。禁止大修运行时依赖；禁止擅自降级。Cookbook：`docs/fx-knowledge.md`；踩坑：`AGENTS.md`。
 
 ---
 

@@ -379,9 +379,7 @@ Accessories: {
 	ShardTag: Shard {0}/6
 	ResonanceLine: Resonance: {0}
 	RequiredFormLine: Form only: {0}
-	RequiredForm: {
-		L04_F01: Pikachu
-	}
+	RequiredForm.L04_F01: Pikachu
 	TypeFire: Fire
 	TypeWater: Water
 	TypeElectric: Electric

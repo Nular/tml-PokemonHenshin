@@ -1,0 +1,27 @@
+---
+description: 禁止 Agent 读取或维护 docs/archive 历史归档
+globs: docs/archive/**
+alwaysApply: false
+---
+
+# 归档禁读（docs/archive）
+
+本目录及匹配文件是**人类考古用历史全文**，不是现役真相。
+
+**禁止：**
+
+- 打开、阅读、引用、摘要或「对照」`docs/archive/**` 内任何文件
+- 修改、重排、同步或「顺便更新」归档内容
+- 把归档里的数字 / AccStat / 旧 FX 禁令当成现役实现依据
+
+**应改去：**
+
+| 需要 | 现役文档 |
+|------|----------|
+| 状态 / 缺口 / 验收 | `docs/backlog.md` |
+| 产品规则 | `docs/requirements.md` |
+| 工程 / Net / 联机用例 | `docs/engineering.md` |
+| 饰品决策 | `docs/accessories.md` + `HenshinAccCatalog` |
+| 数值 / 招式 / FX | `balance-stats` / `move-effects` / `fx-knowledge` |
+
+若用户**明确点名**要打开某份归档考古，可只读该文件一次并标注「非现役」；默认会话不得主动读取。

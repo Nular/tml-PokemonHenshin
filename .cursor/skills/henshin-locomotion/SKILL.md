@@ -23,8 +23,9 @@ description: >-
 | `Assets/Forms/Locomotion/` | 横条 sheet：`{FormId}_Idle.png` / `_Run.png`（+ JSON 旁证） |
 | `tools/extract_locomotion_gif.py` | GIF → sheet + JSON |
 | `AGENTS.md` | 构建、目录入口 |
+| `docs/backlog.md` | 其它形态动画是否排期 |
 
-现役样例：皮卡丘 `L04_F01`（`FormItemUtil.PikachuLocomotion()`）。其它形态 `Locomotion == null` 仍走静帧。
+`Assets/TEMP_ASSETS/` 可放源 GIF（已 gitignore，勿提交）。
 
 ## 外链（需要时再打开）
 

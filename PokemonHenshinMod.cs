@@ -6,7 +6,7 @@ using Terraria.ModLoader;
 namespace PokemonHenshin
 {
 	/// <summary>
-	/// Mod 入口。保持瘦身：只负责单例与网络包分发（dev-plan §2.4 / §3.11）。
+	/// Mod 入口。保持瘦身：只负责单例与网络包分发（docs/engineering.md）。
 	/// </summary>
 	public class PokemonHenshinMod : Mod
 	{

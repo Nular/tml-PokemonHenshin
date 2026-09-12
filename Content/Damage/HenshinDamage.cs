@@ -3,7 +3,7 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Damage
 {
 	/// <summary>
-	/// 本模独立伤害类型（需求 §2.6，dev-plan §4.1）。
+	/// 本模独立伤害类型（需求 §2.6，docs/engineering.md §4.1）。
 	/// <list type="bullet">
 	/// <item>Generic：完整继承（增伤 / 暴击 / 攻速 / 穿甲 / 击退）。</item>
 	/// <item>近战 / 远程 / 魔法 / 召唤 / 投掷 / 灾厄盗贼：按 k = 0.35 折算继承。</item>

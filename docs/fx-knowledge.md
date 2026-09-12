@@ -1,26 +1,27 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-11
+**版本日期：** 2026-09-12
 
 ## 1. 权威与硬约束
 
 | 优先级 | 文件 | 管什么 |
 |--------|------|--------|
-| 1 | `docs/requirements.md` | 产品规则 |
-| 2 | `docs/move-effects.md` + `docs/balance-stats.md` + 代码 | 招式语义；数值数字权威；实现 |
-| 3 | **本文件 `docs/fx-knowledge.md`** | VFX 复用目录、手法 cookbook、升级规格 |
+| 1 | `docs/requirements.md` §1.5 | 产品 FX 策略 |
+| 2 | `docs/move-effects.md` + `docs/balance-stats.md` + 代码 | 招式语义；数值；实现 |
+| 3 | **本文件** | VFX 目录、cookbook、踩坑 |
+| — | `docs/backlog.md` | 缺口 / 下一步 |
 
-本文件**不**改写玩法数值；迭代特效时优先查「当前实现 / Recommended / SpecReady / Locked」。
+本文件**不**改写玩法数值。状态与待办不写在此，见 backlog。
 
-### 硬约束（与 AGENTS.md 对齐）
+### 硬约束（与 AGENTS.md / 需求 §1.5 对齐）
 
 1. **禁止 CWR 运行时依赖**（`build.txt` 不得 `modReferences` 大修；禁止 `GetMod("CalamityOverhaul")`）。
-2. **允许**把 CWR 贴图**拷贝**进本模 `Assets/Fx/`（见 §7；2026-09-06 已扩拷一批）。
-3. **禁止擅自降级：** 跳过原版自管 AI 只留爆炸、`BlendState.Additive` + `color.A = 0`「假发光」、纯尘冒充成品等，未经用户确认不得当作成品。MagicPixel **可用**（须控制 destination/scale；无封顶通天拉伸易白屏，属实现错误而非禁令）。
-4. **懒加载贴图：** 壳弹只画原版图、从不 `NewProjectile` 该 type 时，必须 `ProjectileBorrow.SafeLoadProjectile` / `RequestProjectileTexture`（见 Bubble 踩坑）。**禁止**在 `Main.dedServ` 或 `Main.instance==null` 时调 `LoadProjectile`（listen/专用服 NRE）。
-5. **优先**原版 `NewProjectile` 真弹，或壳弹 + `LoadProjectile` 画同贴图 + 自管 AI；**禁止**生成灾厄弹。
-6. **Sprite sheet：** `Fire`（4×4）、`Flashimpact`（4×2）、`HitJagged01`（1×2）禁止整图 `DrawAdditiveCentered`；用 `HenshinFxDraw.Draw*Frame` / `SheetFrame`，帧=`AgeFrame(lifetime,timeLeft,ticksPerFrame,total)`。SoftGlow/Cyclone/Fog/DiffusionCircle/LightShot/LightBeam/TearFlame 可整图。
+2. **资源优先级：** 原版复用 → **拷贝** CWR 进 `Assets/Fx/` → **可自制** FX 图（须规格确认）。见 §7。
+3. **禁止擅自降级：** 跳过原版自管 AI 只留爆炸、`A=0` 假 Additive、纯尘冒充成品等，未经用户确认不得当作成品。MagicPixel **可用**（须控 destination/scale）。
+4. **懒加载贴图：** 壳弹须 `SafeLoadProjectile`；禁在 `dedServ` / `Main.instance==null` 调 `LoadProjectile`。
+5. **优先**原版真弹或壳弹；**禁止**生成灾厄弹作本模伤害载体。
+6. **Sprite sheet：** `Fire` / `Flashimpact` / `HitJagged01` 禁止整图；用 `HenshinFxDraw.Draw*Frame`。
 
 | 手法 | 何时用 | 例子 |
 |------|--------|------|
@@ -572,7 +573,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | `Airflow.png` | 风系加强 | 低（Stage7+） |
 | `FireBall.png` | 火球备选 | 低 |
 
-> `dev-plan` 旧文「禁止新增 FX 图」以 **AGENTS 现行例外（可拷贝至 Assets/Fx）** 为准。
+> 旧「禁止新增 FX 图」口径已废（requirements **v1.4.26**）：允许自制；优先拷贝。
 
 ---
 
@@ -592,6 +593,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | FX 贴图 | `Assets/Fx/`（§7） |
 | 形态接线 | `StarterLines.cs` / `CombatLinesA.cs` / `UtilityAndLegend.cs` |
 | 玩法表 | `docs/move-effects.md` |
+| 缺口/下一步 | `docs/backlog.md` |
 | 本知识库 | `docs/fx-knowledge.md` |
 
 ---
@@ -626,6 +628,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.5 Living | 2026-09-11 | 壳弹 `BorrowedVisualBoltProj` 旁观端从 `ai0` 解析贴图；修泡沫光线联机画成种子 |
 | 2.6 Living | 2026-09-11 | 联机检验清单（与瞄准/OnSpawn 踩坑合并为单节）；尖石/岩封锁/精神击破球同样按 OnSpawn 字段重建 |
 | 2.7 Living | 2026-09-11 | `SafeLoadProjectile` 跳过专用服；卡顶不生成 `EXP +X` |
+| 2.8 Living | 2026-09-12 | 对齐 requirements v1.4.26：允许自制 FX；优先拷贝；入口改 backlog |
 
 ---
 

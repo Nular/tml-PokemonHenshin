@@ -1,4 +1,6 @@
-# Pokemon Henshin — 开发计划
+# Pokemon Henshin — 开发计划（归档）
+
+> **ARCHIVED — Agent 禁止读取/维护。** 现役：`docs/engineering.md` + `docs/backlog.md`。
 
 | 项 | 内容 |
 |----|------|

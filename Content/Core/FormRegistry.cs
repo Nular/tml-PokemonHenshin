@@ -5,7 +5,7 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Core
 {
 	/// <summary>
-	/// 形态注册表（dev-plan §3.10）。按 FormId / NetworkId / ItemType 查询。
+	/// 形态注册表（docs/engineering.md）。按 FormId / NetworkId / ItemType 查询。
 	/// 注册发生在物品 <c>SetStaticDefaults</c>（此时 ItemType 已分配），卸载时清空。
 	/// </summary>
 	public static class FormRegistry

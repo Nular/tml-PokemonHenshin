@@ -18,10 +18,11 @@ description: >-
 
 | 权威                               | 管什么                                                  |
 | -------------------------------- | ---------------------------------------------------- |
-| `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP；广角镜；**暴击/EasyCrit/专属前缀** §2.6 §2.9；大招后 `UltEnergyLockout` §2.5） |
+| `docs/requirements.md`           | 产品规则（页眉版本；含等级/攻防/能量/进化/XP；广角镜；**暴击/EasyCrit/专属前缀** §2.6 §2.9；大招后 `UltEnergyLockout` §2.5；FX §1.5） |
 | `docs/balance-stats.md`          | **数值数字权威**（已接线 `HenshinStatService`）：等级带、击杀 XP×世界档、`ExpNeeded`×物品带、攻防、能量（含大招后锁定 tick）、MoveRefRate；世界档只挡获取 |
 | `docs/move-effects.md`           | 招式玩法语义 / 接线状态                                        |
 | `docs/fx-knowledge.md`           | FX cookbook、贴图踩坑、**联机视觉/指向检验清单**                 |
+| `docs/backlog.md`                | 缺口 / 下一步（唯一状态源）                                      |
 | `AGENTS.md`                      | 构建、目录、硬约束入口                                          |
 | `.cursor/rules/tml-api-docs.mdc` | **全局 alwaysApply**：tModLoader stable API（类表入口见下）     |
 
@@ -37,7 +38,7 @@ description: >-
 - tModLoader API（stable 类表导航）：[https://docs.tmodloader.net/docs/stable/annotated.html](https://docs.tmodloader.net/docs/stable/annotated.html)  
 **全局规范**见 `.cursor/rules/tml-api-docs.mdc`（alwaysApply）。设计/实现挂钩、字段、生命周期时查此站；从类表点进具体页（如同目录下 `class_mod_projectile.html`、`class_projectile.html`、`class_mod_item.html`、`class_mod_player.html`）。**有目的**打开当前用到的类，勿整表灌进上下文。
 - 特效学习与贴图：`../CalamityOverhaul`（相对本仓库）  
-**只读**抄逻辑 / **拷贝**贴图进 `Assets/Fx/`；**禁止** `modReferences` 大修、禁止运行时依赖 CWR、禁止改 CWR 源码。
+**只读**抄逻辑 / **优先拷贝**贴图进 `Assets/Fx/`；允许自制 FX（需求 §1.5，须规格确认）。**禁止** `modReferences` 大修、禁止运行时依赖 CWR、禁止改 CWR 源码。
 - 比目鱼阶段伤害形状（只读）：`../CalamityOverhaul/Content/LegendWeapon/HalibutLegend/HalibutOverride.cs` 的 `DamageDictionary`；本模用有效 DPS 对齐，见 `docs/balance-stats.md`。
 
 ## 开工前必做（确认门）

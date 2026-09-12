@@ -14,7 +14,7 @@ using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Net
 {
-	/// <summary>网络操作码（dev-plan §2.4：显式枚举，一次锁死）。</summary>
+	/// <summary>网络操作码（docs/engineering.md：显式枚举，一次锁死）。</summary>
 	public enum NetOp : byte
 	{
 		SyncForm = 1,
