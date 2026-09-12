@@ -83,12 +83,20 @@ namespace PokemonHenshin.Content.Accessories
 					or AccStat.CursedInfernoImmune
 					or AccStat.ChoiceLockSkill2 or AccStat.ChoiceLockUlt
 					or AccStat.LifeOrbHpDrain or AccStat.FocusSash or AccStat.EverstoneBlock
+					or AccStat.LightBallPassiveBolt
 					=> Language.GetTextValue(key),
+				AccStat.HomingTurn when line.Value >= 0.99f
+					=> Language.GetTextValue("Mods.PokemonHenshin.Accessories.StatHomingTurnInstant"),
+				AccStat.LightBallThunderShock
+					=> Language.GetTextValue(key, Pct(Math.Max(0f, line.Value - 1f))),
+				AccStat.LightBallQuickAttackCdCut
+					=> Language.GetTextValue(key, Pct(line.Value)),
 				AccStat.FlightEnergySec or AccStat.HomingTurn or AccStat.HomingRange or AccStat.PenetrateAdd
 					or AccStat.DashSpeedBonus or AccStat.LungeIFrameBonus
 					or AccStat.ShellBellHeal or AccStat.LeftoversHpPerSec or AccStat.LeftoversLowHpBonus
 					or AccStat.FocusSashCdSec or AccStat.CursedInfernoSec
 					or AccStat.UntransformedDefense or AccStat.AccDefense
+					or AccStat.ThunderboltSoftAimTiles
 					=> Language.GetTextValue(key, Num(line.Value)),
 				AccStat.LifeOrbGateTicks or AccStat.ShellBellCdTicks or AccStat.RockyHelmetCdTicks
 					or AccStat.FocusSashImmuneTicks

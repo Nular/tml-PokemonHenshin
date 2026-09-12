@@ -19,8 +19,8 @@ namespace PokemonHenshin.Content.Items.Forms
 	public class RaichuForce : HenshinForceItem
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L04_F02", 11, "Mods.PokemonHenshin.Items.RaichuForce.DisplayName", PokemonType.Electric, 5, "L04_F01", FormPassiveKind.Static);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.MidThunder("Mods.PokemonHenshin.Moves.Thunderbolt", 1.5f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.VoltTackle", 1.8f, 30, DustID.Electric, recoil: true, onHitBuff: BuffID.Electrified);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.ThunderboltSkill("Mods.PokemonHenshin.Moves.Thunderbolt", 1.5f, 128f, chain: false);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.VoltTackleBlink("Mods.PokemonHenshin.Moves.VoltTackle");
 		protected override MoveSpec CreateUltimate() => FormItemUtil.ThunderPillarUlt("Mods.PokemonHenshin.Moves.Thunder", 3.8f);
 	}
 

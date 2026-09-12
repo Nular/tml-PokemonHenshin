@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PokemonHenshin.Content.Accessories;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
@@ -387,7 +388,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			target.AddBuff(BuffID.Electrified, 120);
+			target.AddBuff(BuffID.Electrified, 300);
 		}
 	}
 
@@ -1280,5 +1281,293 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 
 		public override bool PreDraw(ref Color lightColor) => false;
+	}
+
+	/// <summary>伏特攻击：闪现到鼠标并生成闪电拖尾；伤害在拖尾上。ai1=命中 Buff。</summary>
+	public class VoltTackleBlinkProj : HenshinMoveProj
+	{
+		private const float MaxRange = 960f;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 8;
+			Projectile.height = 8;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.timeLeft = 8;
+			Projectile.tileCollide = false;
+			Projectile.penetrate = -1;
+		}
+
+		public override void AI()
+		{
+			Player p = Main.player[Projectile.owner];
+			if (!p.active)
+			{
+				Projectile.Kill();
+				return;
+			}
+
+			if (Projectile.localAI[0] == 0f && Projectile.owner == Main.myPlayer)
+			{
+				Projectile.localAI[0] = 1f;
+				Vector2 from = p.Center;
+				Vector2 cursor = HenshinProjUtil.OwnerMouseWorld(Projectile);
+				Vector2 delta = cursor - from;
+				Vector2 dest = cursor;
+				if (delta.LengthSquared() > MaxRange * MaxRange)
+					dest = from + Vector2.Normalize(delta) * MaxRange;
+
+				p.Teleport(dest, -1);
+				p.immune = true;
+				HenshinPlayer hp = p.GetModPlayer<HenshinPlayer>();
+				p.immuneTime = System.Math.Max(p.immuneTime, 15 + hp.LungeIFrameBonus);
+
+				for (int i = 0; i < 18; i++)
+				{
+					Dust.NewDustPerfect(from, DustID.Electric, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.45f).noGravity = true;
+					Dust.NewDustPerfect(p.Center, DustID.Electric, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.45f).noGravity = true;
+				}
+				SoundEngine.PlaySound(SoundID.Item122 with { Volume = 0.55f, Pitch = 0.15f }, p.Center);
+
+				Vector2 trailDelta = p.Center - from;
+				if (trailDelta.LengthSquared() < 4f)
+					trailDelta = new Vector2(p.direction * 32f, 0f);
+
+				int trailId = Projectile.NewProjectile(
+					Projectile.GetSource_FromThis(),
+					from,
+					trailDelta,
+					ModContent.ProjectileType<VoltTackleTrailProj>(),
+					Projectile.damage,
+					Projectile.knockBack,
+					Projectile.owner,
+					0f,
+					Projectile.ai[1]);
+				if (trailId >= 0)
+				{
+					Main.projectile[trailId].originalDamage = Projectile.originalDamage > 0 ? Projectile.originalDamage : Projectile.damage;
+					HenshinAccGlobalProjectile.CopyMoveOrigin(Projectile, Main.projectile[trailId]);
+					if (Main.projectile[trailId].ModProjectile is IHenshinMoveProj tagged)
+						tagged.Delivery = MoveDelivery.Lunge;
+				}
+			}
+
+			Projectile.Center = p.Center;
+		}
+
+		public override bool? CanDamage() => false;
+		public override bool PreDraw(ref Color lightColor) => false;
+	}
+
+	/// <summary>伏特攻击闪电拖尾：起点=生成点，终点=生成点+velocity；持续 60 tick，同怪最多 6 段；形态残影。</summary>
+	public class VoltTackleTrailProj : HenshinMoveProj
+	{
+		public const int Life = 60;
+		public const int PathPoints = 12;
+		public const int GhostCount = 10;
+		private const float BaseWidth = 48f;
+
+		private static readonly Color ChantColor = new(150, 190, 255);
+		private static readonly Color VoltWhite = new(226, 240, 255);
+
+		private Vector2 _from;
+		private Vector2 _to;
+		private Vector2[] _pts;
+		private float _envelope = 1f;
+		private bool _inited;
+		private int _flickSeed;
+		private string _formTexPath;
+		private bool _facesLeft = true;
+
+		public override string Texture => "PokemonHenshin/Assets/Fx/ThunderTrail";
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 8;
+			Projectile.height = 8;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.penetrate = -1;
+			Projectile.timeLeft = Life;
+			Projectile.tileCollide = false;
+			Projectile.ignoreWater = true;
+			Projectile.usesLocalNPCImmunity = true;
+			Projectile.localNPCHitCooldown = 10;
+		}
+
+		public override bool ShouldUpdatePosition() => false;
+
+		public override void AI()
+		{
+			if (!_inited)
+			{
+				_inited = true;
+				_flickSeed = Projectile.whoAmI * 19;
+				_from = Projectile.Center;
+				Vector2 delta = Projectile.velocity;
+				if (delta.LengthSquared() < 4f)
+					delta = new Vector2(32f, 0f);
+				_to = _from + delta;
+				Player owner = Main.player[Projectile.owner];
+				if (owner.active)
+				{
+					FormDefinition form = owner.GetModPlayer<HenshinPlayer>().CurrentForm;
+					if (form != null)
+					{
+						_formTexPath = form.TexturePath;
+						_facesLeft = form.TextureFacesLeft;
+					}
+				}
+				BuildJaggedPath();
+				SoundEngine.PlaySound(SoundID.Item122 with { Volume = 0.45f, Pitch = 0.05f }, _to);
+			}
+
+			float lifeT = 1f - Projectile.timeLeft / (float)Life;
+			_envelope = lifeT < 0.15f ? 1f : 1f - MathF.Pow((lifeT - 0.15f) / 0.85f, 2.2f);
+
+			if (Projectile.timeLeft % 3 == 0)
+			{
+				_flickSeed++;
+				BuildJaggedPath();
+			}
+
+			if (_pts != null && Projectile.timeLeft % 2 == 0)
+			{
+				int idx = Main.rand.Next(_pts.Length);
+				Dust.NewDustPerfect(_pts[idx], DustID.Electric, Main.rand.NextVector2Circular(2f, 2f), 60, ChantColor, 1.15f).noGravity = true;
+			}
+
+			Projectile.Center = Vector2.Lerp(_from, _to, 0.5f);
+			Lighting.AddLight(Projectile.Center, ChantColor.ToVector3() * _envelope * 1.1f);
+		}
+
+		private void BuildJaggedPath()
+		{
+			_pts ??= new Vector2[PathPoints];
+			Vector2 dir = _to - _from;
+			if (dir.LengthSquared() < 4f)
+			{
+				for (int i = 0; i < PathPoints; i++)
+					_pts[i] = _from;
+				return;
+			}
+			Vector2 side = Vector2.Normalize(dir).RotatedBy(MathHelper.PiOver2);
+			for (int i = 0; i < PathPoints; i++)
+			{
+				float t = i / (float)(PathPoints - 1);
+				float swayEnv = MathF.Sin(t * MathHelper.Pi);
+				float seed = _flickSeed * 1.71f + i * 12.9898f + Projectile.whoAmI * 7.31f;
+				float wobble = (MathF.Sin(seed) * 43758.5453f);
+				wobble = wobble - MathF.Floor(wobble);
+				wobble = (wobble - 0.5f) * 2f;
+				_pts[i] = Vector2.Lerp(_from, _to, t) + side * (wobble * 42f * swayEnv);
+			}
+			_pts[0] = _from;
+			_pts[^1] = _to;
+		}
+
+		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+		{
+			if (!_inited)
+				return false;
+			float _ = 0f;
+			float thickness = Math.Max(18f, BaseWidth * 0.55f * _envelope);
+			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), _from, _to, thickness, ref _);
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			if (Projectile.ai[1] > 0)
+				target.AddBuff((int)Projectile.ai[1], 180);
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			if (_pts == null || _pts.Length < 2)
+				return false;
+
+			DrawFormGhosts();
+
+			Texture2D trailTex = ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/ThunderTrail").Value;
+			Texture2D glowTex = ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/SoftGlow").Value;
+			Texture2D shotTex = ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/LightShot").Value;
+			Vector2 trailSize = trailTex.Size();
+			Vector2 shotSize = shotTex.Size();
+			if (trailSize.X < 1f) trailSize.X = 1f;
+			if (trailSize.Y < 1f) trailSize.Y = 1f;
+			if (shotSize.X < 1f) shotSize.X = 1f;
+			if (shotSize.Y < 1f) shotSize.Y = 1f;
+
+			Main.spriteBatch.End();
+			Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
+				DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
+
+			for (int i = 0; i < _pts.Length - 1; i++)
+			{
+				Vector2 a = _pts[i] - Main.screenPosition;
+				Vector2 b = _pts[i + 1] - Main.screenPosition;
+				Vector2 seg = b - a;
+				float len = seg.Length();
+				if (len < 1.5f)
+					continue;
+				float rot = seg.ToRotation();
+				Vector2 mid = (a + b) * 0.5f;
+				float factor = i / (float)(_pts.Length - 1);
+				float width = BaseWidth * (0.55f + 0.45f * (1f - factor)) * _envelope;
+				float alpha = MathHelper.Clamp(_envelope * (0.55f + 0.45f * factor), 0f, 1f);
+
+				Color wide = Color.Lerp(ChantColor, Color.White, 0.35f) * alpha;
+				wide.A = (byte)(255f * alpha);
+				Color core = VoltWhite * (0.95f * alpha);
+				core.A = (byte)(255f * alpha);
+
+				Main.spriteBatch.Draw(trailTex, mid, null, wide, rot, trailSize * 0.5f,
+					new Vector2(len / trailSize.X * 1.05f, width / trailSize.Y), SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(shotTex, mid, null, core, rot, shotSize * 0.5f,
+					new Vector2(len / shotSize.X, Math.Max(0.04f, width / shotSize.Y * 0.22f)), SpriteEffects.None, 0f);
+			}
+
+			Color glow = ChantColor * (_envelope * 0.85f);
+			glow.A = (byte)(255f * _envelope);
+			Main.spriteBatch.Draw(glowTex, _to - Main.screenPosition, null, glow, 0f,
+				glowTex.Size() * 0.5f, new Vector2(0.55f, 0.4f) * _envelope, SpriteEffects.None, 0f);
+
+			Main.spriteBatch.End();
+			Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+				DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
+			return false;
+		}
+
+		private void DrawFormGhosts()
+		{
+			if (string.IsNullOrEmpty(_formTexPath))
+				return;
+			Texture2D formTex = ModContent.Request<Texture2D>(_formTexPath).Value;
+			if (formTex == null || formTex.Width < 2)
+				return;
+
+			Vector2 dir = _to - _from;
+			bool dashRight = dir.X >= 0f;
+			bool flipX = dashRight == _facesLeft;
+			SpriteEffects fx = flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+			Vector2 origin = new(formTex.Width * 0.5f, formTex.Height);
+
+			// 从起点（旧）到终点（新）：越靠起点越淡；整体再乘 envelope 逐渐消散
+			for (int i = 0; i < GhostCount; i++)
+			{
+				float t = (i + 0.5f) / GhostCount;
+				Vector2 pos = Vector2.Lerp(_from, _to, t);
+				float ageFade = 0.08f + 0.22f * t;
+				float alpha = ageFade * _envelope;
+				if (alpha < 0.02f)
+					continue;
+				Color c = new Color(170, 210, 255) * alpha;
+				c.A = (byte)(MathHelper.Clamp(alpha * 140f, 8f, 140f));
+				Main.EntitySpriteDraw(formTex, pos - Main.screenPosition, null, c, 0f, origin, 1f, fx, 0);
+			}
+		}
 	}
 }

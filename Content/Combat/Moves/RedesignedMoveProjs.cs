@@ -822,9 +822,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 					toNpc = Vector2.UnitX;
 				float dist = MathHelper.Clamp(toNpc.Length(), 48f, 64f * 16f);
 				Vector2 vel = Vector2.Normalize(toNpc) * dist;
-				// ai0=0 光束；velocity 长度=劈距；ai2=1 不再挂导演
-				Projectile.NewProjectile(Projectile.GetSource_FromThis(), p.MountedCenter, vel,
-					ModContent.ProjectileType<SkyBoltLightningProj>(), dmg, 1f, Projectile.owner, 0f, 0f, 1f);
+				// ai0=0 光束；velocity 长度=劈距；ai2=2 不再挂导演、不再分叉
+				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), p.MountedCenter, vel,
+					ModContent.ProjectileType<SkyBoltLightningProj>(), dmg, 1f, Projectile.owner, 0f, 0f,
+					SkyBoltLightningProj.AiNoChainNoFork);
+				if (id >= 0)
+					Main.projectile[id].Center = p.MountedCenter;
 			}
 		}
 

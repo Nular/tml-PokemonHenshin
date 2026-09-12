@@ -1,8 +1,10 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PokemonHenshin.Content.Accessories;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Damage;
+using PokemonHenshin.Content.PlayerState;
 using ReLogic.Content;
 using Terraria;
 using Terraria.Audio;
@@ -15,11 +17,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// 天雷视觉：只读参考 CWR <c>PRT_SkyBolt</c> 路径/包络/宽度；
 	/// 贴图为本模 <c>Assets/Fx/ThunderTrail</c> + <c>SoftGlow</c>（拷贝自大修，无运行时依赖）。
 	/// 注意：Additive 下勿把 Color.A 置 0（SourceAlpha 会全透明 →「有伤无光」）。
-	/// ai0=0 向前一道；ai0=1 落雷；ai1 宽度倍率；ai2≥1 不挂连锁。
+	/// ai0=0 向前一道；ai0=1 落雷；ai1 宽度倍率，或前进模式下 ≥64 时表示最大长度（像素）；
+	/// ai2：&lt;0.5 可挂感电连锁；≥0.5 不挂连锁；≥1.5 为分叉/二次弹（以生成点为起点，且不再分叉）。
 	/// </summary>
 	public class SkyBoltLightningProj : HenshinMoveProj
 	{
-		public const float MaxBeamLength = 64f * 16f;
+		public const float DefaultMaxBeamLength = 64f * 16f;
+		public const float AiNoChain = 1f;
+		public const float AiNoChainNoFork = 2f;
+		public const float ForkSearchRange = 16f * 16f;
+		public const int MaxForks = 3;
 		public const int PathPoints = 12;
 		public const int Life = 26;
 		private const float BaseWidth = 34f;
@@ -36,6 +43,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private Vector2[] _pts;
 		private float _envelope = 1f;
 		private float _widthMul = 1f;
+		private float _maxBeamLength = DefaultMaxBeamLength;
 		private bool _chainScheduled;
 		private bool _inited;
 		private int _flickSeed;
@@ -65,37 +73,58 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool ShouldUpdatePosition() => false;
 
+		private bool IsFallMode => Projectile.ai[0] > 0.5f;
+		private bool AllowsChain => Projectile.ai[2] < 0.5f;
+		private bool AllowsFork => !IsFallMode && Projectile.ai[2] < 1.5f;
+		private bool UseSpawnAsOrigin => Projectile.ai[2] >= 1.5f;
+
 		public override void AI()
 		{
 			Player owner = Main.player[Projectile.owner];
-			bool fallMode = Projectile.ai[0] > 0.5f;
-			_widthMul = Projectile.ai[1] > 0.1f ? Projectile.ai[1] : (fallMode ? 1.85f : 1f);
+			bool fallMode = IsFallMode;
 
 			if (!_inited)
 			{
 				_inited = true;
 				_flickSeed = Projectile.whoAmI * 17;
 				EnsureAssets();
+				if (!fallMode && Projectile.ai[1] >= 64f)
+				{
+					_maxBeamLength = Projectile.ai[1];
+					_widthMul = 1f;
+				}
+				else
+					_widthMul = Projectile.ai[1] > 0.1f ? Projectile.ai[1] : (fallMode ? 1.85f : 1f);
+
 				if (fallMode)
 				{
 					_to = Projectile.Center;
 					_from = _to - Vector2.UnitY * 320f;
+				}
+				else if (UseSpawnAsOrigin)
+				{
+					_from = Projectile.Center;
+					Vector2 delta = Projectile.velocity;
+					if (delta.LengthSquared() < 1f)
+						delta = new Vector2(owner.direction * 64f, 0f);
+					float len = MathHelper.Clamp(delta.Length(), 48f, Math.Max(ForkSearchRange, _maxBeamLength));
+					_to = _from + Vector2.Normalize(delta) * len;
 				}
 				else
 				{
 					_from = owner.MountedCenter;
 					if (Projectile.ai[2] > 0.5f && Projectile.velocity.LengthSquared() > 1f)
 					{
-						float len = MathHelper.Clamp(Projectile.velocity.Length(), 64f, MaxBeamLength);
+						float len = MathHelper.Clamp(Projectile.velocity.Length(), 64f, _maxBeamLength);
 						_to = _from + Vector2.Normalize(Projectile.velocity) * len;
 					}
 					else
 					{
-						Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile);
+						Vector2 aim = ResolveAimPoint(owner);
 						Vector2 dir = aim - _from;
 						if (dir.LengthSquared() < 1f)
 							dir = new Vector2(owner.direction, 0f);
-						float len = MathHelper.Clamp(dir.Length(), 64f, MaxBeamLength);
+						float len = MathHelper.Clamp(dir.Length(), 64f, _maxBeamLength);
 						_to = _from + Vector2.Normalize(dir) * len;
 					}
 				}
@@ -114,7 +143,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				BuildJaggedPath();
 			}
 
-			// 沿路径电尘（对齐 CWR 落雷电花，非降级）
 			if (_pts != null && Projectile.timeLeft % 2 == 0)
 			{
 				int idx = Main.rand.Next(_pts.Length);
@@ -124,7 +152,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.55f);
 			Lighting.AddLight(_to, ChantColor.ToVector3() * _envelope * 1.2f);
 
-			if (!fallMode && Projectile.ai[2] < 0.5f && !_chainScheduled && Projectile.owner == Main.myPlayer)
+			if (AllowsChain && !_chainScheduled && Projectile.owner == Main.myPlayer)
 			{
 				_chainScheduled = true;
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter, Vector2.Zero,
@@ -132,6 +160,32 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (id >= 0)
 					Main.projectile[id].originalDamage = Projectile.damage;
 			}
+		}
+
+		private Vector2 ResolveAimPoint(Player owner)
+		{
+			Vector2 cursor = HenshinProjUtil.OwnerMouseWorld(Projectile);
+			HenshinPlayer hp = owner.GetModPlayer<HenshinPlayer>();
+			float softTiles = hp.ThunderboltSoftAimTiles;
+			if (softTiles <= 0f)
+				return cursor;
+
+			float range = softTiles * 16f;
+			float rangeSq = range * range;
+			NPC best = null;
+			float bestSq = rangeSq;
+			for (int i = 0; i < Main.maxNPCs; i++)
+			{
+				NPC n = Main.npc[i];
+				if (!n.active || n.friendly || n.life <= 0 || !n.CanBeChasedBy())
+					continue;
+				float dSq = Vector2.DistanceSquared(cursor, n.Center);
+				if (dSq >= bestSq)
+					continue;
+				bestSq = dSq;
+				best = n;
+			}
+			return best != null ? best.Center : cursor;
 		}
 
 		private static void EnsureAssets()
@@ -181,6 +235,77 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			if (Main.rand.NextFloat() < 0.5f)
 				target.AddBuff(BuffID.Electrified, 300);
+
+			TrySpawnForks(target);
+		}
+
+		private void TrySpawnForks(NPC hitTarget)
+		{
+			if (!AllowsFork || Projectile.owner != Main.myPlayer || hitTarget == null || !hitTarget.active)
+				return;
+
+			int dmg = Projectile.damage > 0 ? Projectile.damage : Projectile.originalDamage;
+			if (dmg <= 0)
+				dmg = 1;
+
+			Span<(int Who, float DistSq)> candidates = stackalloc (int, float)[MaxForks];
+			int filled = 0;
+			float rangeSq = ForkSearchRange * ForkSearchRange;
+			Vector2 origin = hitTarget.Center;
+
+			for (int i = 0; i < Main.maxNPCs; i++)
+			{
+				NPC n = Main.npc[i];
+				if (!n.active || n.friendly || n.life <= 0 || n.whoAmI == hitTarget.whoAmI || !n.CanBeChasedBy())
+					continue;
+				float dSq = Vector2.DistanceSquared(origin, n.Center);
+				if (dSq > rangeSq || dSq < 16f)
+					continue;
+
+				if (filled < MaxForks)
+				{
+					candidates[filled++] = (n.whoAmI, dSq);
+					continue;
+				}
+
+				int worst = 0;
+				for (int k = 1; k < MaxForks; k++)
+				{
+					if (candidates[k].DistSq > candidates[worst].DistSq)
+						worst = k;
+				}
+				if (dSq < candidates[worst].DistSq)
+					candidates[worst] = (n.whoAmI, dSq);
+			}
+
+			for (int i = 0; i < filled; i++)
+			{
+				NPC n = Main.npc[candidates[i].Who];
+				if (!n.active)
+					continue;
+				Vector2 toNpc = n.Center - origin;
+				if (toNpc.LengthSquared() < 1f)
+					continue;
+				float dist = MathHelper.Clamp(toNpc.Length(), 48f, ForkSearchRange);
+				Vector2 vel = Vector2.Normalize(toNpc) * dist;
+				int id = Projectile.NewProjectile(
+					Projectile.GetSource_FromThis(),
+					origin,
+					vel,
+					ModContent.ProjectileType<SkyBoltLightningProj>(),
+					dmg,
+					1f,
+					Projectile.owner,
+					0f,
+					0f,
+					AiNoChainNoFork);
+				if (id >= 0)
+				{
+					Main.projectile[id].originalDamage = dmg;
+					Main.projectile[id].Center = origin;
+					HenshinAccGlobalProjectile.CopyMoveOrigin(Projectile, Main.projectile[id]);
+				}
+			}
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -217,7 +342,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float width = BaseWidth * _widthMul * (0.5f + 0.5f * (1f - factor)) * _envelope;
 				float alpha = MathHelper.Clamp(_envelope * (0.55f + 0.45f * factor), 0f, 1f);
 
-				// Additive + SourceAlpha：必须保留 A，禁止 A=0
 				Color wide = Color.Lerp(ChantColor, Color.White, 0.35f) * alpha;
 				wide.A = (byte)(255f * alpha);
 				Color core = VoltWhite * (0.95f * alpha);
@@ -285,7 +409,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Vector2 strikeTo = n.Top + new Vector2(0f, 4f);
 				Projectile.NewProjectile(Projectile.GetSource_FromThis(), strikeTo, Vector2.Zero,
 					ModContent.ProjectileType<SkyBoltLightningProj>(), Projectile.damage, 4f, Projectile.owner,
-					1f, 1.85f, 1f);
+					1f, 1.85f, SkyBoltLightningProj.AiNoChainNoFork);
 
 				count++;
 				if (count >= 20)
@@ -296,7 +420,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.NewProjectile(Projectile.GetSource_FromThis(), HenshinProjUtil.OwnerMouseWorld(Projectile), Vector2.Zero,
 					ModContent.ProjectileType<SkyBoltLightningProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner,
-					1f, 1.85f, 1f);
+					1f, 1.85f, SkyBoltLightningProj.AiNoChainNoFork);
 			}
 			Projectile.Kill();
 		}

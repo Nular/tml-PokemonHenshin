@@ -141,6 +141,23 @@ namespace PokemonHenshin.Content.Accessories
 
 			if (child != null && hp.PenetrateAdd > 0 && projectile.penetrate > 0)
 				projectile.penetrate += hp.PenetrateAdd;
+
+			if (hp.LightBallThunderShock && projectile.type == ModContent.ProjectileType<ThunderBoltHenshinProj>())
+			{
+				float speedMul = hp.LightBallShockSpeedMul > 1f ? hp.LightBallShockSpeedMul : 2f;
+				projectile.velocity *= speedMul;
+				projectile.penetrate = 3;
+				// 提速后加宽命中盒，减轻擦线打空
+				int grow = 28 - projectile.width;
+				if (grow > 0)
+				{
+					projectile.position.X -= grow * 0.5f;
+					projectile.position.Y -= grow * 0.5f;
+					projectile.width = 28;
+					projectile.height = 28;
+				}
+				projectile.scale = Math.Max(projectile.scale, 1.45f);
+			}
 		}
 
 		public override void PostAI(Projectile projectile)

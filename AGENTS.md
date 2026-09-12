@@ -53,4 +53,4 @@ C# / tModLoader / `modReferences = CalamityMod`。进度反射 `CalamityProgress
 
 ## 当前指针
 
-见 **`docs/backlog.md`**（需求 **v1.4.26**）。
+见 **`docs/backlog.md`**（需求 **v1.4.29**）。

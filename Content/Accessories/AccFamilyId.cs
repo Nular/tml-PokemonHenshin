@@ -119,7 +119,15 @@ namespace PokemonHenshin.Content.Accessories
 		/// <summary>形态 FinalDefense 额外比例（不绑进化条件）。</summary>
 		FormDefMul,
 		/// <summary>招式 useTime 乘区（0.90 = 攻速约 +10%；与 CooldownCut 独立）。</summary>
-		UseTimeMul
+		UseTimeMul,
+		/// <summary>电气球成品/超级：电击弹速倍率（2=+100%；含穿 3 / 加宽）。</summary>
+		LightBallThunderShock,
+		/// <summary>电气球成品/超级：每 3s 对感电目标放无连锁十万伏特。</summary>
+		LightBallPassiveBolt,
+		/// <summary>电气球成品/超级：电光一闪内置冷却削减（不占 LungeCooldownCut 30% 硬顶）。</summary>
+		LightBallQuickAttackCdCut,
+		/// <summary>广角镜成品/超级：十万伏特以光标为中心的软瞄半径（格）。</summary>
+		ThunderboltSoftAimTiles
 	}
 
 	public readonly struct AccStatLine

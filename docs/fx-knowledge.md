@@ -72,10 +72,11 @@
 | 项 | 内容 |
 |----|------|
 | **文件** | `SkyBoltLightning.cs`；贴图 `Assets/Fx/ThunderTrail` + `SoftGlow` + `LightShot` |
-| **形态** | 皮卡丘大招；雷丘大招（`ai0=1` 落雷、更粗） |
-| **手法** | 折线多段 trail；**Additive 时保留 `Color.A`**；黑底白电图在 Additive 下黑变透明 |
+| **形态** | 皮卡丘大招（≤64 格+连锁+命中三叉）；雷丘技能1（≤128 格、无连锁、三叉）；电气球被动（无连锁、可三叉）；分叉/感电二次/`ai2≥1.5` 不再分叉；雷丘大招落雷 |
+| **手法** | 折线多段 trail；**Additive 时保留 `Color.A`**；前进模式 `ai1≥64` = 最大长度（像素）；命中后 16 格内最多 3 条分叉 |
+| **复用** | `VoltTackleTrailProj`：加粗折线 + 形态贴图残影（长而淡） |
 | **CWR** | 只读抄路径/包络；贴图已拷贝，无运行时依赖 |
-| **勿做** | `A=0`；依赖大修 `CWRAsset` |
+| **勿做** | `A=0`；依赖大修 `CWRAsset`；把端点只写在 `OnSpawn` 私有字段（拖尾用生成点+velocity 同步） |
 
 ### 2.5 Typhoon 壳 — 火焰漩涡 / 贴地旋风
 
@@ -198,7 +199,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 |------------|---------------|-----------|---------|-------------|------|--------|
 | WaterGun/水枪 | L02_F01,1 | Aqua | AquaScepter←WaterStream | WaterStream Shell | OK | Accepted |
 | Tackle/撞击 | 多形态 | Lunge | `LungeProj` SoftGlow 残影 | — | 2s CD | Accepted |
-| BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble **窄直线**速度随机+破裂小泡 | Bubble Load | 密泡 | Accepted |
+| BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble（F02：**16** 泡、速 **20.8**） | Bubble Load | 密泡 | Accepted |
 | Bite/咬住 | L02_F02,4 | BiteArc | `BiteArcProj` | cookbook | 尖牙 | Accepted |
 | Whirlpool/潮旋 | L02_F02 Ult | DoTBind | MouseVortex Cyclone 蓝 | Typhoon 蓝染 / `Assets/Fx/Cyclone` | 可见涡 | Implemented |
 | HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中墙=怪渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
@@ -222,10 +223,10 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 | MoveKey/CN | Forms (Stage) | Playstyle | Current | Recommended | Feel | Status |
 |------------|---------------|-----------|---------|-------------|------|--------|
-| ThunderShock/电击 | L04_F01,2 | Bolt | ThunderBoltHenshin | — | OK | Accepted |
-| QuickAttack/电光一闪 | L04_F01,2 | Blink | BlinkStrike | SoftGlow 落点 | OK | Accepted |
-| Thunderbolt/十万伏特 | L04_F01 Ult / L04_F02 S1 | Beam | SkyBolt / MidThunder+SoftGlow | SkyBolt cookbook | 标杆 | Accepted |
-| VoltTackle/伏特攻击 | L04_F02,5 | Lunge+Recoil | Lunge Electric SoftGlow | — | OK | Accepted |
+| ThunderShock/电击 | L04_F01 | Bolt | ThunderBoltHenshin（电气球×2/×3速、穿3、加宽） | — | OK | Accepted |
+| QuickAttack/电光一闪 | L04_F01 | Blink | BlinkStrike | SoftGlow 落点 | OK | Accepted |
+| Thunderbolt/十万伏特 | L04_F01 Ult / L04_F02 S1 | Beam | SkyBolt（F02≤128 无连锁） | SkyBolt cookbook | 标杆 | Accepted |
+| VoltTackle/伏特攻击 | L04_F02 | Blink+Trail | VoltTackleBlink+Trail×3/6hit | SkyBolt 折线 | OK | Accepted |
 | Thunder/打雷 | L04_F02 Ult | Pillar | ThunderPillar→SkyBolt ai0=1 | 同天雷 | OK | Accepted |
 
 ### 4.5 格斗 L05

@@ -406,6 +406,11 @@ Accessories: {
 	StatXpHeldMul: 持握经验 +{0}%
 	StatXpHotbarShareMul: 热键栏其它之力复制经验 {0}%
 	StatHomingTurn: 追踪转向 {0}
+	StatHomingTurnInstant: 追踪瞬转（无角速度限制）
+	StatLightBallThunderShock: 电击飞行速度 +{0}%；穿透 3；加宽
+	StatLightBallPassiveBolt: 每 3 秒对 60 格内感电目标释放十万伏特
+	StatLightBallQuickAttackCdCut: 电光一闪冷却 -{0}%
+	StatThunderboltSoftAimTiles: 十万伏特光标软瞄 {0} 格
 	StatHomingRange: 索敌 {0} 格（圆形）
 	StatHomingBolt: 追踪：单体飞行弹
 	StatHomingSpread: 追踪：扇形/锥
@@ -2085,4 +2090,6 @@ Projectiles: {
 	// TakeDownLungeProj.DisplayName: Take Down Lunge Proj
 	// MewtwoPsystrikeDirectorProj.DisplayName: Mewtwo Psystrike Director Proj
 	// MewtwoPsystrikeOrbProj.DisplayName: Mewtwo Psystrike Orb Proj
+	// VoltTackleTrailProj.DisplayName: Volt Tackle Trail Proj
+	// VoltTackleBlinkProj.DisplayName: Volt Tackle Blink Proj
 }

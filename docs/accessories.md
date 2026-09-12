@@ -118,9 +118,9 @@ Beam, AoEBurst, DoTBind, Field, Dig, Blink
 | 不变之石 | 未变身也 Apply → `EverstoneBlock`；挡进化 UI / 命令 |
 | 学习装置 / 幸运蛋 | `GrantKillExperience`：热键栏分享 / 持握倍率 |
 | 诅咒之符 | 变身穿墙按 Delivery；灼烧戴上即烧、每 30s；超级免疫 |
-| 广角镜 | `ApplyAccessoryHoming`；自带追踪整段跳过 |
+| 广角镜 | `ApplyAccessoryHoming`；自带追踪整段跳过；普通/超级 `HomingTurn=1` 瞬转；`ThunderboltSoftAimTiles` 4/8（十万伏特光标软瞄） |
 | 剩饭 vs 贝壳 | 剩饭持续回血；贝壳命中回复（共用相关 CD 规则见 Catalog） |
-| 电气球 | `RequiredFormId = L04_F01`；`FormAtkMul` / `FormDefMul` / `UseTimeMul` |
+| 电气球 | `RequiredFormId = L04_F01`；`FormAtkMul` / `FormDefMul` / `UseTimeMul`；成品/超级电击弹速×2/×3+穿3+加宽、`LightBallQuickAttackCdCut` 0.20/0.40、`LightBallPassiveBolt` |
 
 ---
 

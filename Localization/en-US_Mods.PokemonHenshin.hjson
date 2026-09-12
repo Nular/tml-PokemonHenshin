@@ -406,6 +406,11 @@ Accessories: {
 	StatXpHeldMul: Held XP +{0}%
 	StatXpHotbarShareMul: Copy {0}% XP to other hotbar forces
 	StatHomingTurn: Homing turn {0}
+	StatHomingTurnInstant: Instant homing turn (no turn-rate limit)
+	StatLightBallThunderShock: Thunder Shock speed +{0}%; pierces 3; wider hitbox
+	StatLightBallPassiveBolt: Every 3s, Thunderbolt electrified foes within 60 tiles
+	StatLightBallQuickAttackCdCut: Quick Attack cooldown -{0}%
+	StatThunderboltSoftAimTiles: Thunderbolt soft-aim {0} tiles around cursor
 	StatHomingRange: Homing range {0} tiles (circle)
 	StatHomingBolt: Homing: bolts
 	StatHomingSpread: Homing: spread
@@ -2085,4 +2090,6 @@ Projectiles: {
 	TakeDownLungeProj.DisplayName: Take Down Lunge Proj
 	MewtwoPsystrikeDirectorProj.DisplayName: Mewtwo Psystrike Director Proj
 	MewtwoPsystrikeOrbProj.DisplayName: Mewtwo Psystrike Orb Proj
+	VoltTackleTrailProj.DisplayName: Volt Tackle Trail Proj
+	VoltTackleBlinkProj.DisplayName: Volt Tackle Blink Proj
 }

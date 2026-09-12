@@ -401,8 +401,8 @@ namespace PokemonHenshin.Content.Accessories
 				s4: new[] { F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.06f), S(AccStat.HomingRange, 8f), S(AccStat.CritChance, 0.05f) },
 				s5: new[] { F(AccStat.HomingBolt), S(AccStat.HomingTurn, 0.08f), S(AccStat.HomingRange, 8f), S(AccStat.CritChance, 0.05f) },
 				s6: new[] { S(AccStat.DamageBonus, 0.025f), S(AccStat.CritChance, 0.05f) },
-				normal: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.12f), S(AccStat.HomingRange, 16f), S(AccStat.DamageBonus, 0.04f), S(AccStat.CritChance, 0.08f) },
-				super: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 0.20f), S(AccStat.HomingRange, 32f), S(AccStat.DamageBonus, 0.08f), S(AccStat.CritChance, 0.12f) },
+				normal: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 1.0f), S(AccStat.HomingRange, 16f), S(AccStat.ThunderboltSoftAimTiles, 4f), S(AccStat.DamageBonus, 0.04f), S(AccStat.CritChance, 0.08f) },
+				super: new[] { F(AccStat.HomingBolt), F(AccStat.HomingSpread), F(AccStat.HomingBarrage), F(AccStat.HomingDoTBind), S(AccStat.HomingTurn, 1.0f), S(AccStat.HomingRange, 32f), S(AccStat.ThunderboltSoftAimTiles, 8f), S(AccStat.DamageBonus, 0.08f), S(AccStat.CritChance, 0.12f) },
 				loot: new[]
 				{
 					Craft(TileID.WorkBenches, (ItemID.Lens, 5)),
@@ -699,6 +699,7 @@ namespace PokemonHenshin.Content.Accessories
 				}),
 
 			// 仅皮卡丘（L04_F01）；接受永久毕业。攻速走 UseTimeMul，不占 CooldownCut 硬顶。
+			// 电击弹速 / 电光一闪 CD：普通 +100% 速、攻速 +20%、闪冷却 -20%；超级翻倍。
 			Fam(AccFamilyId.A29, "A29LightBall", "电气球", "Light Ball", "Bag 电气球 SV Sprite.png", 2, 5,
 				s1: new[] { S(AccStat.FormAtkMul, 0.25f) },
 				s2: new[] { S(AccStat.FormDefMul, 0.25f) },
@@ -706,8 +707,22 @@ namespace PokemonHenshin.Content.Accessories
 				s4: new[] { S(AccStat.FormDefMul, 0.25f) },
 				s5: new[] { S(AccStat.FormAtkMul, 0.25f) },
 				s6: new[] { S(AccStat.FormDefMul, 0.25f) },
-				normal: new[] { S(AccStat.FormAtkMul, 1.0f), S(AccStat.FormDefMul, 1.0f), S(AccStat.UseTimeMul, 0.90f) },
-				super: new[] { S(AccStat.FormAtkMul, 2.0f), S(AccStat.FormDefMul, 2.0f), S(AccStat.UseTimeMul, 0.80f) },
+				normal: new[]
+				{
+					S(AccStat.FormAtkMul, 1.0f), S(AccStat.FormDefMul, 1.0f),
+					S(AccStat.UseTimeMul, 0.80f),
+					S(AccStat.LightBallThunderShock, 2.0f),
+					S(AccStat.LightBallQuickAttackCdCut, 0.20f),
+					F(AccStat.LightBallPassiveBolt)
+				},
+				super: new[]
+				{
+					S(AccStat.FormAtkMul, 2.0f), S(AccStat.FormDefMul, 2.0f),
+					S(AccStat.UseTimeMul, 0.60f),
+					S(AccStat.LightBallThunderShock, 3.0f),
+					S(AccStat.LightBallQuickAttackCdCut, 0.40f),
+					F(AccStat.LightBallPassiveBolt)
+				},
 				loot: new[]
 				{
 					Craft(TileID.Anvils, (ItemID.Wire, 15), (ItemID.FallenStar, 5)),

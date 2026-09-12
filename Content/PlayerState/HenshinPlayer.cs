@@ -129,6 +129,17 @@ namespace PokemonHenshin.Content.PlayerState
 		public float FormDefMul { get; set; }
 		/// <summary>招式 useTime 乘区（默认 1；与 CooldownCut 独立）。</summary>
 		public float UseTimeMul { get; set; } = 1f;
+		/// <summary>电气球成品/超级：电击提速与穿透（speed mul &gt; 1 时生效）。</summary>
+		public bool LightBallThunderShock { get; set; }
+		/// <summary>电气球电击弹速倍率（2=+100%，3=+200%）。</summary>
+		public float LightBallShockSpeedMul { get; set; } = 1f;
+		/// <summary>电气球成品/超级：感电目标周期十万伏特。</summary>
+		public bool LightBallPassiveBolt { get; set; }
+		/// <summary>电气球：电光一闪冷却削减（不占 LungeCooldownCut 硬顶）。</summary>
+		public float LightBallQuickAttackCdCut { get; set; }
+		/// <summary>广角镜成品/超级：十万伏特光标软瞄半径（格）。</summary>
+		public float ThunderboltSoftAimTiles { get; set; }
+		private int _lightBallPassiveCd;
 		/// <summary>铁壁前缀：形态防御结算后再乘的额外比例（如 0.20）。</summary>
 		public float PrefixFormDefenseMul { get; set; }
 
@@ -470,6 +481,16 @@ namespace PokemonHenshin.Content.PlayerState
 				case AccStat.FormAtkMul: FormAtkMul += line.Value; break;
 				case AccStat.FormDefMul: FormDefMul += line.Value; break;
 				case AccStat.UseTimeMul: UseTimeMul *= line.Value; break;
+				case AccStat.LightBallThunderShock:
+					LightBallThunderShock = true;
+					if (line.Value > 1f)
+						LightBallShockSpeedMul = Math.Max(LightBallShockSpeedMul, line.Value);
+					break;
+				case AccStat.LightBallPassiveBolt: LightBallPassiveBolt = true; break;
+				case AccStat.LightBallQuickAttackCdCut:
+					LightBallQuickAttackCdCut = Math.Max(LightBallQuickAttackCdCut, line.Value);
+					break;
+				case AccStat.ThunderboltSoftAimTiles: ThunderboltSoftAimTiles = Math.Max(ThunderboltSoftAimTiles, line.Value); break;
 			}
 		}
 
@@ -556,6 +577,11 @@ namespace PokemonHenshin.Content.PlayerState
 			FormAtkMul = 0f;
 			FormDefMul = 0f;
 			UseTimeMul = 1f;
+			LightBallThunderShock = false;
+			LightBallShockSpeedMul = 1f;
+			LightBallPassiveBolt = false;
+			LightBallQuickAttackCdCut = 0f;
+			ThunderboltSoftAimTiles = 0f;
 			PrefixFormDefenseMul = 0f;
 			TypeMoveBonus = 0f;
 			SynchronizePassive = false;
@@ -748,7 +774,10 @@ namespace PokemonHenshin.Content.PlayerState
 
 		public void StartLungeCooldown(int ticks = 120)
 		{
-			int scaled = (int)Math.Max(1, Math.Round(ticks * LungeCooldownMultiplier));
+			float mul = LungeCooldownMultiplier;
+			if (LightBallQuickAttackCdCut > 0f)
+				mul *= 1f - Math.Min(0.90f, LightBallQuickAttackCdCut);
+			int scaled = (int)Math.Max(1, Math.Round(ticks * mul));
 			LungeCooldown = Math.Max(LungeCooldown, scaled);
 		}
 
@@ -912,10 +941,74 @@ namespace PokemonHenshin.Content.PlayerState
 				Player.moveSpeed += MoveSpeedBonus;
 
 			TickLeftovers();
+			TickLightBallPassive();
 			UpdateFlight();
 			TryProcessUltimateKey();
 			TryProcessDashInput();
 			TrySpawnFullChargeDust();
+		}
+
+		private const int LightBallPassiveInterval = 180;
+		private const float LightBallPassiveRange = 60f * 16f;
+
+		private void TickLightBallPassive()
+		{
+			if (!LightBallPassiveBolt || CurrentForm == null || CurrentForm.FormId != "L04_F01")
+			{
+				_lightBallPassiveCd = 0;
+				return;
+			}
+
+			if (Player.whoAmI != Main.myPlayer)
+				return;
+
+			if (_lightBallPassiveCd > 0)
+			{
+				_lightBallPassiveCd--;
+				return;
+			}
+
+			_lightBallPassiveCd = LightBallPassiveInterval;
+
+			if (Player.HeldItem?.ModItem is not HenshinForceItem force)
+				return;
+
+			int damage = Math.Max(1, Player.GetWeaponDamage(force.Item));
+			float rangeSq = LightBallPassiveRange * LightBallPassiveRange;
+			Vector2 origin = Player.MountedCenter;
+
+			for (int i = 0; i < Main.maxNPCs; i++)
+			{
+				NPC n = Main.npc[i];
+				if (!n.active || n.friendly || n.life <= 0 || !n.CanBeChasedBy())
+					continue;
+				if (!n.HasBuff(BuffID.Electrified))
+					continue;
+				if (Vector2.DistanceSquared(origin, n.Center) > rangeSq)
+					continue;
+
+				Vector2 toNpc = n.Center - origin;
+				float dist = MathHelper.Clamp(toNpc.Length(), 64f, LightBallPassiveRange);
+				if (toNpc.LengthSquared() < 1f)
+					toNpc = new Vector2(Player.direction, 0f);
+				Vector2 vel = Vector2.Normalize(toNpc) * dist;
+				int id = Projectile.NewProjectile(
+					Player.GetSource_FromThis(),
+					origin,
+					vel,
+					ModContent.ProjectileType<SkyBoltLightningProj>(),
+					damage,
+					1f,
+					Player.whoAmI,
+					0f,
+					0f,
+					1f);
+				if (id >= 0)
+				{
+					Main.projectile[id].originalDamage = damage;
+					HenshinAccGlobalProjectile.StampMoveOrigin(Main.projectile[id], MoveSlot.Skill1);
+				}
+			}
 		}
 
 		private void TickCurseTagBurn()

@@ -445,6 +445,38 @@ namespace PokemonHenshin.Content.Items.Forms
 				BalanceTag = BalanceTag.Ultimate
 			};
 
+		/// <summary>雷丘十万伏特：SkyBolt 向鼠标，可配最大格数；默认不连锁。</summary>
+		public static MoveSpec ThunderboltSkill(string nameKey, float mult = 1.5f, float maxTiles = 128f, bool chain = false, int use = 20)
+			=> new()
+			{
+				Delivery = MoveDelivery.Beam,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<SkyBoltLightningProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 2f,
+				Ai1 = maxTiles * 16f,
+				Ai2 = chain ? 0f : 1f
+			};
+
+		/// <summary>伏特攻击：闪现到鼠标 + 闪电拖尾（伤在拖尾上）。</summary>
+		public static MoveSpec VoltTackleBlink(string nameKey, float mult = 3.0f, int use = 30, float recoilFrac = 0.08f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Lunge,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<VoltTackleBlinkProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				Ai1 = BuffID.Electrified,
+				RecoilSelf = true,
+				RecoilFraction = recoilFrac,
+				RequiresLungeCooldown = true
+			};
+
 		public static MoveSpec RockTomb(string nameKey, float mult = 1.3f, int use = 28)
 			=> new()
 			{
@@ -528,7 +560,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				BalanceTag = BalanceTag.Ultimate
 			};
 
-		public static MoveSpec BubbleBarrage(string nameKey, int count, float mult, int use = 36)
+		public static MoveSpec BubbleBarrage(string nameKey, int count, float mult, int use = 36, float speed = 16f)
 			=> new()
 			{
 				Delivery = MoveDelivery.Barrage,
@@ -540,7 +572,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				Knockback = 1.2f,
 				Ai0 = BarrageDirectorProj.ModeBubble,
 				Ai1 = count,
-				Ai2 = 16f,
+				Ai2 = speed,
 				CountsAsWaterMove = true,
 				BalanceTag = BalanceTag.MultiHit
 			};
@@ -1298,7 +1330,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	public class WartortleForce : HenshinForceItem
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F02", 5, "Mods.PokemonHenshin.Items.WartortleForce.DisplayName", PokemonType.Water, 4, "L02_F01", FormPassiveKind.Torrent);
-		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 32, 2.4f, 28);
+		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 16, 2.4f, 28, 20.8f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseVortex("Mods.PokemonHenshin.Moves.Whirlpool", 3.2f, DustID.Water);
 	}
