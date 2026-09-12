@@ -36,10 +36,10 @@ Prefixes: {
 }
 
 StatsUI: {
-	ButtonHover: Henshin stats
+	ButtonHover: Henshin stats (draggable)
 	PanelTitle: ≡ Henshin Status
 	PanelReset: "[Reset]"
-	PanelDragHint: Drag the title bar to move; double-click to reset
+	PanelDragHint: Drag the button or title bar to move both; double-click title to reset
 	PanelResetHint: Restore default position beside the inventory
 	NotTransformed: Not transformed. Hold a force item in the hotbar to see live bonuses and abilities.
 	EverstoneOn: Everstone: evolution blocked
@@ -328,18 +328,18 @@ Configs: {
 	HenshinClientConfig: {
 		DisplayName: Pokemon Henshin · Client
 
-		UseCustomPanelPos: {
-			Label: Custom stat panel position
-			Tooltip: Written when you drag the panel in-game; turn off here to reset
+		UseCustomButtonPos: {
+			Label: Custom stat button position
+			Tooltip: Written when you drag the button or panel in-game; turn off here to reset. Panel stays attached to the button's right.
 		}
 
-		PanelPosX: {
-			Label: Panel position X
+		ButtonPosX: {
+			Label: Button position X
 			Tooltip: ""
 		}
 
-		PanelPosY: {
-			Label: Panel position Y
+		ButtonPosY: {
+			Label: Button position Y
 			Tooltip: ""
 		}
 	}

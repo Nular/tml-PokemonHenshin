@@ -36,10 +36,10 @@ Prefixes: {
 }
 
 StatsUI: {
-	ButtonHover: 变身属性
+	ButtonHover: 变身属性（可拖动）
 	PanelTitle: ≡ 变身状态报告
 	PanelReset: 〔复位〕
-	PanelDragHint: 拖动标题栏可移动面板；双击复位
+	PanelDragHint: 拖动入口或标题栏可一起移动；双击标题复位
 	PanelResetHint: 恢复到物品栏旁默认位置
 	NotTransformed: 未持握之力。持握热键栏中的「xxx之力」后，这里显示当前加成与特性。
 	EverstoneOn: 不变之石：阻止进化
@@ -328,18 +328,18 @@ Configs: {
 	HenshinClientConfig: {
 		DisplayName: 宝可梦变身 · 客户端
 
-		UseCustomPanelPos: {
-			Label: 自定义属性面板位置
-			Tooltip: 由游戏内拖动面板写入；也可在此关闭以复位
+		UseCustomButtonPos: {
+			Label: 自定义属性入口位置
+			Tooltip: 由游戏内拖动入口或面板写入；也可在此关闭以复位。面板始终贴在入口右侧。
 		}
 
-		PanelPosX: {
-			Label: 面板位置 X
+		ButtonPosX: {
+			Label: 入口位置 X
 			// Tooltip: ""
 		}
 
-		PanelPosY: {
-			Label: 面板位置 Y
+		ButtonPosY: {
+			Label: 入口位置 Y
 			// Tooltip: ""
 		}
 	}

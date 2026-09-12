@@ -5,7 +5,8 @@ using Terraria.ModLoader.Config;
 namespace PokemonHenshin.Content.Config
 {
 	/// <summary>
-	/// 客户端偏好：变身属性面板位置等。拖动面板时通过 <see cref="ModConfig.SaveChanges"/> 落盘。
+	/// 客户端偏好：变身属性入口按钮位置等。拖动入口或面板时通过
+	/// <see cref="ModConfig.SaveChanges"/> 落盘；面板始终贴在入口右侧。
 	/// </summary>
 	public sealed class HenshinClientConfig : ModConfig
 	{
@@ -14,29 +15,29 @@ namespace PokemonHenshin.Content.Config
 		public override ConfigScope Mode => ConfigScope.ClientSide;
 
 		[DefaultValue(false)]
-		public bool UseCustomPanelPos;
+		public bool UseCustomButtonPos;
 
 		[DefaultValue(0)]
 		[Range(-4000, 8000)]
-		public int PanelPosX;
+		public int ButtonPosX;
 
 		[DefaultValue(0)]
 		[Range(-4000, 8000)]
-		public int PanelPosY;
+		public int ButtonPosY;
 
-		public void SavePanelPos(int x, int y)
+		public void SaveButtonPos(int x, int y)
 		{
-			UseCustomPanelPos = true;
-			PanelPosX = x;
-			PanelPosY = y;
+			UseCustomButtonPos = true;
+			ButtonPosX = x;
+			ButtonPosY = y;
 			SaveChanges(silent: true);
 		}
 
-		public void ResetPanelPos()
+		public void ResetButtonPos()
 		{
-			UseCustomPanelPos = false;
-			PanelPosX = 0;
-			PanelPosY = 0;
+			UseCustomButtonPos = false;
+			ButtonPosX = 0;
+			ButtonPosY = 0;
 			SaveChanges(silent: true);
 		}
 	}

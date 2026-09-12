@@ -72,7 +72,7 @@ C# / tModLoader / `modReferences = CalamityMod`。进度用 **反射** `Calamity
 - **数值（2026-09-09～12）：** v1.4 已接线（需求 **v1.4.23**）。击杀 XP × 世界档；`ExpNeeded` × 物品带。世界档/`100` **只挡获取**（`CanGainExperience`）；不截存档。卡顶/满级不飘 `EXP +X`。龙之波动爆炸碎片命中 `1×Factor`（须 `MarkCrumb`）；击杀不变。**大招后 ~2.5s 禁止一切充能**（`UltEnergyLockoutTicks`；勿再钉弹上能量系数）。DPS 抽检仍待本地。
 - **饰品（2026-09-12）：** 28 家族效果重平衡已接线（肉前纯伤 A02 +10%；A15 暴击三轴；A10 飞伤+飞行时间%；A25 闪避；死字段 AffinityAmp/FallDmg/GuardCut/TilePierceField/AccActive 已删）。广角镜索敌 8/16/32 格规则不变。数字以 `HenshinAccCatalog` 为准。**游戏内数值/闪避手感验收仍待本地**。
 - **2026-09-10～11：** 中文 loc 以 `{` 开头的 StatsUI 行已加引号。属性面板入口下移 64px 避开原版图鉴。御三家改 `AddStartingItems` + `PostUpdateMiscEffects` 入包（角色档 `starterGranted`；禁止 `OnEnterWorld`）；**进世界发放已本地验收**。变身地图头像：`HenshinMapHeadLayer`（需求 §2.3）；**游戏内/联机头像与虫洞药水待本地验收**。
-- **2026-09-11（面板）：** 属性面板可拖动（`HenshinClientConfig`）+ 复位；招式威力%；会心/超会心；武器/命中/其它乘区。**游戏内拖动与文案验收待本地**。
+- **2026-09-11（面板）：** 属性面板可拖动（`HenshinClientConfig`）+ 复位；招式威力%；会心/超会心；武器/命中/其它乘区。**2026-09-12：** 入口与面板共用锚点拖动（面板始终贴入口右侧）。**游戏内拖动与文案验收待本地**。
 - **联机视觉（2026-09-11）：** `SyncAim` + `OwnerMouseWorld`；壳弹/尖石/岩封锁/精神击破 `Ensure*` **已接线**。**双端验收 pending**。清单 `docs/fx-knowledge.md`「联机视觉/指向」。
 - **词缀/暴击（2026-09-11）：** 之力禁用原版词缀；专属**蓄能**（能量 ×1.20）/ **铁壁**（形态防 +20%）/ **猛攻**（伤 +15%、间隔 ×0.88）。暴击对齐原版 Crit；EasyCrit 抬暴击率；A15 升档仅 Crit 后 ×4，超暴击偏红橙大飘字。**游戏内重铸/飘字验收待本地**。
 - **已知缺口：** 联机双端（瞄准/壳弹/地图头像/虫洞/能量XP）仍待本地；获取硬顶公式已验、进世界不再 Truncate 与卡顶不飘 EXP **待本地**；裸 `LoadProjectile` 专用服风险未扫完（泡沫壳弹已 `SafeLoadProjectile`）；DPS 抽检 PS7/9/12；Rage pending。污泥毒云等未打标 Retarget 弹仍走完整命中能。未接线代码见 `docs/requirements.md` §12.1。饰品图标/合成/掉落与神奇糖果待游戏内验收。

@@ -18,7 +18,7 @@ namespace PokemonHenshin.Content.Visual
 {
 	/// <summary>
 	/// 物品栏右侧入口 + 当前变身属性面板。仅本地客户端；开背包时绘制。
-	/// 入口锚定原版 10×5 物品栏右缘（下移 64px 避开图鉴）；面板可拖动，位置写入
+	/// 入口与面板共用锚点：拖动任一则一起移动，面板始终贴在入口右侧；位置写入
 	/// <see cref="HenshinClientConfig"/>。
 	/// API：<see cref="ModSystem.UpdateUI"/> / <see cref="ModSystem.ModifyInterfaceLayers"/> /
 	/// <see cref="UserInterface"/> / <see cref="UIState"/>（tML stable）。
@@ -61,7 +61,10 @@ namespace PokemonHenshin.Content.Visual
 				userInterface.Update(gameTime);
 			}
 			else if (userInterface.CurrentState != null)
+			{
+				uiState.CancelDrag();
 				userInterface.SetState(null);
+			}
 		}
 
 		public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
@@ -107,7 +110,7 @@ namespace PokemonHenshin.Content.Visual
 		/// <see cref="AccessorySlotLoader.DrawVerticalAlignment"/> 反推（装备栏顶 = 物品栏顶 + 154）。
 		/// Y 再下移 64，避开原版图鉴按钮（与物品栏右上同列）。
 		/// </summary>
-		internal static void GetInventoryButtonPos(out int x, out int y)
+		internal static void GetDefaultButtonPos(out int x, out int y)
 		{
 			const float scale = 0.85f;
 			x = (int)(20f + 10f * 56f * scale) + 2;
@@ -126,24 +129,28 @@ namespace PokemonHenshin.Content.Visual
 			y += 64;
 		}
 
-		internal static void GetDefaultPanelPos(out int x, out int y)
-		{
-			GetInventoryButtonPos(out int bx, out int by);
-			x = bx + 46;
-			y = by;
-			ClampPanelPos(ref x, ref y, 380, 520);
-		}
+		/// <summary>面板左缘相对入口左缘的水平间距（入口宽 42 + 间隙 4）。</summary>
+		internal const int PanelOffsetX = 46;
 
-		internal static void ClampPanelPos(ref int x, ref int y, int width, int height)
+		internal static void ClampButtonPos(ref int x, ref int y, int buttonSize, int panelWidth, int panelHeight, bool panelOpen)
 		{
-			x = Math.Clamp(x, 12, Math.Max(12, Main.screenWidth - width - 12));
-			y = Math.Clamp(y, 12, Math.Max(12, Main.screenHeight - Math.Min(height, 220) - 12));
+			int groupW = panelOpen ? PanelOffsetX + panelWidth : buttonSize;
+			int groupH = panelOpen ? Math.Max(buttonSize, Math.Min(panelHeight, 220)) : buttonSize;
+			x = Math.Clamp(x, 12, Math.Max(12, Main.screenWidth - groupW - 12));
+			y = Math.Clamp(y, 12, Math.Max(12, Main.screenHeight - groupH - 12));
 		}
 	}
 
 	public sealed class HenshinStatUIState : UIState
 	{
 		internal bool PanelOpen;
+
+		internal void CancelDrag()
+		{
+			dragging = false;
+			dragMoved = false;
+			dragFromToggle = false;
+		}
 
 		private StatToggleButton toggle;
 		private UIPanel panel;
@@ -153,10 +160,15 @@ namespace PokemonHenshin.Content.Visual
 		private string lastFingerprint = string.Empty;
 		private string formTexturePath;
 		private bool dragging;
+		private bool dragMoved;
+		private bool dragFromToggle;
 		private Vector2 dragOffset;
+		private Vector2 dragStartMouse;
 		private int lastClickTick = -999;
 		private const int PanelWidth = 380;
+		private const int ButtonSize = 42;
 		private const int TitleHeight = 30;
+		private const float DragThreshold = 4f;
 
 		public override void OnInitialize()
 		{
@@ -165,9 +177,9 @@ namespace PokemonHenshin.Content.Visual
 			Height.Set(0f, 1f);
 
 			toggle = new StatToggleButton();
-			toggle.Width.Set(42f, 0f);
-			toggle.Height.Set(42f, 0f);
-			toggle.OnLeftClick += ToggleClicked;
+			toggle.Width.Set(ButtonSize, 0f);
+			toggle.Height.Set(ButtonSize, 0f);
+			toggle.OnLeftMouseDown += OnToggleMouseDown;
 			toggle.OnUpdate += MouseBlock;
 			Append(toggle);
 
@@ -205,7 +217,36 @@ namespace PokemonHenshin.Content.Visual
 
 		public override void Update(GameTime gameTime)
 		{
-			HenshinStatUISystem.GetInventoryButtonPos(out int bx, out int by);
+			int height = Math.Min(520, Math.Max(220, Main.screenHeight - 36));
+			ResolveButtonPos(height, out int bx, out int by);
+
+			if (dragging)
+			{
+				Vector2 mouse = Main.MouseScreen;
+				if (!dragMoved && Vector2.DistanceSquared(mouse, dragStartMouse) >= DragThreshold * DragThreshold)
+					dragMoved = true;
+
+				if (dragMoved)
+				{
+					bx = (int)(mouse.X - dragOffset.X);
+					by = (int)(mouse.Y - dragOffset.Y);
+					HenshinStatUISystem.ClampButtonPos(ref bx, ref by, ButtonSize, PanelWidth, height, PanelOpen);
+				}
+
+				if (!Main.mouseLeft)
+				{
+					bool wasMoved = dragMoved;
+					bool fromToggle = dragFromToggle;
+					dragging = false;
+					dragMoved = false;
+					dragFromToggle = false;
+					if (wasMoved)
+						HenshinClientConfig.Instance?.SaveButtonPos(bx, by);
+					else if (fromToggle)
+						TogglePanel();
+				}
+			}
+
 			toggle.Left.Set(bx, 0f);
 			toggle.Top.Set(by, 0f);
 			toggle.FormTexturePath = formTexturePath;
@@ -216,21 +257,8 @@ namespace PokemonHenshin.Content.Visual
 				if (panel.Parent == null)
 					Append(panel);
 
-				int height = Math.Min(520, Math.Max(220, Main.screenHeight - 36));
-				ResolvePanelPos(height, out int px, out int py);
-				if (dragging)
-				{
-					Vector2 mouse = Main.MouseScreen;
-					px = (int)(mouse.X - dragOffset.X);
-					py = (int)(mouse.Y - dragOffset.Y);
-					HenshinStatUISystem.ClampPanelPos(ref px, ref py, PanelWidth, height);
-					if (!Main.mouseLeft)
-					{
-						dragging = false;
-						HenshinClientConfig.Instance?.SavePanelPos(px, py);
-					}
-				}
-
+				int px = bx + HenshinStatUISystem.PanelOffsetX;
+				int py = by;
 				panel.Left.Set(px, 0f);
 				panel.Top.Set(py, 0f);
 				panel.Height.Set(height, 0f);
@@ -238,30 +266,41 @@ namespace PokemonHenshin.Content.Visual
 				if (panel.IsMouseHovering)
 					PlayerInput.LockVanillaMouseScroll("PokemonHenshin/StatSheet");
 			}
-			else
-			{
-				dragging = false;
-				if (panel.Parent != null)
-					panel.Remove();
-			}
+			else if (panel.Parent != null)
+				panel.Remove();
 
 			RefreshSnapshot();
 			Recalculate();
 			base.Update(gameTime);
 		}
 
-		private void ResolvePanelPos(int height, out int px, out int py)
+		private void ResolveButtonPos(int panelHeight, out int bx, out int by)
 		{
 			HenshinClientConfig cfg = HenshinClientConfig.Instance;
-			if (cfg != null && cfg.UseCustomPanelPos)
+			if (cfg != null && cfg.UseCustomButtonPos)
 			{
-				px = cfg.PanelPosX;
-				py = cfg.PanelPosY;
+				bx = cfg.ButtonPosX;
+				by = cfg.ButtonPosY;
 			}
 			else
-				HenshinStatUISystem.GetDefaultPanelPos(out px, out py);
+				HenshinStatUISystem.GetDefaultButtonPos(out bx, out by);
 
-			HenshinStatUISystem.ClampPanelPos(ref px, ref py, PanelWidth, height);
+			HenshinStatUISystem.ClampButtonPos(ref bx, ref by, ButtonSize, PanelWidth, panelHeight, PanelOpen);
+		}
+
+		private void BeginDrag(bool fromToggle)
+		{
+			dragging = true;
+			dragMoved = false;
+			dragFromToggle = fromToggle;
+			dragStartMouse = Main.MouseScreen;
+			CalculatedStyle dims = toggle.GetDimensions();
+			dragOffset = Main.MouseScreen - new Vector2(dims.X, dims.Y);
+		}
+
+		private void OnToggleMouseDown(UIMouseEvent evt, UIElement _)
+		{
+			BeginDrag(fromToggle: true);
 		}
 
 		private void OnHeaderDragStart(UIMouseEvent evt, UIElement _)
@@ -278,16 +317,23 @@ namespace PokemonHenshin.Content.Visual
 			}
 
 			lastClickTick = tick;
-			dragging = true;
-			CalculatedStyle dims = panel.GetDimensions();
-			dragOffset = Main.MouseScreen - new Vector2(dims.X, dims.Y);
+			BeginDrag(fromToggle: false);
 		}
 
 		private void OnResetClicked()
 		{
 			dragging = false;
-			HenshinClientConfig.Instance?.ResetPanelPos();
+			dragMoved = false;
+			dragFromToggle = false;
+			HenshinClientConfig.Instance?.ResetButtonPos();
 			SoundEngine.PlaySound(SoundID.MenuTick);
+		}
+
+		private void TogglePanel()
+		{
+			PanelOpen = !PanelOpen;
+			lastFingerprint = string.Empty;
+			SoundEngine.PlaySound(PanelOpen ? SoundID.MenuOpen : SoundID.MenuClose);
 		}
 
 		private void RefreshSnapshot()
@@ -313,13 +359,6 @@ namespace PokemonHenshin.Content.Visual
 			list.AddRange(items);
 			float max = Math.Max(0f, list.GetTotalHeight() - 8f);
 			list.ViewPosition = Math.Min(view, max);
-		}
-
-		private void ToggleClicked(UIMouseEvent evt, UIElement listeningElement)
-		{
-			PanelOpen = !PanelOpen;
-			lastFingerprint = string.Empty;
-			SoundEngine.PlaySound(PanelOpen ? SoundID.MenuOpen : SoundID.MenuClose);
 		}
 
 		private static void MouseBlock(UIElement affected)
