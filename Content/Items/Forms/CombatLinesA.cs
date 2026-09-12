@@ -8,7 +8,9 @@ namespace PokemonHenshin.Content.Items.Forms
 {
 	public class PikachuForce : HenshinForceItem
 	{
-		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L04_F01", 10, "Mods.PokemonHenshin.Items.PikachuForce.DisplayName", PokemonType.Electric, 2, null, FormPassiveKind.Static);
+		protected override FormDefinition CreateDefinition() => FormItemUtil.Def(
+			"L04_F01", 10, "Mods.PokemonHenshin.Items.PikachuForce.DisplayName", PokemonType.Electric, 2, null, FormPassiveKind.Static,
+			locomotion: FormItemUtil.PikachuLocomotion());
 		protected override MoveSpec CreateMoveA() => FormItemUtil.Bolt("Mods.PokemonHenshin.Moves.ThunderShock", ModContent.ProjectileType<ThunderBoltHenshinProj>(), 1.1f, 18, 11f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BlinkStrike("Mods.PokemonHenshin.Moves.QuickAttack");
 		protected override MoveSpec CreateUltimate() => FormItemUtil.ThunderboltUlt("Mods.PokemonHenshin.Moves.Thunderbolt");

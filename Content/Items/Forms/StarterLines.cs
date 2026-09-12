@@ -1,3 +1,4 @@
+using System;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
@@ -13,7 +14,8 @@ namespace PokemonHenshin.Content.Items.Forms
 			int stage, string evolvesFrom, FormPassiveKind passive,
 			FormRole role = FormRole.Combat,
 			PokemonType secondary = PokemonType.None, bool phasing = false, float dmgFactor = 1f,
-			string acquireKey = null)
+			string acquireKey = null,
+			FormLocomotionSpec locomotion = null)
 		{
 			FormStatTable.Mods mods = FormStatTable.Get(formId);
 			return new()
@@ -23,6 +25,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				DisplayNameKey = displayKey,
 				TexturePath = "PokemonHenshin/Assets/Forms/" + formId,
 				TextureFacesLeft = true,
+				Locomotion = locomotion,
 				Primary = primary,
 				Secondary = secondary,
 				Stage = stage,
@@ -36,6 +39,44 @@ namespace PokemonHenshin.Content.Items.Forms
 				Role = role,
 				Passive = passive,
 				AcquireHintKey = acquireKey ?? ("Mods.PokemonHenshin.Acquire." + formId)
+			};
+		}
+
+		/// <summary>ms → tick（60 TPS），至少 1。</summary>
+		public static int MsToTicks(int ms) => Math.Max(1, (int)Math.Round(ms * 60.0 / 1000.0));
+
+		public static FormLocomotionSpec PikachuLocomotion()
+		{
+			// durations from Assets/Forms/Locomotion/L04_F01_*.json (authoring evidence)
+			int[] idleMs =
+			{
+				150, 100, 150, 150, 50, 450, 100, 50, 50, 150, 400,
+				50, 100, 50, 50, 100, 100, 50, 100, 50, 200
+			};
+			int[] idleTicks = new int[idleMs.Length];
+			for (int i = 0; i < idleMs.Length; i++)
+				idleTicks[i] = MsToTicks(idleMs[i]);
+
+			return new FormLocomotionSpec
+			{
+				Idle = new FormAnimClip
+				{
+					TexturePath = "PokemonHenshin/Assets/Forms/Locomotion/L04_F01_Idle",
+					FrameCount = 21,
+					FrameWidth = 87,
+					FrameHeight = 87,
+					FacesLeft = false,
+					DurationsTicks = idleTicks
+				},
+				Run = new FormAnimClip
+				{
+					TexturePath = "PokemonHenshin/Assets/Forms/Locomotion/L04_F01_Run",
+					FrameCount = 4,
+					FrameWidth = 200,
+					FrameHeight = 146,
+					FacesLeft = false,
+					DefaultTicksPerFrame = MsToTicks(70)
+				}
 			};
 		}
 

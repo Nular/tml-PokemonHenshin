@@ -11,6 +11,9 @@ namespace PokemonHenshin.Content.Core
 		public string TexturePath { get; init; }
 		public bool TextureFacesLeft { get; init; } = true;
 
+		/// <summary>可选移动动画；null 时 Overlay 用静帧 + bob。</summary>
+		public FormLocomotionSpec Locomotion { get; init; }
+
 		public PokemonType Primary { get; init; }
 		public PokemonType Secondary { get; init; } = PokemonType.None;
 

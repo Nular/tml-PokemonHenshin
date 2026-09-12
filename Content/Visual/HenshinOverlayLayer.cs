@@ -12,10 +12,9 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Visual
 {
 	/// <summary>
-	/// 变身 Overlay（需求 §2.3，dev-plan §4.3）：在玩家脚底居中绘制宝可梦贴图。
+	/// 变身 Overlay（需求 §2.3）：在玩家脚底居中绘制宝可梦贴图。
 	/// 世界绘制时 <see cref="HenshinPlayer.HideDrawLayers"/> 只保留本层；地图头像见 <see cref="HenshinMapHeadLayer"/>。
-	/// 未变身时本层不可见，退出同 tick 无残留。
-	/// M0 单帧：移动时轻微浮动、离地时微抬，按朝向翻转。
+	/// 有 <see cref="FormLocomotionSpec"/> 时采帧 + 统一身高；否则单帧 + bob。
 	/// </summary>
 	public sealed class HenshinOverlayLayer : PlayerDrawLayer
 	{
@@ -39,28 +38,34 @@ namespace PokemonHenshin.Content.Visual
 			if (form == null)
 				return;
 
+			FormLocomotionSpec loco = form.Locomotion;
+			if (loco != null)
+			{
+				DrawLocomotion(ref drawInfo, player, mp, form, loco);
+				return;
+			}
+
+			DrawStatic(ref drawInfo, player, mp, form);
+		}
+
+		private static void DrawStatic(ref PlayerDrawSet drawInfo, Player player, HenshinPlayer mp, FormDefinition form)
+		{
 			Texture2D texture = ModContent.Request<Texture2D>(form.TexturePath, AssetRequestMode.ImmediateLoad).Value;
 			if (texture == null)
 				return;
 
-			// 其他模组（如 WeaponDisplay）会在 ModifyDrawInfo 里绕过层系统、直接把「手持物品贴图」塞进 DrawDataCache。
-			// 之力的物品贴图就是形态贴图，会造成第二只镜像宝可梦。本层在所有 ModifyDrawInfo 之后运行，
-			// 这里把所有使用该贴图的条目清掉，再画我们自己的一份。
 			RemoveForeignDraws(ref drawInfo, texture, form.ItemType);
 
-			// 朝向：原图朝左时，玩家朝右需翻转。
 			bool flipX = (player.direction == 1) == form.TextureFacesLeft;
 			SpriteEffects effects = flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 
-			// 简易动画：地面移动上下浮动；空中微抬。
 			float bob = 0f;
 			bool airborne = player.velocity.Y != 0f;
 			if (airborne)
 				bob = -2f;
-			else if (Math.Abs(player.velocity.X) > 0.1f)
+			else if (Math.Abs(player.velocity.X) > FormLocomotionSpec.MoveVelocityThreshold)
 				bob = (float)Math.Sin(mp.TransformTicks * 0.35f) * 2f;
 
-			// 锚点：脚底中心（重力反转时改为头顶）。drawInfo.Position 已含 gfxOffY，勿重复加。
 			Vector2 origin;
 			float anchorY;
 			if (player.gravDir >= 0f)
@@ -80,10 +85,60 @@ namespace PokemonHenshin.Content.Visual
 				(int)(drawInfo.Position.X - Main.screenPosition.X + player.width / 2f),
 				(int)(anchorY - Main.screenPosition.Y + bob));
 
-			// colorArmorBody 已含光照 / 隐身 / 受击闪烁，遵循原版隐身规则。
 			Color color = drawInfo.colorArmorBody;
-
 			drawInfo.DrawDataCache.Add(new DrawData(texture, drawPos, null, color, drawInfo.rotation, origin, 1f, effects));
+		}
+
+		private static void DrawLocomotion(
+			ref PlayerDrawSet drawInfo, Player player, HenshinPlayer mp, FormDefinition form, FormLocomotionSpec loco)
+		{
+			FormAnimClip clip = loco.GetClip(mp.LocomotionState);
+			if (clip == null || string.IsNullOrEmpty(clip.TexturePath) || clip.FrameCount <= 0)
+			{
+				DrawStatic(ref drawInfo, player, mp, form);
+				return;
+			}
+
+			Texture2D texture = ModContent.Request<Texture2D>(clip.TexturePath, AssetRequestMode.ImmediateLoad).Value;
+			if (texture == null)
+				return;
+
+			// 清掉静帧物品贴图与动画 sheet 的外来绘制。
+			RemoveForeignDraws(ref drawInfo, texture, form.ItemType);
+			Texture2D staticTex = ModContent.Request<Texture2D>(form.TexturePath, AssetRequestMode.ImmediateLoad).Value;
+			if (staticTex != null && !ReferenceEquals(staticTex, texture))
+				RemoveForeignDraws(ref drawInfo, staticTex, 0);
+
+			int frame = mp.LocomotionFrame;
+			if (frame < 0 || frame >= clip.FrameCount)
+				frame = 0;
+
+			Rectangle source = new(frame * clip.FrameWidth, 0, clip.FrameWidth, clip.FrameHeight);
+			float scale = FormLocomotionSpec.TargetDrawHeight / Math.Max(1, clip.FrameHeight);
+
+			bool flipX = (player.direction == 1) == clip.FacesLeft;
+			SpriteEffects effects = flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+
+			Vector2 origin;
+			float anchorY;
+			if (player.gravDir >= 0f)
+			{
+				origin = new Vector2(clip.FrameWidth / 2f, clip.FrameHeight);
+				anchorY = drawInfo.Position.Y + player.height;
+			}
+			else
+			{
+				origin = new Vector2(clip.FrameWidth / 2f, 0f);
+				anchorY = drawInfo.Position.Y;
+				effects |= SpriteEffects.FlipVertically;
+			}
+
+			Vector2 drawPos = new(
+				(int)(drawInfo.Position.X - Main.screenPosition.X + player.width / 2f),
+				(int)(anchorY - Main.screenPosition.Y));
+
+			Color color = drawInfo.colorArmorBody;
+			drawInfo.DrawDataCache.Add(new DrawData(texture, drawPos, source, color, drawInfo.rotation, origin, scale, effects));
 		}
 
 		private static void RemoveForeignDraws(ref PlayerDrawSet drawInfo, Texture2D formTexture, int itemType)
