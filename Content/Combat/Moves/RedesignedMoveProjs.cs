@@ -1085,9 +1085,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>贴地旋风：单团深蓝风旋（尘+单帧台风贴图，避免整表三连）。</summary>
+	/// <summary>
+	/// 起风：从角色朝瞄准方向飞出，落地后按旧逻辑水平贴地滚动。
+	/// 默认 tileCollide；诅咒符 Bolt 穿墙则不贴地。自管位移，广角镜不弯。
+	/// </summary>
 	public class GroundCycloneProj : HenshinMoveProj
 	{
+		public override bool HandlesOwnHoming => true;
+
+		private const float FlightSpeed = 11f;
+		private bool _grounded;
+
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Typhoon;
 
 		public override void SetDefaults()
@@ -1098,21 +1106,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = 8;
 			Projectile.timeLeft = 180;
-			Projectile.tileCollide = false;
+			Projectile.tileCollide = true;
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 10;
 		}
 
 		public override void OnSpawn(IEntitySource source)
 		{
-			if (Projectile.velocity.LengthSquared() < 0.01f)
-				Projectile.velocity = new Vector2(Main.player[Projectile.owner].direction * 10f, 0f);
-			else
+			Main.instance.LoadProjectile(ProjectileID.Typhoon);
+			if (Projectile.velocity.LengthSquared() < 1f)
 			{
-				float dir = System.Math.Sign(Projectile.velocity.X);
-				if (dir == 0) dir = Main.player[Projectile.owner].direction;
-				Projectile.velocity = new Vector2(dir * 11f, 0f);
+				Player p = Main.player[Projectile.owner];
+				Vector2 dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.Center;
+				if (dir.LengthSquared() < 1f)
+					dir = new Vector2(p.direction, 0f);
+				Projectile.velocity = Vector2.Normalize(dir) * FlightSpeed;
 			}
+			else
+				Projectile.velocity = Vector2.Normalize(Projectile.velocity) * FlightSpeed;
 		}
 
 		public override void AI()
@@ -1126,24 +1137,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 
 			Projectile.rotation += 0.28f;
-			int tileX = (int)(Projectile.Center.X / 16f);
-			int startY = (int)(Projectile.Center.Y / 16f);
-			bool found = false;
-			for (int y = startY; y < startY + 40 && y < Main.maxTilesY; y++)
-			{
-				Tile tile = Framing.GetTileSafely(tileX, y);
-				if (tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
-				{
-					// 贴地：碰撞盒底贴物块顶，与绘制中心对齐
-					Projectile.position.Y = y * 16f - Projectile.height;
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				Projectile.velocity.Y = 6f;
-			else
-				Projectile.velocity.Y = 0f;
+
+			if (_grounded && Projectile.tileCollide)
+				SnapToGround();
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -1153,8 +1149,46 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			_grounded = true;
+			float sx = System.Math.Abs(Projectile.velocity.X) > 0.01f
+				? System.Math.Sign(Projectile.velocity.X)
+				: System.Math.Sign(oldVelocity.X);
+			if (sx == 0)
+				sx = Main.player[Projectile.owner].direction;
+			// 撞墙时改向，保持水平贴地滚动
+			if (System.Math.Abs(Projectile.velocity.X) < 0.01f && System.Math.Abs(oldVelocity.X) > 0.01f)
+				sx = -System.Math.Sign(oldVelocity.X);
+			Projectile.velocity.X = sx * FlightSpeed;
+			Projectile.velocity.Y = 0f;
+			return false;
+		}
+
+		/// <summary>旧贴地滚动：碰撞盒底贴物块顶。</summary>
+		private void SnapToGround()
+		{
+			int tileX = (int)(Projectile.Center.X / 16f);
+			int startY = (int)(Projectile.Center.Y / 16f);
+			bool found = false;
+			for (int y = startY; y < startY + 40 && y < Main.maxTilesY; y++)
+			{
+				Tile tile = Framing.GetTileSafely(tileX, y);
+				if (tile.HasTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType])
+				{
+					Projectile.position.Y = y * 16f - Projectile.height;
+					found = true;
+					break;
+				}
+			}
+			Projectile.velocity.Y = found ? 0f : 6f;
+			if (System.Math.Abs(Projectile.velocity.X) < 0.1f)
+				Projectile.velocity.X = Main.player[Projectile.owner].direction * FlightSpeed;
+		}
+
 		public override bool PreDraw(ref Color lightColor)
 		{
+			Main.instance.LoadProjectile(ProjectileID.Typhoon);
 			Texture2D tex = TextureAssets.Projectile[ProjectileID.Typhoon].Value;
 			int frames = System.Math.Max(1, Main.projFrames[ProjectileID.Typhoon]);
 			Rectangle frame = tex.Frame(1, frames, 0, Projectile.frame);

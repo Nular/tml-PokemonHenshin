@@ -78,14 +78,15 @@
 | **CWR** | 只读抄路径/包络；贴图已拷贝，无运行时依赖 |
 | **勿做** | `A=0`；依赖大修 `CWRAsset`；把端点只写在 `OnSpawn` 私有字段（拖尾用生成点+velocity 同步） |
 
-### 2.5 Typhoon 壳 — 火焰漩涡 / 贴地旋风
+### 2.5 Typhoon 壳 — 火焰漩涡 / 起风
 
 | 项 | 内容 |
 |----|------|
 | **文件** | `FlareBoltUltProj`（小火龙大招）；`GroundCycloneProj`（波波起风） |
 | **贴图** | `ProjectileID.Typhoon`（**409**）；橙红 / 深蓝染色 + `LoadProjectile` |
 | **火焰漩涡** | 默认 `tileCollide`；撞实心 **停飞不 Kill**，继续转圈伤到 `timeLeft`。诅咒符 Bolt 穿墙则不停 |
-| **勿做** | 生成灾厄台风弹；Invisible hitbox 只伤 |
+| **起风** | 从角色朝鼠标飞出；落地后水平贴地滚动（旧滚动）。诅咒符 Bolt 穿墙则不贴地。`HandlesOwnHoming` |
+| **勿做** | 生成灾厄台风弹；Invisible hitbox 只伤；起风出生即扫格贴地 |
 
 ### 2.6 Boulder — 岩石封锁
 
@@ -96,13 +97,13 @@
 | **手法** | 四向收拢；`ProjectileID.Boulder`（**99**）；棕染约 50% |
 | **勿做** | 仅 DustID.Stone 环；无可见石块 |
 
-### 2.7 咬住/咬碎 — destination Rectangle 尖牙
+### 2.7 咬住/咬碎/火焰牙 — destination Rectangle 尖牙
 
 | 项 | 内容 |
 |----|------|
 | **文件** | `BiteArcProj` |
-| **形态** | 卡咪龟/妙蛙草咬住；烈咬陆鲨/暴鲤龙/烈空坐咬碎等 |
-| **手法** | 身前咬合两拍；MagicPixel **但**每层 `destination Rectangle` 硬封顶宽高叠三角尖牙 |
+| **形态** | 卡咪龟/妙蛙草咬住；烈咬陆鲨/暴鲤龙/烈空坐咬碎；火恐龙火焰牙等 |
+| **手法** | 身前咬合两拍；MagicPixel **但**每层 `destination Rectangle` 硬封顶宽高叠三角尖牙；整体 **VisualScale×4**（相对 size 倍率保留） |
 | **勿做** | `Draw(..., scale: huge)` 拉成通天黑条；纯 Dust 当咬合 |
 
 ---
@@ -187,9 +188,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | Scratch/抓 | L01_F01,1 | MeleeArc | `ScratchSlashProj` | 自绘爪痕 | 平行爪 | Accepted |
 | FireSpin/火焰漩涡 | L01_F01 Ult | HomingLock | `FlareBoltUltProj` Typhoon；**撞墙停飞不 Kill** | Typhoon Shell | 可见涡 | Accepted |
 | DragonPulse/龙之波动 | L01_F02,4 | Bolt×10 | NebulaPulse* **直线连发** | Nebula 617/620 | 紫炸 | Accepted |
-| FireFang/火焰牙 | L01_F02,4 | MeleeArc+OnFire | BiteArc **两对大弧牙**+OnFire | BiteArc cookbook | 火焰牙 | Accepted |
+| FireFang/火焰牙 | L01_F02,4 | MeleeArc+OnFire | BiteArc **两对大弧牙**+OnFire；**VisualScale×4** | BiteArc cookbook | 火焰牙 | Accepted |
 | FlareBlitz/闪焰冲锋 | L01_F02,4 | Lunge+Recoil | `LungeProj` **32格** 多线火径+包裹焰+收尾减速 | 火尘残影 | 可见冲锋 | Accepted |
-| Flamethrower/喷射火焰 | L01_F03,7 | FlameCone | 真 Flames + **Fire 帧**（枪口小 TearFlame） | **Flames(85)** 真焰柱 | 喷火柱 | Accepted |
+| Flamethrower/喷射火焰 | L01_F03,7 | FlameCone | 真 Flames 射程×2（timeLeft72）+ **Fire 帧**（枪口小 TearFlame） | **Flames(85)** 真焰柱 | 喷火柱 | Accepted |
 | DragonClaw/龙爪 | L01_F03,7 | Scratch | ScratchSlash **20格** + HitJagged **帧** | — | 远爪 | Accepted |
 | Overheat/过热 | L01_F03 Ult | MouseAoE | 半径15格、5脉冲；Fire/Flash **帧** | InfernoFriendlyBlast | 可见火环 | Accepted |
 
@@ -200,11 +201,11 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | WaterGun/水枪 | L02_F01,1 | Aqua | AquaScepter←WaterStream | WaterStream Shell | OK | Accepted |
 | Tackle/撞击 | 多形态 | Lunge | `LungeProj` SoftGlow 残影 | — | 2s CD | Accepted |
 | BubbleBeam/泡沫光线 | L02_F01 Ult / L02_F02 S1 | Barrage | Barrage+Borrowed Bubble（F02：**16** 泡、速 **20.8**） | Bubble Load | 密泡 | Accepted |
-| Bite/咬住 | L02_F02,4 | BiteArc | `BiteArcProj` | cookbook | 尖牙 | Accepted |
+| Bite/咬住 | L02_F02,4 | BiteArc | `BiteArcProj` **VisualScale×4** | cookbook | 尖牙 | Accepted |
 | Whirlpool/潮旋 | L02_F02 Ult | DoTBind | MouseVortex Cyclone 蓝 | Typhoon 蓝染 / `Assets/Fx/Cyclone` | 可见涡 | Implemented |
-| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 枪口渐进；命中墙=怪渐缩 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
+| HydroPump/水炮 | L02_F03,7 / L09 | Beam | `WaterJetProj` 宽×2；命中锁长**持续多段**再淡出 | SoftGlow 水柱+流动波节 | 水柱 | Accepted |
 | SkullBash/火箭头锤 | L02_F03,7 | Charge→Lunge | Lunge 长 use | — | OK | Accepted |
-| HydroCannon/加农水炮 | L02_F03 Ult | Beam | `WaterJet` cannon：穿透+每3击爆 | 同水炮加粗+流动 | 粗柱 | Accepted |
+| HydroCannon/加农水炮 | L02_F03 Ult | Beam | `WaterJet` cannon：宽×2+穿透+每3击爆 | 同水炮加粗+流动 | 粗柱 | Accepted |
 
 ### 4.3 草系 L03
 
@@ -213,8 +214,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | VineWhip/藤鞭 | L03_F01,1 | Whip | GrassWhip | 草尘鞭 | OK | Accepted |
 | SeedGun/种子机关枪 | L03_F01 Ult | Barrage | Barrage Seed | Seed Shell | OK | Accepted |
 | RazorLeaf/飞叶快刀 | L03_F02,4 | Spread×5 | LeafSpread **New Leaf** | Leaf 206 | 标杆 | Accepted |
-| Bite/咬住 | L03_F02,4 | BiteArc | BiteArc | cookbook | OK | Accepted |
-| SeedBomb/种子炸弹 | L03_F02 Ult | Bolt/AoE | SeedBomb | Seed+爆 | OK | Accepted |
+| Bite/咬住 | L03_F02,4 | BiteArc | BiteArc **VisualScale×4** | cookbook | OK | Accepted |
+| SeedBomb/种子炸弹 | L03_F02 Ult | Bolt/AoE | 加大种弹+绿光拖尾；落点纯绿浓爆（DiffusionCircle/Fog/SoftGlow+绿尘；**禁 FlashImpact**） | Seed+草绿爆 | 种爆 | Accepted |
 | SludgeBomb/污泥炸弹 | L03_F03,7 | Bolt+Poison | SludgeBolt + 毒气瓶 ToxicCloud 簇 | ToxicBubble→ToxicCloud | 毒云DoT | Accepted |
 | PetalDance/花瓣舞 | L03_F03,7 | AoEBurst | 半径 **15格** FlowerPetal 壳环 | FlowerPetal Load | 可见瓣 | Accepted |
 | SolarBeam/日光束 | L03_F03 Ult | ChargeBeam | 蓄力→`SolarPrismBeam` **~100tick** 跟鼠标会聚 | **LastPrism 金光** | 持续金棱 | Accepted |
@@ -279,13 +280,13 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | HyperBeam/破坏光线 | L08_F02 / L09_F02 Ult | Beam | SustainedBeam 自缓+大招加粗 | DeathLaser 粗壳 | 持续粗束 | Accepted |
 | Splash/跃起 | L09_F01,1 | StrikeFall | StrikeFall Water | — | 低伤 | Accepted |
 | Flail/抓狂 | L09_F01 Ult | Barrage | FlailBarrage **15格三线爪** 宽判+抓尘 | 多爪环身 | 可见多段 | Accepted |
-| HydroPump | L09_F02,9 | Beam | `WaterJetProj` | 同水箭龟水柱 | 水柱 | Accepted |
-| Crunch/咬碎 | L09_F02 / L15_F02 / L17 | BiteArc | BiteArc size↑ | cookbook | OK | Accepted |
+| HydroPump | L09_F02,9 | Beam | `WaterJetProj` 宽×2+锁长多段 | 同水箭龟水柱 | 水柱 | Accepted |
+| Crunch/咬碎 | L09_F02 / L15_F02 / L17 | BiteArc | BiteArc size↑ **VisualScale×4** | cookbook | OK | Accepted |
 | MudSlap/掷泥 | L10_F01,3 | Bolt+Slow | MudSlap←DirtBall | DirtBall | OK | Accepted |
 | Dig/挖洞 | L10_F02 S2 | DigLunge | `DigLungeProj` 冲20格+镐力走廊 | 土尘 SoftGlow | 挖进突 | Implemented |
 | TripleDig/三连刺 | L10_F02,6 | Barrage | GroundSpikeStab **8格** | 三道可见刺/爪 | 可见刺 | Implemented |
 | Earthquake/地裂 | L10_F02 Ult | AoE/Field | QuakeWave 小 Boulder 波前 | 裂纹+石 | 可见波 | Implemented |
-| Gust/起风 | L11_F01,2 | GroundCyclone | Typhoon 深蓝 | cookbook | OK | Accepted |
+| Gust/起风 | L11_F01,2 | GroundCyclone | 朝鼠标飞出；落地后水平贴地滚动 | Typhoon 深蓝 | 贴地风 | Accepted |
 | Peck/啄 | L11_F01,2 | Cone | PeckCone | — | 尘锥 | Accepted |
 | AerialAce/燕返 | L11_F01 Ult | Lunge | Lunge SoftGlow | — | OK | Accepted |
 | AerialAce/燕返 | L11_F02 S2 | BlinkSlash | `AerialAceBlink` 双切回起点+双弧羽径 | 禁 Electric 尘 | 往返弧 | Accepted |
@@ -479,13 +480,13 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 ### Flamethrower（喷射火焰）— Implemented
 
-- **目标：** **连续火焰喷射**；PreDraw 用 **Fire 帧**；枪口可选小 TearFlame。
+- **目标：** **连续火焰喷射**；PreDraw 用 **Fire 帧**；枪口可选小 TearFlame；真 Flames 寿命上限 **72**（射程约 ×2）。
 - **复用：** `Flames` **85** 真生成 Retarget；`DrawFireFrame`。
 - **Files：** `FlameConeDirectorProj`。
 
 ### HydroPump / HydroCannon（水炮 / 加农水炮）— Implemented
 
-- **目标：** **粗水柱**，跟鼠标；枪口约 24 tick 渐进伸长；水炮宽 **≈1～1.5 格**（不穿透，**命中墙=命中怪**锁长渐缩）；加农 **≈2～2.5 格**（**仍穿墙穿怪**，每 3 击半径 5 格水爆）。诅咒符 Beam 让水炮穿墙但仍撞怪渐缩。
+- **目标：** **粗水柱**，跟鼠标；枪口约 24 tick 渐进伸长；水炮宽 **≈2～3 格**（不穿透，**命中墙=命中怪**锁长后约 **54 tick** 持续多段伤再 **20 tick** 淡出）；加农 **≈4～5 格**（**仍穿墙穿怪**，每 3 击半径 5 格水爆）。诅咒符 Beam 让水炮穿墙但仍撞怪锁长。
 - **复用：** `WaterJetProj`：`DrawContinuousBeam` + `DrawWaterFlowRipples`（流动波节）；工厂 `FormItemUtil.WaterJet`。
 - **Files：** `WaterJetProj`；Blastoise / Gyarados。
 
@@ -631,6 +632,8 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.7 Living | 2026-09-11 | `SafeLoadProjectile` 跳过专用服；卡顶不生成 `EXP +X` |
 | 2.8 Living | 2026-09-12 | 对齐 requirements v1.4.26：允许自制 FX；优先拷贝；入口改 backlog |
 | 2.9 Living | 2026-09-12 | Bolt/Barrage 外飞壳寿命约 ×1.5；念力索敌 **48 格**；暴风 `SuckRange` 同步；初速/伤倍不动 |
+| 2.10 Living | 2026-09-13 | 手感批：种爆~10格草绿环；尖牙×4；起风飞出+贴地滚；水炮/加农粗×2+水炮锁长多段；喷射射程×2 |
+| 2.11 Living | 2026-09-14 | 起风确认贴地滚（非爬墙）；种爆去 FlashImpact 金刺，仅绿光/绿尘；本地验收 OK |
 
 ---
 

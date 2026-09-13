@@ -118,15 +118,15 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk | Code |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|------|
 | L01_F01 | 小火龙 | **猛火**：HP&lt;50% 时火系招式伤害 +20% | 火花 Bolt+OnFire | 抓 MeleeArc（三道**平行**爪痕+扩盒） | 火焰漩涡 HomingLock：自玩家射出，原版 Typhoon 橙红染色，锁定首敌；**撞实心停飞但不 Kill**，跑完生命周期 | 耗 100；无额外后摇 | 三平行爪痕尘；台风染色火矢（不生成灾厄弹） | Low | Done |
-| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Nebula×10（0.7/不追踪/碰炸紫） | 火焰牙 BiteArc+OnFire | 闪焰冲锋 Lunge+Recoil25%+OnFire | 耗 100；Recoil | 星云奥秘外观连发；紫染爆炸碎片；火焰牙**两对大弧牙**；闪焰冲锋 **32 格** Fire 帧环绕+火径 | Medium | Done |
-| L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +20%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 FlameCone×10 | 龙爪 Scratch火（**20 格**） | 过热 MouseAoE+OnFire；**5s 伤×0.5** | 耗 100；5s 伤害减半 | 喷射：真 Flames + **Fire 帧**；龙爪 HitJagged **帧**；过热：半径 **15 格**、5 段脉冲 + Fire/FlashImpact **帧** | Medium | Done |
+| L01_F02 | 火恐龙 | **猛火**：同上 +20% | 龙之波动 Nebula×10（0.7/不追踪/碰炸紫） | 火焰牙 BiteArc+OnFire（**VisualScale×4**） | 闪焰冲锋 Lunge+Recoil25%+OnFire | 耗 100；Recoil | 星云奥秘外观连发；紫染爆炸碎片；火焰牙**两对大弧牙×4**；闪焰冲锋 **32 格** Fire 帧环绕+火径 | Medium | Done |
+| L01_F03 | 喷火龙 | **太阳之力**：白天全招式伤害 +20%；每次造成招式伤害自损 1 HP（不死于该扣） | 喷射火焰 FlameCone×10 | 龙爪 Scratch火（**20 格**） | 过热 MouseAoE+OnFire；**5s 伤×0.5** | 耗 100；5s 伤害减半 | 喷射：真 Flames 射程约 **54 格** + **Fire 帧**；龙爪 HitJagged **帧**；过热：半径 **15 格**、5 段脉冲 + Fire/FlashImpact **帧** | Medium | Done |
 
 ### 4.2 草系链 L03
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L03_F01 | 妙蛙种子 | **茂盛**：HP&lt;50% 时草系招式伤害 +20% | 藤鞭 Whip（皮鞭级草尘鞭） | 撞击 Lunge+撞击爆 | 种子机关枪 Barrage×64+EasyCrit | 耗 100 | 草/叶绿尘鞭身；Seed 束状连发 | Low |
-| L03_F02 | 妙蛙草 | **茂盛**：同上 +20% | 飞叶快刀 Spread×5（吹叶机 Leaf） | 咬住 BiteArc 尖牙 | 种子炸弹 Bolt/AoEBurst+EasyCrit（落点小爆） | 耗 100 | 真 Leaf + 绿尘；咬合尖牙 | Low | Done |
+| L03_F02 | 妙蛙草 | **茂盛**：同上 +20% | 飞叶快刀 Spread×5（吹叶机 Leaf） | 咬住 BiteArc 尖牙（**VisualScale×4**） | 种子炸弹 Bolt/AoEBurst+EasyCrit（落点爆直径 **~10 格**；加大种弹+绿拖尾+纯绿浓爆） | 耗 100 | 真 Leaf + 绿尘；咬合尖牙×4；种爆绿环/雾（无金刺） | Low | Done |
 | L03_F03 | 妙蛙花 | **叶绿素**：白天移速 +35% | 污泥炸弹 Bolt+Poison | 花瓣舞 AoEBurst；释放后自身短混乱（1.5s 轻失控或伤害反噬 debuff） | 日光束 ChargeBeam（蓄力 ~0.8s 后强光束） | 耗 100；蓄力前摇 | 污泥炸后毒气瓶 ToxicCloud 簇 DoT；花瓣半径15格；日棱金束 | Medium | Done |
 
 ### 4.3 水系链 L02
@@ -135,7 +135,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L02_F01 | 杰尼龟 | **激流**：HP&lt;50% 时水系招式伤害 +20% | 水枪 AquaScepter | 撞击 Lunge+撞击爆 | 泡沫光线 Barrage×64 束状高速 | 耗 100 | 海蓝权杖水流；泡泡**错落密束**+破裂小泡（少蓝水尘） | Low |
 | L02_F02 | 卡咪龟 | **激流**：同上 +20% | 泡沫光线 Barrage×**16**（壳弹+Load Bubble；基准速 **20.8**） | 咬住 BiteArc | 潮旋 DoTBind（水漩涡缠绕） | 耗 100 | 须 `LoadProjectile(Bubble)`；错落密束+破裂；勿等玩家先用泡泡枪 | Low | Done |
-| L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每 **90 tick**（1.5s）回 2 HP | 水炮 Beam（强水柱；**命中墙=命中怪**，锁长渐缩） | 火箭头锤 Charge→Lunge（短蓄力后头槌） | 加农水炮 Beam（**仍穿墙穿怪**）；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | `WaterJetProj`：枪口渐进；水炮命中渐缩；加农穿透+每3击爆 | Medium | Done |
+| L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每 **90 tick**（1.5s）回 2 HP | 水炮 Beam（粗水柱；**命中墙=命中怪**锁长；**持续多段伤再淡出**，不穿透） | 火箭头锤 Charge→Lunge（短蓄力后头槌） | 加农水炮 Beam（**仍穿墙穿怪**，更粗）；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | `WaterJetProj`：枪口渐进；水炮宽~2.5 格锁长多段；加农宽~4.5 格+每3击爆 | Medium | Done |
 
 ### 4.4 超能链 L12
 
@@ -164,7 +164,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Barrage（**技能球撞实心爆**） | 撞击 Lunge | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | 龙怒 `DragonRageBarrage` 技能12发；流沙直径 **16 格** Typhoon压蓝壳+琥珀 Cyclone/Fog | Medium | Done |
-| L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（更大） | 流星群 64×StarWrath；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | `DracoMeteorDirector` 狂星之怒壳+金粉爆 | Medium | Accepted |
+| L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（更大，**VisualScale×4**） | 流星群 64×StarWrath；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | `DracoMeteorDirector` 狂星之怒壳+金粉爆 | Medium | Accepted |
 
 ### 4.8 幽灵链 L06
 
@@ -178,7 +178,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L09_F01 | 鲤鱼王 | **优游自如**：雨天或夜晚移速 +25% | 跃起 StrikeFall（高跳砸地，低伤） | 撞击 Lunge | 抓狂 Barrage；伤害随 **已损失 HP%** 提高（最高约 +80%） | 耗 100 | 水花跃起；抓狂：身周半径 **15 格** 杂乱交错爪痕多段 | Low |
-| L09_F02 | 暴鲤龙 | **自信过度**：击杀叠攻 +20%/层，最多 2 层，每层 12s | 水炮 Beam（**命中墙=命中怪**） | 咬碎 MeleeArc+DefDown | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | `WaterJet` 跟鼠标；破灭 `SustainedBeam`（方向跟鼠标） | Medium | Done |
+| L09_F02 | 暴鲤龙 | **自信过度**：击杀叠攻 +20%/层，最多 2 层，每层 12s | 水炮 Beam（粗柱；**命中墙=命中怪**锁长多段） | 咬碎 MeleeArc+DefDown（**VisualScale×4**） | 破坏光线 Beam；释放后 **休整 ~2s** | 耗 100；休整 | `WaterJet` 跟鼠标；破灭 `SustainedBeam`（方向跟鼠标） | Medium | Done |
 
 ### 4.10 格斗链 L05
 
@@ -192,7 +192,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（原版 Typhoon **单帧**深蓝贴地；盒随帧） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime；与撞击共用突进 CD） | 耗 100 | 单团贴地旋风；尖角尘锥 | Medium |
+| L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（朝鼠标飞出；落地后水平贴地滚动） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime；与撞击共用突进 CD） | 耗 100 | Typhoon 深蓝；射出后贴地滚 | Medium |
 | L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 暴风 WeatherPain 直立帧+穿透牵引（技能档）；燕返双弧；勇鸟梭形+交叉鸟 | Medium | Done |
 
 ### 4.12 电系链 L04
@@ -215,7 +215,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 0.5s 无敌吟唱后冲+6鸟 | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst`；`SkyAttackLunge`；`HurricaneField` 名键 `CycloneAttack` | High | Accepted |
 | L14_F01 | 超梦 | **压迫感**：+50% | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun（技能槽 ×**2.0**） | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗满 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
-| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
+| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（**VisualScale×4**） | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
 
 ### 4.15 地鼠链 L10（Excel 外补全）
 
@@ -270,3 +270,5 @@
 | 1.26 | 2026-09-13 | 电气球成品/超级：电击×4+穿3、3s/60格感电无连锁十万伏特×1；广角镜普通/超级瞬转；雷丘十万伏特=SkyBolt≤128无连锁；伏特闪现+拖尾×3/6段；卡咪龟泡×16速+30% |
 | 1.27 | 2026-09-13 | 十万伏特命中三叉（16格、最多3、分叉不再分）；电击感电 5s；伏特拖尾加粗+形态残影；广角镜/超级十万伏特光标软瞄 4/8 格 |
 | 1.28 | 2026-09-13 | 电气球电击弹速改为 +100%/+200%、加宽；攻速 +20%/+40%；电光一闪冷却 -20%/-40%（本地验收 OK） |
+| 1.29 | 2026-09-13 | 手感批：种子炸弹直径~10格+草绿爆；尖牙 VisualScale×4；起风朝鼠标飞出后贴地滚；水炮/加农粗×2、水炮锁长持续多段；喷射火焰射程×2 |
+| 1.30 | 2026-09-14 | 种爆去 FlashImpact 金刺（仅绿）；起风确认贴地滚；本批本地验收 OK |

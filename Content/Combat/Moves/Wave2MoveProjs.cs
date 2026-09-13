@@ -416,7 +416,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	/// <summary>
 	/// 水柱：朝鼠标持续喷射。枪口渐进伸长（~24 tick 满长）。
-	/// ai2=0 水炮：不穿透，命中后渐缩消失 + 水蓝粒子；ai2=1 加农：穿透、更高频/更粗/更深色，每 3 击半径 5 格水爆。
+	/// ai2=0 水炮：不穿透，命中墙/怪后锁长持续多段伤再淡出；ai2=1 加农：穿透、更高频/更粗/更深色，每 3 击半径 5 格水爆。
 	/// </summary>
 	public class WaterJetProj : HenshinMoveProj
 	{
@@ -426,6 +426,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public const float CannonLength = 80f * 16f;
 		public const int Life = 72;
 		public const int GrowTicks = 24;
+		public const int PumpHoldTicks = 54;
 		public const int PumpFadeTicks = 20;
 		public const float CannonBurstRadius = 5f * 16f;
 
@@ -476,6 +477,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private float WidthMul()
 		{
 			if (!_stopped || _fadeMax <= 0)
+				return 1f;
+			// 锁长后先满宽持续多段伤，仅末段淡出
+			if (Projectile.timeLeft > _fadeMax)
 				return 1f;
 			return MathHelper.Clamp(Projectile.timeLeft / (float)_fadeMax, 0f, 1f);
 		}
@@ -534,15 +538,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
-		public override bool? CanDamage() => _stopped && !IsCannon ? false : null;
+		public override bool? CanDamage()
+		{
+			// 水炮锁长后仍多段伤；仅淡出阶段停伤。加农始终可伤。
+			if (!IsCannon && _stopped && _fadeMax > 0 && Projectile.timeLeft <= _fadeMax)
+				return false;
+			return null;
+		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
-			if (_stopped || (_to - _from).LengthSquared() < 4f)
+			if ((_to - _from).LengthSquared() < 4f)
+				return false;
+			if (!IsCannon && _stopped && _fadeMax > 0 && Projectile.timeLeft <= _fadeMax)
 				return false;
 			float _ = 0f;
-			// 水炮 ~1.25 格；加农 ~2.25 格
-			float width = (IsCannon ? 36f : 20f) * WidthMul();
+			// 水炮 ~2.5 格；加农 ~4.5 格（×2 加粗）
+			float width = (IsCannon ? 72f : 40f) * WidthMul();
 			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), _from, _to, width, ref _);
 		}
 
@@ -613,8 +625,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_aimDir = new Vector2(Main.player[Projectile.owner].direction, 0f);
 			_to = _from + _aimDir * _lockedLen;
 			_fadeMax = PumpFadeTicks;
-			if (Projectile.timeLeft > PumpFadeTicks)
-				Projectile.timeLeft = PumpFadeTicks;
+			int holdTotal = PumpHoldTicks + PumpFadeTicks;
+			if (Projectile.timeLeft > holdTotal)
+				Projectile.timeLeft = holdTotal;
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -635,16 +648,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float wMul = WidthMul();
 			Color core = HenshinFxDraw.WithAlpha(IsCannon ? CannonCore : WaterCore, (IsCannon ? 0.95f : 0.9f) * env);
 			Color glow = HenshinFxDraw.WithAlpha(IsCannon ? CannonGlow : WaterGlow, (IsCannon ? 0.72f : 0.62f) * env);
-			// 水炮 1~1.5 格；加农 2~2.5 格（16px/格）
-			float coreW = (IsCannon ? 18f : 10f) * wMul;
-			float glowW = (IsCannon ? 40f : 22f) * wMul;
+			// 水炮 ~2~3 格；加农 ~4~5 格（×2 加粗，16px/格）
+			float coreW = (IsCannon ? 36f : 20f) * wMul;
+			float glowW = (IsCannon ? 80f : 44f) * wMul;
 			float flow01 = (Main.GlobalTimeWrappedHourly * (IsCannon ? 2.4f : 1.8f) + Projectile.identity * 0.17f) % 1f;
 
 			HenshinFxDraw.BeginAdditive();
 			HenshinFxDraw.DrawContinuousBeam(_from, _to, core, glow, coreW, glowW);
 			HenshinFxDraw.DrawWaterFlowRipples(_from, _to,
 				HenshinFxDraw.WithAlpha(IsCannon ? CannonCore : WaterCore, 0.55f * env),
-				(IsCannon ? 32f : 18f) * wMul, flow01);
+				(IsCannon ? 64f : 36f) * wMul, flow01);
 			float tipScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, glowW * 1.1f);
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, _to, glow, tipScale);
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, _from, core, tipScale * 0.75f);
@@ -692,6 +705,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 					Projectile.Center = c;
 					Projectile.localNPCHitCooldown = 6;
 				}
+				else if ((Projectile.ai[0] > 0 ? (int)Projectile.ai[0] : DustID.Torch) == DustID.Grass)
+				{
+					// 种子炸弹：稍长可见窗，配合雷管式浓爆
+					_lifetime = 24;
+					Projectile.timeLeft = 24;
+				}
 				else
 					_lifetime = DefaultLife;
 			}
@@ -709,6 +728,26 @@ namespace PokemonHenshin.Content.Combat.Moves
 						DustID.Torch, Main.rand.NextVector2Circular(3.5f, 3.5f), 60, mix, 1.35f);
 					d.noGravity = true;
 					d.color = mix;
+				}
+			}
+			else if (dust == DustID.Grass)
+			{
+				Lighting.AddLight(Projectile.Center, 0.35f, 1.15f, 0.35f);
+				Color green = new(70, 240, 95);
+				int count = Projectile.timeLeft > _lifetime - 4 ? 18 : 10;
+				for (int i = 0; i < count; i++)
+				{
+					Dust d = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(radius, radius),
+						DustID.Grass, Main.rand.NextVector2Circular(5.5f, 5.5f), 30, green, Main.rand.NextFloat(1.5f, 2.3f));
+					d.noGravity = true;
+					d.color = green;
+				}
+				for (int i = 0; i < 5; i++)
+				{
+					Dust t = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(radius * 0.6f, radius * 0.6f),
+						DustID.ChlorophyteWeapon, Main.rand.NextVector2Circular(3f, 3f), 50, green, 1.5f);
+					t.noGravity = true;
+					t.color = green;
 				}
 			}
 			else
@@ -792,6 +831,22 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center, core,
 					HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, diam * 0.55f));
 				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center, core, ringScale * 0.45f);
+			}
+			else if (dust == DustID.Grass)
+			{
+				// 种子炸弹：仅绿色扩散环/雾/芯光，不用 FlashImpact（避免金白尖刺）
+				float ringScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam);
+				float expand = 1f + (1f - life) * 0.45f;
+				Color ring = HenshinFxDraw.WithAlpha(new Color(60, 230, 70), 0.95f * life);
+				Color ringOuter = HenshinFxDraw.WithAlpha(new Color(30, 160, 50), 0.7f * life);
+				Color core = HenshinFxDraw.WithAlpha(new Color(120, 255, 140), 0.9f * life);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center, ringOuter, ringScale * expand * 1.15f);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center, ring, ringScale * expand);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(80, 220, 100), 0.55f * life),
+					HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.Fog, diam * 0.85f));
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center, core,
+					HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, diam * 0.65f));
 			}
 			HenshinFxDraw.EndAdditive();
 			return false;
@@ -1230,7 +1285,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					flame.friendly = true;
 					flame.hostile = false;
 					flame.penetrate = 4;
-					flame.timeLeft = Math.Min(flame.timeLeft, 36);
+					flame.timeLeft = Math.Min(flame.timeLeft, 72);
 				}
 				_fired++;
 			}
@@ -1316,38 +1371,105 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>种子炸弹：抛物落地爆。</summary>
+	/// <summary>种子炸弹：加大种弹 + 绿光拖尾，落地雷管式草绿爆。</summary>
 	public class SeedBombProj : HenshinMoveProj
 	{
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Seed;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 14;
-			Projectile.height = 14;
+			Projectile.width = 28;
+			Projectile.height = 28;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = 135;
 			Projectile.tileCollide = true;
 			Projectile.penetrate = 1;
-			Projectile.scale = 1.4f;
+			Projectile.scale = 2.4f;
 		}
 
 		public override void AI()
 		{
 			Projectile.velocity.Y += 0.25f;
 			Projectile.rotation += 0.2f;
-			Dust.NewDustPerfect(Projectile.Center, DustID.Grass, Vector2.Zero, 100, default, 1.1f).noGravity = true;
+			Lighting.AddLight(Projectile.Center, 0.25f, 0.85f, 0.3f);
+
+			Color glow = new(90, 255, 110);
+			for (int i = 0; i < 3; i++)
+			{
+				Dust d = Dust.NewDustPerfect(
+					Projectile.Center + Main.rand.NextVector2Circular(6f, 6f),
+					DustID.Grass,
+					-Projectile.velocity * Main.rand.NextFloat(0.08f, 0.22f) + Main.rand.NextVector2Circular(0.6f, 0.6f),
+					40, glow, Main.rand.NextFloat(1.35f, 1.9f));
+				d.noGravity = true;
+				d.color = glow;
+			}
+			if (Main.rand.NextBool(2))
+			{
+				Dust spark = Dust.NewDustPerfect(Projectile.Center, DustID.ChlorophyteWeapon,
+					-Projectile.velocity * 0.12f + Main.rand.NextVector2Circular(1.2f, 1.2f), 80, glow, 1.4f);
+				spark.noGravity = true;
+				spark.color = glow;
+			}
 		}
 
 		public override void OnKill(int timeLeft)
 		{
-			SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
+			SoundEngine.PlaySound(SoundID.Item14 with { Volume = 1.05f, Pitch = -0.15f }, Projectile.Center);
+			Lighting.AddLight(Projectile.Center, 0.55f, 1.4f, 0.45f);
+			Vector2 at = Projectile.Center;
+			Color blast = new(80, 240, 100);
+			for (int i = 0; i < 36; i++)
+			{
+				Vector2 vel = Main.rand.NextVector2CircularEdge(7f, 7f) * Main.rand.NextFloat(0.7f, 1.5f);
+				Dust d = Dust.NewDustPerfect(at, DustID.Grass, vel, 30, blast, Main.rand.NextFloat(1.6f, 2.4f));
+				d.noGravity = true;
+				d.color = blast;
+			}
+			for (int i = 0; i < 14; i++)
+			{
+				Dust s = Dust.NewDustPerfect(at, DustID.Smoke, Main.rand.NextVector2Circular(5f, 5f), 100,
+					new Color(40, 120, 50), Main.rand.NextFloat(1.4f, 2.1f));
+				s.noGravity = true;
+				s.color = new Color(50, 160, 70);
+			}
+			for (int i = 0; i < 10; i++)
+			{
+				Dust t = Dust.NewDustPerfect(at, DustID.ChlorophyteWeapon, Main.rand.NextVector2CircularEdge(6f, 6f) * Main.rand.NextFloat(0.8f, 1.6f),
+					40, blast, 1.7f);
+				t.noGravity = true;
+				t.color = blast;
+			}
+
 			if (Projectile.owner == Main.myPlayer)
 			{
-				Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, Vector2.Zero,
+				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at, Vector2.Zero,
 					ModContent.ProjectileType<MouseAoEBurstProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner, DustID.Grass);
+				if (id >= 0)
+				{
+					Projectile burst = Main.projectile[id];
+					burst.width = 320;
+					burst.height = 320;
+					burst.Center = at;
+				}
 			}
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Main.instance.LoadProjectile(ProjectileID.Seed);
+			Texture2D tex = TextureAssets.Projectile[ProjectileID.Seed].Value;
+			Vector2 origin = tex.Size() * 0.5f;
+			HenshinFxDraw.BeginAdditive();
+			Color trail = HenshinFxDraw.WithAlpha(new Color(100, 255, 120), 0.7f);
+			float glowScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, 48f);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center, trail, glowScale);
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center - Projectile.velocity * 0.35f,
+				HenshinFxDraw.WithAlpha(new Color(70, 220, 90), 0.45f), glowScale * 0.75f);
+			HenshinFxDraw.EndAdditive();
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, null, Color.White, Projectile.rotation, origin, Projectile.scale, SpriteEffects.None);
+			return false;
 		}
 	}
 
@@ -1881,10 +2003,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>咬住/咬碎：身前两段咬合；尖牙用 destination Rectangle 画三角（MagicPixel 须封顶宽高，忌无源矩形通天缩放）。ai0=体型倍率。</summary>
+	/// <summary>咬住/咬碎/火焰牙：身前两段咬合；尖牙用 destination Rectangle 画三角（MagicPixel 须封顶宽高，忌无源矩形通天缩放）。ai0=体型倍率；整体 VisualScale×4。</summary>
 	public class BiteArcProj : HenshinMoveProj
 	{
 		private const int Lifetime = 18;
+		private const float VisualScale = 4f;
 		private int _dir;
 		private float _size = 1f;
 
@@ -1892,8 +2015,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 64;
-			Projectile.height = 56;
+			Projectile.width = (int)(64 * VisualScale);
+			Projectile.height = (int)(56 * VisualScale);
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = Lifetime;
@@ -1917,11 +2040,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.localAI[0] = 1f;
 				_dir = owner.direction;
 				_size = Projectile.ai[0] > 0.1f ? Projectile.ai[0] : 1f;
-				Projectile.width = (int)(64 * _size);
-				Projectile.height = (int)(56 * _size);
+				float s = _size * VisualScale;
+				Projectile.width = (int)(64 * s);
+				Projectile.height = (int)(56 * s);
 				SoundEngine.PlaySound(SoundID.Item1 with { Pitch = -0.35f }, owner.Center);
 			}
-			Projectile.Center = owner.MountedCenter + new Vector2(_dir * (40f + 8f * _size), 0f);
+			float reach = _size * VisualScale;
+			Projectile.Center = owner.MountedCenter + new Vector2(_dir * (40f + 8f * reach), 0f);
 
 			int phase = Lifetime - Projectile.timeLeft;
 			if (phase == 2 || phase == 10)
@@ -1955,7 +2080,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float close = t < 0.45f ? t / 0.45f : 1f - (t - 0.45f) * 0.35f;
 			close = MathHelper.Clamp(close, 0f, 1f);
 			bool fireFang = Projectile.ai[2] > 0;
-			float openGap = MathHelper.Lerp(fireFang ? 46f : 18f, fireFang ? 6f : 2f, close) * _size;
+			float s = _size * VisualScale;
+			float openGap = MathHelper.Lerp(fireFang ? 46f : 18f, fireFang ? 6f : 2f, close) * s;
 			Color fang = fireFang ? new Color(40, 18, 12, 240) : new Color(18, 18, 22, 240);
 			Color edge = fireFang ? new Color(255, 120, 40, 220) : new Color(55, 55, 62, 220);
 
@@ -1963,13 +2089,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (fireFang)
 			{
 				// 两对大弧牙：上下各两颗，左右错开
-				float span = 36f * _size;
+				float span = 36f * s;
 				float[] xs = { -span * 0.5f, span * 0.5f };
 				for (int i = 0; i < xs.Length; i++)
 				{
 					float x = xs[i];
-					float toothW = 18f * _size;
-					float toothH = 28f * _size;
+					float toothW = 18f * s;
+					float toothH = 28f * s;
 					DrawToothTri(pixel, src, origin + new Vector2(x, -openGap), toothW, toothH, fang, edge, tipDown: true, fireFang: true);
 					DrawToothTri(pixel, src, origin + new Vector2(x, openGap), toothW, toothH, fang, edge, tipDown: false, fireFang: true);
 				}
@@ -1977,13 +2103,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			else
 			{
 				int teeth = _size >= 1.35f ? 6 : 5;
-				float span = 44f * _size;
+				float span = 44f * s;
 				for (int i = 0; i < teeth; i++)
 				{
 					float u = (i + 0.5f) / teeth - 0.5f;
 					float x = u * span;
-					float toothW = (6f + (i % 2 == 0 ? 2f : 0f)) * _size;
-					float toothH = (12f + (i % 2 == 0 ? 3f : 0f)) * _size;
+					float toothW = (6f + (i % 2 == 0 ? 2f : 0f)) * s;
+					float toothH = (12f + (i % 2 == 0 ? 3f : 0f)) * s;
 					DrawToothTri(pixel, src, origin + new Vector2(x, -openGap), toothW, toothH, fang, edge, tipDown: true);
 					DrawToothTri(pixel, src, origin + new Vector2(x, openGap), toothW, toothH, fang, edge, tipDown: false);
 				}
@@ -1994,8 +2120,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// <summary>用多层 destination Rectangle 叠成小三角尖牙（像素尺寸硬封顶，避免通天拉伸）。</summary>
 		private static void DrawToothTri(Texture2D pixel, Rectangle src, Vector2 baseCenter, float w, float h, Color fill, Color edge, bool tipDown, bool fireFang = false)
 		{
-			w = MathHelper.Clamp(w, 3f, fireFang ? 40f : 28f);
-			h = MathHelper.Clamp(h, 6f, fireFang ? 48f : 36f);
+			w = MathHelper.Clamp(w, 3f, fireFang ? 160f : 112f);
+			h = MathHelper.Clamp(h, 6f, fireFang ? 192f : 144f);
 			const int layers = 5;
 			for (int layer = 0; layer < layers; layer++)
 			{
