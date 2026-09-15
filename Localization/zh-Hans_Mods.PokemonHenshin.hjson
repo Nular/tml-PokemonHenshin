@@ -464,6 +464,10 @@ Accessories: {
 }
 
 Buffs: {
+	HenshinWorkUpBuff: {
+		DisplayName: 自我激励
+		Description: 变身招式伤害 +20%
+	}
 	HenshinSleepDebuff: {
 		DisplayName: 睡眠
 		Description: 完全无法行动且无法接触伤害；下次受到的伤害翻倍并醒来
@@ -566,6 +570,12 @@ Moves: {
 	DragonTail: 龙尾
 	Hurricane: 暴风
 	DragonDive: 龙之俯冲
+	ArmHammer: 臂锤
+	AuraSphere: 波导弹
+	GyroBall: 陀螺球
+	StealthRock: 隐形岩
+	WorkUp: 自我激励
+	DoubleEdge: 舍身冲撞
 	TakeDown: 猛撞
 	Flail: 抓狂
 	Earthquake: 地震
@@ -647,7 +657,7 @@ Items: {
 
 	BlastoiseForce: {
 		DisplayName: 水箭龟之力
-		Tooltip: 水。水炮、火箭头锤、加农水炮。
+		Tooltip: 水。水炮、波导弹、加农水炮。
 	}
 
 	BulbasaurForce: {
@@ -677,7 +687,7 @@ Items: {
 
 	MachopForce: {
 		DisplayName: 腕力之力
-		Tooltip: 格斗。岩石封锁、撞击、十字劈。
+		Tooltip: 格斗。岩石封锁、子弹拳、十字劈。
 	}
 
 	MachokeForce: {
@@ -717,7 +727,7 @@ Items: {
 
 	MetangForce: {
 		DisplayName: 金属怪之力
-		Tooltip: 钢/超能。念力、撞击、猛撞。
+		Tooltip: 钢/超能。念力、臂锤、金属爪。
 	}
 
 	MetagrossForce: {
@@ -752,7 +762,7 @@ Items: {
 
 	PidgeotForce: {
 		DisplayName: 大比鸟之力
-		Tooltip: 飞/一般。暴风、燕返、勇鸟猛攻。
+		Tooltip: 飞/一般。暴风、勇鸟猛攻、自我激励。
 	}
 
 	AbraForce: {
@@ -767,12 +777,12 @@ Items: {
 
 	OnixForce: {
 		DisplayName: 大岩蛇之力
-		Tooltip: 岩石/地面。岩石封锁、撞击、岩崩。
+		Tooltip: 岩石/地面。岩石封锁、陀螺球、岩崩。
 	}
 
 	SteelixForce: {
 		DisplayName: 大钢蛇之力
-		Tooltip: 钢/地面。岩崩、钢尾、猛撞。
+		Tooltip: 钢/地面。岩崩、钢尾、舍身冲撞。
 	}
 
 	MewtwoForce: {
@@ -782,7 +792,7 @@ Items: {
 
 	GibleForce: {
 		DisplayName: 圆陆鲨之力
-		Tooltip: 龙/地面。龙之怒、撞击、流沙地狱。
+		Tooltip: 龙/地面。龙之怒、隐形岩、流沙地狱。
 	}
 
 	GarchompForce: {

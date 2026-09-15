@@ -1292,6 +1292,195 @@ namespace PokemonHenshin.Content.Items.Forms
 				RequiresLungeCooldown = true,
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
+
+		public static MoveSpec ArmHammer(string nameKey, float mult = 1.35f, int use = 28)
+			=> new()
+			{
+				Delivery = MoveDelivery.MeleeArc,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<ArmHammerSmashProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 5f
+			};
+
+		public static MoveSpec MetalClawUlt(string nameKey, float mult = 3.4f)
+			=> new()
+			{
+				Delivery = MoveDelivery.MeleeArc,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<MetalClawDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 34,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				SpawnAtMouse = true,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
+			};
+
+		public static MoveSpec AuraSphere(string nameKey, float mult = 1.85f, int use = 56)
+			=> new()
+			{
+				Delivery = MoveDelivery.Bolt,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<AuraSphereBoltProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 9f,
+				Knockback = 3.5f,
+				IsRangedProjectile = true
+			};
+
+		public static MoveSpec GyroBall(string nameKey, float mult = 1.4f, int use = 30)
+			=> new()
+			{
+				Delivery = MoveDelivery.Bolt,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<GyroBallSmashProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 4.5f,
+				RequiresLungeCooldown = true
+			};
+
+		public static MoveSpec StealthRock(string nameKey, float mult = 0.85f, int use = 36)
+			=> new()
+			{
+				Delivery = MoveDelivery.Field,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<StealthRockFieldProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 1f,
+				SpawnAtMouse = true,
+				BalanceTag = BalanceTag.WideAoE
+			};
+
+		public static MoveSpec BulletPunch(string nameKey, float mult = 1.15f, int use = 12)
+			=> new()
+			{
+				Delivery = MoveDelivery.MeleeArc,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BulletPunchProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 2.5f
+			};
+
+		public static MoveSpec WorkUpUlt(string nameKey)
+			=> new()
+			{
+				Delivery = MoveDelivery.Field,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<WorkUpBuffProj>(),
+				DamageMultiplier = 0.01f,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
+			};
+
+		public static MoveSpec BraveBirdSkill(string nameKey, float mult = 2.2f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Lunge,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BraveBirdLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 30,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				Ai2 = 1f, // 青色尾焰
+				RecoilSelf = true,
+				RecoilFraction = 0.2f,
+				RequiresLungeCooldown = true
+			};
+
+		public static MoveSpec DoubleEdgeUlt(string nameKey, float mult = 3.8f, float reachTiles = 44f, float recoilFrac = 0.25f)
+			=> new()
+			{
+				Delivery = MoveDelivery.MeleeArc,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DoubleEdgeLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 34,
+				ShootSpeed = 0f,
+				Knockback = 5f,
+				Ai0 = DustID.Iron,
+				Ai2 = reachTiles,
+				RecoilSelf = true,
+				RecoilFraction = recoilFrac,
+				RequiresLungeCooldown = true,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
+			};
+
+		public static MoveSpec DragonDiveSlam(string nameKey, float mult = 1.9f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Lunge,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DragonDiveSlamProj>(),
+				DamageMultiplier = mult,
+				UseTime = 30,
+				ShootSpeed = 0f,
+				Knockback = 5f,
+				RequiresLungeCooldown = true
+			};
+
+		public static MoveSpec DragonAscentBlinkUlt(string nameKey, float mult = 5.0f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Lunge,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<DragonAscentBlinkProj>(),
+				DamageMultiplier = mult,
+				UseTime = 36,
+				ShootSpeed = 0f,
+				Knockback = 5f,
+				RequiresLungeCooldown = true,
+				IgnoreDefensePartial = true,
+				AftermathDamagePenaltyTicks = 300,
+				AftermathDamagePenalty = 0.8f,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
+			};
+
+		public static MoveSpec SkyAttackSextet(string nameKey, float mult = 2.4f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Barrage,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<SkyAttackSextetDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				Knockback = 3f,
+				RequiresLungeCooldown = true,
+				BalanceTag = BalanceTag.MultiHit
+			};
+
+		public static MoveSpec BiteArcAtMouse(string nameKey, float mult = 1.7f, int brokenArmorTicks = 200, float size = 1.55f)
+			=> new()
+			{
+				Delivery = MoveDelivery.MeleeArc,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BiteArcAtMouseProj>(),
+				DamageMultiplier = mult,
+				UseTime = 20,
+				ShootSpeed = 0f,
+				Knockback = 3.5f,
+				Ai0 = size,
+				Ai1 = brokenArmorTicks,
+				SpawnAtMouse = true
+			};
+
+
 	}
 
 	// —— 御三家 ——
@@ -1339,7 +1528,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F03", 6, "Mods.PokemonHenshin.Items.BlastoiseForce.DisplayName", PokemonType.Water, 7, "L02_F02", FormPassiveKind.RainDish);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroPump", 1.7f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.SkullBash", 1.6f, 34, DustID.Water);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.AuraSphere("Mods.PokemonHenshin.Moves.AuraSphere", 1.85f, 56);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroCannon", 4.0f, cannon: true, aftermath: true, selfStun: 90, ult: true);
 	}
 

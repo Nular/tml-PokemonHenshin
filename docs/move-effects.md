@@ -135,7 +135,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L02_F01 | 杰尼龟 | **激流**：HP&lt;50% 时水系招式伤害 +20% | 水枪 AquaScepter | 撞击 Lunge+撞击爆 | 泡沫光线 Barrage×64 束状高速 | 耗 100 | 海蓝权杖水流；泡泡**错落密束**+破裂小泡（少蓝水尘） | Low |
 | L02_F02 | 卡咪龟 | **激流**：同上 +20% | 泡沫光线 Barrage×**16**（壳弹+Load Bubble；基准速 **20.8**） | 咬住 BiteArc | 潮旋 DoTBind（水漩涡缠绕） | 耗 100 | 须 `LoadProjectile(Bubble)`；错落密束+破裂；勿等玩家先用泡泡枪 | Low | Done |
-| L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每 **90 tick**（1.5s）回 2 HP | 水炮 Beam（粗水柱；**命中墙=命中怪**锁长；**持续多段伤再淡出**，不穿透） | 火箭头锤 Charge→Lunge（短蓄力后头槌） | 加农水炮 Beam（**仍穿墙穿怪**，更粗）；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | `WaterJetProj`：枪口渐进；水炮宽~2.5 格锁长多段；加农宽~4.5 格+每3击爆 | Medium | Done |
+| L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每 **90 tick**（1.5s）回 2 HP | 水炮 Beam（粗水柱；**命中墙=命中怪**锁长；**持续多段伤再淡出**，不穿透） | 波导弹 Bolt+强追踪（极慢攻速） | 加农水炮 Beam（**仍穿墙穿怪**，更粗）；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | `WaterJetProj`：枪口渐进；水炮宽~2.5 格锁长多段；加农宽~4.5 格+每3击爆 | Medium | Done |
 
 ### 4.4 超能链 L12
 
@@ -150,21 +150,21 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L07_F01 | 迷你龙 | **蜕皮**：每 5s 约 15% 概率清除自身 1 个可清除 debuff | 龙息 Spread/Bolt+Stun（概率短僵；**线在实心截断**） | 咬住 MeleeArc | 龙之怒 Barrage（12/32 抖动球+5格爆；**大招仍穿墙**） | 耗 100 | 龙息：**128 格** Fire 帧线；怒：`DragonRageBarrage` SoftGlow 球 | Low | Done |
 | L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 星尘龙鞭 15格极强击退 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**；诅咒符 Barrage 穿墙） | 耗 100 | 龙波；`DragonTailWhip`；暴风 WeatherPain 主+**4伴随**穿透牵引 | Medium | Accepted |
-| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 龙之俯冲 星尘龙路径冲 | 逆鳞 3s 身周火球；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | 暴风 WeatherPain 技能档；`StardustPathLunge`；逆鳞 CultistBossFireBall 壳 | Medium | Accepted |
+| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 龙之俯冲 瞬抬升空→垂直砸 | 逆鳞 3s 身周火球；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | `DragonDiveSlam`；逆鳞同前 | Medium | Done |
 
 ### 4.6 钢/超能链 L08（Excel：铁哑铃→金属怪）
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 撞击 Lunge | 猛撞 闪焰式冲+灰日耀VFX+Recoil25% | 耗 100；Recoil | 念力同凯西；`TakeDownLunge` + SolarWhipSwordExplosion 0伤 | Low | Accepted |
+| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 臂锤 MeleeArc（小臂弧砸） | 金属爪 指针两侧深抓痕 | 耗 100 | `ArmHammerSmash`；`MetalClawDirector` | Low | Done |
 | L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 胡地式鼠位×3 | 彗星拳 真气拳式+3×StarWrath | 破坏光线 Beam 自缓加粗；释放后 **休整 ~2s** | 耗 100；休整 | `AlakazamPsychic`；`CometPunch`+StarWrath；`SustainedBeam` 粗 | Medium | Accepted |
 
 ### 4.7 龙/地链 L15
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Barrage（**技能球撞实心爆**） | 撞击 Lunge | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | 龙怒 `DragonRageBarrage` 技能12发；流沙直径 **16 格** Typhoon压蓝壳+琥珀 Cyclone/Fog | Medium | Done |
-| L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（更大，**VisualScale×4**） | 流星群 64×StarWrath；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | `DracoMeteorDirector` 狂星之怒壳+金粉爆 | Medium | Accepted |
+| L15_F01 | 圆陆鲨 | **粗糙皮肤**：受击反弹 **0.35×** 当前变身招式基准伤害；且受击后短时攻击 +10%（2s） | 龙之怒 Barrage（**技能球撞实心爆**） | 隐形岩 鼠标上空悬浮尖球陷阱 | 流沙地狱 DoTBind（沙漩涡） | 耗 100 | `StealthRockField`（尖球换色）；流沙同前 | Medium | Done |
+| L15_F02 | 烈咬陆鲨 | **粗糙皮肤**：同上 | 龙之波动 Nebula×10 | 咬碎 鼠标处远距咬合+DefDown | 流星群 64×StarWrath；释放后 **自身攻击 −15% 持续 5s** | 耗 100；攻降后摇 | `DracoMeteorDirector` 狂星之怒壳+金粉爆 | Medium | Accepted |
 
 ### 4.8 幽灵链 L06
 
@@ -184,7 +184,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +25% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 撞击 Lunge（2s CD + 0.25s 无敌；速/距约半） | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | 可见四石；X 尘 + 前冲残影 | Medium |
+| L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +25% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 子弹拳 短距快速鞭拳 | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | `BulletPunch`；十字劈同前 | Medium | Done |
 | L05_F02 | 豪力 | **毅力**：同上 +25% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 岩崩3石微偏（`|vx|≤8`）+落地**1格**爆；劈瓦 **20 格**线斩；爆拳巨大拳套前挥+半径**20格**石爆 | Medium | Done |
 | L05_F03 | 怪力 | **毅力**：同上 +25% | 尖石攻击 三角三刺穿透+命中爆 | 十字劈 360°弧形X | 近身战 高频+全程无敌+跟随；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 三角 Boulder；贝塞尔弧 X；HitJagged 纠向 | Medium | Accepted |
 
@@ -193,7 +193,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（朝鼠标飞出；落地后水平贴地滚动） | 啄 Cone~16格尖角 AoE | 燕返 Lunge（短 useTime；与撞击共用突进 CD） | 耗 100 | Typhoon 深蓝；射出后贴地滚 | Medium |
-| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 燕返 Lunge+EasyCrit（必易暴语义） | 勇鸟猛攻 Lunge+Recoil | 耗 100；Recoil | 暴风 WeatherPain 直立帧+穿透牵引（技能档）；燕返双弧；勇鸟梭形+交叉鸟 | Medium | Done |
+| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 勇鸟猛攻 Lunge+Recoil（青焰，降倍率） | 自我激励 SelfBuff：攻击 +20% / 12s | 耗 100 | 勇鸟青焰梭形；大招纯 buff `WorkUpBuff` | Medium | Done |
 
 ### 4.12 电系链 L04
 
@@ -206,16 +206,16 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 撞击 Lunge | 岩崩 AoEBurst+Stun | 耗 100 | 大招岩崩 **12** 石、±12格、微偏（`|vx|≤8`）+落地1格爆 | Low | Done |
-| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 钢尾 龙尾式+铁色遮罩 | 猛撞 闪焰式冲+灰日耀（被动免 Recoil） | 耗 100；Recoil 被被动抵消 | `IronTailWhip`；`TakeDownLunge` | Medium | Accepted |
+| L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 陀螺球 旋转钢环砸出（不变身） | 岩崩 AoEBurst+Stun | 耗 100 | 大招岩崩 **12** 石、±12格、微偏（`|vx|≤8`）+落地1格爆 | Low | Done |
+| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 钢尾 龙尾式+铁色遮罩 | 舍身冲撞 加长猛撞+额外爆炸（被动免 Recoil） | 耗 100；Recoil 被被动抵消 | `IronTailWhip`；`DoubleEdgeLunge` 约44格 | Medium | Done |
 
 ### 4.14 传说 L16 / L14 / L17
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 0.5s 无敌吟唱后冲+6鸟 | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst`；`SkyAttackLunge`；`HurricaneField` 名键 `CycloneAttack` | High | Accepted |
+| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 6只无敌红鸟分波勇鸟特效 | 气旋攻击 半径32格 Field | 耗 100 | `SkyAttackSextetDirector`+红鸟；气旋同前 | High | Done |
 | L14_F01 | 超梦 | **压迫感**：+50% | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun（技能槽 ×**2.0**） | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗满 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
-| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（**VisualScale×4**） | 画龙点睛 长星尘龙路径冲（纯黑骨节）；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `StardustPathLunge` ai2=1 全黑 `0,0,0,255` | High | Accepted |
+| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（**VisualScale×4**） | 画龙点睛 伏特攻击式闪现+0.5s后超粗黑龙路径；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `DragonAscentBlink`+`DragonAscentTrail` | High | Done |
 
 ### 4.15 地鼠链 L10（Excel 外补全）
 
@@ -272,3 +272,5 @@
 | 1.28 | 2026-09-13 | 电气球电击弹速改为 +100%/+200%、加宽；攻速 +20%/+40%；电光一闪冷却 -20%/-40%（本地验收 OK） |
 | 1.29 | 2026-09-13 | 手感批：种子炸弹直径~10格+草绿爆；尖牙 VisualScale×4；起风朝鼠标飞出后贴地滚；水炮/加农粗×2、水炮锁长持续多段；喷射火焰射程×2 |
 | 1.30 | 2026-09-14 | 种爆去 FlashImpact 金刺（仅绿）；起风确认贴地滚；本批本地验收 OK |
+
+| 1.25 | 2026-09-15 | 撞击族改版：臂锤/金属爪/波导弹/舍身冲撞/陀螺球/隐形岩/子弹拳；大比鸟勇鸟降技能2+自我激励；快龙垂砸；烈空坐伏特式画龙；洛奇亚六红鸟；烈咬远距咬 |
