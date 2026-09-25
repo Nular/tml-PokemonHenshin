@@ -152,14 +152,32 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static Texture2D KenneyTwirl => KenneyTex("twirl_01");
 		public static Texture2D KenneyExplosionStrip => KenneyTex("ExplosionStrip");
 		public static Texture2D KenneyFlash00 => KenneyTex("flash00");
+		public static Texture2D KenneyFistDown => KenneyTex("fist_down_01");
+		public static Texture2D KenneyFistSmash => KenneyTex("fist_smash_01");
+		public static Texture2D KenneyFistImpact => KenneyTex("fist_impact_01");
 
 		/// <summary>Kenney 单帧按世界直径绘制（512 素材建议直径 48–120）。</summary>
-		public static void DrawKenneyWorld(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, float rotation = 0f)
+		public static void DrawKenneyWorld(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, float rotation = 0f, SpriteEffects effects = SpriteEffects.None)
 		{
 			if (tex == null || colorWithAlpha.A == 0)
 				return;
 			float scale = ScaleForWorldDiameter(tex, worldDiameterPx);
-			DrawAdditiveCentered(tex, worldPos, colorWithAlpha, scale, rotation);
+			Vector2 origin = tex.Size() * 0.5f;
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, scale, effects, 0f);
+		}
+
+		/// <summary>
+		/// 沿贴图横向渐进显现（0→1）。配合 <see cref="SpriteEffects.FlipHorizontally"/> 做镜像爪痕。
+		/// </summary>
+		public static void DrawKenneyProgressive(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, float rotation, float reveal01, SpriteEffects effects = SpriteEffects.None)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			reveal01 = MathHelper.Clamp(reveal01, 0.02f, 1f);
+			float scale = ScaleForWorldDiameter(tex, worldDiameterPx);
+			Vector2 origin = tex.Size() * 0.5f;
+			Vector2 sc = new Vector2(scale * reveal01, scale);
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, sc, effects, 0f);
 		}
 
 		public static void DrawKenneyExplosionFrame(Vector2 pos, Color c, float worldDiameterPx, int frame)

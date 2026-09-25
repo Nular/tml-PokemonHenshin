@@ -156,7 +156,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 臂锤 MeleeArc（Kenney 爆/scorch） | 金属爪 Kenney scratch/slash 双侧抓痕 | 耗 100 | `Assets/Fx/Kenney` CC0 | Low | Done |
+| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 臂锤 下砸拳头（Kenney fightFist） | 金属爪 鼠标双侧镜像 scratch 渐进+持续伤≈16格 | 耗 100 | `Assets/Fx/Kenney` fist/scratch CC0 | Low | Done |
 | L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 胡地式鼠位×3 | 彗星拳 真气拳式+3×StarWrath | 破坏光线 Beam 自缓加粗；释放后 **休整 ~2s** | 耗 100；休整 | `AlakazamPsychic`；`CometPunch`+StarWrath；`SustainedBeam` 粗 | Medium | Accepted |
 
 ### 4.7 龙/地链 L15
@@ -275,3 +275,4 @@
 | 1.25 | 2026-09-15 | 撞击族改版：臂锤/金属爪/波导弹/舍身冲撞/陀螺球/隐形岩/子弹拳；大比鸟勇鸟降技能2+自我激励；快龙垂砸；烈空坐伏特式画龙；洛奇亚六红鸟；烈咬远距咬 |
 | 1.31 | 2026-09-25 | 改版抛光：烈空咬碎跟鼠标；画龙路径灰日耀/Flash 闪光爆；空气爆炸改路径≤128/半径4/吸16；神鸟/陀螺球去误用无敌与撞击 CD；子弹拳扩线判；臂锤/金属爪接 FlashImpact·LightShot |
 | 1.32 | 2026-09-25 | 臂锤/金属爪改接 Kenney Particle/Smoke（非堆叠）；子弹拳恢复原特效仅略扩判定；画龙路径闪光改 Kenney star |
+| 1.33 | 2026-09-25 | 金属爪：镜像 scratch 渐进绘制+持续伤16格；臂锤：Kenney fightFist 下砸拳头 |
