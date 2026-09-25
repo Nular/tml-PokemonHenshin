@@ -657,7 +657,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>画龙点睛：伏特攻击式闪现，落地立刻青色路径光迹 + 反色日耀爆 + 一次面板伤。</summary>
+	/// <summary>画龙点睛：伏特攻击式闪现，落地立刻青色路径光迹；路径上延迟依次反色日耀爆；一次面板伤。</summary>
 	public class DragonAscentBlinkProj : HenshinMoveProj
 	{
 		private const float MaxRange = 1280f;
@@ -698,7 +698,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					Dust.NewDustPerfect(p.Center, DustID.Shadowflame, Main.rand.NextVector2Circular(5f, 5f), 80, Color.Black, 1.4f).noGravity = true;
 				}
 
-				// 闪现结束立刻出路径粒子 + 爆炸；产生时结算一次 1.0× 面板伤
+				// 闪现结束立刻出路径粒子；伤害在路径弹生成时结算；爆炸仍由 Trail 延迟依次触发
 				Vector2 trail = _to - _from;
 				if (trail.LengthSquared() < 4f) trail = new Vector2(p.direction * 48f, 0f);
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), _from, trail,
@@ -722,15 +722,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class DragonAscentTrailProj : HenshinMoveProj
 	{
-		// 与 GraySolarBurstVfxProj.Life 对齐，光迹随爆炸同消
-		private const int Life = 18;
+		// 延迟依次爆炸手感：路径寿命覆盖 Burst 序列（与改即时铺爆前一致）
+		private const int Life = 48;
 		private const int BurstCount = 10;
-		private const float ScaleBoost = 1.5f; // 相对上一版整体放大 50%
-		private const float StreakThick = 16f / 5f * ScaleBoost; // ~4.8px
+		private const float LayoutBoost = 1.5f; // 散落带宽等布局（上一轮整体 +50%）
+		// 蓝色线段个体：相对上一轮再 +100%（粗细/长度 ×2）
+		private const float StreakSize = LayoutBoost * 2f;
+		private const float StreakThick = 16f / 5f * StreakSize; // ~9.6px
 		private static readonly Color PathCyan = new(1, 253, 255);
 		private Vector2 _from, _to;
 		private bool _init;
-		private bool _burstsSpawned;
+		private int _burstsSpawned;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
@@ -751,7 +753,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
 		{
 			EnsureInit();
-			TrySpawnBursts();
 		}
 
 		private void EnsureInit()
@@ -765,28 +766,25 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.5f);
 		}
 
-		private void TrySpawnBursts()
-		{
-			if (_burstsSpawned || Projectile.owner != Main.myPlayer) return;
-			_burstsSpawned = true;
-			EnsureInit();
-			for (int i = 0; i < BurstCount; i++)
-			{
-				float u = (i + 0.5f) / BurstCount;
-				SpawnTrailBurst(Vector2.Lerp(_from, _to, u));
-			}
-		}
-
 		public override void AI()
 		{
 			EnsureInit();
-			TrySpawnBursts();
 			float life = Projectile.timeLeft / (float)Life;
 			for (float u = 0f; u <= 1f; u += 0.08f)
 			{
 				if (!Main.rand.NextBool(5)) continue;
 				Dust.NewDustPerfect(Vector2.Lerp(_from, _to, u), DustID.DungeonWater,
-					Main.rand.NextVector2Circular(1.2f * ScaleBoost, 1.2f * ScaleBoost), 100, PathCyan, 1.1f * life * ScaleBoost).noGravity = true;
+					Main.rand.NextVector2Circular(1.2f * LayoutBoost, 1.2f * LayoutBoost), 100, PathCyan, 1.1f * life * LayoutBoost).noGravity = true;
+			}
+
+			// 延迟依次爆炸：沿路径按年龄分批触发（上一版手感）
+			int age = Life - Projectile.timeLeft;
+			int nextBurst = _burstsSpawned;
+			if (Projectile.owner == Main.myPlayer && nextBurst < BurstCount && age >= nextBurst * (Life / BurstCount))
+			{
+				float u = (nextBurst + 0.5f) / BurstCount;
+				SpawnTrailBurst(Vector2.Lerp(_from, _to, u));
+				_burstsSpawned++;
 			}
 		}
 
@@ -796,14 +794,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.1f, Volume = 0.45f }, at);
 			for (int i = 0; i < 3; i++)
 			{
-				Vector2 off = Main.rand.NextVector2Circular(22f * ScaleBoost, 22f * ScaleBoost);
+				Vector2 off = Main.rand.NextVector2Circular(22f, 22f);
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at + off, Vector2.Zero,
 					ModContent.ProjectileType<GraySolarBurstVfxProj>(), 0, 0f, Projectile.owner, ai0: 1f);
 				if (id >= 0) Main.projectile[id].Center = at + off;
 			}
 			for (int i = 0; i < 10; i++)
-				Dust.NewDustPerfect(at, DustID.DungeonWater, Main.rand.NextVector2Circular(4.5f * ScaleBoost, 4.5f * ScaleBoost),
-					60, PathCyan, 1.35f * ScaleBoost).noGravity = true;
+				Dust.NewDustPerfect(at, DustID.DungeonWater, Main.rand.NextVector2Circular(4.5f, 4.5f),
+					60, PathCyan, 1.35f).noGravity = true;
 		}
 
 		public override bool? CanDamage()
@@ -817,7 +815,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			EnsureInit();
 			float _ = 0f;
-			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), _from, _to, 72f * ScaleBoost, ref _);
+			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), _from, _to, 72f * LayoutBoost, ref _);
 		}
 
 		/// <summary>确定性散列，保证联机各端光线铺排一致。</summary>
@@ -845,16 +843,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 极淡暗底，不抢青色光迹
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Vector2.Lerp(_from, _to, 0.5f),
 				HenshinFxDraw.WithAlpha(new Color(0, 20, 30), 0.35f * life),
-				new Vector2(Math.Max(1f, pathLen / 40f), 1.1f * ScaleBoost), delta.ToRotation());
+				new Vector2(Math.Max(1f, pathLen / 40f), 1.1f * LayoutBoost), delta.ToRotation());
 
-			// 散落光线：沿路径方向、长短不一；相对上一版整体 ×1.5，色 (1,253,255)
+			// 散落光线：布局带宽保持 LayoutBoost；个体粗细/长度再 ×2（相对上一轮 +100%）
 			int count = Math.Clamp((int)(pathLen / 20f), 28, 72);
 			for (int i = 0; i < count; i++)
 			{
 				float u = StreakHash(i, 1);
 				float side = StreakHash(i, 2) * 2f - 1f;
-				float scatter = side * (8f + StreakHash(i, 3) * 36f) * ScaleBoost;
-				float len = MathHelper.Lerp(8f, 52f, StreakHash(i, 4)) * ScaleBoost;
+				float scatter = side * (8f + StreakHash(i, 3) * 36f) * LayoutBoost;
+				float len = MathHelper.Lerp(8f, 52f, StreakHash(i, 4)) * StreakSize;
 				float pulse = 0.65f + 0.35f * MathF.Sin(Main.GlobalTimeWrappedHourly * 16f + i * 0.7f);
 				float bright = 0.45f + 0.5f * StreakHash(i, 5);
 
@@ -865,14 +863,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.SoftGlow, a, b, c, StreakThick);
 			}
 
-			// 少量更亮的短芯线，增强「光」感
+			// 少量更亮的短芯线，增强「光」感（个体同样 × StreakSize）
 			int cores = Math.Max(8, count / 5);
 			for (int i = 0; i < cores; i++)
 			{
 				float u = StreakHash(i + 200, 1);
 				float side = StreakHash(i + 200, 2) * 2f - 1f;
-				float scatter = side * (4f + StreakHash(i + 200, 3) * 18f) * ScaleBoost;
-				float len = MathHelper.Lerp(6f, 28f, StreakHash(i + 200, 4)) * ScaleBoost;
+				float scatter = side * (4f + StreakHash(i + 200, 3) * 18f) * LayoutBoost;
+				float len = MathHelper.Lerp(6f, 28f, StreakHash(i + 200, 4)) * StreakSize;
 				Vector2 mid = Vector2.Lerp(_from, _to, u) + perp * scatter;
 				Color c = HenshinFxDraw.WithAlpha(PathCyan, 0.9f * life);
 				HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.SoftGlow,
