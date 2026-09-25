@@ -556,6 +556,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 
 		private bool InBrake => Projectile.timeLeft <= BrakeTicks;
+		private bool CyanMode => Projectile.ai[2] > 0.5f;
 
 		public override void AI()
 		{
@@ -615,7 +616,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 						{
 							Dust trail = Dust.NewDustPerfect(basePos - _dir * (i * 8f), DustID.Cloud,
 								-_dir * Main.rand.NextFloat(0.3f, 1.0f) + perp * Main.rand.NextFloat(-0.3f, 0.3f),
-								70, new Color(245, 248, 255), Main.rand.NextFloat(1.2f, 1.7f));
+								70, CyanMode ? new Color(80, 230, 255) : new Color(245, 248, 255), Main.rand.NextFloat(1.2f, 1.7f));
 							trail.noGravity = true;
 						}
 					}
@@ -673,7 +674,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 梭形包裹：沿瞄准方向拉长 SoftGlow
 			HenshinFxDraw.BeginAdditive();
 			float rot = _dir.ToRotation();
-			Color spindle = HenshinFxDraw.WithAlpha(new Color(245, 248, 255), InBrake ? 0.35f : 0.7f);
+			Color spindle = HenshinFxDraw.WithAlpha(CyanMode ? new Color(60, 220, 255) : new Color(245, 248, 255), InBrake ? 0.35f : 0.7f);
 			Texture2D glow = HenshinFxDraw.SoftGlow;
 			if (glow != null)
 			{

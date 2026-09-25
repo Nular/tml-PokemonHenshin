@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-12
+**版本日期：** 2026-09-25
 
 ## 1. 权威与硬约束
 
@@ -265,7 +265,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | DragonTail/龙尾 | L07_F02,8 | Melee | DragonTailWhip 星尘龙节链15格强击退 | StardustDragon1–4 | 鞭弧 | Accepted |
 | Hurricane/暴风 | L07_F02 Ult | Barrage | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆；**默认撞实心贴地**（诅咒符 Barrage 穿墙） | WeatherPainShot | 大招风团 | Accepted |
 | Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Barrage | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋）；**默认撞实心贴地** | WeatherPainShot | 天候棒 | Accepted |
-| DragonDive/龙之俯冲 | L07_F03,11 | Lunge | StardustPathLunge 半透明星尘龙路径伤 | StardustDragon2–4 | 路径龙 | Accepted |
+| DragonDive/龙之俯冲 | L07_F03 S2 | Slam | `DragonDiveSlam` 瞬抬升空→垂直砸 | SoftGlow | 垂砸 | Done |
 | Outrage/逆鳞 | L07_F03 Ult | Barrage | 3s CultistBossFireBall 壳追踪爆+Confused | CultistBossFireBall | 身周火球 | Accepted |
 
 ### 4.8 其余线路（钢超 / 鱼 / 地鼠 / 飞 / 超能 / 岩钢 / 陆鲨 / 传说）
@@ -273,7 +273,9 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | MoveKey/CN | Forms (Stage) | Playstyle | Current | Recommended | Feel | Status |
 |------------|---------------|-----------|---------|-------------|------|--------|
 | Confusion/念力 | L08_F01 / L12_F01 | Bolt+Stun | `PsychicWaveBolt` 48格索敌弹射×2 + **命中紫环1格** | ShadowBeam 294 | 波动链 | Accepted |
-| TakeDown/猛撞 | L08_F01/L13 Ult | Lunge+Recoil | TakeDownLunge 闪焰式冲+灰 SolarWhipSwordExplosion×4–6 0伤+土黄尘 | SolarWhipSwordExplosion | 金属冲 | Accepted |
+| ArmHammer/臂锤 | L08_F01 S2 | MeleeSmash | Kenney `fist_smash` 下砸（贴图再转 180°）+落地挤压；无 FlashImpact | `Assets/Fx/Kenney` | 重拳砸地 | Done |
+| MetalClaw/金属爪 | L08_F01 Ult | DualSlash | 双侧 `scratch_down` 镜像 ±30°；自上而下划出/抹掉；持续伤直径≈16格 | Kenney scratch | 双侧爪痕 | Done |
+| TakeDown/猛撞 | （无现役形态槽；类仍在） | Lunge+Recoil | TakeDownLunge 闪焰式冲+灰 SolarWhipSwordExplosion×4–6 0伤+土黄尘 | SolarWhipSwordExplosion | 金属冲（历史/可复用） | Legacy |
 | Psychic/精神强念 | L08_F02 | Bolt+DefDown | AlakazamPsychic 鼠位×3（同胡地） | RainbowRod | 三连追 | Accepted |
 | Psychic/精神强念 | L12_F02 | Bolt+DefDown | AlakazamPsychic 鼠位×3 穿墙穿怪否+延迟追 | RainbowRod | 三连追 | Accepted |
 | MeteorMash/彗星拳 | L08_F02,10 | Melee | CometPunch 拳套+3×StarWrath 穿墙降 | BoxingGlove/StarWrath | 拳+星 | Accepted |
@@ -281,7 +283,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | Splash/跃起 | L09_F01,1 | StrikeFall | StrikeFall Water | — | 低伤 | Accepted |
 | Flail/抓狂 | L09_F01 Ult | Barrage | FlailBarrage **15格三线爪** 宽判+抓尘 | 多爪环身 | 可见多段 | Accepted |
 | HydroPump | L09_F02,9 | Beam | `WaterJetProj` 宽×2+锁长多段 | 同水箭龟水柱 | 水柱 | Accepted |
-| Crunch/咬碎 | L09_F02 / L15_F02 / L17 | BiteArc | BiteArc size↑ **VisualScale×4** | cookbook | OK | Accepted |
+| Crunch/咬碎 | L09_F02 | BiteArc | BiteArc size↑ **VisualScale×4** | cookbook | OK | Accepted |
+| Crunch/咬碎 | L15_F02 / L17 | MeleeArc | BiteArcAtMouse 鼠标处远距咬合 | BiteArc cookbook | 远距尖牙 | Accepted |
 | MudSlap/掷泥 | L10_F01,3 | Bolt+Slow | MudSlap←DirtBall | DirtBall | OK | Accepted |
 | Dig/挖洞 | L10_F02 S2 | DigLunge | `DigLungeProj` 冲20格+镐力走廊 | 土尘 SoftGlow | 挖进突 | Implemented |
 | TripleDig/三连刺 | L10_F02,6 | Barrage | GroundSpikeStab **8格** | 三道可见刺/爪 | 可见刺 | Implemented |
@@ -289,28 +292,31 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | Gust/起风 | L11_F01,2 | GroundCyclone | 朝鼠标飞出；落地后水平贴地滚动 | Typhoon 深蓝 | 贴地风 | Accepted |
 | Peck/啄 | L11_F01,2 | Cone | PeckCone | — | 尘锥 | Accepted |
 | AerialAce/燕返 | L11_F01 Ult | Lunge | Lunge SoftGlow | — | OK | Accepted |
-| AerialAce/燕返 | L11_F02 S2 | BlinkSlash | `AerialAceBlink` 双切回起点+双弧羽径 | 禁 Electric 尘 | 往返弧 | Accepted |
-| BraveBird/勇鸟猛攻 | L11_F02 Ult | Lunge+Recoil | `BraveBirdLunge` 白拖尾梭形冲+交叉 Raven | 闪焰式加速 | 梭形鸟群 | Accepted |
+| BraveBird/勇鸟猛攻 | L11_F02 S2 | Lunge+Recoil | `BraveBirdLunge` 白拖尾梭形冲+交叉 Raven（降倍率技能2） | 闪焰式加速 | 梭形鸟群 | Accepted |
+| WorkUp/自我激励 | L11_F02 Ult | SelfBuff | `WorkUpBuffProj` 攻击 +20% / 12s | SoftGlow | 纯 buff | Done |
 | ZenHeadbutt/意念头锤 | L12_* / L14 | StrikeFall | ZenHammer←Paladin锤 | PaladinsHammer | 较好 | Accepted |
 | Psychic scatter Ult | L12_F01 Ult | Scatter | Barrage Rainbow | RainbowRod | OK | Accepted |
 | FocusPunch/真气拳 | L12_F02 S2 | Melee | FocusPunch 白气上扬无石爆 | BoxingGlove+Fog | 白气拳 | Accepted |
 | FutureSight/预知未来 | L12_F02 Ult | MarkBolt | FutureSightNightglow 1s显形后追爆 | FairyQueenMagicItemShot | 夜光标记 | Accepted |
 | RockTomb | L13_F01,5 | RockTomb | Boulder | cookbook | OK | Accepted |
+| GyroBall/陀螺球 | L13_F01 S2 | Smash | `GyroBallSmashProj` 旋转钢环砸出（**无**撞击 CD/释放者无敌） | SoftGlow 钢环 | 钢环砸 | Done |
 | RockSlide | L13_F01 Ult / L13_F02 S1 | RockSlide* | 大招**12**石±12格微偏+落地1格爆**无金光**；技能3石同偏 | Boulder+RockShatter | 宽密落地爆 | Accepted |
 | IronTail/钢尾 | L13_F02,9 | Whip | DragonTailWhip 底色+叠 `Color(0,0,16,80)` | StardustDragon | 铁灰罩 | Accepted |
-| Aeroblast/空气爆炸 | L16_F01 S1 | AoE | AirBurst 三段脉冲+缩小 DiffusionCircle | ScaleForWorldDiameter | 三段小爆 | Accepted |
+| DoubleEdge/舍身冲撞 | L13_F02 Ult | Lunge+Recoil | `DoubleEdgeLunge` 加长猛撞+额外爆炸（被动免 Recoil） | SolarWhip 灰爆 | 钢冲 | Done |
+| Aeroblast/空气爆炸 | L16_F01 S1 | Spread | AirBurst 朝鼠标路径节点爆（≤128格；撞实心贴壁；半径**4格**；吸**16格**） | DiffusionCircle/Fog | 路径爆+吸引 | Accepted |
 | CycloneAttack/气旋攻击 | L16_F01 Ult | Field | HurricaneField 半径**32格**；名键独立于 Aeroblast | ScaleForWorldDiameter | 大风场 | Accepted |
-| SkyAttack/神鸟猛击 | L16_F01 | ChargeLunge | SkyAttackLunge 0.5s无敌吟唱后冲+6鸟 | Raven 交叉 | 蓄力冲 | Accepted |
+| SkyAttack/神鸟猛击 | L16_F01 | Barrage | SkyAttackSextet 6红鸟分波（**无**释放者无敌/撞击 CD） | Raven 红染 | 六鸟 | Accepted |
 | Psystrike/精神击破 | L14 Ult | MarkOrb | MewtwoPsystrike 指针16格选敌→8格渐显64暗影球齐冲 | DrawOpaqueDisk | 环伺齐射 | Accepted |
 | Psychic/精神强念 | L14_F01 | Bolt | AlakazamPsychic×6 穿墙 | RainbowRod | 六连追 | Accepted |
 | DragonRage | L15_F01,6 | Barrage | `DragonRageBarrage` mode=skill 12发 | SoftGlow 抖动球+5格爆 | 可见 | Implemented |
 | Tackle | L15_F01,6 | Lunge | Lunge Dirt SoftGlow | — | OK | Accepted |
 | SandTomb/流沙地狱 | L15_F01 Ult | DoTBind | 直径**16格** Typhoon壳压蓝 + 高不透明琥珀 Cyclone/Fog | Typhoon+Cyclone 深沙黄 | 琥珀涡 | Accepted |
 | DracoMeteor/流星群 | L15_F02 Ult | Barrage | 64×StarWrath 壳朝下（rot−Pi/2）+金粉爆 | StarWrath | 天降星雨 | Accepted |
-| DragonAscent/画龙点睛 | L17 Ult | Lunge | 长星尘龙路径冲，全骨节纯黑 `0,0,0,255` | StardustDragon | 黑龙径 | Accepted |
+| DragonAscent/画龙点睛 | L17 Ult | Blink+Trail | 闪现立刻青色 SoftGlow 散落光迹；路径 Life≈48 **依次**反色 GraySolarBurst；生成时单次路径伤 | SoftGlow + GraySolarBurst invert | 青光迹+冷日耀 | Done |
 | DragonPulse | L17 / L15_F02 | Nebula | NebulaPulse | cookbook | OK | Accepted |
+| BulletPunch/子弹拳 | L05_F01 S2 | Melee | 短距鞭拳；判定略扩；单段 HitJagged（无新特效堆叠） | HitJagged | 快拳 | Done |
 
-> **注：** **Stage 6 / Wave3 / Stage7+ 均已验收（2026-09-07）**。Stage7+ 含钢尾灰罩、猛撞灰日耀、暗影抓/恶波动、彗星拳 StarWrath、破灭自缓加粗、龙俯冲/画龙点睛纯黑龙、逆鳞火球、流星群64、洛奇亚三招、超梦强念×6+精神击破64球。
+> **注：** **Stage 6 / Wave3 / Stage7+ 均已验收（2026-09-07）**。Stage7+ 当时含钢尾灰罩、猛撞灰日耀、暗影抓/恶波动、彗星拳 StarWrath、破灭自缓加粗、龙俯冲/画龙点睛纯黑龙、逆鳞火球、流星群64、洛奇亚三招、超梦强念×6+精神击破64球。**2026-09-25 改版批：** 画龙现为闪现+青 SoftGlow 光迹+延迟反色日耀（旧纯黑龙已退役）；金属怪臂锤/金属爪 Kenney；洛奇亚路径气爆；神鸟/陀螺去误无敌。
 
 ### Sleep Buff cookbook（Accepted 2026-09-07）
 - `HenshinSleepDebuff` + `HenshinNpcGlobalNPC`：`PreAI=false` 定身、`CanHitPlayer=false`、首伤 `FinalDamage*=2` 后 DelBuff；**不清**已在飞敌弹。催眠施加端跳过 Boss。
@@ -634,6 +640,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.9 Living | 2026-09-12 | Bolt/Barrage 外飞壳寿命约 ×1.5；念力索敌 **48 格**；暴风 `SuckRange` 同步；初速/伤倍不动 |
 | 2.10 Living | 2026-09-13 | 手感批：种爆~10格草绿环；尖牙×4；起风飞出+贴地滚；水炮/加农粗×2+水炮锁长多段；喷射射程×2 |
 | 2.11 Living | 2026-09-14 | 起风确认贴地滚（非爬墙）；种爆去 FlashImpact 金刺，仅绿光/绿尘；本地验收 OK |
+| 2.12 Living | 2026-09-25 | 撞击族/传说改版批回写：画龙青 SoftGlow + 延迟反色日耀 + 单次路径伤；臂锤/金属爪 Kenney；勇鸟→S2+WorkUp Ult；龙俯冲垂砸；陀螺/舍身；去误无敌；旧纯黑龙/TakeDown 槽位退役说明 |
 
 ---
 

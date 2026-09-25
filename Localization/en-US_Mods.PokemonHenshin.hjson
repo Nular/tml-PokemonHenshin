@@ -464,6 +464,10 @@ Accessories: {
 }
 
 Buffs: {
+	HenshinWorkUpBuff: {
+		DisplayName: Work Up
+		Description: Transformed move damage +20%
+	}
 	HenshinSleepDebuff: {
 		DisplayName: Sleep
 		Description: Immobilized; cannot deal contact damage. Next hit taken deals double damage and wakes the target.
@@ -566,6 +570,12 @@ Moves: {
 	DragonTail: Dragon Tail
 	Hurricane: Hurricane
 	DragonDive: Dragon Dive
+	ArmHammer: Arm Hammer
+	AuraSphere: Aura Sphere
+	GyroBall: Gyro Ball
+	StealthRock: Stealth Rock
+	WorkUp: Work Up
+	DoubleEdge: Double-Edge
 	TakeDown: Take Down
 	Flail: Flail
 	Earthquake: Earthquake
@@ -647,7 +657,7 @@ Items: {
 
 	BlastoiseForce: {
 		DisplayName: Blastoise Force
-		Tooltip: Water. Hydro Pump, Skull Bash, Hydro Cannon.
+		Tooltip: Water. Hydro Pump, Aura Sphere, Hydro Cannon.
 	}
 
 	BulbasaurForce: {
@@ -677,7 +687,7 @@ Items: {
 
 	MachopForce: {
 		DisplayName: Machop Force
-		Tooltip: Fighting. Rock Tomb, Tackle, Cross Chop.
+		Tooltip: Fighting. Rock Tomb, Bullet Punch, Cross Chop.
 	}
 
 	MachokeForce: {
@@ -717,7 +727,7 @@ Items: {
 
 	MetangForce: {
 		DisplayName: Metang Force
-		Tooltip: Steel/Psychic. Confusion, Tackle, Take Down.
+		Tooltip: Steel/Psychic. Confusion, Arm Hammer, Metal Claw.
 	}
 
 	MetagrossForce: {
@@ -752,7 +762,7 @@ Items: {
 
 	PidgeotForce: {
 		DisplayName: Pidgeot Force
-		Tooltip: Flying/Normal. Hurricane, Aerial Ace, Brave Bird.
+		Tooltip: Flying/Normal. Hurricane, Brave Bird, Work Up.
 	}
 
 	AbraForce: {
@@ -767,12 +777,12 @@ Items: {
 
 	OnixForce: {
 		DisplayName: Onix Force
-		Tooltip: Rock/Ground. Rock Tomb, Tackle, Rock Slide.
+		Tooltip: Rock/Ground. Rock Tomb, Gyro Ball, Rock Slide.
 	}
 
 	SteelixForce: {
 		DisplayName: Steelix Force
-		Tooltip: Steel/Ground. Rock Slide, Iron Tail, Take Down.
+		Tooltip: Steel/Ground. Rock Slide, Iron Tail, Double-Edge.
 	}
 
 	MewtwoForce: {
@@ -782,7 +792,7 @@ Items: {
 
 	GibleForce: {
 		DisplayName: Gible Force
-		Tooltip: Dragon/Ground. Dragon Rage, Tackle, Sand Tomb.
+		Tooltip: Dragon/Ground. Dragon Rage, Stealth Rock, Sand Tomb.
 	}
 
 	GarchompForce: {

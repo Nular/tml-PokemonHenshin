@@ -129,6 +129,98 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static void DrawHitJaggedFrame(Vector2 pos, Color c, float scale, float rot, int frame, SpriteEffects effects = SpriteEffects.None)
 			=> DrawAdditiveSheet(HitJagged, HitJaggedColumns, HitJaggedRows, frame, pos, c, new Vector2(scale), rot, effects);
 
+		// —— Kenney Particle Pack / Smoke Particles（CC0，Assets/Fx/Kenney）——
+		public const int KenneyExplosionFrames = 9;
+		private static readonly System.Collections.Generic.Dictionary<string, Asset<Texture2D>> KenneyCache = new();
+
+		public static Texture2D KenneyTex(string fileNameNoExt)
+		{
+			if (!KenneyCache.TryGetValue(fileNameNoExt, out Asset<Texture2D> asset) || asset == null)
+			{
+				asset = ModContent.Request<Texture2D>($"PokemonHenshin/Assets/Fx/Kenney/{fileNameNoExt}", AssetRequestMode.ImmediateLoad);
+				KenneyCache[fileNameNoExt] = asset;
+			}
+			return asset.Value;
+		}
+
+		public static Texture2D KenneyScratch => KenneyTex("scratch_01");
+		public static Texture2D KenneyScratchDown => KenneyTex("scratch_down_01");
+		public static Texture2D KenneySlash(int i) => KenneyTex($"slash_0{Math.Clamp(i, 1, 3)}");
+		public static Texture2D KenneyScorch(int i) => KenneyTex($"scorch_0{Math.Clamp(i, 1, 3)}");
+		public static Texture2D KenneyMuzzle(int i) => KenneyTex($"muzzle_0{Math.Clamp(i, 1, 3)}");
+		public static Texture2D KenneySpark(int i) => KenneyTex($"spark_0{Math.Clamp(i, 1, 4)}");
+		public static Texture2D KenneyStar05 => KenneyTex("star_05");
+		public static Texture2D KenneyTwirl => KenneyTex("twirl_01");
+		public static Texture2D KenneyExplosionStrip => KenneyTex("ExplosionStrip");
+		public static Texture2D KenneyFlash00 => KenneyTex("flash00");
+		public static Texture2D KenneyFistDown => KenneyTex("fist_down_01");
+		public static Texture2D KenneyFistSmash => KenneyTex("fist_smash_01");
+		public static Texture2D KenneyFistImpact => KenneyTex("fist_impact_01");
+
+		/// <summary>Kenney 单帧按世界直径绘制（512 素材建议直径 48–120）。</summary>
+		public static void DrawKenneyWorld(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, float rotation = 0f, SpriteEffects effects = SpriteEffects.None)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			float scale = ScaleForWorldDiameter(tex, worldDiameterPx);
+			Vector2 origin = tex.Size() * 0.5f;
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, scale, effects, 0f);
+		}
+
+		/// <summary>非等比缩放（砸地挤压等）。</summary>
+		public static void DrawKenneyWorld(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, Vector2 scaleMul, float rotation = 0f, SpriteEffects effects = SpriteEffects.None)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			float baseScale = ScaleForWorldDiameter(tex, worldDiameterPx);
+			Vector2 origin = tex.Size() * 0.5f;
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, baseScale * scaleMul, effects, 0f);
+		}
+
+		/// <summary>
+		/// 从上到下渐进：出现时裁上半段向下长满；消失时 <paramref name="wipeFromTop"/> 先抹掉上端，同向收掉。
+		/// </summary>
+		public static void DrawKenneyProgressiveDown(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldHeightPx, float reveal01, float rotation = 0f, SpriteEffects effects = SpriteEffects.None, bool wipeFromTop = false)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			reveal01 = MathHelper.Clamp(reveal01, 0.02f, 1f);
+			float scale = worldHeightPx / Math.Max(1f, tex.Height);
+			int fullW = tex.Width;
+			int fullH = tex.Height;
+			int srcH = Math.Max(1, (int)MathF.Ceiling(fullH * reveal01));
+			// 出现：src 从顶向下加长；消失：保留底段（上端先被抹掉），仍是「自上而下」
+			Rectangle src = wipeFromTop
+				? new Rectangle(0, fullH - srcH, fullW, srcH)
+				: new Rectangle(0, 0, fullW, srcH);
+			Vector2 origin = new Vector2(fullW * 0.5f, fullH * 0.5f);
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, src, colorWithAlpha, rotation, origin, scale, effects, 0f);
+		}
+
+		/// <summary>
+		/// 沿贴图横向渐进显现（0→1）。配合 <see cref="SpriteEffects.FlipHorizontally"/> 做镜像爪痕。
+		/// </summary>
+		public static void DrawKenneyProgressive(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, float rotation, float reveal01, SpriteEffects effects = SpriteEffects.None)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			reveal01 = MathHelper.Clamp(reveal01, 0.02f, 1f);
+			float scale = ScaleForWorldDiameter(tex, worldDiameterPx);
+			Vector2 origin = tex.Size() * 0.5f;
+			Vector2 sc = new Vector2(scale * reveal01, scale);
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, sc, effects, 0f);
+		}
+
+		public static void DrawKenneyExplosionFrame(Vector2 pos, Color c, float worldDiameterPx, int frame)
+		{
+			Texture2D tex = KenneyExplosionStrip;
+			if (tex == null || c.A == 0)
+				return;
+			float frameW = tex.Width / (float)KenneyExplosionFrames;
+			float scale = worldDiameterPx / Math.Max(1f, frameW);
+			DrawAdditiveSheet(tex, KenneyExplosionFrames, 1, frame, pos, c, new Vector2(scale), 0f);
+		}
+
 		/// <summary>
 		/// 不透明实心圆 + 描边（须在 AlphaBlend 批次下调用；深紫禁止 Additive）。
 		/// 用 DiffusionCircle 按世界直径缩放，fill/border 的 A 应接近 255。
