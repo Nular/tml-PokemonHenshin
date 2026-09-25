@@ -115,28 +115,48 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			int age = Life - Projectile.timeLeft;
 			Color steel = HenshinFxDraw.WithAlpha(new Color(210, 220, 235), 0.95f);
-			// Kenney fightFist：素材偏右下，补 -Pi/4 使指节朝下
-			const float FistDownRot = -MathHelper.PiOver4;
+			// 原 -Pi/4 指下，再 +Pi 转 180°
+			const float FistDownRot = -MathHelper.PiOver4 + MathHelper.Pi;
 			float fistDiam = _smashed ? 100f : 88f;
+
+			// 砸地挤压：首几帧横向拉宽、纵向压扁，再回弹（先前漏了）
+			Vector2 fistScale = Vector2.One;
+			Vector2 drawFist = _fist;
+			if (_smashed)
+			{
+				float squashT = MathHelper.Clamp(_smashAge / 10f, 0f, 1f);
+				float peak = 1f - squashT;
+				peak *= peak;
+				fistScale = new Vector2(1f + 0.45f * peak, 1f - 0.42f * peak);
+				drawFist = _impact + new Vector2(0f, fistDiam * 0.12f * peak);
+			}
+
 			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyFistSmash, _fist, steel, fistDiam, FistDownRot);
+			HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyFistSmash, drawFist, steel, fistDiam, fistScale, FistDownRot);
 
 			if (!_smashed && age > RaiseTicks)
 			{
-				// 蓄力残影：头顶淡拳
-				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyFistDown, _fist + new Vector2(0f, -18f),
+				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyFistDown, drawFist + new Vector2(0f, -18f),
 					HenshinFxDraw.WithAlpha(new Color(180, 195, 215), 0.25f), 70f, FistDownRot);
 			}
 
 			if (_smashed)
 			{
 				float fade = MathHelper.Clamp(1f - _smashAge / 16f, 0f, 1f);
+				float crush = MathHelper.Clamp(1f - _smashAge / 8f, 0f, 1f);
+				// 地面挤压圈：扁椭圆扩散
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, _impact + new Vector2(0f, 6f),
+					HenshinFxDraw.WithAlpha(new Color(200, 210, 225), 0.55f * crush),
+					new Vector2(1.8f + (1f - crush) * 1.2f, 0.28f + (1f - crush) * 0.15f), 0f);
 				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyFistImpact, _impact,
-					HenshinFxDraw.WithAlpha(new Color(230, 235, 245), 0.75f * fade), 120f + _smashAge * 3f, 0f);
+					HenshinFxDraw.WithAlpha(new Color(230, 235, 245), 0.7f * fade),
+					120f + _smashAge * 2f,
+					new Vector2(1.25f + (1f - crush) * 0.35f, 0.55f + crush * 0.2f), 0f);
 				if (_smashAge < 10)
 				{
 					HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyScorch(1 + _smashAge / 4), _impact,
-						HenshinFxDraw.WithAlpha(new Color(170, 185, 205), 0.45f * fade), 130f, 0f);
+						HenshinFxDraw.WithAlpha(new Color(170, 185, 205), 0.4f * fade),
+						140f, new Vector2(1.35f, 0.55f), 0f);
 				}
 			}
 			HenshinFxDraw.EndAdditive();

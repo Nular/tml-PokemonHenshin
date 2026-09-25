@@ -166,6 +166,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, scale, effects, 0f);
 		}
 
+		/// <summary>非等比缩放（砸地挤压等）。</summary>
+		public static void DrawKenneyWorld(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, Vector2 scaleMul, float rotation = 0f, SpriteEffects effects = SpriteEffects.None)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			float baseScale = ScaleForWorldDiameter(tex, worldDiameterPx);
+			Vector2 origin = tex.Size() * 0.5f;
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, baseScale * scaleMul, effects, 0f);
+		}
+
 		/// <summary>
 		/// 沿贴图横向渐进显现（0→1）。配合 <see cref="SpriteEffects.FlipHorizontally"/> 做镜像爪痕。
 		/// </summary>
