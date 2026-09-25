@@ -292,6 +292,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (reveal <= 0.02f)
 				return false;
 
+			bool fading = age > RevealTicks + HoldTicks;
 			float height = RangeTiles * 16f;
 			float sep = 38f;
 			Color steel = HenshinFxDraw.WithAlpha(new Color(200, 220, 240), 0.92f);
@@ -299,10 +300,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D scratch = HenshinFxDraw.KenneyScratchDown;
 			HenshinFxDraw.BeginAdditive();
 			// 右侧：顺时针 30°；左侧：逆时针 30° + 水平镜像
+			// 消失时 wipeFromTop：自上而下抹掉（不再自下而上收回）
 			HenshinFxDraw.DrawKenneyProgressiveDown(scratch, _fixed + new Vector2(sep, 0f),
-				steel, height, reveal, Tilt, SpriteEffects.None);
+				steel, height, reveal, Tilt, SpriteEffects.None, wipeFromTop: fading);
 			HenshinFxDraw.DrawKenneyProgressiveDown(scratch, _fixed + new Vector2(-sep, 0f),
-				steel, height, reveal, -Tilt, SpriteEffects.FlipHorizontally);
+				steel, height, reveal, -Tilt, SpriteEffects.FlipHorizontally, wipeFromTop: fading);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
