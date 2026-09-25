@@ -732,6 +732,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 	{
 		private const int Life = 48;
 		private const int BurstCount = 10;
+		private const float StreakThick = 16f / 5f; // ~1/5 格
+		private static readonly Color PathCyan = new(1, 253, 255);
 		private Vector2 _from, _to;
 		private bool _init;
 		private int _burstsSpawned;
@@ -762,13 +764,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Center = Vector2.Lerp(_from, _to, 0.5f);
 			}
 			float life = Projectile.timeLeft / (float)Life;
-			for (float u = 0f; u <= 1f; u += 0.05f)
+			for (float u = 0f; u <= 1f; u += 0.08f)
 			{
-				if (!Main.rand.NextBool(4)) continue;
-				Dust.NewDustPerfect(Vector2.Lerp(_from, _to, u), DustID.Shadowflame, Main.rand.NextVector2Circular(1.5f, 1.5f), 100, Color.Black, 1.3f * life).noGravity = true;
+				if (!Main.rand.NextBool(5)) continue;
+				Dust.NewDustPerfect(Vector2.Lerp(_from, _to, u), DustID.DungeonWater,
+					Main.rand.NextVector2Circular(1.2f, 1.2f), 100, PathCyan, 1.1f * life).noGravity = true;
 			}
 
-			// 沿伤害路径逐步铺开狂星式闪光爆炸（SolarWhip 灰日耀爆 + 金粉尘）
 			int age = Life - Projectile.timeLeft;
 			int nextBurst = _burstsSpawned;
 			if (Projectile.owner == Main.myPlayer && nextBurst < BurstCount && age >= nextBurst * (Life / BurstCount))
@@ -791,15 +793,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 					ModContent.ProjectileType<GraySolarBurstVfxProj>(), 0, 0f, Projectile.owner);
 				if (id >= 0) Main.projectile[id].Center = at + off;
 			}
-			for (int i = 0; i < 12; i++)
-			{
-				Color c = Main.rand.NextBool() ? new Color(255, 200, 80) : new Color(180, 120, 255);
-				Dust.NewDustPerfect(at, DustID.Enchanted_Gold, Main.rand.NextVector2Circular(5f, 5f),
-					50, c, 1.45f).noGravity = true;
-			}
-			for (int i = 0; i < 6; i++)
-				Dust.NewDustPerfect(at, DustID.Shadowflame, Main.rand.NextVector2Circular(4f, 4f),
-					80, new Color(40, 20, 60), 1.3f).noGravity = true;
+			for (int i = 0; i < 10; i++)
+				Dust.NewDustPerfect(at, DustID.DungeonWater, Main.rand.NextVector2Circular(4.5f, 4.5f),
+					60, PathCyan, 1.35f).noGravity = true;
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -809,29 +805,63 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), _from, _to, 72f, ref _);
 		}
 
+		/// <summary>确定性散列，保证联机各端光线铺排一致。</summary>
+		private float StreakHash(int i, int salt)
+		{
+			unchecked
+			{
+				int n = i * 374761393 + salt * 668265263 + Projectile.whoAmI * 1274126177;
+				n = (n ^ (n >> 13)) * 1274126177;
+				return (n & 0xFFFF) / 65535f;
+			}
+		}
+
 		public override bool PreDraw(ref Color lightColor)
 		{
 			if (!_init) return false;
 			float life = Projectile.timeLeft / (float)Life;
 			Vector2 delta = _to - _from;
+			float pathLen = delta.Length();
+			if (pathLen < 4f) return false;
+			Vector2 dir = delta / pathLen;
+			Vector2 perp = new Vector2(-dir.Y, dir.X);
+
 			HenshinFxDraw.BeginAdditive();
+			// 极淡暗底，不抢青色光迹
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Vector2.Lerp(_from, _to, 0.5f),
-				HenshinFxDraw.WithAlpha(new Color(0, 0, 0), 0.95f * life),
-				new Vector2(Math.Max(1f, delta.Length() / 32f), 2.4f), delta.ToRotation());
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Vector2.Lerp(_from, _to, 0.5f),
-				HenshinFxDraw.WithAlpha(new Color(40, 20, 60), 0.55f * life),
-				new Vector2(Math.Max(1f, delta.Length() / 36f), 1.4f), delta.ToRotation());
-			// 路径闪光点：Kenney star（替代 FlashImpact）
-			int ageDraw = Life - Projectile.timeLeft;
-			int visible = Math.Min(BurstCount, ageDraw / Math.Max(1, Life / BurstCount) + 1);
-			for (int i = 0; i < visible; i++)
+				HenshinFxDraw.WithAlpha(new Color(0, 20, 30), 0.35f * life),
+				new Vector2(Math.Max(1f, pathLen / 40f), 1.1f), delta.ToRotation());
+
+			// 散落光线：沿路径方向、长短不一、约 1/5 格粗，色 (1,253,255)
+			int count = Math.Clamp((int)(pathLen / 20f), 28, 72);
+			for (int i = 0; i < count; i++)
 			{
-				float u = (i + 0.5f) / BurstCount;
-				Vector2 at = Vector2.Lerp(_from, _to, u);
-				float pulse = 0.55f + 0.45f * MathF.Sin(Main.GlobalTimeWrappedHourly * 18f + i);
-				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyStar05, at,
-					HenshinFxDraw.WithAlpha(new Color(255, 210, 120), 0.6f * life * pulse),
-					56f + pulse * 16f, delta.ToRotation() + i * 0.4f);
+				float u = StreakHash(i, 1);
+				float side = StreakHash(i, 2) * 2f - 1f;
+				float scatter = side * (8f + StreakHash(i, 3) * 36f); // 散落带宽
+				float len = MathHelper.Lerp(8f, 52f, StreakHash(i, 4)); // ~0.5–3.2 格
+				float pulse = 0.65f + 0.35f * MathF.Sin(Main.GlobalTimeWrappedHourly * 16f + i * 0.7f);
+				float bright = 0.45f + 0.5f * StreakHash(i, 5);
+
+				Vector2 mid = Vector2.Lerp(_from, _to, u) + perp * scatter;
+				Vector2 a = mid - dir * (len * 0.5f);
+				Vector2 b = mid + dir * (len * 0.5f);
+				Color c = HenshinFxDraw.WithAlpha(PathCyan, bright * life * pulse);
+				HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.SoftGlow, a, b, c, StreakThick);
+			}
+
+			// 少量更亮的短芯线，增强「光」感
+			int cores = Math.Max(8, count / 5);
+			for (int i = 0; i < cores; i++)
+			{
+				float u = StreakHash(i + 200, 1);
+				float side = StreakHash(i + 200, 2) * 2f - 1f;
+				float scatter = side * (4f + StreakHash(i + 200, 3) * 18f);
+				float len = MathHelper.Lerp(6f, 28f, StreakHash(i + 200, 4));
+				Vector2 mid = Vector2.Lerp(_from, _to, u) + perp * scatter;
+				Color c = HenshinFxDraw.WithAlpha(PathCyan, 0.9f * life);
+				HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.SoftGlow,
+					mid - dir * (len * 0.5f), mid + dir * (len * 0.5f), c, StreakThick * 0.65f);
 			}
 			HenshinFxDraw.EndAdditive();
 			return false;
