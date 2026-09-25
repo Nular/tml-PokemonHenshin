@@ -298,16 +298,17 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | RockTomb | L13_F01,5 | RockTomb | Boulder | cookbook | OK | Accepted |
 | RockSlide | L13_F01 Ult / L13_F02 S1 | RockSlide* | 大招**12**石±12格微偏+落地1格爆**无金光**；技能3石同偏 | Boulder+RockShatter | 宽密落地爆 | Accepted |
 | IronTail/钢尾 | L13_F02,9 | Whip | DragonTailWhip 底色+叠 `Color(0,0,16,80)` | StardustDragon | 铁灰罩 | Accepted |
-| Aeroblast/空气爆炸 | L16_F01 S1 | AoE | AirBurst 三段脉冲+缩小 DiffusionCircle | ScaleForWorldDiameter | 三段小爆 | Accepted |
+| Aeroblast/空气爆炸 | L16_F01 S1 | Spread | AirBurst 朝鼠标路径节点爆（≤128格；撞实心贴壁；半径**4格**；吸**16格**） | DiffusionCircle/Fog | 路径爆+吸引 | Accepted |
 | CycloneAttack/气旋攻击 | L16_F01 Ult | Field | HurricaneField 半径**32格**；名键独立于 Aeroblast | ScaleForWorldDiameter | 大风场 | Accepted |
-| SkyAttack/神鸟猛击 | L16_F01 | ChargeLunge | SkyAttackLunge 0.5s无敌吟唱后冲+6鸟 | Raven 交叉 | 蓄力冲 | Accepted |
+| SkyAttack/神鸟猛击 | L16_F01 | Barrage | SkyAttackSextet 6红鸟分波（**无**释放者无敌/撞击 CD） | Raven 红染 | 六鸟 | Accepted |
 | Psystrike/精神击破 | L14 Ult | MarkOrb | MewtwoPsystrike 指针16格选敌→8格渐显64暗影球齐冲 | DrawOpaqueDisk | 环伺齐射 | Accepted |
 | Psychic/精神强念 | L14_F01 | Bolt | AlakazamPsychic×6 穿墙 | RainbowRod | 六连追 | Accepted |
 | DragonRage | L15_F01,6 | Barrage | `DragonRageBarrage` mode=skill 12发 | SoftGlow 抖动球+5格爆 | 可见 | Implemented |
 | Tackle | L15_F01,6 | Lunge | Lunge Dirt SoftGlow | — | OK | Accepted |
 | SandTomb/流沙地狱 | L15_F01 Ult | DoTBind | 直径**16格** Typhoon壳压蓝 + 高不透明琥珀 Cyclone/Fog | Typhoon+Cyclone 深沙黄 | 琥珀涡 | Accepted |
 | DracoMeteor/流星群 | L15_F02 Ult | Barrage | 64×StarWrath 壳朝下（rot−Pi/2）+金粉爆 | StarWrath | 天降星雨 | Accepted |
-| DragonAscent/画龙点睛 | L17 Ult | Lunge | 长星尘龙路径冲，全骨节纯黑 `0,0,0,255` | StardustDragon | 黑龙径 | Accepted |
+| DragonAscent/画龙点睛 | L17 Ult | Blink+Trail | 闪现后黑龙路径伤+路径灰日耀/FlashImpact 闪光爆 | SolarWhipExplosion+Flash | 黑龙+星怒闪光 | Accepted |
+| Crunch/咬碎 | L17 | MeleeArc | BiteArcAtMouse 鼠标处远距咬合 | BiteArc cookbook | 远距尖牙 | Accepted |
 | DragonPulse | L17 / L15_F02 | Nebula | NebulaPulse | cookbook | OK | Accepted |
 
 > **注：** **Stage 6 / Wave3 / Stage7+ 均已验收（2026-09-07）**。Stage7+ 含钢尾灰罩、猛撞灰日耀、暗影抓/恶波动、彗星拳 StarWrath、破灭自缓加粗、龙俯冲/画龙点睛纯黑龙、逆鳞火球、流星群64、洛奇亚三招、超梦强念×6+精神击破64球。

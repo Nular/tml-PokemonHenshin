@@ -1051,9 +1051,8 @@ namespace PokemonHenshin.Content.Items.Forms
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<AirBurstProj>(),
 				DamageMultiplier = mult,
-				UseTime = 22,
+				UseTime = 28,
 				ShootSpeed = 0f,
-				SpawnAtMouse = true,
 				EasyCrit = true,
 				BalanceTag = BalanceTag.WideAoE
 			};
@@ -1342,8 +1341,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				DamageMultiplier = mult,
 				UseTime = use,
 				ShootSpeed = 0f,
-				Knockback = 4.5f,
-				RequiresLungeCooldown = true
+				Knockback = 4.5f
 			};
 
 		public static MoveSpec StealthRock(string nameKey, float mult = 0.85f, int use = 36)
@@ -1461,7 +1459,6 @@ namespace PokemonHenshin.Content.Items.Forms
 				UseTime = 40,
 				ShootSpeed = 0f,
 				Knockback = 3f,
-				RequiresLungeCooldown = true,
 				BalanceTag = BalanceTag.MultiHit
 			};
 

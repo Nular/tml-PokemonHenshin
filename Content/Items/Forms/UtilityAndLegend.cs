@@ -138,7 +138,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L17_F01", 36, "Mods.PokemonHenshin.Items.RayquazaForce.DisplayName", PokemonType.Dragon, 12, null, FormPassiveKind.AirLock, secondary: PokemonType.Flying, role: FormRole.Legendary, dmgFactor: 1.2f);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.DragonPulse("Mods.PokemonHenshin.Moves.DragonPulse", 1.9f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Crunch", 1.8f, brokenArmorTicks: 200, size: 1.6f);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArcAtMouse("Mods.PokemonHenshin.Moves.Crunch", 1.8f, brokenArmorTicks: 200, size: 1.6f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.DragonAscentBlinkUlt("Mods.PokemonHenshin.Moves.DragonAscent", 5.0f);
 	}
 }

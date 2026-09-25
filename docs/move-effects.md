@@ -156,7 +156,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 臂锤 MeleeArc（小臂弧砸） | 金属爪 指针两侧深抓痕 | 耗 100 | `ArmHammerSmash`；`MetalClawDirector` | Low | Done |
+| L08_F01 | 金属怪 | **恒净之躯**：免疫本模关注的 debuff（着火/毒/感电/缓速等可列白名单） | 念力 Bolt+Stun | 臂锤 MeleeArc（小臂弧砸+冲击） | 金属爪 指针两侧铁色深抓痕 | 耗 100 | `ArmHammerSmash` FlashImpact/灰日耀；`MetalClaw` LightShot+HitJagged | Low | Done |
 | L08_F02 | 巨金怪 | **恒净之躯**：同上 | 精神强念 胡地式鼠位×3 | 彗星拳 真气拳式+3×StarWrath | 破坏光线 Beam 自缓加粗；释放后 **休整 ~2s** | 耗 100；休整 | `AlakazamPsychic`；`CometPunch`+StarWrath；`SustainedBeam` 粗 | Medium | Accepted |
 
 ### 4.7 龙/地链 L15
@@ -184,7 +184,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +25% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 子弹拳 短距快速鞭拳 | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | `BulletPunch`；十字劈同前 | Medium | Done |
+| L05_F01 | 腕力 | **毅力**：自身存在异常 debuff 时全招式伤害 +25% | 岩石封锁 Cross×4 收拢碎裂（Boulder 棕染 50%） | 子弹拳 短距快速鞭拳（线判~9格） | 十字劈 X 形剑气 + 前飞 64 格穿透 | 耗 100 | `BulletPunch` 线判+多段 HitJagged；十字劈同前 | Medium | Done |
 | L05_F02 | 豪力 | **毅力**：同上 +25% | 岩崩 AoEBurst+Stun（概率） | 劈瓦 MeleeArc（对高防目标额外 +25% 伤；破「减伤 buff」语义） | 爆裂拳 MeleeArc+Stun（必短硬直） | 耗 100 | 岩崩3石微偏（`|vx|≤8`）+落地**1格**爆；劈瓦 **20 格**线斩；爆拳巨大拳套前挥+半径**20格**石爆 | Medium | Done |
 | L05_F03 | 怪力 | **毅力**：同上 +25% | 尖石攻击 三角三刺穿透+命中爆 | 十字劈 360°弧形X | 近身战 高频+全程无敌+跟随；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | 三角 Boulder；贝塞尔弧 X；HitJagged 纠向 | Medium | Accepted |
 
@@ -206,16 +206,16 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 陀螺球 旋转钢环砸出（不变身） | 岩崩 AoEBurst+Stun | 耗 100 | 大招岩崩 **12** 石、±12格、微偏（`|vx|≤8`）+落地1格爆 | Low | Done |
+| L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 陀螺球 旋转钢环砸出（不变身；**无**撞击 CD/无敌） | 岩崩 AoEBurst+Stun | 耗 100 | 大招岩崩 **12** 石、±12格、微偏（`|vx|≤8`）+落地1格爆 | Low | Done |
 | L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 钢尾 龙尾式+铁色遮罩 | 舍身冲撞 加长猛撞+额外爆炸（被动免 Recoil） | 耗 100；Recoil 被被动抵消 | `IronTailWhip`；`DoubleEdgeLunge` 约44格 | Medium | Done |
 
 ### 4.14 传说 L16 / L14 / L17
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸 三段脉冲+小光罩 | 神鸟猛击 6只无敌红鸟分波勇鸟特效 | 气旋攻击 半径32格 Field | 耗 100 | `SkyAttackSextetDirector`+红鸟；气旋同前 | High | Done |
+| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸 朝鼠标路径爆（≤128格，撞墙贴壁停；半径4格；吸16格） | 神鸟猛击 6只红鸟分波（**无**释放者无敌） | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst` 路径节点；`SkyAttackSextetDirector`+红鸟；气旋同前 | High | Done |
 | L14_F01 | 超梦 | **压迫感**：+50% | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun（技能槽 ×**2.0**） | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗满 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
-| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 BiteArc+DefDown（**VisualScale×4**） | 画龙点睛 伏特攻击式闪现+0.5s后超粗黑龙路径；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `DragonAscentBlink`+`DragonAscentTrail` | High | Done |
+| L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 鼠标处远距咬合+DefDown | 画龙点睛 伏特攻击式闪现+0.5s后超粗黑龙路径+路径闪光爆；释放后 **防御 −20% 持续 5s** | 耗 100；防降后摇 | `BiteArcAtMouse`；`DragonAscentBlink`+`DragonAscentTrail`（灰日耀/FlashImpact） | High | Done |
 
 ### 4.15 地鼠链 L10（Excel 外补全）
 
@@ -272,5 +272,5 @@
 | 1.28 | 2026-09-13 | 电气球电击弹速改为 +100%/+200%、加宽；攻速 +20%/+40%；电光一闪冷却 -20%/-40%（本地验收 OK） |
 | 1.29 | 2026-09-13 | 手感批：种子炸弹直径~10格+草绿爆；尖牙 VisualScale×4；起风朝鼠标飞出后贴地滚；水炮/加农粗×2、水炮锁长持续多段；喷射火焰射程×2 |
 | 1.30 | 2026-09-14 | 种爆去 FlashImpact 金刺（仅绿）；起风确认贴地滚；本批本地验收 OK |
-
 | 1.25 | 2026-09-15 | 撞击族改版：臂锤/金属爪/波导弹/舍身冲撞/陀螺球/隐形岩/子弹拳；大比鸟勇鸟降技能2+自我激励；快龙垂砸；烈空坐伏特式画龙；洛奇亚六红鸟；烈咬远距咬 |
+| 1.31 | 2026-09-25 | 改版抛光：烈空咬碎跟鼠标；画龙路径灰日耀/Flash 闪光爆；空气爆炸改路径≤128/半径4/吸16；神鸟/陀螺球去误用无敌与撞击 CD；子弹拳扩线判；臂锤/金属爪接 FlashImpact·LightShot |

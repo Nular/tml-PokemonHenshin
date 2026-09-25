@@ -3251,60 +3251,145 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>空气爆炸 EasyCrit：三段脉冲 + 缩小 DiffusionCircle/Fog。</summary>
+	/// <summary>
+	/// 空气爆炸：自释放者朝鼠标方向逐渐铺开爆炸节点路径（≤128 格），
+	/// 撞实心则紧贴再爆一发后停；每节点半径 4 格，并吸引 16 格内敌人。
+	/// </summary>
 	public class AirBurstProj : HenshinMoveProj
 	{
-		private const int Lifetime = 36;
-		private const int PulseInterval = 12;
-		private int _pulses;
+		private const float MaxTiles = 128f;
+		private const float StepTiles = 4f;
+		private const float RadiusTiles = 4f;
+		private const float PullTiles = 16f;
+		private const int SpawnInterval = 3;
+		private const int PulseLife = 14;
+
+		private Vector2 _origin;
+		private Vector2 _dir;
+		private float _pathLen;
+		private int _spawned;
+		private int _maxNodes;
+		private readonly Vector2[] _nodes = new Vector2[40];
+		private readonly int[] _nodeAge = new int[40];
+		private int _activeNode = -1;
+		private int _activeTicks;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 56;
-			Projectile.height = 56;
+			Projectile.width = 8;
+			Projectile.height = 8;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = Lifetime;
+			Projectile.timeLeft = 120;
 			Projectile.tileCollide = false;
 			Projectile.penetrate = -1;
 			Projectile.usesLocalNPCImmunity = true;
-			Projectile.localNPCHitCooldown = PulseInterval - 2;
+			Projectile.localNPCHitCooldown = 8;
 		}
+
+		public override bool ShouldUpdatePosition() => false;
 
 		public override void AI()
 		{
-			int age = Lifetime - Projectile.timeLeft;
-			if (age % PulseInterval == 0 && _pulses < 3)
+			Player p = Main.player[Projectile.owner];
+			if (!p.active) { Projectile.Kill(); return; }
+
+			if (Projectile.localAI[0] == 0f)
 			{
-				_pulses++;
-				SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.7f }, Projectile.Center);
-				for (int i = 0; i < 6; i++)
-					Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(22f, 22f), DustID.Cloud,
-						Main.rand.NextVector2Circular(3f, 3f), 80, default, 1.25f).noGravity = true;
+				Projectile.localAI[0] = 1f;
+				_origin = p.MountedCenter;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - _origin;
+				if (_dir.LengthSquared() < 1f)
+					_dir = new Vector2(p.direction, 0f);
+				_dir.Normalize();
+				float maxPx = MaxTiles * 16f;
+				float blocked = HenshinTileRay.FirstSolidDistance(_origin, _dir, maxPx);
+				// 撞墙：路径含紧贴物块处的最后一爆
+				_pathLen = Math.Min(maxPx, blocked);
+				_maxNodes = Math.Max(1, (int)MathF.Ceiling(_pathLen / (StepTiles * 16f)));
+				_maxNodes = Math.Min(_maxNodes, _nodes.Length);
+				Projectile.Center = _origin;
+				SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.55f, Pitch = 0.15f }, _origin);
+			}
+
+			int age = 120 - Projectile.timeLeft;
+			if (_spawned < _maxNodes && age % SpawnInterval == 0)
+			{
+				float u = (_spawned + 1f) / _maxNodes;
+				Vector2 at = _origin + _dir * (_pathLen * u);
+				_nodes[_spawned] = at;
+				_nodeAge[_spawned] = 0;
+				_activeNode = _spawned;
+				_activeTicks = PulseLife;
+				_spawned++;
+				Projectile.Center = at;
+				SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.45f, Pitch = 0.05f }, at);
+				for (int i = 0; i < 10; i++)
+					Dust.NewDustPerfect(at + Main.rand.NextVector2Circular(28f, 28f), DustID.Cloud,
+						Main.rand.NextVector2Circular(4f, 4f), 70, default, 1.35f).noGravity = true;
+				PullEnemies(at);
+			}
+
+			for (int i = 0; i < _spawned; i++)
+				_nodeAge[i]++;
+			if (_activeTicks > 0)
+				_activeTicks--;
+
+			if (_spawned >= _maxNodes && _activeTicks <= 0 && age > _maxNodes * SpawnInterval + PulseLife)
+				Projectile.Kill();
+		}
+
+		private void PullEnemies(Vector2 center)
+		{
+			float pullR = PullTiles * 16f;
+			float pullR2 = pullR * pullR;
+			for (int i = 0; i < Main.maxNPCs; i++)
+			{
+				NPC n = Main.npc[i];
+				if (!n.active || n.friendly || n.life <= 0 || n.dontTakeDamage || !n.CanBeChasedBy())
+					continue;
+				float d2 = Vector2.DistanceSquared(n.Center, center);
+				if (d2 > pullR2 || d2 < 4f)
+					continue;
+				Vector2 pull = center - n.Center;
+				pull.Normalize();
+				float falloff = 1f - MathF.Sqrt(d2) / pullR;
+				n.velocity = Vector2.Lerp(n.velocity, pull * (10f * falloff), 0.45f);
 			}
 		}
 
 		public override bool? CanDamage()
+			=> _activeNode >= 0 && _activeTicks > PulseLife - 5 ? null : false;
+
+		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
-			int age = Lifetime - Projectile.timeLeft;
-			int phase = age % PulseInterval;
-			// 每段前几 tick 可伤
-			return phase <= 4 && _pulses > 0 ? null : false;
+			if (_activeNode < 0 || _activeTicks <= 0)
+				return false;
+			float r = RadiusTiles * 16f;
+			Vector2 c = _nodes[_activeNode];
+			Vector2 closest = Vector2.Clamp(c, targetHitbox.TopLeft(), targetHitbox.BottomRight());
+			return Vector2.DistanceSquared(closest, c) <= r * r;
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			int age = Lifetime - Projectile.timeLeft;
-			int phase = age % PulseInterval;
-			float pulse = 1f - phase / (float)PulseInterval;
 			HenshinFxDraw.BeginAdditive();
-			float diam = 36f + (1f - pulse) * 20f;
-			float scale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(200, 230, 255), 0.55f * pulse), scale);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(180, 210, 255), 0.35f * pulse), scale * 0.85f);
+			for (int i = 0; i < _spawned; i++)
+			{
+				float life = 1f - MathHelper.Clamp(_nodeAge[i] / (float)PulseLife, 0f, 1f);
+				if (life <= 0.02f)
+					continue;
+				float diam = RadiusTiles * 16f * 2f * (0.85f + (1f - life) * 0.35f);
+				float scale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, _nodes[i],
+					HenshinFxDraw.WithAlpha(new Color(200, 230, 255), 0.55f * life), scale);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, _nodes[i],
+					HenshinFxDraw.WithAlpha(new Color(180, 210, 255), 0.35f * life), scale * 0.85f);
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, _nodes[i],
+					HenshinFxDraw.WithAlpha(new Color(220, 240, 255), 0.4f * life), scale * 0.35f);
+			}
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
