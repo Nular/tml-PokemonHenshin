@@ -14,7 +14,7 @@ using Terraria.ModLoader;
 
 namespace PokemonHenshin.Content.Combat.Moves
 {
-	/// <summary>臂锤：身前小臂弧线砸下；FlashImpact + SoftGlow 冲击，覆盖判定盒。</summary>
+	/// <summary>臂锤：身前小臂弧砸；Kenney 烟雾爆 + scorch/muzzle（非 FlashImpact 堆叠）。</summary>
 	public class ArmHammerSmashProj : HenshinMoveProj
 	{
 		private const int Life = 28;
@@ -22,13 +22,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private Vector2 _anchor;
 		private Vector2 _dir;
 		private bool _smashed;
+		private int _smashAge;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 120;
-			Projectile.height = 120;
+			Projectile.width = 104;
+			Projectile.height = 104;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = Life;
@@ -67,20 +68,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (!_smashed && t >= 0.55f)
 			{
 				_smashed = true;
-				SoundEngine.PlaySound(SoundID.Item14 with { Pitch = -0.15f, Volume = 0.65f }, Projectile.Center);
-				for (int i = 0; i < 22; i++)
-					Dust.NewDustPerfect(Projectile.Center, DustID.Iron, Main.rand.NextVector2Circular(7f, 5f), 70, new Color(200, 210, 220), 1.45f).noGravity = true;
-				if (Projectile.owner == Main.myPlayer)
-				{
-					for (int i = 0; i < 3; i++)
-					{
-						Vector2 off = Main.rand.NextVector2Circular(18f, 18f);
-						int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center + off, Vector2.Zero,
-							ModContent.ProjectileType<GraySolarBurstVfxProj>(), 0, 0f, Projectile.owner);
-						if (id >= 0) Main.projectile[id].Center = Projectile.Center + off;
-					}
-				}
+				_smashAge = 0;
+				SoundEngine.PlaySound(SoundID.Item14 with { Pitch = -0.2f, Volume = 0.7f }, Projectile.Center);
+				for (int i = 0; i < 14; i++)
+					Dust.NewDustPerfect(Projectile.Center, DustID.Iron, Main.rand.NextVector2Circular(6f, 4f), 80, new Color(190, 200, 210), 1.3f).noGravity = true;
 			}
+			if (_smashed)
+				_smashAge++;
 		}
 
 		public override bool? CanDamage() => _smashed ? null : false;
@@ -89,43 +83,55 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			if (!_smashed) return false;
 			float _ = 0f;
-			Vector2 from = _anchor - _dir * 20f;
+			Vector2 from = _anchor - _dir * 16f;
 			Vector2 to = _anchor + _dir * Reach;
-			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), from, to, 72f, ref _);
+			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), from, to, 64f, ref _);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float life = MathHelper.Clamp(1f - Projectile.timeLeft / (float)Life, 0.2f, 1f);
-			int jagged = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 3, HenshinFxDraw.HitJaggedFrames);
-			int flash = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 2, HenshinFxDraw.FlashImpactFrames);
-			float rot = Projectile.rotation;
+			float t = 1f - Projectile.timeLeft / (float)Life;
 			HenshinFxDraw.BeginAdditive();
-			// 挥臂轨迹：沿砸向多段 HitJagged
-			for (int i = 0; i < 4; i++)
+
+			if (!_smashed)
 			{
-				float u = (i + 1) / 4.5f;
-				Vector2 pos = _anchor + _dir * (Reach * u * 0.55f) + new Vector2(0f, MathHelper.Lerp(-40f, 20f, life));
-				HenshinFxDraw.DrawHitJaggedFrame(pos,
-					HenshinFxDraw.WithAlpha(new Color(210, 220, 235), 0.55f * life),
-					0.9f + u * 0.35f, rot + MathHelper.Pi, (jagged + i) % HenshinFxDraw.HitJaggedFrames);
+				// 蓄力：Kenney twirl 随挥臂旋转，单层
+				float wind = MathHelper.Clamp(t / 0.55f, 0f, 1f);
+				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyTwirl, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(200, 210, 225), 0.35f * wind),
+					72f + wind * 24f, Projectile.rotation + Main.GlobalTimeWrappedHourly * 6f);
 			}
-			if (_smashed)
+			else
 			{
-				HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center,
-					HenshinFxDraw.WithAlpha(new Color(230, 235, 245), 0.85f * life), 1.15f, rot, flash);
-				float shock = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, 96f + (1f - life) * 40f);
-				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
-					HenshinFxDraw.WithAlpha(new Color(180, 200, 220), 0.4f * life), shock);
-				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-					HenshinFxDraw.WithAlpha(new Color(220, 230, 240), 0.55f * life), 1.1f);
+				// 砸地：ExplosionStrip 单序列 + 一层 scorch 底 + 短暂 muzzle（时间线错开，非同帧堆叠）
+				int expFrame = Math.Min(HenshinFxDraw.KenneyExplosionFrames - 1, _smashAge / 2);
+				float fade = MathHelper.Clamp(1f - _smashAge / 18f, 0f, 1f);
+				float diam = 110f + _smashAge * 4f;
+				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyScorch(1 + (_smashAge / 6) % 3), Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(180, 190, 205), 0.55f * fade), diam * 1.15f, _dir.ToRotation());
+				HenshinFxDraw.DrawKenneyExplosionFrame(Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(220, 230, 245), 0.85f * fade), diam, expFrame);
+				if (_smashAge < 8)
+				{
+					float muzzleFade = 1f - _smashAge / 8f;
+					HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyMuzzle(1 + _smashAge / 3), Projectile.Center,
+						HenshinFxDraw.WithAlpha(new Color(230, 235, 245), 0.7f * muzzleFade),
+						88f, _dir.ToRotation() + MathHelper.Pi);
+				}
+				else if (_smashAge < 14)
+				{
+					float sparkFade = 1f - (_smashAge - 8) / 6f;
+					HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneySpark(1 + (_smashAge - 8) / 2), Projectile.Center,
+						HenshinFxDraw.WithAlpha(new Color(210, 220, 240), 0.65f * sparkFade), 96f, _dir.ToRotation());
+				}
 			}
+
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
 	}
 
-	/// <summary>金属爪：鼠标两侧两道铁色深抓痕（LightShot 线 + HitJagged）。</summary>
+	/// <summary>金属爪：鼠标两侧 Kenney scratch/slash 深抓痕。</summary>
 	public class MetalClawDirectorProj : HenshinMoveProj
 	{
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
@@ -151,12 +157,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - Main.player[Projectile.owner].Center;
 			if (aim.LengthSquared() < 1f) aim = new Vector2(Main.player[Projectile.owner].direction, 0f);
 			aim.Normalize();
-			Vector2 side = new(-aim.Y, aim.X);
+			Vector2 side = new Vector2(-aim.Y, aim.X);
 			SoundEngine.PlaySound(SoundID.Item71 with { Pitch = -0.25f, Volume = 0.9f }, at);
 
 			for (int i = -1; i <= 1; i += 2)
 			{
-				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at + side * (i * 26f), aim * 0.01f,
+				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at + side * (i * 28f), aim * 0.01f,
 					ModContent.ProjectileType<MetalClawSlashProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner, i);
 				if (id >= 0)
 				{
@@ -174,8 +180,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 	public class MetalClawSlashProj : HenshinMoveProj
 	{
-		private const int Life = 18;
-		private const float Reach = 18f * 16f;
+		private const int Life = 20;
+		private const float Reach = 16f * 16f;
 		private Vector2 _from, _to, _dir;
 		private float _side;
 
@@ -183,8 +189,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 96;
-			Projectile.height = 72;
+			Projectile.width = 80;
+			Projectile.height = 64;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = Life;
@@ -207,47 +213,42 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_from = Projectile.Center - _dir * 8f;
 				_to = _from + _dir * Reach;
 				Projectile.rotation = _dir.ToRotation();
-				Projectile.Center = Vector2.Lerp(_from, _to, 0.45f);
-				SoundEngine.PlaySound(SoundID.Item71 with { Pitch = 0.1f, Volume = 0.5f }, Projectile.Center);
+				Projectile.Center = Vector2.Lerp(_from, _to, 0.5f);
+				SoundEngine.PlaySound(SoundID.Item71 with { Pitch = 0.05f, Volume = 0.55f }, Projectile.Center);
 			}
 			float t = 1f - Projectile.timeLeft / (float)Life;
-			Vector2 tip = Vector2.Lerp(_from, _to, MathHelper.Clamp(t * 1.35f, 0f, 1f));
-			Dust.NewDustPerfect(tip + Main.rand.NextVector2Circular(10f, 8f), DustID.Iron,
-				_dir * Main.rand.NextFloat(2f, 6f), 60, new Color(170, 190, 210), 1.5f).noGravity = true;
+			Vector2 tip = Vector2.Lerp(_from, _to, MathHelper.Clamp(t * 1.2f, 0f, 1f));
+			if (Main.rand.NextBool(2))
+				Dust.NewDustPerfect(tip + Main.rand.NextVector2Circular(8f, 6f), DustID.Iron,
+					_dir * Main.rand.NextFloat(1.5f, 4f), 70, new Color(170, 190, 210), 1.25f).noGravity = true;
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
+			if (Projectile.localAI[0] == 0f) return false;
 			float _ = 0f;
-			Vector2 perp = new Vector2(-_dir.Y, _dir.X) * (_side * 6f);
+			Vector2 perp = new Vector2(-_dir.Y, _dir.X) * (_side * 8f);
 			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(),
-				_from + perp, _to + perp, 28f, ref _);
+				_from + perp, _to + perp, 32f, ref _);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
 			float life = Projectile.timeLeft / (float)Life;
-			float progress = MathHelper.Clamp(1f - life, 0.15f, 1f);
-			Vector2 tip = Vector2.Lerp(_from, _to, progress);
-			Vector2 perp = new Vector2(-_dir.Y, _dir.X) * (_side * 6f);
-			Color steel = HenshinFxDraw.WithAlpha(new Color(200, 215, 235), 0.9f * life);
-			Color core = HenshinFxDraw.WithAlpha(new Color(240, 245, 255), 0.75f * life);
-			int jagged = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 2, HenshinFxDraw.HitJaggedFrames);
-			int flash = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 2, HenshinFxDraw.FlashImpactFrames);
+			float progress = MathHelper.Clamp(1f - life, 0.2f, 1f);
+			Vector2 mid = Vector2.Lerp(_from, _to, progress * 0.55f);
+			Vector2 perp = new Vector2(-_dir.Y, _dir.X) * (_side * 8f);
+			float rot = _dir.ToRotation();
+			// scratch 主爪：直径跟进度拉开；slash 作同向辅痕（时间错开选帧），钢色染色
+			float diam = 96f + progress * 72f;
+			Color steel = HenshinFxDraw.WithAlpha(new Color(190, 210, 235), 0.9f * life);
+			Color edge = HenshinFxDraw.WithAlpha(new Color(230, 240, 255), 0.55f * life);
+			int slashIdx = 1 + Math.Min(2, (Life - Projectile.timeLeft) / 6);
 			HenshinFxDraw.BeginAdditive();
-			// 深抓痕主线：LightShot 铁色条带（对标暗影爪/十字劈用材，非乱套）
-			HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.LightShot, _from + perp, tip + perp, steel, 22f);
-			HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.LightShot, _from + perp * 0.4f, tip + perp * 0.4f, core, 10f);
-			for (int i = 1; i <= 4; i++)
-			{
-				float u = i / 4.5f;
-				if (u > progress) break;
-				Vector2 pos = Vector2.Lerp(_from, _to, u) + perp;
-				HenshinFxDraw.DrawHitJaggedFrame(pos, steel, 1.1f + u * 0.25f,
-					_dir.ToRotation() + MathHelper.Pi, (jagged + i) % HenshinFxDraw.HitJaggedFrames);
-			}
-			HenshinFxDraw.DrawFlashImpactFrame(tip + perp,
-				HenshinFxDraw.WithAlpha(new Color(220, 230, 245), 0.55f * life), 0.7f, _dir.ToRotation(), flash);
+			HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyScratch, mid + perp,
+				steel, diam, rot + (_side > 0 ? 0.15f : -0.15f));
+			HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneySlash(slashIdx), mid + perp * 0.35f,
+				edge, diam * 0.85f, rot + (_side > 0 ? -0.35f : 0.35f));
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
@@ -413,18 +414,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>子弹拳：短距快速鞭拳；判定覆盖特效前伸。</summary>
+	/// <summary>子弹拳：短距快速鞭拳。</summary>
 	public class BulletPunchProj : HenshinMoveProj
 	{
 		private const int Life = 10;
-		private const float Reach = 9f * 16f;
-		private Vector2 _origin, _dir;
+		private Vector2 _dir;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 96;
-			Projectile.height = 64;
+			// 判定略扩：原 52×36 → 68×48，覆盖单段 HitJagged
+			Projectile.width = 68;
+			Projectile.height = 48;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.timeLeft = Life;
@@ -441,44 +442,25 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_origin = p.MountedCenter;
-				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - _origin;
+				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - p.MountedCenter;
 				if (_dir.LengthSquared() < 1f) _dir = new Vector2(p.direction, 0f);
 				_dir.Normalize();
 				SoundEngine.PlaySound(SoundID.Item1 with { Pitch = 0.35f }, p.Center);
 			}
 			float t = 1f - Projectile.timeLeft / (float)Life;
-			Projectile.Center = _origin + _dir * MathHelper.Lerp(32f, Reach, t);
+			// 前伸略加长：96 → 112
+			Projectile.Center = p.MountedCenter + _dir * MathHelper.Lerp(24f, 112f, t);
 			Projectile.rotation = _dir.ToRotation();
-		}
-
-		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
-		{
-			if (Projectile.localAI[0] == 0f) return false;
-			float _ = 0f;
-			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(),
-				_origin, _origin + _dir * Reach, 48f, ref _);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
 			float life = Projectile.timeLeft / (float)Life;
 			int frame = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 2, HenshinFxDraw.HitJaggedFrames);
-			int flash = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 1, HenshinFxDraw.FlashImpactFrames);
 			HenshinFxDraw.BeginAdditive();
-			for (int i = 1; i <= 4; i++)
-			{
-				float u = i / 4.5f;
-				Vector2 pos = _origin + _dir * (Reach * u);
-				HenshinFxDraw.DrawHitJaggedFrame(pos,
-					HenshinFxDraw.WithAlpha(new Color(255, 230, 200), 0.8f * life),
-					0.85f + u * 0.35f, Projectile.rotation + MathHelper.Pi, (frame + i) % HenshinFxDraw.HitJaggedFrames);
-			}
-			HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 240, 210), 0.55f * life), 0.65f, Projectile.rotation, flash);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 220, 180), 0.4f * life),
-				new Vector2(1.2f, 0.45f), Projectile.rotation);
+			HenshinFxDraw.DrawHitJaggedFrame(Projectile.Center,
+				HenshinFxDraw.WithAlpha(new Color(255, 230, 200), 0.85f * life),
+				0.95f, Projectile.rotation + MathHelper.Pi, frame);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
@@ -778,7 +760,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (!_init) return false;
 			float life = Projectile.timeLeft / (float)Life;
 			Vector2 delta = _to - _from;
-			int flash = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 3, HenshinFxDraw.FlashImpactFrames);
 			HenshinFxDraw.BeginAdditive();
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Vector2.Lerp(_from, _to, 0.5f),
 				HenshinFxDraw.WithAlpha(new Color(0, 0, 0), 0.95f * life),
@@ -786,7 +767,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Vector2.Lerp(_from, _to, 0.5f),
 				HenshinFxDraw.WithAlpha(new Color(40, 20, 60), 0.55f * life),
 				new Vector2(Math.Max(1f, delta.Length() / 36f), 1.4f), delta.ToRotation());
-			// 路径闪光点：跟伤害触发节奏呼应（用年龄驱动，保证旁观端一致）
+			// 路径闪光点：Kenney star（替代 FlashImpact）
 			int ageDraw = Life - Projectile.timeLeft;
 			int visible = Math.Min(BurstCount, ageDraw / Math.Max(1, Life / BurstCount) + 1);
 			for (int i = 0; i < visible; i++)
@@ -794,11 +775,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float u = (i + 0.5f) / BurstCount;
 				Vector2 at = Vector2.Lerp(_from, _to, u);
 				float pulse = 0.55f + 0.45f * MathF.Sin(Main.GlobalTimeWrappedHourly * 18f + i);
-				HenshinFxDraw.DrawFlashImpactFrame(at,
-					HenshinFxDraw.WithAlpha(new Color(255, 210, 120), 0.55f * life * pulse),
-					0.85f + pulse * 0.2f, delta.ToRotation(), (flash + i) % HenshinFxDraw.FlashImpactFrames);
-				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, at,
-					HenshinFxDraw.WithAlpha(new Color(255, 180, 80), 0.4f * life * pulse), 0.55f);
+				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneyStar05, at,
+					HenshinFxDraw.WithAlpha(new Color(255, 210, 120), 0.6f * life * pulse),
+					56f + pulse * 16f, delta.ToRotation() + i * 0.4f);
 			}
 			HenshinFxDraw.EndAdditive();
 			return false;

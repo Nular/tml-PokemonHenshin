@@ -129,6 +129,49 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static void DrawHitJaggedFrame(Vector2 pos, Color c, float scale, float rot, int frame, SpriteEffects effects = SpriteEffects.None)
 			=> DrawAdditiveSheet(HitJagged, HitJaggedColumns, HitJaggedRows, frame, pos, c, new Vector2(scale), rot, effects);
 
+		// —— Kenney Particle Pack / Smoke Particles（CC0，Assets/Fx/Kenney）——
+		public const int KenneyExplosionFrames = 9;
+		private static readonly System.Collections.Generic.Dictionary<string, Asset<Texture2D>> KenneyCache = new();
+
+		public static Texture2D KenneyTex(string fileNameNoExt)
+		{
+			if (!KenneyCache.TryGetValue(fileNameNoExt, out Asset<Texture2D> asset) || asset == null)
+			{
+				asset = ModContent.Request<Texture2D>($"PokemonHenshin/Assets/Fx/Kenney/{fileNameNoExt}", AssetRequestMode.ImmediateLoad);
+				KenneyCache[fileNameNoExt] = asset;
+			}
+			return asset.Value;
+		}
+
+		public static Texture2D KenneyScratch => KenneyTex("scratch_01");
+		public static Texture2D KenneySlash(int i) => KenneyTex($"slash_0{Math.Clamp(i, 1, 3)}");
+		public static Texture2D KenneyScorch(int i) => KenneyTex($"scorch_0{Math.Clamp(i, 1, 3)}");
+		public static Texture2D KenneyMuzzle(int i) => KenneyTex($"muzzle_0{Math.Clamp(i, 1, 3)}");
+		public static Texture2D KenneySpark(int i) => KenneyTex($"spark_0{Math.Clamp(i, 1, 4)}");
+		public static Texture2D KenneyStar05 => KenneyTex("star_05");
+		public static Texture2D KenneyTwirl => KenneyTex("twirl_01");
+		public static Texture2D KenneyExplosionStrip => KenneyTex("ExplosionStrip");
+		public static Texture2D KenneyFlash00 => KenneyTex("flash00");
+
+		/// <summary>Kenney 单帧按世界直径绘制（512 素材建议直径 48–120）。</summary>
+		public static void DrawKenneyWorld(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldDiameterPx, float rotation = 0f)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			float scale = ScaleForWorldDiameter(tex, worldDiameterPx);
+			DrawAdditiveCentered(tex, worldPos, colorWithAlpha, scale, rotation);
+		}
+
+		public static void DrawKenneyExplosionFrame(Vector2 pos, Color c, float worldDiameterPx, int frame)
+		{
+			Texture2D tex = KenneyExplosionStrip;
+			if (tex == null || c.A == 0)
+				return;
+			float frameW = tex.Width / (float)KenneyExplosionFrames;
+			float scale = worldDiameterPx / Math.Max(1f, frameW);
+			DrawAdditiveSheet(tex, KenneyExplosionFrames, 1, frame, pos, c, new Vector2(scale), 0f);
+		}
+
 		/// <summary>
 		/// 不透明实心圆 + 描边（须在 AlphaBlend 批次下调用；深紫禁止 Additive）。
 		/// 用 DiffusionCircle 按世界直径缩放，fill/border 的 A 应接近 255。
