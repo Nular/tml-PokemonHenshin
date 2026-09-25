@@ -203,14 +203,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>金属爪场：钉在鼠标；双侧镜像 scratch 渐进展开；持续伤。</summary>
+	/// <summary>金属爪场：钉在鼠标；双侧竖直镜像 scratch 从上到下划出；持续伤。</summary>
 	public class MetalClawSlashProj : HenshinMoveProj
 	{
 		private const int Life = 52;
-		private const int RevealTicks = 16;
+		private const int RevealTicks = 14;
 		private const float RangeTiles = 16f;
 		private Vector2 _fixed;
-		private float _rot;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
@@ -225,7 +224,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.tileCollide = false;
 			Projectile.penetrate = -1;
 			Projectile.usesLocalNPCImmunity = true;
-			Projectile.localNPCHitCooldown = 7; // 持续多段
+			Projectile.localNPCHitCooldown = 7;
 		}
 
 		public override void AI()
@@ -236,11 +235,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_fixed = Projectile.owner == Main.myPlayer
 					? HenshinProjUtil.OwnerMouseWorld(Projectile)
 					: Projectile.Center;
-				Player p = Main.player[Projectile.owner];
-				Vector2 aim = _fixed - p.MountedCenter;
-				if (aim.LengthSquared() < 1f) aim = new Vector2(p.direction, 0f);
-				// scratch 为斜向爪痕：略旋以贴近瞄准
-				_rot = aim.ToRotation() - MathHelper.PiOver4;
 				Projectile.Center = _fixed;
 				SoundEngine.PlaySound(SoundID.Item71 with { Pitch = 0.1f, Volume = 0.6f }, _fixed);
 			}
@@ -251,22 +245,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (reveal < 1f && Main.rand.NextBool(2))
 			{
 				float side = Main.rand.NextBool() ? -1f : 1f;
-				Vector2 along = (_rot + MathHelper.PiOver4).ToRotationVector2();
-				Vector2 perp = new Vector2(-along.Y, along.X);
-				Dust.NewDustPerfect(_fixed + perp * (side * 28f) + along * Main.rand.NextFloat(-40f, 40f) * reveal,
-					DustID.Iron, along * Main.rand.NextFloat(1f, 3f), 80, new Color(180, 200, 220), 1.2f).noGravity = true;
+				float along = MathHelper.Lerp(-RangeTiles * 8f, RangeTiles * 8f, reveal);
+				Dust.NewDustPerfect(_fixed + new Vector2(side * 30f, along), DustID.Iron,
+					new Vector2(0f, Main.rand.NextFloat(2f, 5f)), 80, new Color(180, 200, 220), 1.2f).noGravity = true;
 			}
 		}
 
 		public override bool? CanDamage()
 		{
 			int age = Life - Projectile.timeLeft;
-			return age >= 4 ? null : false; // 略等爪痕开始显现
+			return age >= 3 ? null : false;
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
-			float r = RangeTiles * 16f * 0.5f; // 直径 16 格 → 半径 8 格
+			float r = RangeTiles * 16f * 0.5f;
 			Vector2 closest = Vector2.Clamp(_fixed, targetHitbox.TopLeft(), targetHitbox.BottomRight());
 			return Vector2.DistanceSquared(closest, _fixed) <= r * r;
 		}
@@ -274,29 +267,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int age = Life - Projectile.timeLeft;
-			float reveal = MathHelper.Clamp(age / (float)RevealTicks, 0f, 1f);
+			// smoothstep：前段慢开、中段加速，增强「划下」动感
+			float t = MathHelper.Clamp(age / (float)RevealTicks, 0f, 1f);
+			float reveal = t * t * (3f - 2f * t);
 			float life = Projectile.timeLeft / (float)Life;
-			float fade = age < RevealTicks ? reveal : MathHelper.Clamp(life / 0.35f, 0f, 1f);
-			// 直径约 16 格，双侧 scratch 镜像
-			float diam = RangeTiles * 16f;
-			float sep = 40f;
-			Vector2 along = (_rot + MathHelper.PiOver4).ToRotationVector2();
-			Vector2 perp = new Vector2(-along.Y, along.X);
-			Color steel = HenshinFxDraw.WithAlpha(new Color(195, 215, 235), 0.9f * fade);
-			Color core = HenshinFxDraw.WithAlpha(new Color(230, 240, 255), 0.55f * fade);
+			float fade = age < RevealTicks ? MathHelper.Clamp(reveal * 1.2f, 0f, 1f) : MathHelper.Clamp(life / 0.35f, 0f, 1f);
 
+			float height = RangeTiles * 16f;
+			float sep = 38f;
+			Color steel = HenshinFxDraw.WithAlpha(new Color(200, 220, 240), 0.92f * fade);
+
+			Texture2D scratch = HenshinFxDraw.KenneyScratchDown;
 			HenshinFxDraw.BeginAdditive();
-			// 右侧爪痕
-			HenshinFxDraw.DrawKenneyProgressive(HenshinFxDraw.KenneyScratch, _fixed + perp * sep,
-				steel, diam, _rot, reveal, SpriteEffects.None);
-			// 左侧镜像爪痕
-			HenshinFxDraw.DrawKenneyProgressive(HenshinFxDraw.KenneyScratch, _fixed - perp * sep,
-				steel, diam, _rot, reveal, SpriteEffects.FlipHorizontally);
-			// 芯亮度略收窄，同样渐进
-			HenshinFxDraw.DrawKenneyProgressive(HenshinFxDraw.KenneyScratch, _fixed + perp * (sep * 0.35f),
-				core, diam * 0.72f, _rot, reveal, SpriteEffects.None);
-			HenshinFxDraw.DrawKenneyProgressive(HenshinFxDraw.KenneyScratch, _fixed - perp * (sep * 0.35f),
-				core, diam * 0.72f, _rot, reveal, SpriteEffects.FlipHorizontally);
+			// 右爪：竖直 scratch；左爪：水平镜像。不再叠 aim-Pi/4（旧逻辑把斜纹扭歪）
+			HenshinFxDraw.DrawKenneyProgressiveDown(scratch, _fixed + new Vector2(sep, 0f),
+				steel, height, reveal, 0f, SpriteEffects.None);
+			HenshinFxDraw.DrawKenneyProgressiveDown(scratch, _fixed + new Vector2(-sep, 0f),
+				steel, height, reveal, 0f, SpriteEffects.FlipHorizontally);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}

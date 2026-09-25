@@ -144,6 +144,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 
 		public static Texture2D KenneyScratch => KenneyTex("scratch_01");
+		public static Texture2D KenneyScratchDown => KenneyTex("scratch_down_01");
 		public static Texture2D KenneySlash(int i) => KenneyTex($"slash_0{Math.Clamp(i, 1, 3)}");
 		public static Texture2D KenneyScorch(int i) => KenneyTex($"scorch_0{Math.Clamp(i, 1, 3)}");
 		public static Texture2D KenneyMuzzle(int i) => KenneyTex($"muzzle_0{Math.Clamp(i, 1, 3)}");
@@ -174,6 +175,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float baseScale = ScaleForWorldDiameter(tex, worldDiameterPx);
 			Vector2 origin = tex.Size() * 0.5f;
 			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, null, colorWithAlpha, rotation, origin, baseScale * scaleMul, effects, 0f);
+		}
+
+		/// <summary>
+		/// 从上到下渐进显现：裁源矩形高度 0→全高，锚在完整贴图中心，爪痕自上向下「划」出。
+		/// </summary>
+		public static void DrawKenneyProgressiveDown(Texture2D tex, Vector2 worldPos, Color colorWithAlpha, float worldHeightPx, float reveal01, float rotation = 0f, SpriteEffects effects = SpriteEffects.None)
+		{
+			if (tex == null || colorWithAlpha.A == 0)
+				return;
+			reveal01 = MathHelper.Clamp(reveal01, 0.02f, 1f);
+			float scale = worldHeightPx / Math.Max(1f, tex.Height);
+			int fullW = tex.Width;
+			int fullH = tex.Height;
+			int srcH = Math.Max(1, (int)MathF.Ceiling(fullH * reveal01));
+			Rectangle src = new Rectangle(0, 0, fullW, srcH);
+			// 完整中心锚点：先露出上半段，再向下长满
+			Vector2 origin = new Vector2(fullW * 0.5f, fullH * 0.5f);
+			Main.spriteBatch.Draw(tex, worldPos - Main.screenPosition, src, colorWithAlpha, rotation, origin, scale, effects, 0f);
 		}
 
 		/// <summary>
