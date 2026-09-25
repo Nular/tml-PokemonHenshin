@@ -203,12 +203,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>金属爪场：钉在鼠标；双侧竖直镜像 scratch 从上到下划出；持续伤。</summary>
+	/// <summary>金属爪场：钉在鼠标；双侧竖直镜像 scratch 自上而下划出/收回；持续伤。</summary>
 	public class MetalClawSlashProj : HenshinMoveProj
 	{
-		private const int Life = 52;
 		private const int RevealTicks = 14;
+		private const int HoldTicks = 20;
+		private const int FadeTicks = 14;
+		private const int Life = RevealTicks + HoldTicks + FadeTicks;
 		private const float RangeTiles = 16f;
+		private static readonly float Tilt = MathHelper.Pi / 6f; // 30°
 		private Vector2 _fixed;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
@@ -227,6 +230,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = 7;
 		}
 
+		/// <summary>出现 0→1，保持 1，消失 1→0（与出现同一套自上而下裁剪）。</summary>
+		private static float ClawRevealAmount(int age)
+		{
+			static float Smooth(float u)
+			{
+				u = MathHelper.Clamp(u, 0f, 1f);
+				return u * u * (3f - 2f * u);
+			}
+
+			if (age <= RevealTicks)
+				return Smooth(age / (float)RevealTicks);
+			if (age <= RevealTicks + HoldTicks)
+				return 1f;
+			float fadeAge = age - RevealTicks - HoldTicks;
+			return 1f - Smooth(fadeAge / (float)FadeTicks);
+		}
+
 		public override void AI()
 		{
 			if (Projectile.localAI[0] == 0f)
@@ -241,8 +261,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = _fixed;
 
 			int age = Life - Projectile.timeLeft;
-			float reveal = MathHelper.Clamp(age / (float)RevealTicks, 0f, 1f);
-			if (reveal < 1f && Main.rand.NextBool(2))
+			float reveal = ClawRevealAmount(age);
+			if (reveal > 0.05f && reveal < 0.98f && Main.rand.NextBool(3))
 			{
 				float side = Main.rand.NextBool() ? -1f : 1f;
 				float along = MathHelper.Lerp(-RangeTiles * 8f, RangeTiles * 8f, reveal);
@@ -254,7 +274,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool? CanDamage()
 		{
 			int age = Life - Projectile.timeLeft;
-			return age >= 3 ? null : false;
+			float reveal = ClawRevealAmount(age);
+			return reveal >= 0.2f ? null : false;
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -267,23 +288,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int age = Life - Projectile.timeLeft;
-			// smoothstep：前段慢开、中段加速，增强「划下」动感
-			float t = MathHelper.Clamp(age / (float)RevealTicks, 0f, 1f);
-			float reveal = t * t * (3f - 2f * t);
-			float life = Projectile.timeLeft / (float)Life;
-			float fade = age < RevealTicks ? MathHelper.Clamp(reveal * 1.2f, 0f, 1f) : MathHelper.Clamp(life / 0.35f, 0f, 1f);
+			float reveal = ClawRevealAmount(age);
+			if (reveal <= 0.02f)
+				return false;
 
 			float height = RangeTiles * 16f;
 			float sep = 38f;
-			Color steel = HenshinFxDraw.WithAlpha(new Color(200, 220, 240), 0.92f * fade);
+			Color steel = HenshinFxDraw.WithAlpha(new Color(200, 220, 240), 0.92f);
 
 			Texture2D scratch = HenshinFxDraw.KenneyScratchDown;
 			HenshinFxDraw.BeginAdditive();
-			// 右爪：竖直 scratch；左爪：水平镜像。不再叠 aim-Pi/4（旧逻辑把斜纹扭歪）
+			// 右侧：顺时针 30°；左侧：逆时针 30° + 水平镜像
 			HenshinFxDraw.DrawKenneyProgressiveDown(scratch, _fixed + new Vector2(sep, 0f),
-				steel, height, reveal, 0f, SpriteEffects.None);
+				steel, height, reveal, Tilt, SpriteEffects.None);
 			HenshinFxDraw.DrawKenneyProgressiveDown(scratch, _fixed + new Vector2(-sep, 0f),
-				steel, height, reveal, 0f, SpriteEffects.FlipHorizontally);
+				steel, height, reveal, -Tilt, SpriteEffects.FlipHorizontally);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
