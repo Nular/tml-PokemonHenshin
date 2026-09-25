@@ -158,12 +158,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>灰日耀爆炸：仅贴图 VFX，无伤害。</summary>
+	/// <summary>灰日耀爆炸：仅贴图 VFX，无伤害。ai0&gt;0.5 时用反色日耀（青冷）。</summary>
 	public class GraySolarBurstVfxProj : HenshinMoveProj
 	{
 		private const int Life = 18;
+		private static Texture2D _invertedSolar;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.SolarWhipSwordExplosion;
+
+		private bool Invert => Projectile.ai[0] > 0.5f;
 
 		public override void SetDefaults()
 		{
@@ -179,7 +182,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
 		{
-			Main.instance.LoadProjectile(ProjectileID.SolarWhipSwordExplosion);
+			ProjectileBorrow.SafeLoadProjectile(ProjectileID.SolarWhipSwordExplosion);
 		}
 
 		public override void AI()
@@ -198,16 +201,56 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool? CanDamage() => false;
 
+		private static Texture2D EnsureInvertedSolar()
+		{
+			if (_invertedSolar != null && !_invertedSolar.IsDisposed)
+				return _invertedSolar;
+			if (Main.dedServ || Main.graphics?.GraphicsDevice == null)
+				return null;
+			Texture2D src = ProjectileBorrow.RequestProjectileTexture(ProjectileID.SolarWhipSwordExplosion);
+			if (src == null)
+				return null;
+			Color[] data = new Color[src.Width * src.Height];
+			src.GetData(data);
+			for (int i = 0; i < data.Length; i++)
+			{
+				Color c = data[i];
+				if (c.A == 0)
+					continue;
+				// RGB 反色，保留 Alpha；暖日耀 → 青冷轮廓
+				data[i] = new Color((byte)(255 - c.R), (byte)(255 - c.G), (byte)(255 - c.B), c.A);
+			}
+			_invertedSolar = new Texture2D(Main.graphics.GraphicsDevice, src.Width, src.Height);
+			_invertedSolar.SetData(data);
+			return _invertedSolar;
+		}
+
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.SolarWhipSwordExplosion);
 			int frames = Math.Max(1, Main.projFrames[ProjectileID.SolarWhipSwordExplosion]);
 			int frame = Math.Clamp(Projectile.frame, 0, frames - 1);
-			Rectangle src = tex.Frame(1, frames, 0, frame);
 			float life = Projectile.timeLeft / (float)Life;
-			Color tint = new Color(160, 160, 165, (int)(220 * life));
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, tint,
-				0f, src.Size() * 0.5f, 0.85f + (1f - life) * 0.25f, SpriteEffects.None);
+			float scale = 0.85f + (1f - life) * 0.25f;
+
+			if (Invert)
+			{
+				Texture2D tex = EnsureInvertedSolar();
+				if (tex == null)
+					return false;
+				Rectangle src = tex.Frame(1, frames, 0, frame);
+				// 真反色贴图；轻乘路径青保留冷调
+				Color tint = new Color(1, 253, 255, (int)(235 * life));
+				Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, tint,
+					0f, src.Size() * 0.5f, scale, SpriteEffects.None);
+			}
+			else
+			{
+				Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.SolarWhipSwordExplosion);
+				Rectangle src = tex.Frame(1, frames, 0, frame);
+				Color tint = new Color(160, 160, 165, (int)(220 * life));
+				Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, tint,
+					0f, src.Size() * 0.5f, scale, SpriteEffects.None);
+			}
 			return false;
 		}
 	}

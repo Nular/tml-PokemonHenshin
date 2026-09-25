@@ -790,7 +790,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Vector2 off = Main.rand.NextVector2Circular(22f, 22f);
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at + off, Vector2.Zero,
-					ModContent.ProjectileType<GraySolarBurstVfxProj>(), 0, 0f, Projectile.owner);
+					ModContent.ProjectileType<GraySolarBurstVfxProj>(), 0, 0f, Projectile.owner, ai0: 1f);
 				if (id >= 0) Main.projectile[id].Center = at + off;
 			}
 			for (int i = 0; i < 10; i++)
