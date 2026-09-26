@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-25
+**版本日期：** 2026-09-27
 
 ## 1. 权威与硬约束
 
@@ -73,7 +73,7 @@
 |----|------|
 | **文件** | `SkyBoltLightning.cs`；贴图 `Assets/Fx/ThunderTrail` + `SoftGlow` + `LightShot` |
 | **形态** | 皮卡丘大招（≤64 格+连锁+命中三叉）；雷丘技能1（≤128 格、无连锁、三叉）；电气球被动（无连锁、可三叉）；分叉/感电二次/`ai2≥1.5` 不再分叉；雷丘大招落雷 |
-| **手法** | 折线多段 trail；**Additive 时保留 `Color.A`**；前进模式 `ai1≥64` = 最大长度（像素）；命中后 16 格内最多 3 条分叉 |
+| **手法** | 折线多段 trail；**Additive 时保留 `Color.A`**；色为暖金 `SparkGold` `(255,168,28)` / 芯 `(255,206,64)`（避免近白）；前进模式 `ai1≥64` = 最大长度（像素）；命中后 16 格内最多 3 条分叉 |
 | **复用** | `VoltTackleTrailProj`：加粗折线 + 形态贴图残影（长而淡） |
 | **CWR** | 只读抄路径/包络；贴图已拷贝，无运行时依赖 |
 | **勿做** | `A=0`；依赖大修 `CWRAsset`；把端点只写在 `OnSpawn` 私有字段（拖尾用生成点+velocity 同步） |
@@ -224,11 +224,11 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 | MoveKey/CN | Forms (Stage) | Playstyle | Current | Recommended | Feel | Status |
 |------------|---------------|-----------|---------|-------------|------|--------|
-| ThunderShock/电击 | L04_F01 | Bolt | ThunderBoltHenshin（电气球×2/×3速、穿3、加宽） | — | OK | Accepted |
-| QuickAttack/电光一闪 | L04_F01 | Blink | BlinkStrike | SoftGlow 落点 | OK | Accepted |
-| Thunderbolt/十万伏特 | L04_F01 Ult / L04_F02 S1 | Beam | SkyBolt（F02≤128 无连锁） | SkyBolt cookbook | 标杆 | Accepted |
-| VoltTackle/伏特攻击 | L04_F02 | Blink+Trail | VoltTackleBlink+Trail×3/6hit | SkyBolt 折线 | OK | Accepted |
-| Thunder/打雷 | L04_F02 Ult | Pillar | ThunderPillar→SkyBolt ai0=1 | 同天雷 | OK | Accepted |
+| ThunderShock/电击 | L04_F01 | Bolt | 金 spark + LightShot；沿飞行方向判定长度 = 宽度×2 | — | 暖金 | Done |
+| QuickAttack/电光一闪 | L04_F01 | Blink | 身周 spark + 路径形态残影（无伤）；落点 3 段 ×3.0；冷却 3s | Kenney spark + 形态帧 | 残影 | Done |
+| Thunderbolt/十万伏特 | L04_F01 Ult / L04_F02 S1 | Beam | SkyBolt 暖金（F02≤128 无连锁） | SkyBolt cookbook | 标杆 | Done |
+| VoltTackle/伏特攻击 | L04_F02 | Blink+Trail | VoltTackle 暖金折线 + 金残影 | SkyBolt 折线 | 暖金 | Done |
+| Thunder/打雷 | L04_F02 Ult | Pillar | SkyBolt 落雷同暖金 | 同天雷 | 暖金 | Done |
 
 ### 4.5 格斗 L05
 
@@ -641,6 +641,9 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.10 Living | 2026-09-13 | 手感批：种爆~10格草绿环；尖牙×4；起风飞出+贴地滚；水炮/加农粗×2+水炮锁长多段；喷射射程×2 |
 | 2.11 Living | 2026-09-14 | 起风确认贴地滚（非爬墙）；种爆去 FlashImpact 金刺，仅绿光/绿尘；本地验收 OK |
 | 2.12 Living | 2026-09-25 | 撞击族/传说改版批回写：画龙青 SoftGlow + 延迟反色日耀 + 单次路径伤；臂锤/金属爪 Kenney；勇鸟→S2+WorkUp Ult；龙俯冲垂砸；陀螺/舍身；去误无敌；旧纯黑龙/TakeDown 槽位退役说明 |
+| 2.13 Living | 2026-09-26 | 电光一闪：身周 Kenney spark（非落点尘爆）；单段 ×3.0 ×3 段；撞击冷却 3s |
+| 2.14 Living | 2026-09-27 | 皮卡丘/雷丘电系招式统一暖金 `SparkGold` `(255,244,150)`：十万伏特、落雷、伏特攻击、电击 |
+| 2.15 Living | 2026-09-27 | 暖金压深 `(255,168,28)` / 芯 `(255,206,64)`；电光一闪路径残影；电击沿飞行方向判定×2 |
 
 ---
 

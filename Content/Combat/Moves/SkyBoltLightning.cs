@@ -31,8 +31,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public const int Life = 26;
 		private const float BaseWidth = 34f;
 
-		private static readonly Color ChantColor = new(150, 190, 255);
-		private static readonly Color VoltWhite = new(226, 240, 255);
+		private static readonly Color ChantColor = HenshinFxDraw.SparkGold;
+		private static readonly Color VoltWhite = HenshinFxDraw.SparkGoldCore;
 
 		private static Asset<Texture2D> _trailAsset;
 		private static Asset<Texture2D> _glowAsset;
@@ -131,7 +131,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				BuildJaggedPath();
 				SoundEngine.PlaySound(SoundID.Item122 with { Volume = 0.6f, Pitch = fallMode ? -0.1f : 0.2f }, _to);
 				for (int i = 0; i < 10; i++)
-					Dust.NewDustPerfect(_to, DustID.Electric, Main.rand.NextVector2Circular(5f, 5f), 40, VoltWhite, 1.5f).noGravity = true;
+					Dust.NewDustPerfect(_to, DustID.YellowTorch, Main.rand.NextVector2Circular(5f, 5f), 40, VoltWhite, 1.5f).noGravity = true;
 			}
 
 			float lifeT = 1f - Projectile.timeLeft / (float)Life;
@@ -146,7 +146,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_pts != null && Projectile.timeLeft % 2 == 0)
 			{
 				int idx = Main.rand.Next(_pts.Length);
-				Dust.NewDustPerfect(_pts[idx], DustID.Electric, Main.rand.NextVector2Circular(2f, 2f), 60, ChantColor, 1.2f).noGravity = true;
+				Dust.NewDustPerfect(_pts[idx], DustID.YellowTorch, Main.rand.NextVector2Circular(2f, 2f), 60, ChantColor, 1.2f).noGravity = true;
 			}
 
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.55f);
@@ -342,7 +342,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float width = BaseWidth * _widthMul * (0.5f + 0.5f * (1f - factor)) * _envelope;
 				float alpha = MathHelper.Clamp(_envelope * (0.55f + 0.45f * factor), 0f, 1f);
 
-				Color wide = Color.Lerp(ChantColor, Color.White, 0.35f) * alpha;
+				Color wide = Color.Lerp(ChantColor, VoltWhite, 0.45f) * alpha;
 				wide.A = (byte)(255f * alpha);
 				Color core = VoltWhite * (0.95f * alpha);
 				core.A = (byte)(255f * alpha);

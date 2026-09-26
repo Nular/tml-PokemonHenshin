@@ -1,7 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PokemonHenshin.Content.Combat;
+using PokemonHenshin.Content.Core;
 using PokemonHenshin.Content.Damage;
+using PokemonHenshin.Content.PlayerState;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -610,10 +612,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
-	/// <summary>电光一闪：闪现至指针最近敌人，在敌人处电光爆炸造成伤害（非接触）。</summary>
+	/// <summary>电光一闪：闪现至指针最近敌人；身周 Kenney 电火花；伤害在落点爆发上打三下。</summary>
 	public class BlinkStrikeProj : HenshinMoveProj
 	{
 		private const float SearchRange = 960f;
+		private const int AuraLife = 28;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
@@ -623,7 +626,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 8;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 8;
+			Projectile.timeLeft = AuraLife;
 			Projectile.tileCollide = false;
 			Projectile.penetrate = -1;
 		}
@@ -663,14 +666,22 @@ namespace PokemonHenshin.Content.Combat.Moves
 					p.Teleport(dest, -1);
 					p.immune = true;
 					p.immuneTime = System.Math.Max(p.immuneTime, 15);
-					for (int i = 0; i < 20; i++)
+					for (int i = 0; i < 8; i++)
 					{
-						Dust.NewDustPerfect(from, DustID.Electric, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.5f).noGravity = true;
-						Dust.NewDustPerfect(p.Center, DustID.Electric, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.5f).noGravity = true;
+						Dust.NewDustPerfect(from, DustID.YellowTorch, Main.rand.NextVector2Circular(4f, 4f), 80, HenshinFxDraw.SparkGold, 1.2f).noGravity = true;
+						Dust.NewDustPerfect(p.Center, DustID.YellowTorch, Main.rand.NextVector2Circular(4f, 4f), 80, HenshinFxDraw.SparkGold, 1.2f).noGravity = true;
 					}
 					SoundEngine.PlaySound(SoundID.Item8, p.Center);
-					Projectile.NewProjectile(Projectile.GetSource_FromThis(), target.Center, Vector2.Zero,
-						ModContent.ProjectileType<BlinkStrikeBurstProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+					SpawnGhostTrail(Projectile, p, from);
+					int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), target.Center, Vector2.Zero,
+						ModContent.ProjectileType<BlinkStrikeBurstProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner,
+						target.whoAmI);
+					if (id >= 0)
+					{
+						Main.projectile[id].Center = target.Center;
+						Main.projectile[id].originalDamage = Projectile.originalDamage > 0 ? Projectile.originalDamage : Projectile.damage;
+						PokemonHenshin.Content.Accessories.HenshinAccGlobalProjectile.CopyMoveOrigin(Projectile, Main.projectile[id]);
+					}
 				}
 				else
 				{
@@ -681,19 +692,164 @@ namespace PokemonHenshin.Content.Combat.Moves
 						dest = p.Center + Vector2.Normalize(delta) * SearchRange;
 					p.Teleport(dest, -1);
 					SoundEngine.PlaySound(SoundID.Item8, p.Center);
+					SpawnGhostTrail(Projectile, p, from);
 				}
 			}
 
 			Projectile.Center = p.Center;
 		}
 
+		private static void SpawnGhostTrail(Projectile parent, Player p, Vector2 from)
+		{
+			Vector2 delta = p.Center - from;
+			if (delta.LengthSquared() < 4f)
+				delta = new Vector2(p.direction * 48f, 0f);
+
+			float frame = 0f;
+			float state = 0f;
+			HenshinPlayer hp = p.GetModPlayer<HenshinPlayer>();
+			if (hp.CurrentForm?.Locomotion != null)
+			{
+				state = (float)hp.LocomotionState;
+				frame = hp.LocomotionFrame;
+			}
+
+			int id = Projectile.NewProjectile(parent.GetSource_FromThis(), from, delta,
+				ModContent.ProjectileType<BlinkStrikeGhostProj>(), 0, 0f, parent.owner, frame, state);
+			if (id >= 0)
+				Main.projectile[id].Center = from;
+		}
+
 		public override bool? CanDamage() => false;
-		public override bool PreDraw(ref Color lightColor) => false;
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Player p = Main.player[Projectile.owner];
+			if (!p.active)
+				return false;
+			int age = AuraLife - Projectile.timeLeft;
+			float fade = Projectile.timeLeft < 6 ? Projectile.timeLeft / 6f : 1f;
+			BlinkStrikeBurstProj.DrawBodySparks(p.Center, age, fade, pulse: false);
+			return false;
+		}
 	}
 
-	/// <summary>电光一闪落点爆炸。</summary>
+	/// <summary>电光一闪残影：沿闪现路径铺形态贴图，不造成伤害。ai0=帧，ai1=移动状态。</summary>
+	public class BlinkStrikeGhostProj : HenshinMoveProj
+	{
+		public const int Life = 48;
+		public const int GhostCount = 8;
+
+		private Vector2 _from;
+		private Vector2 _to;
+		private float _envelope = 1f;
+		private bool _inited;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 8;
+			Projectile.height = 8;
+			Projectile.friendly = false;
+			Projectile.tileCollide = false;
+			Projectile.ignoreWater = true;
+			Projectile.penetrate = -1;
+			Projectile.timeLeft = Life;
+		}
+
+		public override bool ShouldUpdatePosition() => false;
+
+		public override void AI()
+		{
+			if (!_inited)
+			{
+				_inited = true;
+				_from = Projectile.Center;
+				Vector2 delta = Projectile.velocity;
+				if (delta.LengthSquared() < 4f)
+					delta = new Vector2(32f, 0f);
+				_to = _from + delta;
+			}
+
+			float lifeT = 1f - Projectile.timeLeft / (float)Life;
+			_envelope = lifeT < 0.12f ? 1f : 1f - System.MathF.Pow((lifeT - 0.12f) / 0.88f, 2f);
+		}
+
+		public override bool? CanDamage() => false;
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			if (!_inited || _envelope < 0.02f)
+				return false;
+
+			Player owner = Main.player[Projectile.owner];
+			if (!owner.active)
+				return false;
+
+			HenshinPlayer hp = owner.GetModPlayer<HenshinPlayer>();
+			FormDefinition form = hp.CurrentForm;
+			if (form == null)
+				return false;
+
+			Texture2D tex;
+			Rectangle? frame = null;
+			float scale = 1f;
+			bool facesLeft = form.TextureFacesLeft;
+			Vector2 origin;
+
+			FormLocomotionSpec loco = form.Locomotion;
+			FormAnimClip clip = loco?.GetClip((FormLocomotionState)(int)Projectile.ai[1]);
+			if (clip != null && !string.IsNullOrEmpty(clip.TexturePath) && clip.FrameCount > 0)
+			{
+				tex = ModContent.Request<Texture2D>(clip.TexturePath).Value;
+				int f = (int)Projectile.ai[0];
+				if (f < 0 || f >= clip.FrameCount)
+					f = 0;
+				frame = new Rectangle(f * clip.FrameWidth, 0, clip.FrameWidth, clip.FrameHeight);
+				scale = FormLocomotionSpec.TargetDrawHeight / System.Math.Max(1, clip.FrameHeight);
+				facesLeft = clip.FacesLeft;
+				origin = new Vector2(clip.FrameWidth * 0.5f, clip.FrameHeight);
+			}
+			else
+			{
+				tex = ModContent.Request<Texture2D>(form.TexturePath).Value;
+				origin = new Vector2(tex.Width * 0.5f, tex.Height);
+			}
+
+			if (tex == null || tex.Width < 2)
+				return false;
+
+			Vector2 travel = _to - _from;
+			bool dashRight = travel.X >= 0f;
+			SpriteEffects fx = dashRight == facesLeft ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+			float footDrop = owner.height * 0.5f;
+
+			for (int i = 0; i < GhostCount; i++)
+			{
+				float t = (i + 0.5f) / GhostCount;
+				Vector2 pos = Vector2.Lerp(_from, _to, t) + new Vector2(0f, footDrop);
+				float alpha = (0.14f + 0.28f * t) * _envelope;
+				if (alpha < 0.02f)
+					continue;
+				Color c = HenshinFxDraw.SparkGold * alpha;
+				c.A = (byte)MathHelper.Clamp(alpha * 180f, 10f, 170f);
+				Main.EntitySpriteDraw(tex, pos - Main.screenPosition, frame, c, 0f, origin, scale, fx, 0);
+			}
+
+			return false;
+		}
+	}
+
+	/// <summary>电光一闪落点：贴住目标，同一单位最多三下；身周 Kenney spark。</summary>
 	public class BlinkStrikeBurstProj : HenshinMoveProj
 	{
+		public const int HitGap = 8;
+		public const int HitCount = 3;
+		public const int Life = 28;
+
+		private byte[] _hitCount;
+
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
@@ -702,30 +858,87 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.height = 96;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 12;
+			Projectile.timeLeft = Life;
 			Projectile.tileCollide = false;
 			Projectile.penetrate = -1;
 			Projectile.usesLocalNPCImmunity = true;
-			Projectile.localNPCHitCooldown = 12;
+			Projectile.localNPCHitCooldown = HitGap;
 		}
 
 		public override void AI()
 		{
-			if (Projectile.localAI[0] == 0f)
+			int who = (int)Projectile.ai[0];
+			if (who >= 0 && who < Main.maxNPCs)
 			{
-				Projectile.localAI[0] = 1f;
-				SoundEngine.PlaySound(SoundID.Item94, Projectile.Center);
+				NPC n = Main.npc[who];
+				if (n.active)
+					Projectile.Center = n.Center;
 			}
-			for (int i = 0; i < 6; i++)
+
+			int age = Life - Projectile.timeLeft;
+			if (age % HitGap == 0 && age <= HitGap * (HitCount - 1))
+				SoundEngine.PlaySound(SoundID.Item94 with { Volume = 0.55f, Pitch = 0.12f }, Projectile.Center);
+
+			if (Main.rand.NextBool(2))
 			{
-				Dust d = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(40f, 40f), DustID.Electric, Main.rand.NextVector2Circular(6f, 6f), 60, default, 1.6f);
+				Dust d = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2CircularEdge(28f, 28f),
+					DustID.YellowTorch, Main.rand.NextVector2Circular(2f, 2f), 40, HenshinFxDraw.SparkGold, 1.1f);
 				d.noGravity = true;
-				Dust.NewDustPerfect(Projectile.Center, DustID.YellowTorch, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.3f).noGravity = true;
 			}
-			Lighting.AddLight(Projectile.Center, 0.9f, 0.9f, 0.3f);
+			Lighting.AddLight(Projectile.Center, HenshinFxDraw.SparkGold.ToVector3() * 0.85f);
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override bool? CanHitNPC(NPC target)
+		{
+			if (target == null)
+				return false;
+			_hitCount ??= new byte[Main.maxNPCs];
+			int who = target.whoAmI;
+			if (who >= 0 && who < _hitCount.Length && _hitCount[who] >= HitCount)
+				return false;
+			return null;
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			_hitCount ??= new byte[Main.maxNPCs];
+			int who = target.whoAmI;
+			if (who >= 0 && who < _hitCount.Length && _hitCount[who] < byte.MaxValue)
+				_hitCount[who]++;
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			int age = Life - Projectile.timeLeft;
+			bool pulse = age % HitGap <= 2 && age <= HitGap * (HitCount - 1) + 2;
+			float fade = Projectile.timeLeft < 6 ? Projectile.timeLeft / 6f : 1f;
+			DrawBodySparks(Projectile.Center, age, fade, pulse);
+			return false;
+		}
+
+		/// <summary>Kenney spark_01–04 绕身体一圈。Additive 保留 Alpha。</summary>
+		public static void DrawBodySparks(Vector2 worldCenter, int age, float fade, bool pulse)
+		{
+			fade = MathHelper.Clamp(fade, 0f, 1f);
+			if (fade <= 0.02f)
+				return;
+			HenshinFxDraw.BeginAdditive();
+			const int count = 4;
+			float spin = age * 0.32f;
+			float boost = pulse ? 1.22f : 1f;
+			for (int i = 0; i < count; i++)
+			{
+				float ang = spin + i * (MathHelper.TwoPi / count);
+				float radius = (30f + 8f * System.MathF.Sin(age * 0.5f + i)) * (pulse ? 1.08f : 1f);
+				Vector2 pos = worldCenter + ang.ToRotationVector2() * radius;
+				int frame = 1 + ((age / 2 + i) % 4);
+				float diam = (52f + 14f * (i % 2)) * boost;
+				float intensity = (pulse ? 0.92f : 0.74f) * fade;
+				Color c = HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGold, intensity);
+				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneySpark(frame), pos, c, diam, ang * 0.5f + age * 0.14f);
+			}
+			HenshinFxDraw.EndAdditive();
+		}
 	}
 
 	/// <summary>十万伏特大招：粗穿透电光；命中 50% 感电；0.5s 后对感电目标再射。</summary>
@@ -755,10 +968,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			for (int i = 0; i < 4; i++)
 			{
-				Dust d = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(10f, 10f), DustID.Electric, -Projectile.velocity * 0.05f, 40, default, 1.9f);
+				Dust d = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(10f, 10f), DustID.YellowTorch, -Projectile.velocity * 0.05f, 40, HenshinFxDraw.SparkGold, 1.9f);
 				d.noGravity = true;
 			}
-			Lighting.AddLight(Projectile.Center, 0.8f, 0.85f, 1.1f);
+			Lighting.AddLight(Projectile.Center, 1f, 0.9f, 0.4f);
 
 			if (Projectile.ai[2] < 0.5f && !_scheduled && Projectile.owner == Main.myPlayer)
 			{
@@ -779,8 +992,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			Texture2D tex = TextureAssets.Projectile[ProjectileID.MagnetSphereBolt].Value;
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, null, Color.LightYellow, Projectile.rotation, tex.Size() * 0.5f, 2.8f, SpriteEffects.None, 0);
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, null, Color.White * 0.5f, Projectile.rotation, tex.Size() * 0.5f, 2.0f, SpriteEffects.None, 0);
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, null, HenshinFxDraw.SparkGold, Projectile.rotation, tex.Size() * 0.5f, 2.8f, SpriteEffects.None, 0);
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, null, HenshinFxDraw.SparkGoldCore * 0.55f, Projectile.rotation, tex.Size() * 0.5f, 2.0f, SpriteEffects.None, 0);
 			return false;
 		}
 	}

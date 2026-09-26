@@ -350,7 +350,7 @@ namespace PokemonHenshin.Content.Combat
 			{
 				if (!hp.CanLunge)
 					return;
-				hp.StartLungeCooldown(120); // 2s
+				hp.StartLungeCooldown(move.LungeCooldownTicks);
 				player.immune = true;
 				player.immuneTime = Math.Max(player.immuneTime, 15 + hp.LungeIFrameBonus);
 			}

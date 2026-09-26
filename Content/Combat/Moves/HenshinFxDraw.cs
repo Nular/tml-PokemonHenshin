@@ -149,6 +149,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static Texture2D KenneyScorch(int i) => KenneyTex($"scorch_0{Math.Clamp(i, 1, 3)}");
 		public static Texture2D KenneyMuzzle(int i) => KenneyTex($"muzzle_0{Math.Clamp(i, 1, 3)}");
 		public static Texture2D KenneySpark(int i) => KenneyTex($"spark_0{Math.Clamp(i, 1, 4)}");
+
+		/// <summary>电光一闪 spark 同款暖金。外晕偏橙金，避免叠亮后发白。</summary>
+		public static readonly Color SparkGold = new(255, 168, 28);
+		/// <summary>同色相亮芯，仍是金色，不抬到近白。</summary>
+		public static readonly Color SparkGoldCore = new(255, 206, 64);
 		public static Texture2D KenneyStar05 => KenneyTex("star_05");
 		public static Texture2D KenneyTwirl => KenneyTex("twirl_01");
 		public static Texture2D KenneyExplosionStrip => KenneyTex("ExplosionStrip");

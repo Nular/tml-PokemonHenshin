@@ -267,6 +267,7 @@ MoveRefRate = (60 / UseTime) * DamageMultiplier * ExpectedHitsPerRelease
 | 项 | 现状倾向 | 目标 |
 |----|----------|------|
 | 皮卡丘大招雷击 | mult ≈10 | **4.5～5.2**，Tag=Ultimate |
+| 皮卡丘电光一闪 | 旧 ×1.15 / 1 段 / 撞击 2s | **单段 ×3.0、同单位 3 段、撞击冷却 180 tick（3s）**，Tag=MultiHit。有效节奏按 3s 门计：`(60/180)×3×3 = 3.0`（归一化 1.0）。`UseTime` 仍 14，不作为释放间隔 |
 | 凯西/超梦意念头锤（技能槽） | mult ≈5.0 | 技能 **1.6～2.2**（贴身风险可取区间上沿） |
 | Barrage / FlameCone 等多段 | 高段×高倍 | **优先压单段倍率与 EnergyGainFactor**；段数仅在手感允许且确有必要时微调 |
 | 鲤鱼王 | 弱 | 保持 AttackMod 0.50；大招可补手感但不超同档 80% DPS 窗 |

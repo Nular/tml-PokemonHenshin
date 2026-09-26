@@ -386,7 +386,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				CountsAsGrassMove = true
 			};
 
-		public static MoveSpec BlinkStrike(string nameKey, float mult = 1.15f, int use = 14)
+		public static MoveSpec BlinkStrike(string nameKey, float mult = 3.0f, int use = 14)
 			=> new()
 			{
 				Delivery = MoveDelivery.Lunge,
@@ -397,7 +397,9 @@ namespace PokemonHenshin.Content.Items.Forms
 				ShootSpeed = 0f,
 				Knockback = 3f,
 				NetRisk = NetRisk.Medium,
-				RequiresLungeCooldown = true
+				RequiresLungeCooldown = true,
+				LungeCooldownTicks = 180,
+				BalanceTag = BalanceTag.MultiHit
 			};
 
 		public static MoveSpec AerialAceBlink(string nameKey, float mult = 1.6f, int use = 16)

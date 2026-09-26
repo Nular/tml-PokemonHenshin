@@ -53,8 +53,10 @@ namespace PokemonHenshin.Content.Core
 		public bool IsRangedProjectile { get; init; }
 		/// <summary>在鼠标世界坐标生成（落点技 / 指针大招）。</summary>
 		public bool SpawnAtMouse { get; init; }
-		/// <summary>撞击类：0.5s 内置 CD。</summary>
+		/// <summary>撞击类：吃 <see cref="LungeCooldownTicks"/> 内置冷却。</summary>
 		public bool RequiresLungeCooldown { get; init; }
+		/// <summary>撞击内置冷却（tick）。默认 120（2s）。电光一闪单独用 180。</summary>
+		public int LungeCooldownTicks { get; init; } = 120;
 		public bool EasyCrit { get; init; }
 		public bool IgnoreDefensePartial { get; init; }
 		public bool RecoilSelf { get; init; }

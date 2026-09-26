@@ -1609,7 +1609,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			for (int i = 0; i < 8; i++)
 			{
 				float y = Main.rand.NextFloat(-80f, 80f);
-				Dust.NewDustPerfect(Projectile.Center + new Vector2(Main.rand.NextFloat(-12f, 12f), y), DustID.Electric, new Vector2(0f, 4f), 60, default, 1.4f).noGravity = true;
+				Dust.NewDustPerfect(Projectile.Center + new Vector2(Main.rand.NextFloat(-12f, 12f), y), DustID.YellowTorch, new Vector2(0f, 4f), 60, HenshinFxDraw.SparkGold, 1.4f).noGravity = true;
 			}
 		}
 
@@ -3167,8 +3167,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
-			Dust.NewDustPerfect(Projectile.Center, DustID.Electric, Vector2.Zero, 80, default, 1.3f).noGravity = true;
-			Lighting.AddLight(Projectile.Center, 0.4f, 0.55f, 1f);
+			Dust.NewDustPerfect(Projectile.Center, DustID.YellowTorch, Vector2.Zero, 80, HenshinFxDraw.SparkGold, 1.3f).noGravity = true;
+			Lighting.AddLight(Projectile.Center, HenshinFxDraw.SparkGold.ToVector3());
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -3181,11 +3181,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Vector2 dir = Projectile.velocity.LengthSquared() > 0.01f ? Vector2.Normalize(Projectile.velocity) : Vector2.UnitX;
 			HenshinFxDraw.BeginAdditive();
 			HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.LightShot, Projectile.Center - dir * 18f, Projectile.Center + dir * 10f,
-				HenshinFxDraw.WithAlpha(new Color(160, 200, 255), 0.75f), 10f);
+				HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGold, 0.75f), 10f);
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(180, 220, 255), 0.55f), 0.3f);
+				HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGoldCore, 0.55f), 0.3f);
 			HenshinFxDraw.EndAdditive();
-			return true;
+			return false;
 		}
 	}
 

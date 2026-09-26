@@ -2102,4 +2102,20 @@ Projectiles: {
 	// MewtwoPsystrikeOrbProj.DisplayName: Mewtwo Psystrike Orb Proj
 	// VoltTackleTrailProj.DisplayName: Volt Tackle Trail Proj
 	// VoltTackleBlinkProj.DisplayName: Volt Tackle Blink Proj
+	// WorkUpBuffProj.DisplayName: Work Up Buff Proj
+	// StealthRockFieldProj.DisplayName: Stealth Rock Field Proj
+	// SkyAttackSextetDirectorProj.DisplayName: Sky Attack Sextet Director Proj
+	// SkyAttackRedBirdProj.DisplayName: Sky Attack Red Bird Proj
+	// MetalClawSlashProj.DisplayName: Metal Claw Slash Proj
+	// MetalClawDirectorProj.DisplayName: Metal Claw Director Proj
+	// GyroBallSmashProj.DisplayName: Gyro Ball Smash Proj
+	// DragonDiveSlamProj.DisplayName: Dragon Dive Slam Proj
+	// DragonAscentTrailProj.DisplayName: Dragon Ascent Trail Proj
+	// DragonAscentBlinkProj.DisplayName: Dragon Ascent Blink Proj
+	// DoubleEdgeLungeProj.DisplayName: Double Edge Lunge Proj
+	// BulletPunchProj.DisplayName: Bullet Punch Proj
+	// BiteArcAtMouseProj.DisplayName: Bite Arc At Mouse Proj
+	// AuraSphereBoltProj.DisplayName: Aura Sphere Bolt Proj
+	// ArmHammerSmashProj.DisplayName: Arm Hammer Smash Proj
+	// BlinkStrikeGhostProj.DisplayName: Blink Strike Ghost Proj
 }

@@ -383,7 +383,37 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			HenshinProjUtil.HomingAI(Projectile, Homing, HomingTurnRate);
-			Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Electric, 0f, 0f, 100, default, 1.2f).noGravity = true;
+			Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.YellowTorch, 0f, 0f, 80, HenshinFxDraw.SparkGold, 1.15f);
+			d.noGravity = true;
+			Lighting.AddLight(Projectile.Center, HenshinFxDraw.SparkGold.ToVector3());
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Vector2 dir = Projectile.velocity.LengthSquared() > 0.01f ? Vector2.Normalize(Projectile.velocity) : Vector2.UnitX;
+			float rot = dir.ToRotation();
+			int frame = 1 + ((Projectile.timeLeft / 3) % 4);
+			HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.LightShot, Projectile.Center - dir * 18f, Projectile.Center + dir * 6f,
+				HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGold, 0.8f), 7f);
+			HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneySpark(frame), Projectile.Center,
+				HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGold, 0.82f), 40f, rot);
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
+
+		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+		{
+			Vector2 vel = Projectile.velocity;
+			if (vel.LengthSquared() < 1f)
+				return null;
+			Vector2 dir = Vector2.Normalize(vel);
+			float along = Projectile.width * 2f;
+			Vector2 half = dir * (along * 0.5f);
+			float _ = 0f;
+			return Collision.CheckAABBvLineCollision(
+				targetHitbox.TopLeft(), targetHitbox.Size(),
+				Projectile.Center - half, Projectile.Center + half, Projectile.height, ref _);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -1327,8 +1357,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 				for (int i = 0; i < 18; i++)
 				{
-					Dust.NewDustPerfect(from, DustID.Electric, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.45f).noGravity = true;
-					Dust.NewDustPerfect(p.Center, DustID.Electric, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.45f).noGravity = true;
+					Dust.NewDustPerfect(from, DustID.YellowTorch, Main.rand.NextVector2Circular(5f, 5f), 80, HenshinFxDraw.SparkGold, 1.45f).noGravity = true;
+					Dust.NewDustPerfect(p.Center, DustID.YellowTorch, Main.rand.NextVector2Circular(5f, 5f), 80, HenshinFxDraw.SparkGold, 1.45f).noGravity = true;
 				}
 				SoundEngine.PlaySound(SoundID.Item122 with { Volume = 0.55f, Pitch = 0.15f }, p.Center);
 
@@ -1370,8 +1400,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public const int GhostCount = 10;
 		private const float BaseWidth = 48f;
 
-		private static readonly Color ChantColor = new(150, 190, 255);
-		private static readonly Color VoltWhite = new(226, 240, 255);
+		private static readonly Color ChantColor = HenshinFxDraw.SparkGold;
+		private static readonly Color VoltWhite = HenshinFxDraw.SparkGoldCore;
 
 		private Vector2 _from;
 		private Vector2 _to;
@@ -1437,7 +1467,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_pts != null && Projectile.timeLeft % 2 == 0)
 			{
 				int idx = Main.rand.Next(_pts.Length);
-				Dust.NewDustPerfect(_pts[idx], DustID.Electric, Main.rand.NextVector2Circular(2f, 2f), 60, ChantColor, 1.15f).noGravity = true;
+				Dust.NewDustPerfect(_pts[idx], DustID.YellowTorch, Main.rand.NextVector2Circular(2f, 2f), 60, ChantColor, 1.15f).noGravity = true;
 			}
 
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.5f);
@@ -1519,7 +1549,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float width = BaseWidth * (0.55f + 0.45f * (1f - factor)) * _envelope;
 				float alpha = MathHelper.Clamp(_envelope * (0.55f + 0.45f * factor), 0f, 1f);
 
-				Color wide = Color.Lerp(ChantColor, Color.White, 0.35f) * alpha;
+				Color wide = Color.Lerp(ChantColor, VoltWhite, 0.45f) * alpha;
 				wide.A = (byte)(255f * alpha);
 				Color core = VoltWhite * (0.95f * alpha);
 				core.A = (byte)(255f * alpha);
@@ -1564,7 +1594,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float alpha = ageFade * _envelope;
 				if (alpha < 0.02f)
 					continue;
-				Color c = new Color(170, 210, 255) * alpha;
+				Color c = HenshinFxDraw.SparkGold * alpha;
 				c.A = (byte)(MathHelper.Clamp(alpha * 140f, 8f, 140f));
 				Main.EntitySpriteDraw(formTex, pos - Main.screenPosition, null, c, 0f, origin, 1f, fx, 0);
 			}
