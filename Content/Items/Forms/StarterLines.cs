@@ -76,6 +76,22 @@ namespace PokemonHenshin.Content.Items.Forms
 					FrameHeight = 146,
 					FacesLeft = false,
 					DefaultTicksPerFrame = MsToTicks(70)
+				},
+				Jump = new FormAnimClip
+				{
+					TexturePath = "PokemonHenshin/Assets/Forms/Locomotion/L04_F01_Jump",
+					FrameCount = 1,
+					FrameWidth = 164,
+					FrameHeight = 136,
+					FacesLeft = false
+				},
+				Fall = new FormAnimClip
+				{
+					TexturePath = "PokemonHenshin/Assets/Forms/Locomotion/L04_F01_Fall",
+					FrameCount = 1,
+					FrameWidth = 161,
+					FrameHeight = 132,
+					FacesLeft = false
 				}
 			};
 		}

@@ -4,7 +4,7 @@ using Terraria;
 namespace PokemonHenshin.Content.Core
 {
 	/// <summary>
-	/// 变身移动动画状态。本迭代只用 Idle/Run；Jump/Fall/Swim 预留，解析时回退到 Run。
+	/// 变身移动动画状态。未填的 Jump/Fall/Swim 回退到 Run。皮卡丘已填 Jump/Fall 单帧。
 	/// </summary>
 	public enum FormLocomotionState : byte
 	{
@@ -71,7 +71,7 @@ namespace PokemonHenshin.Content.Core
 			return Math.Clamp(scale, RunAnimMinSpeedScale, RunAnimMaxSpeedScale);
 		}
 
-		/// <summary>预留；无素材时 GetClip 回退到 Run。</summary>
+		/// <summary>无素材时 GetClip 回退到 Run。皮卡丘 Jump/Fall 为单帧。</summary>
 		public FormAnimClip Jump { get; init; }
 		public FormAnimClip Fall { get; init; }
 		public FormAnimClip Swim { get; init; }
@@ -107,7 +107,7 @@ namespace PokemonHenshin.Content.Core
 				_ => null
 			};
 
-			// 本迭代 Jump/Fall/Swim 无独立素材 → Run → Idle
+			// 未填 Jump/Fall/Swim → Run → Idle
 			if (clip == null && state is FormLocomotionState.Jump or FormLocomotionState.Fall or FormLocomotionState.Swim)
 				clip = Run;
 			if (clip == null)

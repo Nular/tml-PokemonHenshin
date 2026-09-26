@@ -65,7 +65,7 @@ HJSON：值以 `{` 或 `[` 开头必须双引号，否则模组加载失败。
 
 ### 4.3 Overlay / 地图头像
 
-`HenshinOverlayLayer`：静帧 + bob；可选 `FormLocomotionSpec`（Idle/Run；统一画高 64；地面 Run 随 `|vx|` 变速）。流程：`.cursor/skills/henshin-locomotion`。  
+`HenshinOverlayLayer`：静帧 + bob；可选 `FormLocomotionSpec`（Idle/Run；皮卡丘另有 Jump/Fall 单帧，未填则回退 Run；统一画高 64；地面 Run 随 `|vx|` 变速）。流程：`.cursor/skills/henshin-locomotion`。  
 `HenshinMapHeadLayer`：全身图缩进原版头像 RT；`HideDrawLayers` 按 `headOnlyRender` 分上下文。
 
 ### 4.4 `FormDefinition` / 注册表

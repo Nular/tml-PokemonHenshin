@@ -89,7 +89,7 @@
 
 - 默认方案：隐藏玩家身体与盔甲绘制，在玩家位置绘制**居中 Overlay**（宝可梦贴图）。  
 - **缺省（无移动动画）：** 单帧静图；地面移动时轻微上下浮动，离地微抬，按朝向翻转。  
-- **可选移动动画：** `FormDefinition.Locomotion` 非空时，Overlay 按状态播 Idle / Run 横条精灵表（统一目标画高 64px）；空中 / 游泳复用 Run；Jump / Fall / Swim 槽位预留。有动画时不再叠加 bob。地面 **Run** 播放速度随 `|vx|` 缩放（`RunAnimRefSpeed=3`，约 0.6×～2.25×）。  
+- **可选移动动画：** `FormDefinition.Locomotion` 非空时，Overlay 按状态播横条精灵表（统一目标画高 64px）。皮卡丘跳跃、下落为独立单帧；其它形态的空中，以及游泳，仍复用 Run。Jump / Fall / Swim 未填时回退 Run。有动画时不再叠加 bob。地面 **Run** 播放速度随 `|vx|` 缩放（`RunAnimRefSpeed=3`，约 0.6×～2.25×）。  
 - 物品栏图标与**地图头像**仍用静帧 `TexturePath`（不播跑动）。  
 - 移动片朝向在**资源层**统一（朝右或朝左）；代码按 clip 的 `FacesLeft` 与玩家 `direction` 翻转，**禁止**按状态写特例翻转。  
 - 其他玩家必须看到相同形态；隐身时遵循原版隐身规则。帧索引本地推算（跟 velocity），无需单独同步。  

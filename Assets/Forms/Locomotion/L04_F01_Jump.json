@@ -1,0 +1,12 @@
+{
+  "source": "user jump frame (white bg)",
+  "flip_h": false,
+  "frameCount": 1,
+  "frameWidth": 164,
+  "frameHeight": 136,
+  "durationsMs": [
+    100
+  ],
+  "facesLeft": false,
+  "note": "C# FormAnimClip is hardcoded; this JSON is authoring evidence only."
+}

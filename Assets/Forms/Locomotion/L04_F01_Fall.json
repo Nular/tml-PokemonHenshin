@@ -1,0 +1,12 @@
+{
+  "source": "user fall frame (black bg)",
+  "flip_h": false,
+  "frameCount": 1,
+  "frameWidth": 161,
+  "frameHeight": 132,
+  "durationsMs": [
+    100
+  ],
+  "facesLeft": false,
+  "note": "C# FormAnimClip is hardcoded; this JSON is authoring evidence only."
+}

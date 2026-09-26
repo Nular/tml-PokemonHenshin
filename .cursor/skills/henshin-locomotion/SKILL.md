@@ -20,7 +20,7 @@ description: >-
 | `Content/Core/FormLocomotion.cs` | `FormLocomotionState` / `FormAnimClip` / `FormLocomotionSpec` |
 | `Content/Visual/HenshinOverlayLayer.cs` | 采帧绘制 + 统一画高；无 Locomotion 时 bob |
 | `Content/PlayerState/HenshinPlayer.cs` | 本地帧计时（`LocomotionFrame` / `LocomotionState`） |
-| `Assets/Forms/Locomotion/` | 横条 sheet：`{FormId}_Idle.png` / `_Run.png`（+ JSON 旁证） |
+| `Assets/Forms/Locomotion/` | 横条 sheet：`{FormId}_Idle.png` / `_Run.png`；可选 `_Jump` / `_Fall` / `_Swim`（+ JSON 旁证）。皮卡丘 Jump/Fall 为单帧 |
 | `tools/extract_locomotion_gif.py` | GIF → sheet + JSON |
 | `AGENTS.md` | 构建、目录入口 |
 | `docs/backlog.md` | 其它形态动画是否排期 |
@@ -49,7 +49,7 @@ description: >-
    - 脚底对齐：脚本按内容 bbox 裁切后底部对齐到共享画布。
 2. **填 `FormLocomotionSpec`**（Idle + Run 必填；Jump/Fall/Swim 可空 → `GetClip` 回退 Run → Idle）。  
    - `FacesLeft`：朝右片 = `false`。  
-   - 时长：`MsToTicks(ms)`（60 TPS）；不均帧用 `DurationsTicks[]`。
+   - 时长：`MsToTicks(ms)`（60 TPS）；不均帧用 `DurationsTicks[]`。单帧空中片：一张朝右 PNG，`FrameCount = 1`，宽高=贴图像素（样例 `L04_F01_Jump` / `_Fall`）。
 3. **接线形态**：`FormItemUtil.Def(..., locomotion: ...)`；`TexturePath` 仍指向静帧（物品/地图）。
 4. **Overlay 已通用**：有 `Locomotion` 则采帧+缩放、无 bob；无则旧路径。勿为单形态复制一层。
 5. **回写**：需求 §2.3 / AGENTS 若行为变更；新踩坑补进本 Skill「踩坑」节。
@@ -65,7 +65,7 @@ description: >-
 | wet 且 vy≠0 | Swim | → Run |
 
 帧在 `HenshinPlayer.PreUpdate` 推进；状态切换重置帧。跟 velocity，**无需 Net 同步帧**。  
-地面 **Run** 播放速度按 `|vx| / RunAnimRefSpeed(3)` 缩放（夹在 0.6～2.25）；Idle / 空中复用 Run 仍用素材时长。
+地面 **Run** 播放速度按 `|vx| / RunAnimRefSpeed(3)` 缩放（夹在 0.6～2.25）。Idle 与已接线的空中片按素材时长；未接线的 Jump/Fall/Swim 回退 Run，且不吃地面变速。
 
 ## 设计红线
 
@@ -78,7 +78,7 @@ description: >-
 
 ## 验收清单
 
-- 站立 Idle、水平移动 Run；跳/落/水中为 Run（或独立片若已接线）
+- 站立 Idle、水平移动 Run；皮卡丘跳/落为独立单帧；未接线的跳/落/水中回退 Run
 - 左右朝向正确；身高约 64px 与其它静帧接近
 - 物品栏 / 地图头像仍静帧；松手无残留
 - 其它 `Locomotion==null` 形态外观不变
