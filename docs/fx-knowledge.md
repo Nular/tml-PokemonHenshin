@@ -540,6 +540,20 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 - **暗影球拖尾：** 路径 history lag 画 5 节递减盘，仅 tip hitbox 有伤（等价「首节伤、尾纯 VFX」）。
 - **舌舔：** `Assets/Fx/Extra98` 竖条沿根→尖重叠绘制；`ShouldUpdatePosition=false`；线碰撞；命中收舌。
 
+### 撞墙反馈 `HenshinTileImpact`（代码已接线，本地验收 pending）
+
+| 项 | 内容 |
+|----|------|
+| **文件** | `HenshinTileImpact.cs`：`FromCollide`（飞弹 `OnTileCollide`）/ `At`（线截断点）/ `GroundDebris`（贴地卷尘） |
+| **三层** | ① `Collision.HitTiles` 按物块材质喷碎屑 ② 属性尘沿撞击面法线喷（侧墙横喷 / 地面上喷 / 天花板下喷） ③ 原版 `SoundID`，**按 kind 节流** |
+| **法线** | `OnTileCollide` 里比较 `velocity` 与 `oldVelocity`：X 被清零=侧墙，Y 被清零=地/顶；线类用 `-aim` |
+| **预设（当前主选）** | Electric `Item93` 4t · Water `SplashWeak` 3t · Mud `Dig`+`SplashWeak` 3t · Seed `Grass` 4t · Psychic `Item9` 3t · Fire `Item20` 6t · Wind `DD2_BetsyWindAttack` 8t · DragonFire `Item20` 16t（备选：Electric `Item94`、Water `Item85`、Psychic `Item27`、Fire `Item74`、Wind `Item1`，待试听定稿） |
+| **接线** | 电击、水枪、掷泥、种子机关枪（种子分支）、胡地精神强念：撞墙即 `FromCollide`；火焰漩涡首次停飞 Fire 爆 + 贴墙磨火星；起风/暴风首次落地 Wind 气浪，掉头/下台阶小气团（20 tick 冷却），贴地每 5 tick 卷尘；水炮墙截断 `Splash` + 锁长期反溅；龙息截断点持续龙火 |
+| **规则** | 只挂 `OnTileCollide` / 截断分支，**不挂 `OnKill`**（命中/超时不出墙效）；纯本地粒子+声，不生成射弹、不发包，`Main.dedServ` 早退；穿墙（诅咒之符、超梦强念、加农）天然不触发 |
+| **勿做** | 每发撞墙用 FlashImpact / DiffusionCircle 大图（连发糊屏）；撞墙效果强于同招命中；不节流的连发音 |
+
+验收通过后再升入 §2 Accepted cookbook。
+
 ---
 
 ## 7. CWR 拷贝库存（只读参考）
@@ -598,6 +612,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | Lunge/Dig/Slash 共享 | `SharedMoveProjs.cs` |
 | 火花 | `EmberBoltProj.cs` |
 | 爪痕 | `ScratchSlashProj.cs` |
+| 撞墙反馈 / 墙截断射线 | `HenshinTileImpact.cs` / `HenshinTileRay.cs` |
 | FX 贴图 | `Assets/Fx/`（§7） |
 | 形态接线 | `StarterLines.cs` / `CombatLinesA.cs` / `UtilityAndLegend.cs` |
 | 玩法表 | `docs/move-effects.md` |
@@ -644,6 +659,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.13 Living | 2026-09-26 | 电光一闪：身周 Kenney spark（非落点尘爆）；单段 ×3.0 ×3 段；撞击冷却 3s |
 | 2.14 Living | 2026-09-27 | 皮卡丘/雷丘电系招式统一暖金 `SparkGold` `(255,244,150)`：十万伏特、落雷、伏特攻击、电击 |
 | 2.15 Living | 2026-09-27 | 暖金压深 `(255,168,28)` / 芯 `(255,206,64)`；电光一闪路径残影；电击沿飞行方向判定×2 |
+| 2.16 Living | 2026-09-27 | §6 撞墙反馈 `HenshinTileImpact`：材质碎屑+属性尘+节流音；10 个在役撞墙/截断/贴地弹接线；穿墙弹不变 |
 
 ---
 

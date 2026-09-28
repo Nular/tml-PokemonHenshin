@@ -135,6 +135,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Lighting.AddLight(Projectile.Center, Tint.ToVector3() * 0.4f);
 		}
 
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Psychic);
+			return true;
+		}
+
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.BrokenArmor, 180);

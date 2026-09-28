@@ -23,8 +23,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const float FlightSpeed = 14f;
 		private const float SuckRange = 168f;
 		private const int FlightLife = 150;
+		private const int ImpactCooldown = 20;
 		private bool _spawnedCompanions;
 		private bool _grounded;
+		private int _impactCooldown;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.WeatherPainShot;
 
@@ -96,8 +98,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 				-Projectile.velocity * 0.1f + Main.rand.NextVector2Circular(1.5f, 1.5f), 100,
 				new Color(160, 190, 230), 1.2f).noGravity = true;
 
+			if (_impactCooldown > 0)
+				_impactCooldown--;
 			if (_grounded)
+			{
 				SnapToGround();
+				if (Projectile.timeLeft % 5 == 0 && Projectile.velocity.Y == 0f)
+					HenshinTileImpact.GroundDebris(Projectile);
+			}
 
 			float pullStr = IsUlt ? 8f : 6f;
 			float carry = IsUlt ? 0.65f : 0.55f;
@@ -122,13 +130,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool OnTileCollide(Vector2 oldVelocity)
 		{
+			bool wallTurn = Math.Abs(Projectile.velocity.X) < 0.01f && Math.Abs(oldVelocity.X) > 0.01f;
+			if (!_grounded)
+			{
+				HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Wind, 1.3f);
+				_impactCooldown = ImpactCooldown;
+			}
+			else if (_impactCooldown <= 0 && (wallTurn || oldVelocity.Y > 3f))
+			{
+				HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Wind, 0.7f);
+				_impactCooldown = ImpactCooldown;
+			}
 			_grounded = true;
 			float sx = Math.Abs(Projectile.velocity.X) > 0.01f
 				? Math.Sign(Projectile.velocity.X)
 				: Math.Sign(oldVelocity.X);
 			if (sx == 0)
 				sx = Main.player[Projectile.owner].direction;
-			if (Math.Abs(Projectile.velocity.X) < 0.01f && Math.Abs(oldVelocity.X) > 0.01f)
+			if (wallTurn)
 				sx = -Math.Sign(oldVelocity.X);
 			Projectile.velocity.X = sx * FlightSpeed;
 			Projectile.velocity.Y = 0f;

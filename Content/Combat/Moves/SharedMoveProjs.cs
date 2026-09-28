@@ -416,6 +416,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Center - half, Projectile.Center + half, Projectile.height, ref _);
 		}
 
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Electric);
+			return true;
+		}
+
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.Electrified, 300);

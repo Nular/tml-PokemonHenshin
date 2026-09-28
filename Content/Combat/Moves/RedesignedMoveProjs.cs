@@ -299,6 +299,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool OnTileCollide(Vector2 oldVelocity)
 		{
 			PopBubbles();
+			if (_texType == ProjectileID.Seed)
+				HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Seed);
 			return true;
 		}
 
@@ -392,6 +394,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool HandlesOwnHoming => true;
 		private int _lockNpc = -1;
 		private bool _halted;
+		private Vector2 _wallNormal = -Vector2.UnitY;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Typhoon;
 
@@ -424,6 +427,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_halted)
 			{
 				Projectile.velocity = Vector2.Zero;
+				if (!Main.dedServ && Projectile.timeLeft % 12 == 0)
+				{
+					Vector2 contact = Projectile.Center - _wallNormal * (Projectile.width * 0.5f);
+					for (int i = 0; i < 2; i++)
+					{
+						Vector2 v = _wallNormal.RotatedBy(Main.rand.NextFloat(-1.2f, 1.2f)) * Main.rand.NextFloat(1.5f, 3.5f);
+						Dust.NewDustPerfect(contact, DustID.Torch, v, 60, default, 1.3f).noGravity = true;
+					}
+				}
 			}
 			else if (_lockNpc >= 0)
 			{
@@ -458,6 +470,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool OnTileCollide(Vector2 oldVelocity)
 		{
+			if (!_halted)
+			{
+				_wallNormal = HenshinTileImpact.NormalFromCollide(Projectile.velocity, oldVelocity);
+				HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Fire, 1.2f);
+			}
 			_halted = true;
 			_lockNpc = -1;
 			Projectile.velocity = Vector2.Zero;
@@ -525,6 +542,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.Water, Projectile.velocity * 0.2f, 100, default, 1.3f);
 			d.noGravity = true;
+		}
+
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Water);
+			return true;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -1307,7 +1330,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool HandlesOwnHoming => true;
 
 		private const float FlightSpeed = 11f;
+		private const int ImpactCooldown = 20;
 		private bool _grounded;
+		private int _impactCooldown;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Typhoon;
 
@@ -1351,8 +1376,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			Projectile.rotation += 0.28f;
 
+			if (_impactCooldown > 0)
+				_impactCooldown--;
 			if (_grounded && Projectile.tileCollide)
+			{
 				SnapToGround();
+				if (Projectile.timeLeft % 5 == 0 && Projectile.velocity.Y == 0f)
+					HenshinTileImpact.GroundDebris(Projectile);
+			}
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -1364,6 +1395,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool OnTileCollide(Vector2 oldVelocity)
 		{
+			bool wallTurn = System.Math.Abs(Projectile.velocity.X) < 0.01f && System.Math.Abs(oldVelocity.X) > 0.01f;
+			if (!_grounded)
+			{
+				HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Wind);
+				_impactCooldown = ImpactCooldown;
+			}
+			else if (_impactCooldown <= 0 && (wallTurn || oldVelocity.Y > 3f))
+			{
+				HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Wind, 0.6f);
+				_impactCooldown = ImpactCooldown;
+			}
 			_grounded = true;
 			float sx = System.Math.Abs(Projectile.velocity.X) > 0.01f
 				? System.Math.Sign(Projectile.velocity.X)
@@ -1371,7 +1413,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (sx == 0)
 				sx = Main.player[Projectile.owner].direction;
 			// 撞墙时改向，保持水平贴地滚动
-			if (System.Math.Abs(Projectile.velocity.X) < 0.01f && System.Math.Abs(oldVelocity.X) > 0.01f)
+			if (wallTurn)
 				sx = -System.Math.Sign(oldVelocity.X);
 			Projectile.velocity.X = sx * FlightSpeed;
 			Projectile.velocity.Y = 0f;

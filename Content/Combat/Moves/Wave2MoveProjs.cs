@@ -440,6 +440,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private Vector2 _aimDir = Vector2.UnitX;
 		private int _npcHits;
 		private bool _stopped;
+		private bool _wallStopped;
 		private float _lockedLen = -1f;
 		private int _fadeMax;
 
@@ -521,9 +522,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float blocked = HenshinTileRay.FirstSolidDistance(_from, _aimDir, len);
 				if (blocked + 4f < len)
 				{
-					SpawnPumpSplash(_from + _aimDir * blocked);
+					Vector2 hit = _from + _aimDir * blocked;
+					SpawnPumpSplash(hit);
 					StopPumpAt(blocked);
+					_wallStopped = true;
+					HenshinTileImpact.At(hit, -_aimDir, TileImpactKind.Water, 1.4f, sound: false);
+					if (!Main.dedServ)
+						SoundEngine.PlaySound(SoundID.Splash with { Volume = 0.6f }, hit);
 				}
+			}
+			else if (_wallStopped && Projectile.timeLeft > _fadeMax && Projectile.timeLeft % 2 == 0)
+			{
+				HenshinTileImpact.At(_to, -_aimDir, TileImpactKind.Water, 0.5f,
+					sound: Projectile.timeLeft % 15 == 0, material: Projectile.timeLeft % 6 == 0);
 			}
 			Projectile.Center = len > 1f ? Vector2.Lerp(_from, _to, 0.3f) : _from;
 			owner.direction = _aimDir.X >= 0f ? 1 : -1;
@@ -2431,6 +2442,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				float blocked = HenshinTileRay.FirstSolidDistance(_from, aim, BreathLength);
 				_to = _from + aim * blocked;
+				if (blocked < BreathLength - 8f)
+					HenshinTileImpact.At(_to, -aim, TileImpactKind.DragonFire, material: Projectile.timeLeft % 4 == 0);
 			}
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.2f);
 			owner.direction = aim.X >= 0f ? 1 : -1;
@@ -2577,6 +2590,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			Projectile.rotation += 0.2f;
 			Dust.NewDustPerfect(Projectile.Center, DustID.Dirt, Vector2.Zero, 100, default, 1.1f).noGravity = true;
+		}
+
+		public override bool OnTileCollide(Vector2 oldVelocity)
+		{
+			HenshinTileImpact.FromCollide(Projectile, oldVelocity, TileImpactKind.Mud);
+			return true;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)

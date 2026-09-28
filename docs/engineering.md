@@ -19,8 +19,8 @@ PokemonHenshin/
   docs/archive/   # 历史全文；Agent 禁止读/维护
   tools/          # cloud-agent-setup、build-mod、HenshinStatVerify、fetch/pixelize/extract_locomotion
   Assets/Forms/ · Forms/Locomotion/ · Accessories/ · Items/ · Fx/
-  Content/Core · Damage · PlayerState · Visual · Combat · Affinity · Evolution
-         Accessories · Items/Forms · Items/Consumables · WeatherField · TerrainEdit · Loot · Net · Prefixes
+  Content/Core · Damage · PlayerState · Visual · Combat · Affinity · Evolution · Buffs · Config
+         Accessories · Items/Forms · Items/Consumables · WeatherField · TerrainEdit · Loot · Net · NPCs · Prefixes
 ```
 
 `build.txt`：`modReferences = CalamityMod`；`sortAfter = CalamityMod`。钉死：**tML 1.4.4.9 / 2026.07（net8.0）**，**CalamityMod 2.2.4**。禁止 `modReferences` 大修 / InnoVault。
@@ -119,8 +119,9 @@ HJSON：值以 `{` 或 `[` 开头必须双引号，否则模组加载失败。
 | N10 | 高延迟下快速切物品 | 最终形态与热键栏一致（服务端权威） |
 | N11 | 双方变身看地图；虫洞点队友 | 头像为缩小形态图；可传送并耗药 |
 | N12 | 客户端持握妙蛙种子甩藤鞭；主机另一向看 | 主机见鞭指向**释放者**鼠标，不跟主机指针 |
+| N13 | 客户端电击 / 水炮 / 起风打墙；主机旁观 | 主机看到同样的撞墙碎屑与属性尘、听到撞墙音（`HenshinTileImpact` 各端本地播）；专用服无异常日志 |
 
-回归：改 Net / Overlay / 进化 / 地形后至少跑 N1–N6；瞄准/壳弹改动加 N12；地图头像加 N11。
+回归：改 Net / Overlay / 进化 / 地形后至少跑 N1–N6；瞄准/壳弹改动加 N12；地图头像加 N11；撞墙反馈加 N13。
 
 ---
 
