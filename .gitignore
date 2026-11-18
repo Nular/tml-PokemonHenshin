@@ -6,3 +6,5 @@ obj/
 **/__pycache__/
 *.py[cod]
 Assets/TEMP_ASSETS/
+tools/PromoVideo/out/
+tools/PromoVideo/fonts/
