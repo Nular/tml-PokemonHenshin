@@ -302,6 +302,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				ShootSpeed = 0f,
 				Knockback = 3f,
 				Ai0 = reachTiles,
+				Ai2 = reachTiles > 8f ? 1f : 0f, // 外观：0 = 抓·短爪痕；1 = 龙爪·火系长爪（reach > 8 格）
 				NetRisk = NetRisk.Low,
 				Collision = CollisionTier.A
 			};

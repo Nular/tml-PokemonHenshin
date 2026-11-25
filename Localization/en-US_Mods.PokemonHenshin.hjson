@@ -468,6 +468,7 @@ Buffs: {
 		DisplayName: Work Up
 		Description: Transformed move damage +20%
 	}
+
 	HenshinSleepDebuff: {
 		DisplayName: Sleep
 		Description: Immobilized; cannot deal contact damage. Next hit taken deals double damage and wakes the target.
@@ -2118,4 +2119,9 @@ Projectiles: {
 	AuraSphereBoltProj.DisplayName: Aura Sphere Bolt Proj
 	ArmHammerSmashProj.DisplayName: Arm Hammer Smash Proj
 	BlinkStrikeGhostProj.DisplayName: Blink Strike Ghost Proj
+	TripleStabHitFxProj.DisplayName: Triple Stab Hit Fx Proj
+	BiteHitFxProj.DisplayName: Bite Hit Fx Proj
+	ScratchHitFxProj.DisplayName: Scratch Hit Fx Proj
+	ShadowClawHitFxProj.DisplayName: Shadow Claw Hit Fx Proj
+	ShadowClawStrikeProj.DisplayName: Shadow Claw Strike Proj
 }

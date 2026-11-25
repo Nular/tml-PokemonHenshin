@@ -468,6 +468,7 @@ Buffs: {
 		DisplayName: 自我激励
 		Description: 变身招式伤害 +20%
 	}
+
 	HenshinSleepDebuff: {
 		DisplayName: 睡眠
 		Description: 完全无法行动且无法接触伤害；下次受到的伤害翻倍并醒来
@@ -2118,4 +2119,9 @@ Projectiles: {
 	// AuraSphereBoltProj.DisplayName: Aura Sphere Bolt Proj
 	// ArmHammerSmashProj.DisplayName: Arm Hammer Smash Proj
 	// BlinkStrikeGhostProj.DisplayName: Blink Strike Ghost Proj
+	// TripleStabHitFxProj.DisplayName: Triple Stab Hit Fx Proj
+	// BiteHitFxProj.DisplayName: Bite Hit Fx Proj
+	// ScratchHitFxProj.DisplayName: Scratch Hit Fx Proj
+	// ShadowClawHitFxProj.DisplayName: Shadow Claw Hit Fx Proj
+	// ShadowClawStrikeProj.DisplayName: Shadow Claw Strike Proj
 }

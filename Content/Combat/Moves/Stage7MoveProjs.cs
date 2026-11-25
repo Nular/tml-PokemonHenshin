@@ -449,12 +449,60 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>暗影抓：龙爪式 20 格紫爪 + 影炎。</summary>
+	/// <summary>
+	/// 暗影抓导演（MoveSpec 入口）：拥有者客户端施放时用 OwnerAimDir 锁定一次 360° 方向，
+	/// 把弧度经 ai1 随生成同步给 ShadowClawStrikeProj，然后自毁（联机安全，不读 Main.MouseWorld）。
+	/// </summary>
 	public class ShadowClawSlashProj : HenshinMoveProj
+	{
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 8;
+			Projectile.height = 8;
+			Projectile.friendly = true;
+			Projectile.DamageType = HenshinDamage.Instance;
+			Projectile.penetrate = -1;
+			Projectile.timeLeft = 2;
+			Projectile.tileCollide = false;
+			Projectile.ignoreWater = true;
+		}
+
+		public override bool? CanDamage() => false;
+
+		public override void AI()
+		{
+			Player owner = Main.player[Projectile.owner];
+			if (owner.active && !owner.dead && Projectile.owner == Main.myPlayer)
+			{
+				Vector2 aim = HenshinProjUtil.OwnerAimDir(owner, owner.MountedCenter);
+				if (Math.Abs(aim.X) > 0.05f)
+					owner.ChangeDir(aim.X > 0f ? 1 : -1);
+				Projectile.NewProjectile(Projectile.GetSource_FromThis(), owner.MountedCenter, Vector2.Zero,
+					ModContent.ProjectileType<ShadowClawStrikeProj>(), Projectile.damage, Projectile.knockBack,
+					Projectile.owner, 0f, aim.ToRotation());
+			}
+			Projectile.Kill();
+		}
+
+		public override bool PreDraw(ref Color lightColor) => false;
+	}
+
+	/// <summary>暗影抓本体：三道紫黑爪痕沿 20 格（ai1 = 朝向弧度，360°）划出，影炎尾，命中 ShadowFlame。</summary>
+	public class ShadowClawStrikeProj : HenshinMoveProj
 	{
 		private const int Lifetime = 14;
 		private const float ReachTiles = 20f;
-		private const float LineSpacing = 16f;
+		private const float LineSpacing = 26f; // 与贴图三道爪痕间距一致（13 美术像素）
+
+		// 贴图 Assets/Fx/ShadowClaw/ShadowClaw(+_Light).png：6 帧 × 2 tick，328×92/帧，爪根在 (4,46)，全长约 314 px ≈ 20 格。
+		private const int SheetFrames = 6;
+		private const int SheetTicksPerFrame = 2;
+		private static ReLogic.Content.Asset<Texture2D> _sheet;
+		private static ReLogic.Content.Asset<Texture2D> _light;
+
+		private Vector2 Dir => Projectile.ai[1].ToRotationVector2();
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
@@ -470,6 +518,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.ignoreWater = true;
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = Lifetime;
+			Projectile.ownerHitCheck = false;
 		}
 
 		public override void AI()
@@ -481,42 +530,35 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 
-			if (Projectile.ai[1] == 0f)
-				Projectile.ai[1] = owner.direction;
-			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
+			Vector2 dir = Dir;
 			float reach = ReachTiles * 16f;
-			Projectile.Center = owner.MountedCenter + new Vector2(dir * Math.Max(36f, reach * 0.55f), 0f);
+			Projectile.Center = owner.MountedCenter + dir * (reach * 0.5f);
 			Projectile.velocity = Vector2.Zero;
 
-			if (Projectile.timeLeft > Lifetime - 10)
+			if (Projectile.localAI[0] == 0f)
 			{
-				float t = (Lifetime - Projectile.timeLeft) / 10f;
-				for (int line = -1; line <= 1; line++)
-				{
-					float yBase = line * LineSpacing;
-					for (int seg = 0; seg < 3; seg++)
-					{
-						float along = t * reach * 0.7f + seg * 8f;
-						Vector2 pos = owner.MountedCenter + new Vector2(dir * along, yBase + t * 6f);
-						Dust d = Dust.NewDustPerfect(pos, DustID.Shadowflame, new Vector2(dir * 2.4f, 0.3f),
-							80, new Color(180, 80, 255), 1.35f);
-						d.noGravity = true;
-					}
-				}
+				Projectile.localAI[0] = 1f;
+				SoundEngine.PlaySound(SoundID.Item71 with { Pitch = -0.35f, Volume = 0.8f }, owner.Center);
 			}
+
+			if (Main.dedServ)
+				return;
+
+			// 爪痕贴图自带影炎尾，不再沿线撒尘。
+			Lighting.AddLight(owner.MountedCenter + dir * (reach * 0.5f), 0.35f, 0.12f, 0.55f);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
 			Player owner = Main.player[Projectile.owner];
-			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
-			float reach = ReachTiles * 16f;
+			Vector2 dir = Dir;
+			Vector2 side = new(-dir.Y, dir.X);
 			Vector2 origin = owner.MountedCenter;
-			Vector2 tip = origin + new Vector2(dir * reach, 0f);
+			Vector2 tip = origin + dir * (ReachTiles * 16f);
 			for (int line = -1; line <= 1; line++)
 			{
-				Vector2 o = origin + new Vector2(0f, line * LineSpacing);
-				Vector2 e = tip + new Vector2(0f, line * LineSpacing);
+				Vector2 o = origin + side * (line * LineSpacing);
+				Vector2 e = tip + side * (line * LineSpacing);
 				float point = 0f;
 				if (Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), o, e, 16f, ref point))
 					return true;
@@ -527,32 +569,106 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.ShadowFlame, 180);
-			for (int i = 0; i < 8; i++)
-			{
-				Dust d = Dust.NewDustPerfect(target.Center, DustID.Shadowflame, Main.rand.NextVector2Circular(4f, 4f),
-					60, new Color(180, 80, 255), 1.4f);
-				d.noGravity = true;
-			}
+			if (Projectile.owner != Main.myPlayer)
+				return;
+			Player owner = Main.player[Projectile.owner];
+			Vector2 dir = Dir;
+			float along = MathHelper.Clamp(Vector2.Dot(target.Center - owner.MountedCenter, dir), 0f, ReachTiles * 16f);
+			Vector2 hitPos = owner.MountedCenter + dir * along;
+			// 0 伤害纯视觉命中射弹：落在爪线上最近点，紫焰迸散；ai0 = 朝向弧度。
+			Projectile.NewProjectile(Projectile.GetSource_FromThis(), hitPos, Vector2.Zero,
+				ModContent.ProjectileType<ShadowClawHitFxProj>(), 0, 0f, Projectile.owner, Projectile.ai[1]);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
+			_sheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/ShadowClaw/ShadowClaw", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			_light ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/ShadowClaw/ShadowClaw_Light", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _sheet.Value;
+			int frameH = tex.Height / SheetFrames;
+			int age = Lifetime - Projectile.timeLeft;
+			int frame = Math.Clamp(age / SheetTicksPerFrame, 0, SheetFrames - 1);
+			Rectangle src = new(0, frameH * frame, tex.Width, frameH);
 			Player owner = Main.player[Projectile.owner];
-			int dir = Projectile.ai[1] >= 0f ? 1 : -1;
-			float life = Projectile.timeLeft / (float)Lifetime;
-			float rot = dir > 0 ? 0.4f : MathHelper.Pi - 0.4f;
-			rot += MathHelper.Pi;
-			int frame = HenshinFxDraw.AgeFrame(Lifetime, Projectile.timeLeft, 3, HenshinFxDraw.HitJaggedFrames);
-			float reach = ReachTiles * 16f;
+			Vector2 pos = (owner.MountedCenter - Main.screenPosition).Floor();
+			float rot = Projectile.ai[1];
+			// 朝左半圈时上下翻转，让贴图上半始终朝上。
+			bool left = Math.Cos(rot) < 0;
+			SpriteEffects fx = left ? SpriteEffects.FlipVertically : SpriteEffects.None;
+			Vector2 origin = new(4f, left ? frameH - 46f : 46f);
+			// 末段淡出（预乘贴图，整色相乘；Additive 层同样乘不透明度，A 随之保留）。
+			float opacity = Math.Min(1f, Projectile.timeLeft / 4f);
+			Main.EntitySpriteDraw(tex, pos, src, Color.White * opacity, rot, origin, 1f, fx, 0f);
 			HenshinFxDraw.BeginAdditive();
-			for (int i = 1; i <= 5; i++)
+			Main.EntitySpriteDraw(_light.Value, pos, src, Color.White * opacity, rot, origin, 1f, fx, 0f);
+			HenshinFxDraw.EndAdditive();
+			return false;
+		}
+	}
+
+	/// <summary>暗影抓命中：紫焰爪痕迸散（纯视觉，0 伤害）。ai0 = 爪的朝向弧度。贴图 Assets/Fx/ShadowClaw/ShadowClawHit(+_Light)。</summary>
+	public class ShadowClawHitFxProj : ModProjectile
+	{
+		private const int Frames = 5;
+		private const int TicksPerFrame = 3;
+		private const int Lifetime = Frames * TicksPerFrame;
+		private static ReLogic.Content.Asset<Texture2D> _sheet;
+		private static ReLogic.Content.Asset<Texture2D> _light;
+
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetDefaults()
+		{
+			Projectile.width = 16;
+			Projectile.height = 16;
+			Projectile.friendly = false;
+			Projectile.hostile = false;
+			Projectile.timeLeft = Lifetime;
+			Projectile.tileCollide = false;
+			Projectile.ignoreWater = true;
+			Projectile.penetrate = -1;
+		}
+
+		public override bool? CanDamage() => false;
+
+		public override void AI()
+		{
+			Projectile.velocity = Vector2.Zero;
+			int age = Lifetime - Projectile.timeLeft;
+			if (Projectile.localAI[0] == 0f)
 			{
-				float u = i / 5.5f;
-				Vector2 pos = owner.MountedCenter + new Vector2(dir * reach * u, 0f);
-				HenshinFxDraw.DrawHitJaggedFrame(pos,
-					HenshinFxDraw.WithAlpha(new Color(200, 100, 255), 0.75f * life), 0.75f + u * 0.35f, rot,
-					(frame + i) % HenshinFxDraw.HitJaggedFrames);
+				Projectile.localAI[0] = 1f;
+				SoundEngine.PlaySound(SoundID.Item74 with { Pitch = -0.2f, Volume = 0.55f }, Projectile.Center);
+				if (!Main.dedServ)
+				{
+					for (int i = 0; i < 3; i++)
+					{
+						Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.Shadowflame, Main.rand.NextVector2Circular(4f, 4f),
+							60, new Color(180, 80, 255), 1.4f);
+						d.noGravity = true;
+					}
+				}
 			}
+			if (age < 8)
+				Lighting.AddLight(Projectile.Center, 0.5f, 0.18f, 0.8f);
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			_sheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/ShadowClaw/ShadowClawHit", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			_light ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/ShadowClaw/ShadowClawHit_Light", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _sheet.Value;
+			int frameH = tex.Height / Frames;
+			int age = Lifetime - Projectile.timeLeft;
+			int frame = Math.Clamp(age / TicksPerFrame, 0, Frames - 1);
+			Rectangle src = new(0, frameH * frame, tex.Width, frameH);
+			Vector2 pos = (Projectile.Center - Main.screenPosition).Floor();
+			Vector2 origin = new(tex.Width * 0.5f, frameH * 0.5f);
+			float rot = Projectile.ai[0];
+			SpriteEffects fx = Math.Cos(rot) < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
+			Main.EntitySpriteDraw(tex, pos, src, Color.White, rot, origin, 1f, fx, 0f);
+			HenshinFxDraw.BeginAdditive();
+			Main.EntitySpriteDraw(_light.Value, pos, src, Color.White, rot, origin, 1f, fx, 0f);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}

@@ -412,6 +412,22 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | **Tint/scale** | 土棕；间距 6～8 tick；reach≈腕力爪 |
 | **Forbidden** | 三次无图 slash；通天拉伸 |
 | **Files** | `TripleStabProj`；勿只 `GenericSlashProj`+Dirt |
+| **Implemented**（2026-11-26，本地验收 pending） | 自绘 `Assets/Fx/TripleStab/TripleStab.png`：5 帧×2 tick 土棕岩刺，132×22/帧，刺根 (2,11)，全长 128 px＝判定线 8 格；受光抬亮，末帧碎开淡出，Kill 落土屑。命中 `TripleStabHitFxProj`（0 伤，ai0＝弧度）：`TripleStabHit.png`＋`_Light` 5 帧×3 tick 岩屑迸散，光层真 Additive 保 A。贴图 PreDraw 懒加载；去掉 AI 里的 `LoadProjectile(Stinger)` |
+| **360°**（2026-11-26） | 导演弹在拥有者端施放首刺时用 `OwnerAimDir` 锁一次方向，弧度经 `GroundSpikeStabProj` 的 **ai1** 随生成同步；三刺沿垂直方向 ±10 px 错开；判定线、命中投影都按方向；绘制 `rotation`，朝左半圈 `FlipVertically`（origin y 取 frameH−11）。`TripleStabHitFxProj` ai0 改为弧度，同样旋转+翻转 |
+
+#### 360° 近战批（2026-11-26，本地验收 pending）
+
+原先按 `owner.direction` 只能左右出招，现统一改为朝鼠标 360°。共同规矩：拥有者端算一次 `HenshinProjUtil.OwnerAimDir`，`owner.ChangeDir` 跟瞄准 X；方向随生成同步（ai 槽）或首帧 `netUpdate`；绘制 `rotation`＋朝左半圈 `FlipVertically`；命中由拥有者端生成 0 伤纯视觉 HitFx 弹；贴图 PreDraw 懒加载；Additive 层保 A。
+
+| 招式 | 类 | 方向同步 | 贴图 | 要点 |
+|----|----|----|----|----|
+| 抓 / 龙爪 | `ScratchSlashProj`＋`ScratchHitFxProj` | ai1＝弧度+10（0＝未锁），首帧 `netUpdate`；ai2 外观（0 抓 / 1 龙爪，工厂按 reach>8 格设） | `Assets/Fx/Scratch/Scratch.png` 60×50×5（三道弯月爪痕）；`Assets/Fx/DragonClaw/DragonClaw.png` 320×58×5 | 三条 ±16 px 线段判定；龙爪沿线叠 `DrawHitJaggedFrame`；fullbright，原点左端中线 |
+| 咬住 / 火焰牙 / 咬碎 | `BiteArcProj`＋`BiteHitFxProj` | ai0/1/2 已占（体型/破甲/灼烧），弧度走 `SendExtraAI`，首帧 `netUpdate`；远端收到前不画不判 | `Assets/Fx/Bite/`：`BiteJaws`（咬住、咬碎共用）、`FireFang`（两对大弧牙），各带 `_Light`，6 帧×3 tick；`BiteHit(+_Light)` 5 帧×3 tick | 判定 OBB vs AABB（SAT），半长 32s×28s；咬碎钢紫调＋咬合抖动＋命中 2.2 倍；`BiteArcAtMouseProj` 不动 |
+| 暗影抓 | `ShadowClawSlashProj`（导演）→`ShadowClawStrikeProj`＋`ShadowClawHitFxProj` | 弧度经 Strike 的 ai1 随生成同步 | `Assets/Fx/ShadowClaw/`：`ShadowClaw` 328×92×6（爪根 (4,46)）、`ShadowClawHit` 80×80×5，各带 `_Light` | 三条 26 px 间距 20 格线段；命中 ShadowFlame 180 tick；光层须压暗（`#1a0840`/`#34116e`/`#4e2090`）否则冲白 |
+
+不在本批：起风 / 暴风（设计即贴地滚）、远距咬碎（已跟鼠标）、近身战附带 `GenericSlashProj`。
+
+**粒子纪律（本批）**：贴图已表达轨迹，出招期间**不沿线撒 Dust**（会挡住贴图）；只在咬合/命中瞬间留 2～4 颗点缀（咬碎最多 4）。新增同类贴图招式照此办理。
 
 #### Dig（挖洞）Skill2
 
