@@ -549,6 +549,7 @@ Moves: {
 	Flamethrower: 喷射火焰
 	Overheat: 过热
 	Tackle: 撞击
+	Bulldoze: 重踏
 	BubbleBeam: 泡沫光线
 	Bite: 咬住
 	Whirlpool: 潮旋
@@ -748,7 +749,7 @@ Items: {
 
 	DiglettForce: {
 		DisplayName: 地鼠之力
-		Tooltip: 地面。掷泥、撞击；大招挖洞爆发（可挖砖）。
+		Tooltip: 地面。掷泥、重踏；大招挖洞爆发（可挖砖）。
 	}
 
 	DugtrioForce: {
@@ -2130,4 +2131,9 @@ Projectiles: {
 	// SeedGunShotProj.DisplayName: Seed Gun Shot Proj
 	// SplashFallProj.DisplayName: Splash Fall Proj
 	// TackleHitFxProj.DisplayName: Tackle Hit Fx Proj
+	// BulldozeProj.DisplayName: Bulldoze Proj
+	// AerialAceBurstProj.DisplayName: Aerial Ace Burst Proj
+	// AerialAceSlashProj.DisplayName: Aerial Ace Slash Proj
+	// AerialAceUltProj.DisplayName: Aerial Ace Ult Proj
+	// WhirlpoolUltProj.DisplayName: Whirlpool Ult Proj
 }

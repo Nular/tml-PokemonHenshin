@@ -1,7 +1,7 @@
 # 招式泰拉适配表（权威）
 
 **Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 单机已验收**；**v1.4 数值已接线**（含大招后 `UltEnergyLockout`；游戏内 DPS 抽检待本地）。联机瞄准/壳弹**代码已接线**，双端验收 pending（清单 `docs/fx-knowledge.md`）。  
-**版本：** 1.3（表结构）；变更记录至 **1.40（2026-11-26）**  
+**版本：** 1.3（表结构）；变更记录至 **1.41（2026-11-26）**  
 **冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
@@ -125,7 +125,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L03_F01 | 妙蛙种子 | **茂盛**：HP&lt;50% 时草系招式伤害 +20% | 藤鞭 Whip（皮鞭级；自绘 `VineWhip` 藤蔓逐段平铺，360° 朝鼠标） | 撞击 Lunge（命中生成 `TackleHitFxProj` 冲击星） | 种子机关枪 Barrage×64+EasyCrit（`SeedGunDirectorProj` + 自绘 `SeedShot`，无拖尾） | 耗 100 | `VineWhip` 藤蔓鞭身；`SeedShot` 种子束状连发（无拖尾） | Low |
+| L03_F01 | 妙蛙种子 | **茂盛**：HP&lt;50% 时草系招式伤害 +20% | 藤鞭 Whip（皮鞭级；自绘 `VineWhip` 藤蔓逐段平铺，360° 朝鼠标；40 tick 蓄/甩/抽/收，鞭梢 tick 21「啪」+`VineWhipCrack`） | 撞击 Lunge（命中生成 `TackleHitFxProj` 冲击星） | 种子机关枪 Barrage×64+EasyCrit（`SeedGunDirectorProj` + 自绘 `SeedShot`，无拖尾） | 耗 100 | `VineWhip` 藤蔓鞭身；`SeedShot` 种子束状连发（无拖尾） | Low |
 | L03_F02 | 妙蛙草 | **茂盛**：同上 +20% | 飞叶快刀 Spread×5（吹叶机 Leaf；枪口仅 5 颗草屑） | 咬住 BiteArc 尖牙（**VisualScale×4**） | 种子炸弹 Bolt+EasyCrit（自绘 `SeedBomb` 种荚；落点 `SeedBombBlastProj` 6 帧爆圈 AoE；落点爆直径 **~10 格**；无拖尾，仅 4 颗草屑） | 耗 100 | 真 Leaf + 枪口 5 颗草屑；咬合尖牙×4；种荚 + `SeedBombBlast` 6 帧爆圈（无金刺） | Low | Done |
 | L03_F03 | 妙蛙花 | **叶绿素**：白天移速 +35% | 污泥炸弹 Bolt+Poison | 花瓣舞 AoEBurst；释放后自身短混乱（1.5s 轻失控或伤害反噬 debuff） | 日光束 ChargeBeam（蓄力 ~0.8s 后强光束） | 耗 100；蓄力前摇 | 污泥炸后毒气瓶 ToxicCloud 簇 DoT；花瓣半径15格；日棱金束 | Medium | Done |
 
@@ -134,7 +134,7 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L02_F01 | 杰尼龟 | **激流**：HP&lt;50% 时水系招式伤害 +20% | 水枪 AquaScepter（水弹贴图，飞行中无粒子） | 撞击 Lunge（命中生成 `TackleHitFxProj` 冲击星） | 泡沫光线 Barrage×64 束状高速 | 耗 100 | 海蓝权杖水流；泡泡**错落密束**+破裂小泡（少蓝水尘） | Low |
-| L02_F02 | 卡咪龟 | **激流**：同上 +20% | 泡沫光线 Barrage×**16**（壳弹+Load Bubble；基准速 **20.8**） | 咬住 BiteArc | 潮旋 DoTBind（水漩涡缠绕） | 耗 100 | 须 `LoadProjectile(Bubble)`；错落密束+破裂；勿等玩家先用泡泡枪 | Low | Done |
+| L02_F02 | 卡咪龟 | **激流**：同上 +20% | 泡沫光线 Barrage×**16**（壳弹+Load Bubble；基准速 **20.8**） | 咬住 BiteArc | 潮旋 专属 `WhirlpoolUltProj`（168t：卷起 12t→旋转吸引 9 段（age 12–132，每 15t ×0.5，判定圈随卷起放大）→水柱 18t 托起 ×1.4；命中圆 9 格/吸力圈 18 格；Boss/击退免疫者不被吸；Slow+Wet） | 耗 100 | 须 `LoadProjectile(Bubble)`；错落密束+破裂；勿等玩家先用泡泡枪 | Low | Done |
 | L02_F03 | 水箭龟 | **雨盘**：雨天或夜晚每 **90 tick**（1.5s）回 2 HP | 水炮 Beam（粗水柱；**命中墙=命中怪**锁长；**持续多段伤再淡出**，不穿透） | 波导弹 Bolt+强追踪（极慢攻速） | 加农水炮 Beam（**仍穿墙穿怪**，更粗）；释放后 **休整 ~1.5s**（禁技能1/2） | 耗 100；休整 | `WaterJetProj`：枪口渐进；水炮宽~2.5 格锁长多段；加农宽~4.5 格+每3击爆 | Medium | Done |
 
 ### 4.4 超能链 L12
@@ -192,7 +192,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（朝鼠标飞出；落地后水平贴地滚动；本体原版 Typhoon，云尘 1/5 tick） | 啄 Cone~16格尖角 AoE（自绘 `PeckBeak` 尖角喙刺，360° 朝鼠标） | 燕返 Lunge（短 useTime；与撞击共用突进 CD；`AerialAceLungeProj` 仅换外观 + `AerialAceDash` 风刃拖尾） | 耗 100 | Typhoon 深蓝；射出后贴地滚 | Medium |
+| L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（朝鼠标飞出；落地后水平贴地滚动；本体原版 Typhoon，云尘 1/5 tick） | 啄 Cone~16格尖角 AoE（自绘 `PeckBeak` 尖角喙刺，360° 朝鼠标） | 燕返 锁定后 5 次瞬身往返斩（每斩 ×0.6 + 终结爆 ×2，单目标合计 ≈4.2；整段无敌；不再共用撞击突进 CD；起终点在方块内则缩短半径（≥40px）、斩不穿墙；`AerialAceUltProj`+`AerialAceSlashProj`+`AerialAceBurstProj`；旧 `AerialAceLungeProj` 暂留未用） | 耗 100 | Typhoon 深蓝；射出后贴地滚 | Medium |
 | L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 勇鸟猛攻 Lunge+Recoil（青焰，降倍率） | 自我激励 SelfBuff：攻击 +20% / 12s | 耗 100 | 勇鸟青焰梭形；大招纯 buff `WorkUpBuff` | Medium | Done |
 
 ### 4.12 电系链 L04
@@ -221,7 +221,7 @@
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L10_F01 | 地鼠 | **沙隐**（补全）：地下/洞穴移速 +15%；`pickSpeed` −0.25（另叠地面属性 −0.40） | 掷泥 Bolt+Slow（泥浆降命中感→减速） | 撞击 Lunge（`TackleHitFxProj` 冲击星） | 挖洞爆发 Dig→AoEBurst（短潜行出土爆炸；吃挖掘预算；出土爆 `DigBurst` 土喷泉贴图，锚在出土点） | 耗 100；挖砖需服务端校验 | 泥尘；出土碎屑 KillTile 尘 | High |
+| L10_F01 | 地鼠 | **沙隐**（补全）：地下/洞穴移速 +15%；`pickSpeed` −0.25（另叠地面属性 −0.40） | 掷泥 Bolt+Slow（泥浆降命中感→减速） | 重踏 Bulldoze（Field；向鼠标所在左右侧贴地依次破土 9 道土浪，间距 30px、每 3tick 一道、约 18 格；台阶≤3 格爬升、坑≤10 格下探、更深/墙止步；同目标一次、×1.15、Slow 90t；`BulldozeProj`，原撞击已替换） | 挖洞爆发 Dig→AoEBurst（短潜行出土爆炸；吃挖掘预算；出土爆 `DigBurst` 土喷泉贴图，锚在出土点） | 耗 100；挖砖需服务端校验 | 泥尘；出土碎屑 KillTile 尘 | High |
 | L10_F02 | 三地鼠 | **沙隐**：同上 | 三连刺 Barrage/MeleeArc（三连戳） | 挖洞 Dig（短位移潜地，可接出土） | 地裂 AoEBurst/Field（地面裂伤波；可轻改地形须预算） | 耗 100；地形变更 High 同步 | 三连刺 **8 格**；挖洞 `DigLungeProj` 冲 **20 格**+镐力走廊挖砖；地裂波前小石 | High | Done |
 
 ---
@@ -283,3 +283,4 @@
 | 1.38 | 2026-09-27 | 撞墙反馈批（语义/数值不变，仅加反馈，见 `fx-knowledge` §6「撞墙反馈」）：电击、水枪、掷泥、种子机关枪、胡地精神强念、火焰漩涡、起风、暴风、水炮墙截断、龙息墙截断；穿墙弹保持原样 |
 | 1.39 | 2026-11-26 | 360° 近战批：三连刺、抓、龙爪、咬住、火焰牙、咬碎（近身）、暗影抓由只能左右改为**朝鼠标 360°**；换自绘贴图+命中特效，出招不撒沿线粒子（数值/判定长度不变，见 `fx-knowledge` §5.3）；本地验收通过，联机 pending |
 | 1.40 | 2026-11-26 | 肉前特效批：火花/火焰漩涡、撞击（非火系）/跃起（鲤鱼王）/抓狂、藤鞭/种子机关枪/种子炸弹、电击/电光一闪/啄/燕返、子弹拳/十字劈/挖洞爆发换自绘贴图；水枪/起风/飞叶快刀/岩石封锁/掷泥/意念头锤只减粒子（数值/判定/冷却不变，见 `fx-knowledge` §4.9）；构建通过；复查修复：火花/火焰漩涡辉光按帧、火系冲撞去沿线粒子、电击/水枪去飞行粒子；本地验收与联机 pending |
+| 1.41 | 2026-11-26 | 肉前特效批 R2（构建待游戏关闭后验）：卡咪龟大招潮旋重做为 `WhirlpoolUltProj`（168t 卷起/旋转吸引/水柱，吸力只在服务端）；妙蛙种子藤鞭重做为 40 tick 延迟挥角鞭（`GrassWhipProj`，tick 21「啪」）；波波大招燕返改为锁定 5 斩+终结爆（`AerialAceUltProj`，单目标≈4.2×）；地鼠技能2 由撞击改为重踏 `BulldozeProj`（贴地 9 道土浪）；详见 `fx-knowledge` §4.9；本地验收与联机 pending |

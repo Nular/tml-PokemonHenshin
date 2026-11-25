@@ -549,6 +549,7 @@ Moves: {
 	Flamethrower: Flamethrower
 	Overheat: Overheat
 	Tackle: Tackle
+	Bulldoze: Bulldoze
 	BubbleBeam: Bubble Beam
 	Bite: Bite
 	Whirlpool: Whirlpool
@@ -748,7 +749,7 @@ Items: {
 
 	DiglettForce: {
 		DisplayName: Diglett Force
-		Tooltip: Ground. Mud-Slap, Tackle; Dig burst mines a tile.
+		Tooltip: Ground. Mud-Slap, Bulldoze; Dig burst mines a tile.
 	}
 
 	DugtrioForce: {
@@ -2130,4 +2131,9 @@ Projectiles: {
 	SeedGunShotProj.DisplayName: Seed Gun Shot Proj
 	SplashFallProj.DisplayName: Splash Fall Proj
 	TackleHitFxProj.DisplayName: Tackle Hit Fx Proj
+	BulldozeProj.DisplayName: Bulldoze Proj
+	AerialAceBurstProj.DisplayName: Aerial Ace Burst Proj
+	AerialAceSlashProj.DisplayName: Aerial Ace Slash Proj
+	AerialAceUltProj.DisplayName: Aerial Ace Ult Proj
+	WhirlpoolUltProj.DisplayName: Whirlpool Ult Proj
 }

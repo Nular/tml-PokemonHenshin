@@ -564,12 +564,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>草系鞭：皮鞭级射程；自绘藤蔓（Assets/Fx/VineWhip）沿弧线逐段平铺，鞭尖叶苞。出招期间不撒粒子，命中只留 2 颗草屑。方向取主人鼠标（经 NetOp.SyncAim 同步，360°）。</summary>
+	/// <summary>草系鞭（藤鞭）：真·鞭子。蓄(0-8)向后卷起 → 甩(8-16)加速挥向鼠标 → 抽(16-28)鞭梢滞后 5 tick 才到最远点并「啪」(tick 21，Item153 + 闪光) → 收(28-40)。13 个控制点，每点读延迟的挥角，自然形成行进的波形。方向锁一次：拥有者写 ai1=弧度+10（NetOp.SyncAim 外再经 netUpdate 同步，360°）。挥动期间不撒粒子。</summary>
 	public class GrassWhipProj : HenshinMoveProj
 	{
-		private const float Range = 176f; // ~11 tiles, leather-whip-like
-		private const int Lifetime = 28;
+		private const float Range = 176f; // 同旧版，~11 格
+		private const int Lifetime = 40;
+		private const int CrackTick = 21;
+		private const int Segs = 12;
+		private const float TipLag = 5f;
+		private const float AimBias = 10f;
 		private static ReLogic.Content.Asset<Texture2D> _vine;
+		private static ReLogic.Content.Asset<Texture2D> _crack;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
@@ -580,22 +585,76 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
 			Projectile.penetrate = -1;
-			Projectile.timeLeft = Lifetime;
+			Projectile.timeLeft = Lifetime + 30; // 手动按 localAI0 结束，等待同步期间不倒计时消失
 			Projectile.tileCollide = false;
 			Projectile.ownerHitCheck = false;
 			Projectile.usesLocalNPCImmunity = true;
 			Projectile.localNPCHitCooldown = 12;
 		}
 
-		private float Reach01 => 1f - Projectile.timeLeft / (float)Lifetime;
+		// 控制点缓存：AI 每 tick 算一次（含上一 tick 的点用于扫掠判定），Colliding/PreDraw 同 tick 复用。
+		private Vector2[] _pts;
+		private Vector2[] _prevPts;
+		private int _ptsAge = -1;
 
-		private Vector2 AimDir(Player owner)
+		private Vector2[] Pts(Player owner, int age)
 		{
-			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
-			if (aim == Vector2.Zero)
-				aim = new Vector2(owner.direction, 0f);
-			aim.Normalize();
-			return aim;
+			if (_pts == null || _ptsAge != age)
+			{
+				_prevPts = _ptsAge == age - 1 ? _pts : null;
+				_pts = ControlPoints(owner, age);
+				_ptsAge = age;
+			}
+			return _pts;
+		}
+
+		private bool Aimed => Projectile.ai[1] > 0.5f;
+		private float Angle => Projectile.ai[1] - AimBias;
+		private int Age => (int)Projectile.localAI[0];
+
+		// 后摆角 φ(τ)：0→Φ 蓄，Φ→0 甩（先慢后快），之后 0。
+		private static float Phi(float tau)
+		{
+			const float Max = 2.0f;
+			if (tau <= 0f)
+				return 0f;
+			if (tau < 8f)
+				return Max * (1f - (1f - tau / 8f) * (1f - tau / 8f));
+			if (tau < 16f)
+			{
+				float u = (tau - 8f) / 8f;
+				return Max * (1f - u * u);
+			}
+			return 0f;
+		}
+
+		private static float LenFactor(float tau)
+		{
+			if (tau < 8f)
+				return 0.55f;
+			if (tau < 16f)
+				return 0.55f + 0.45f * (tau - 8f) / 8f;
+			if (tau < 28f)
+				return 1f;
+			return 1f - 0.7f * (tau - 28f) / 12f;
+		}
+
+		/// <summary>13 个控制点（0=手，12=鞭梢）。每点读延迟 s*TipLag tick 的挥角，收鞭时叠一点松弛波。</summary>
+		private Vector2[] ControlPoints(Player owner, float tau)
+		{
+			Vector2[] pts = new Vector2[Segs + 1];
+			float baseAng = Angle;
+			float side = System.Math.Cos(baseAng) >= 0f ? -1f : 1f;
+			float segLen = Range / Segs * LenFactor(tau);
+			float slack = tau > 28f ? (tau - 28f) / 12f : 0f;
+			pts[0] = owner.MountedCenter;
+			for (int i = 1; i <= Segs; i++)
+			{
+				float s = (i - 0.5f) / Segs;
+				float a = baseAng + side * Phi(tau - s * TipLag) + side * 0.45f * slack * (float)System.Math.Sin(s * 6.2832f + tau * 0.4f);
+				pts[i] = pts[i - 1] + new Vector2((float)System.Math.Cos(a), (float)System.Math.Sin(a)) * segLen;
+			}
+			return pts;
 		}
 
 		public override void AI()
@@ -607,22 +666,56 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 
-			float t = Reach01;
-			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
-			Vector2 aim = AimDir(owner);
-			float swing = (float)System.Math.Sin(t * MathHelper.Pi) * 0.35f;
-			Projectile.Center = owner.MountedCenter + aim.RotatedBy(swing) * reach;
-			Lighting.AddLight(Projectile.Center, 0.1f, 0.3f, 0.1f);
+			// 360° 朝鼠标：仅拥有者求一次，弧度写 ai1 并 netUpdate；其它端等同步后才开始计时。
+			if (!Aimed)
+			{
+				if (Projectile.owner != Main.myPlayer)
+					return;
+				Vector2 aim = HenshinProjUtil.OwnerAimDir(owner, owner.MountedCenter);
+				Projectile.ai[1] = aim.ToRotation() + AimBias;
+				Projectile.netUpdate = true;
+				if (System.Math.Abs(aim.X) > 0.05f)
+					owner.ChangeDir(aim.X > 0f ? 1 : -1);
+			}
+
+			Projectile.localAI[0] += 1f;
+			int age = Age;
+			if (age >= Lifetime)
+			{
+				Projectile.Kill();
+				return;
+			}
+			Vector2[] pts = Pts(owner, age);
+			Projectile.Center = pts[Segs];
+			if (age == CrackTick && !Main.dedServ)
+			{
+				Terraria.Audio.SoundEngine.PlaySound(SoundID.Item153, pts[Segs]);
+			}
+			if (age >= CrackTick - 2 && age <= CrackTick + 6)
+				Lighting.AddLight(pts[Segs], 0.35f, 0.8f, 0.3f);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
+			if (!Aimed)
+				return false;
+			int age = Age;
+			if (age < 10 || age > 32)
+				return false;
 			Player owner = Main.player[Projectile.owner];
-			float t = Reach01;
-			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
-			Vector2 tip = owner.MountedCenter + AimDir(owner) * reach;
+			Vector2[] pts = Pts(owner, age);
+			Vector2[] prev = _prevPts;
 			float point = 0f;
-			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), owner.MountedCenter, tip, 22f, ref point);
+			for (int i = 1; i <= Segs; i++)
+			{
+				float w = i >= Segs - 2 ? 28f : 20f;
+				if (Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), pts[i - 1], pts[i], w, ref point))
+					return true;
+				// 扫掠：同序号控制点上一 tick → 本 tick 的轨迹，防止快速甩动时整段穿过窄敌人
+				if (prev != null && Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), prev[i], pts[i], w, ref point))
+					return true;
+			}
+			return false;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -637,47 +730,58 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
-		// 贴图 Assets/Fx/VineWhip/VineWhip.png：3 帧 24×20（0 藤段、1 带叶藤段、2 鞭尖叶苞），朝右，藤中心 (12,10)。
+		// VineWhip.png：4 帧 24×20（0 粗藤段、1 带叶藤段、2 细藤段、3 鞭梢叶苞），朝右，藤中心 (12,10)。
+		// VineWhipCrack.png：4 帧 32×32，「啪」闪光→叶片迸散，居中。
 		public override bool PreDraw(ref Color lightColor)
 		{
+			if (!Aimed)
+				return false;
 			Player owner = Main.player[Projectile.owner];
 			if (!owner.active)
 				return false;
+			int age = Age;
 			_vine ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/VineWhip/VineWhip", ReLogic.Content.AssetRequestMode.ImmediateLoad);
 			Texture2D tex = _vine.Value;
-			int fh = tex.Height / 3;
-			float t = Reach01;
-			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
-			if (reach < 10f)
-				return false;
-			Vector2 aim = AimDir(owner);
-			float swing = (float)System.Math.Sin(t * MathHelper.Pi) * 0.35f;
-			Vector2 start = owner.MountedCenter;
-			Vector2 end = start + aim.RotatedBy(swing) * reach;
-			// 控制点向挥动反方向滞后，鞭身呈弧；全程二次贝塞尔。
-			Vector2 perp = new(-aim.Y, aim.X);
-			Vector2 ctrl = (start + end) * 0.5f - perp * (float)System.Math.Sin(t * MathHelper.Pi) * reach * 0.18f;
-			int n = System.Math.Max(2, (int)System.Math.Ceiling(reach / 20f));
-			float opacity = System.Math.Min(1f, Projectile.timeLeft / 6f);
+			int fh = tex.Height / 4;
+			Vector2[] pts = Pts(owner, age);
+			float opacity = System.Math.Min(1f, (Lifetime - age) / 6f);
 			Color c = new(System.Math.Max(lightColor.R, (byte)110), System.Math.Max(lightColor.G, (byte)120), System.Math.Max(lightColor.B, (byte)100));
 			c *= opacity;
 			Vector2 origin = new(12f, 10f);
-			for (int i = 1; i <= n; i++)
+			for (int i = 1; i <= Segs; i++)
 			{
-				float u = i / (float)n;
-				float v = 1f - u;
-				Vector2 pos = v * v * start + 2f * u * v * ctrl + u * u * end;
-				Vector2 tan = 2f * v * (ctrl - start) + 2f * u * (end - ctrl);
-				float rot = tan.ToRotation();
-				int frame = i == n ? 2 : (i % 3 == 1 ? 1 : 0);
+				Vector2 d = pts[i] - pts[i - 1];
+				float len = d.Length();
+				if (len < 0.5f)
+					continue;
+				float rot = d.ToRotation();
+				float taper = 1f - 0.45f * (i / (float)Segs); // 根粗梢细
+				int frame = i == Segs ? 3 : (i >= Segs - 3 ? 2 : (i % 3 == 2 ? 1 : 0));
 				SpriteEffects fx = System.Math.Cos(rot) < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
-				Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh), c, rot,
-					i == n ? new Vector2(14f, 10f) : origin, 1f, fx, 0f);
+				Vector2 mid = (pts[i] + pts[i - 1]) * 0.5f;
+				Vector2 scale = new(System.Math.Max(0.35f, len * 1.2f / 24f), taper);
+				if (i == Segs)
+				{
+					mid = pts[i];
+					scale = new Vector2(0.9f, 0.9f);
+				}
+				Main.EntitySpriteDraw(tex, (mid - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh), c, rot,
+					i == Segs ? new Vector2(10f, 10f) : origin, scale, fx, 0f);
+			}
+
+			int cf = (age - CrackTick) / 3;
+			if (cf >= 0 && cf < 4)
+			{
+				_crack ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/VineWhip/VineWhipCrack", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+				Texture2D ct = _crack.Value;
+				int ch = ct.Height / 4;
+				float grow = cf == 0 ? 1.15f : 1f;
+				Main.EntitySpriteDraw(ct, (pts[Segs] - Main.screenPosition).Floor(), new Rectangle(0, ch * cf, ct.Width, ch), Color.White,
+					0f, new Vector2(ct.Width * 0.5f, ch * 0.5f), grow, SpriteEffects.None, 0f);
 			}
 			return false;
 		}
 	}
-
 	/// <summary>电光一闪：闪现至指针最近敌人；身周 Kenney 电火花；伤害在落点爆发上打三下。</summary>
 	public class BlinkStrikeProj : HenshinMoveProj
 	{

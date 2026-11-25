@@ -569,6 +569,33 @@ namespace PokemonHenshin.Content.Items.Forms
 				KeyConflict = key
 			};
 
+		/// <summary>燕返（波波大招）：往返斩 5 次 + 终结爆。DamageMultiplier=单斩倍率（终结爆 ×2），单目标总 4.2；与撞击共用突进 CD。</summary>
+		public static MoveSpec AerialAceUlt(string nameKey, float mult = 0.6f, int use = 18)
+			=> new()
+			{
+				Delivery = MoveDelivery.Lunge,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<AerialAceUltProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				// 不设 RequiresLungeCooldown：冷却中按大招会先扣能量再被 FireMove 拒绝；控制器靠大招能量锁定防重入。
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		/// <summary>重踏（地鼠技能2）：BulldozeProj 贴地土浪，Field 交付，出生速度只取左右方向。</summary>
+		public static MoveSpec Bulldoze(string nameKey, float mult = 1.15f, int use = 24)
+			=> new()
+			{
+				Delivery = MoveDelivery.Field,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<BulldozeProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 1f
+			};
+
 		public static MoveSpec PeckCone(string nameKey, float mult = 1.2f, int use = 18)
 			=> new()
 			{
@@ -1018,6 +1045,20 @@ namespace PokemonHenshin.Content.Items.Forms
 				ShootSpeed = 0f,
 				Ai0 = dust,
 				Ai1 = buff,
+				SpawnAtMouse = true,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
+		/// <summary>潮旋（卡咪龟大招）专属：WhirlpoolUltProj，不与 MouseVortex 共用。</summary>
+		public static MoveSpec WhirlpoolUlt(string nameKey, float mult)
+			=> new()
+			{
+				Delivery = MoveDelivery.DoTBind,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<WhirlpoolUltProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
 				SpawnAtMouse = true,
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
@@ -1568,7 +1609,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F02", 5, "Mods.PokemonHenshin.Items.WartortleForce.DisplayName", PokemonType.Water, 4, "L02_F01", FormPassiveKind.Torrent);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.BubbleBarrage("Mods.PokemonHenshin.Moves.BubbleBeam", 16, 2.4f, 28, 20.8f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.BiteArc("Mods.PokemonHenshin.Moves.Bite", 1.25f);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseVortex("Mods.PokemonHenshin.Moves.Whirlpool", 3.2f, DustID.Water);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.WhirlpoolUlt("Mods.PokemonHenshin.Moves.Whirlpool", 3.2f);
 	}
 
 	public class BlastoiseForce : HenshinForceItem

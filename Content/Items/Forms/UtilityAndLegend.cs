@@ -42,7 +42,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L10_F01", 24, "Mods.PokemonHenshin.Items.DiglettForce.DisplayName", PokemonType.Ground, 3, null, FormPassiveKind.SandVeil, role: FormRole.Utility);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.MudSlap("Mods.PokemonHenshin.Moves.MudSlap");
-		protected override MoveSpec CreateMoveB() => FormItemUtil.Lunge("Mods.PokemonHenshin.Moves.Tackle", 1f, 18, DustID.Dirt);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.Bulldoze("Mods.PokemonHenshin.Moves.Bulldoze");
 		protected override MoveSpec CreateUltimate() => FormItemUtil.DigUlt("Mods.PokemonHenshin.Moves.Dig", 3.0f);
 	}
 
@@ -59,7 +59,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L11_F01", 26, "Mods.PokemonHenshin.Items.PidgeyForce.DisplayName", PokemonType.Flying, 2, null, FormPassiveKind.KeenEye, secondary: PokemonType.Normal, role: FormRole.Utility);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.GroundCyclone("Mods.PokemonHenshin.Moves.Gust");
 		protected override MoveSpec CreateMoveB() => FormItemUtil.PeckCone("Mods.PokemonHenshin.Moves.Peck");
-		protected override MoveSpec CreateUltimate() => FormItemUtil.AerialAceLunge("Mods.PokemonHenshin.Moves.AerialAce", 2.8f, 18, DustID.Cloud, key: KeyConflictLevel.ModKeybind);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.AerialAceUlt("Mods.PokemonHenshin.Moves.AerialAce");
 	}
 
 	public class PidgeotForce : HenshinForceItem

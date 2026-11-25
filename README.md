@@ -37,6 +37,7 @@
 
 ## 资源约定
 
-- 宝可梦 / 饰品外观：52poke；`tools/fetch_assets.py`、`tools/pixelize_accessories.py`；移动 sheet：`tools/extract_locomotion_gif.py`
+- 宝可梦 / 饰品外观：52poke；`tools/fetch_assets.py`、`tools/pixelize_accessories.py`（抓图失败时 `tools/make_acc_placeholders.py` 出 32×32 占位）；饰品本地化 `tools/gen_acc_localization.py`；移动 sheet：`tools/extract_locomotion_gif.py`
+- 宣传片：`python tools/PromoVideo/render.py`（`--preview` 先出关键帧，`--at <秒>` 出单帧，无参出 60s MP4）；需 Pillow、numpy、imageio-ffmpeg；首次运行下载 fusion-pixel 字体；`out/`、`fonts/` 已 gitignore
 - 特效：优先原版 → 拷贝 CWR 至 `Assets/Fx/` → 可自制（需求 §1.5）；禁止大修运行时依赖；禁止擅自降级（`AGENTS.md`）
 - `Assets/TEMP_ASSETS/`：本地临时素材（gitignore）
