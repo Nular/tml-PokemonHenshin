@@ -468,6 +468,7 @@ Buffs: {
 		DisplayName: Work Up
 		Description: Transformed move damage +20%
 	}
+
 	HenshinSleepDebuff: {
 		DisplayName: Sleep
 		Description: Immobilized; cannot deal contact damage. Next hit taken deals double damage and wakes the target.
@@ -548,6 +549,7 @@ Moves: {
 	Flamethrower: Flamethrower
 	Overheat: Overheat
 	Tackle: Tackle
+	Bulldoze: Bulldoze
 	BubbleBeam: Bubble Beam
 	Bite: Bite
 	Whirlpool: Whirlpool
@@ -747,7 +749,7 @@ Items: {
 
 	DiglettForce: {
 		DisplayName: Diglett Force
-		Tooltip: Ground. Mud-Slap, Tackle; Dig burst mines a tile.
+		Tooltip: Ground. Mud-Slap, Bulldoze; Dig burst mines a tile.
 	}
 
 	DugtrioForce: {
@@ -2118,4 +2120,20 @@ Projectiles: {
 	AuraSphereBoltProj.DisplayName: Aura Sphere Bolt Proj
 	ArmHammerSmashProj.DisplayName: Arm Hammer Smash Proj
 	BlinkStrikeGhostProj.DisplayName: Blink Strike Ghost Proj
+	TripleStabHitFxProj.DisplayName: Triple Stab Hit Fx Proj
+	BiteHitFxProj.DisplayName: Bite Hit Fx Proj
+	ScratchHitFxProj.DisplayName: Scratch Hit Fx Proj
+	ShadowClawHitFxProj.DisplayName: Shadow Claw Hit Fx Proj
+	ShadowClawStrikeProj.DisplayName: Shadow Claw Strike Proj
+	AerialAceLungeProj.DisplayName: Aerial Ace Lunge Proj
+	SeedBombBlastProj.DisplayName: Seed Bomb Blast Proj
+	SeedGunDirectorProj.DisplayName: Seed Gun Director Proj
+	SeedGunShotProj.DisplayName: Seed Gun Shot Proj
+	SplashFallProj.DisplayName: Splash Fall Proj
+	TackleHitFxProj.DisplayName: Tackle Hit Fx Proj
+	BulldozeProj.DisplayName: Bulldoze Proj
+	AerialAceBurstProj.DisplayName: Aerial Ace Burst Proj
+	AerialAceSlashProj.DisplayName: Aerial Ace Slash Proj
+	AerialAceUltProj.DisplayName: Aerial Ace Ult Proj
+	WhirlpoolUltProj.DisplayName: Whirlpool Ult Proj
 }

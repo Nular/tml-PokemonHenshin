@@ -17,7 +17,7 @@
 PokemonHenshin/
   docs/           # requirements / backlog / engineering / accessories / balance / move / fx；buildIgnore
   docs/archive/   # 历史全文；Agent 禁止读/维护
-  tools/          # cloud-agent-setup、build-mod、HenshinStatVerify、fetch/pixelize/extract_locomotion
+  tools/          # cloud-agent-setup、build-mod、HenshinStatVerify、fetch/pixelize/extract_locomotion、gen_acc_localization、make_acc_placeholders、PromoVideo（宣传片）
   Assets/Forms/ · Forms/Locomotion/ · Accessories/ · Items/ · Fx/
   Content/Core · Damage · PlayerState · Visual · Combat · Affinity · Evolution · Buffs · Config
          Accessories · Items/Forms · Items/Consumables · WeatherField · TerrainEdit · Loot · Net · NPCs · Prefixes

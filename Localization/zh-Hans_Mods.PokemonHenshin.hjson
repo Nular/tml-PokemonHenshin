@@ -468,6 +468,7 @@ Buffs: {
 		DisplayName: 自我激励
 		Description: 变身招式伤害 +20%
 	}
+
 	HenshinSleepDebuff: {
 		DisplayName: 睡眠
 		Description: 完全无法行动且无法接触伤害；下次受到的伤害翻倍并醒来
@@ -548,6 +549,7 @@ Moves: {
 	Flamethrower: 喷射火焰
 	Overheat: 过热
 	Tackle: 撞击
+	Bulldoze: 重踏
 	BubbleBeam: 泡沫光线
 	Bite: 咬住
 	Whirlpool: 潮旋
@@ -747,7 +749,7 @@ Items: {
 
 	DiglettForce: {
 		DisplayName: 地鼠之力
-		Tooltip: 地面。掷泥、撞击；大招挖洞爆发（可挖砖）。
+		Tooltip: 地面。掷泥、重踏；大招挖洞爆发（可挖砖）。
 	}
 
 	DugtrioForce: {
@@ -2118,4 +2120,20 @@ Projectiles: {
 	// AuraSphereBoltProj.DisplayName: Aura Sphere Bolt Proj
 	// ArmHammerSmashProj.DisplayName: Arm Hammer Smash Proj
 	// BlinkStrikeGhostProj.DisplayName: Blink Strike Ghost Proj
+	// TripleStabHitFxProj.DisplayName: Triple Stab Hit Fx Proj
+	// BiteHitFxProj.DisplayName: Bite Hit Fx Proj
+	// ScratchHitFxProj.DisplayName: Scratch Hit Fx Proj
+	// ShadowClawHitFxProj.DisplayName: Shadow Claw Hit Fx Proj
+	// ShadowClawStrikeProj.DisplayName: Shadow Claw Strike Proj
+	// AerialAceLungeProj.DisplayName: Aerial Ace Lunge Proj
+	// SeedBombBlastProj.DisplayName: Seed Bomb Blast Proj
+	// SeedGunDirectorProj.DisplayName: Seed Gun Director Proj
+	// SeedGunShotProj.DisplayName: Seed Gun Shot Proj
+	// SplashFallProj.DisplayName: Splash Fall Proj
+	// TackleHitFxProj.DisplayName: Tackle Hit Fx Proj
+	// BulldozeProj.DisplayName: Bulldoze Proj
+	// AerialAceBurstProj.DisplayName: Aerial Ace Burst Proj
+	// AerialAceSlashProj.DisplayName: Aerial Ace Slash Proj
+	// AerialAceUltProj.DisplayName: Aerial Ace Ult Proj
+	// WhirlpoolUltProj.DisplayName: Whirlpool Ult Proj
 }

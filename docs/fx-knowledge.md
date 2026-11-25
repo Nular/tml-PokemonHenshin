@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-09-27
+**版本日期：** 2026-11-26
 
 ## 1. 权威与硬约束
 
@@ -318,6 +318,46 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 > **注：** **Stage 6 / Wave3 / Stage7+ 均已验收（2026-09-07）**。Stage7+ 当时含钢尾灰罩、猛撞灰日耀、暗影抓/恶波动、彗星拳 StarWrath、破灭自缓加粗、龙俯冲/画龙点睛纯黑龙、逆鳞火球、流星群64、洛奇亚三招、超梦强念×6+精神击破64球。**2026-09-25 改版批：** 画龙现为闪现+青 SoftGlow 光迹+延迟反色日耀（旧纯黑龙已退役）；金属怪臂锤/金属爪 Kenney；洛奇亚路径气爆；神鸟/陀螺去误无敌。
 
+### 4.9 肉前特效批（2026-11-26，本地已验收，联机 pending）
+共性：自绘贴图在 `Assets/Fx/<招式>/`，PreDraw 里 `ModContent.Request(..., ImmediateLoad)` 缓存到 static `Asset` 字段，不碰 `LoadProjectile`；出招沿线不撒粒子；数值/判定/冷却均未改；用 `OwnerMouseWorld` / `OwnerAimDir`，不用 `Main.MouseWorld`。
+
+| 招式 | 类 | 贴图 | 要点 |
+|---|---|---|---|
+| 火花（L01_F01 S1） | `EmberBoltProj` | `EmberBolt` 36×22×4 + `_Light` | 朝右，rotation=速度方向，朝左半圈 FlipVertically 并镜像原点 Y；`_Light` 加法 ×0.7，与本体同一帧矩形；命中 12→3 颗 |
+| 火焰漩涡（L01_F01 大招） | `FlareBoltUltProj` | `FireSpin` 56×56×4 + `_Light` | 3 臂每帧转 30° 无缝；帧号 `timeLeft/3 % 4`；`_Light` ×0.5，与本体同一帧矩形；只留撞墙停住后 1 颗/12tick 火星 |
+| 撞击（非火系，含妙蛙种子/杰尼龟/鲤鱼王/地鼠） | `LungeProj` → `TackleHitFxProj` | `TackleHit` 24×24×5 + `_Light` | 出招不撒尘/不拖尾；命中生成 0 伤害冲击星，`ai0`=Dust ID 染色（Water 水蓝/Grass 草绿/其余奶白），只在拥有者端生成；火系（Torch）同走此星，`Tint` 染橙，出招/刹车期间也不撒粒子 |
+| 跃起（鲤鱼王） | `SplashFallProj`（`FormItemUtil.SplashStrike`） | `SplashColumn` 20×44×5 + `_Light` | 原点 (10,42) 水柱脚底；判定同 `StrikeFallProj`（40×80/18 tick）；`StrikeFallProj` 留给电系，勿改；非拥有者端等 `ai0` 同步后才绘制 |
+| 抓狂（鲤鱼王） | `FlailBarrageProj` | 共用 `Scratch/Scratch.png` | 按 `Len/贴图宽` 缩放，帧节奏 2/2/2/4/4 tick；每道 2 颗烟，命中血 3 颗 |
+| 水枪（杰尼龟） | `AquaScepterShotProj` | 原版水弹 | 只降粒子：飞行中不撒水滴（水弹贴图本体可见） |
+| 藤鞭（L03_F01 S1） | `GrassWhipProj` | `VineWhip` 24×20×3 | 二次贝塞尔逐段（≤20px）平铺，段朝切线旋转，朝左半圈 FlipVertically；末 6 tick 淡出；命中 2 颗草屑 |
+| 种子机关枪（L03_F01 大招） | `SeedGunDirectorProj` + `SeedGunShotProj` | `SeedShot` 18×10 | 施放时 `OwnerAimDir` 锁方向；EasyCrit 经 ai1 同步；无拖尾；撞墙仍走 `HenshinTileImpact` Seed；旧 `BarrageDirectorProj.ModeSeed` 已无人用 |
+| 飞叶快刀（L03_F02 S1） | `LeafSpreadProj` | 原版 Leaf | 只降粒子：枪口 15→5 |
+| 种子炸弹（L03_F02 大招） | `SeedBombProj` + `SeedBombBlastProj` | `SeedBomb` 22×22、`SeedBombBlast` 160×160×6 | 爆圈 320×320 草系 AoE，24 tick，同弹 6 tick；整数 2 倍绘制；爆点只 4 颗草屑；爆点音效只播一次；爆点生成后 `Center` 校正并 `netUpdate = true`（让远端位置对） |
+| 电击（L04_F01 S1） | `ThunderBoltHenshinProj` | `ThunderShockBolt` 20×9×4 | Color.White 自发光；飞行中无粒子；去 LightShot 光束段 |
+| 电光一闪（L04_F01 S2） | `BlinkStrikeProj` 系 | `BlinkSpark` 13×13×4 | 身周 4 星换自绘；起止点 Dust 每端 2 颗；落点 Dust 概率降；残影/传送不动 |
+| 啄（L11_F01 S2） | `PeckConeProj` | `PeckBeak` 134×20×4 | 贴图根 (3,10)，全长 254px=16 格判定；方向 `_dir`；朝左 FlipVertically；沿线粒子全删，仅 timeLeft==10 刺尖 1 颗风尘 |
+| 燕返（L11_F01 大招） | `AerialAceLungeProj : LungeProj`（`FormItemUtil.AerialAceLunge`） | `AerialAceDash` 48×22×3 | 只覆写 PreDraw+OnHitNPC；工厂是整份初始化器（`MoveSpec` 属性 init），改 `Lunge` 数值时要同步；拖尾沿 `player.velocity`；基类 `LungeProj.AI` 仍每 tick 2 颗 Cloud |
+| 起风（L11_F01 S1） | `GroundCycloneProj` | 原版 Typhoon | 只降粒子：每 5 tick 一次——贴地滚动时只出 `GroundDebris`，否则一缕云尘 |
+| 子弹拳（L05_F01 S2） | `BulletPunchProj` | `BulletPunch` 48×20×3 | 拳头在右端，原点 (79,20) px；朝左上下翻转；不再画 HitJagged |
+| 十字劈（Machop 大招） | `CrossChopArcProj` + `CrossChopDashProj` | `CrossSlash` 56×56×5 | 以射弹 Center 为中心按 `_dir` 旋转；X 对称不翻转；前飞段用同图最亮帧 ×0.6；`DrawCross` 为 `internal static`；`CrossChopArcXProj`（豪力）未动 |
+| 挖洞爆发（L10_F01 大招） | `DigUltBurstProj` | `DigBurst` 56×56×5 | 首个 AI tick 记 `p.Bottom` 当锚点（非 OnSpawn，各端自算）；`Lerp(lightColor, White, 0.45)` 抬亮；删 Fog/DiffusionCircle，出土瞬间 3 颗 |
+| 岩石封锁 / 掷泥 / 意念头锤 | `RockTombShardProj` / `MudSlapBoltProj` / `ZenHammerSmashProj` | 原版 | 只降粒子：碎裂 18→3；掷泥删尾迹；头锤落地 72→6、删每 tick 拖尾 |
+
+保留不动：泡沫光线、潮旋水分支、十万伏特、龙之波动（`NebulaPulse*` 多形态共用，爆炸 28+12 偏多，待统筹）、念力、精神强念、咬住、闪焰冲锋（走 `LungeProj`）。
+
+已知：`VineWhip`/`SeedShot`/`SeedBomb` 的 pxt check 有 1 WARN（内容贴帧边，藤段需首尾相接/单帧无邻帧）；其余新图 0 WARN。`LungeProj` 共享改动影响所有非火系撞击（命中尘 24→3 颗并多一个冲击星），逐形态未看。
+
+#### R2 重做批（2026-11-26，本地已验收，联机 pending）
+
+| 招式 | 类 | 贴图 | 要点 |
+|---|---|---|---|
+| 潮旋（L02_F02 大招） | `WhirlpoolUltProj`（`WhirlpoolUltProjs.cs`；工厂 `FormItemUtil.WhirlpoolUlt`） | `WhirlpoolRing` 192×192×8 + `_Light`；`WhirlpoolSpout` 112×184×6 + `_Light`（原点 art(28,88)） | 168t 全由 `timeLeft` 推出：0–12 卷起放大、12–150 旋转吸引（9 段：age 12–132 每 15t ×0.5，`Colliding` 半径随卷起放大、水柱前 10t 收口）、150–168 水柱托起 + ×1.4（`localAI[1]` 标志只触发一次）；`ShouldUpdatePosition=false`（广角镜不漂移）；命中圆 144px、吸力圈 288px、水柱期 7 格；吸力只在 `netMode != MultiplayerClient` 做，`netUpdate` 每 3t；Boss/`knockBackResist<=0` 不被吸；首 tick `Center`=`OwnerMouseWorld`；Ring 1.5 倍绘制（非整数）+ 反向旋转淡圈；`MouseVortex*` 未动（流沙地狱仍用） |
+| 藤鞭（L03_F01 S1） | `GrassWhipProj`（在 `RedesignedMoveProjs.cs`，不在 G3GrassProjs.cs） | `VineWhip` 24×20×4 + `VineWhipCrack` 32×32×4 | 40 tick：蓄 8/甩 8/抽 12/收 12；13 控制点各读延迟 5tick 的挥角，鞭梢 tick 21「啪」（Item153 + Crack 闪光）；判定 12 线段 + 同序号控制点上一 tick→本 tick 扫掠线、age 10–32；控制点每 tick 缓存一次；拥有者求一次 `OwnerAimDir` 写 `ai1`（弧度+10）+`netUpdate`，远端等 `ai1` 同步后才计时/绘制；挥动无粒子，命中 2 颗草屑；`Range` 176/倍率/冷却不变；`VineWhip` pxt 1 WARN（藤段贴边，有意） |
+| 燕返（L11_F01 大招） | `AerialAceUltProj`（拥有者端写 `p.Center`）+ `AerialAceSlashProj`（线段判定）+ `AerialAceBurstProj`（`AerialAceUltProjs.cs`；工厂 `FormItemUtil.AerialAceUlt`） | `AerialAceSlash` 80×80×4 | 锁定鼠标 520px 内最近敌（无敌用 320px 虚拟中心），5 斩星形（起终点在方块内沿轴缩短到空位 ≥40px，斩 `Colliding` 加 `CanHitLine` 不穿墙；不设 `RequiresLungeCooldown`，冷却中不白扣能量；轴线每次转 144°，各距中心 150px），斩 ×0.6×5 + 终结爆 ×2 ≈ 4.2；整段无敌+落地 40t，清速度/`fallStart`；斩/爆 spawn 带 `ai0=目标 ai1=tick ai2=序号 velocity=终点-起点`，`ShouldUpdatePosition=false`，旁观者同数据重画；残影复用 `BlinkStrikeGhostProj`；旧 `AerialAceLungeProj`/`AerialAceDash` 暂留未用 |
+| 重踏（L10_F01 S2） | `BulldozeProj`（`BulldozeProjs.cs`；内联 `MoveSpec` 于 `DiglettForce.CreateMoveB`） | `Bulldoze` 36×40×5 | `MoveDelivery.Field`，`ShootSpeed=1` 只取左右；9 道土浪间距 30px、每 3tick 一道，推进 10px/tick；前 4 帧有 36×42 判定，寿命 39t；起点首 tick 锁进 `localAI[0..1]`（出生 X + 主人脚底 Y，之后不跟主人）；每 tick 按起点行+物块重算地面行（台阶≤3 爬升、坑≤10 下探，否则止步，不改地形）；同目标一次、Slow 90t；每道 1 颗 Dirt，命中 2 颗；状态全由出生速度+地形+年龄推出，无 OnSpawn 私有字段 |
+
+未验：`WhirlpoolUltProj` 与 Homing/TilePierce 交互；藤鞭左向蓄力方向；燕返卡块时落点回退、`p.CCed` 中断；重踏斜坡/半砖、空中施放；各招联机旁观者一致性。
+
 ### Sleep Buff cookbook（Accepted 2026-09-07）
 - `HenshinSleepDebuff` + `HenshinNpcGlobalNPC`：`PreAI=false` 定身、`CanHitPlayer=false`、首伤 `FinalDamage*=2` 后 DelBuff；**不清**已在飞敌弹。催眠施加端跳过 Boss。
 - 睡眠 VFX：`DrawEffects` 强制 `Color(255,255,255,100)` + 头顶 3 路 `z/Z/Zz`。
@@ -412,6 +452,22 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | **Tint/scale** | 土棕；间距 6～8 tick；reach≈腕力爪 |
 | **Forbidden** | 三次无图 slash；通天拉伸 |
 | **Files** | `TripleStabProj`；勿只 `GenericSlashProj`+Dirt |
+| **Implemented**（2026-11-26，本地已验收，联机 pending） | 自绘 `Assets/Fx/TripleStab/TripleStab.png`：5 帧×2 tick 土棕岩刺，132×22/帧，刺根 (2,11)，全长 128 px＝判定线 8 格；受光抬亮，末帧碎开淡出，Kill 落土屑。命中 `TripleStabHitFxProj`（0 伤，ai0＝弧度）：`TripleStabHit.png`＋`_Light` 5 帧×3 tick 岩屑迸散，光层真 Additive 保 A。贴图 PreDraw 懒加载；去掉 AI 里的 `LoadProjectile(Stinger)` |
+| **360°**（2026-11-26） | 导演弹在拥有者端施放首刺时用 `OwnerAimDir` 锁一次方向，弧度经 `GroundSpikeStabProj` 的 **ai1** 随生成同步；三刺沿垂直方向 ±10 px 错开；判定线、命中投影都按方向；绘制 `rotation`，朝左半圈 `FlipVertically`（origin y 取 frameH−11）。`TripleStabHitFxProj` ai0 改为弧度，同样旋转+翻转 |
+
+#### 360° 近战批（2026-11-26，本地已验收，联机 pending）
+
+原先按 `owner.direction` 只能左右出招，现统一改为朝鼠标 360°。共同规矩：拥有者端算一次 `HenshinProjUtil.OwnerAimDir`，`owner.ChangeDir` 跟瞄准 X；方向随生成同步（ai 槽）或首帧 `netUpdate`；绘制 `rotation`＋朝左半圈 `FlipVertically`；命中由拥有者端生成 0 伤纯视觉 HitFx 弹；贴图 PreDraw 懒加载；Additive 层保 A。
+
+| 招式 | 类 | 方向同步 | 贴图 | 要点 |
+|----|----|----|----|----|
+| 抓 / 龙爪 | `ScratchSlashProj`＋`ScratchHitFxProj` | ai1＝弧度+10（0＝未锁），首帧 `netUpdate`；ai2 外观（0 抓 / 1 龙爪，工厂按 reach>8 格设） | `Assets/Fx/Scratch/Scratch.png` 60×50×5（三道弯月爪痕）；`Assets/Fx/DragonClaw/DragonClaw.png` 320×58×5 | 三条 ±16 px 线段判定；龙爪沿线叠 `DrawHitJaggedFrame`；fullbright，原点左端中线 |
+| 咬住 / 火焰牙 / 咬碎 | `BiteArcProj`＋`BiteHitFxProj` | ai0/1/2 已占（体型/破甲/灼烧），弧度走 `SendExtraAI`，首帧 `netUpdate`；远端收到前不画不判 | `Assets/Fx/Bite/`：`BiteJaws`（咬住、咬碎共用）、`FireFang`（两对大弧牙），各带 `_Light`，6 帧×3 tick；`BiteHit(+_Light)` 5 帧×3 tick | 判定 OBB vs AABB（SAT），半长 32s×28s；咬碎钢紫调＋咬合抖动＋命中 2.2 倍；`BiteArcAtMouseProj` 不动 |
+| 暗影抓 | `ShadowClawSlashProj`（导演）→`ShadowClawStrikeProj`＋`ShadowClawHitFxProj` | 弧度经 Strike 的 ai1 随生成同步 | `Assets/Fx/ShadowClaw/`：`ShadowClaw` 328×92×6（爪根 (4,46)）、`ShadowClawHit` 80×80×5，各带 `_Light` | 三条 26 px 间距 20 格线段；命中 ShadowFlame 180 tick；光层须压暗（`#1a0840`/`#34116e`/`#4e2090`）否则冲白 |
+
+不在本批：起风 / 暴风（设计即贴地滚）、远距咬碎（已跟鼠标）、近身战附带 `GenericSlashProj`。
+
+**粒子纪律（本批）**：贴图已表达轨迹，出招期间**不沿线撒 Dust**（会挡住贴图）；只在咬合/命中瞬间留 2～4 颗点缀（咬碎最多 4）。新增同类贴图招式照此办理。
 
 #### Dig（挖洞）Skill2
 
@@ -540,7 +596,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 - **暗影球拖尾：** 路径 history lag 画 5 节递减盘，仅 tip hitbox 有伤（等价「首节伤、尾纯 VFX」）。
 - **舌舔：** `Assets/Fx/Extra98` 竖条沿根→尖重叠绘制；`ShouldUpdatePosition=false`；线碰撞；命中收舌。
 
-### 撞墙反馈 `HenshinTileImpact`（代码已接线，本地验收 pending）
+### 撞墙反馈 `HenshinTileImpact`（代码已接线，本地已验收，联机 pending）
 
 | 项 | 内容 |
 |----|------|
@@ -558,7 +614,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 
 ## 7. CWR 拷贝库存（只读参考）
 
-### 7.1 本模 `Assets/Fx/`（截至 2026-09-06）
+### 7.1 本模 `Assets/Fx/`（截至 2026-11-26）
 
 路径约定：`PokemonHenshin/Assets/Fx/...`；代码 `ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/...")`。  
 **纪律：** 只在本模路径引用；**禁止**运行时读 CWR 资源。
@@ -577,6 +633,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | `Fog.png` | 龙雾/沙雾辅层 | **已拷 2026-09-06** |
 | `DiffusionCircle.png` | 冲击环 / 加农水花环 / 不透明紫盘底 | **已拷 2026-09-06** |
 | `Extra98.png` | 舌舔肉质条带（竖条灰阶） | **已拷 2026-09-06** |
+| `Kenney/`（25 张：fist / scratch / slash / spark / flash / muzzle / scorch / star / twirl + `ExplosionStrip`） | 臂锤、金属爪、电光一闪等 | **2026-09-25 引入**；Kenney CC0，**非** CWR 拷贝 |
 
 ### 7.2 CWR 只读源目录
 
@@ -613,6 +670,12 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 火花 | `EmberBoltProj.cs` |
 | 爪痕 | `ScratchSlashProj.cs` |
 | 撞墙反馈 / 墙截断射线 | `HenshinTileImpact.cs` / `HenshinTileRay.cs` |
+| 撞击族/传说改版批（ArmHammer、MetalClaw、AuraSphere、GyroBall、StealthRock、BulletPunch、DoubleEdge、DragonDive、DragonAscent） | `BatchRedesignProjs.cs` |
+| Stage7 招式（TakeDown、ShadowClaw、DarkPulse、CometPunch、Outrage、DracoMeteor 等） | `Stage7MoveProjs.cs` |
+| 胡地（Psychic、FutureSight、FocusPunch） | `AlakazamMoveProjs.cs` |
+| 怪力（StoneEdge、CrossChop、CloseCombat） | `MachampMoveProjs.cs` |
+| 龙尾鞭 | `DragonTailWhipProj.cs` |
+| 绘制积木（Additive 批次、Sheet 帧、连续束、世界直径） | `HenshinFxDraw.cs` |
 | FX 贴图 | `Assets/Fx/`（§7） |
 | 形态接线 | `StarterLines.cs` / `CombatLinesA.cs` / `UtilityAndLegend.cs` |
 | 玩法表 | `docs/move-effects.md` |
@@ -660,6 +723,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.14 Living | 2026-09-27 | 皮卡丘/雷丘电系招式统一暖金 `SparkGold` `(255,244,150)`：十万伏特、落雷、伏特攻击、电击 |
 | 2.15 Living | 2026-09-27 | 暖金压深 `(255,168,28)` / 芯 `(255,206,64)`；电光一闪路径残影；电击沿飞行方向判定×2 |
 | 2.16 Living | 2026-09-27 | §6 撞墙反馈 `HenshinTileImpact`：材质碎屑+属性尘+节流音；10 个在役撞墙/截断/贴地弹接线；穿墙弹不变 |
+| 2.17 Living | 2026-11-26 | 洁癖对齐：§7.1 补 `Kenney/` 库存；§8 补 6 个未索引的招式/绘制文件 |
 
 ---
 
