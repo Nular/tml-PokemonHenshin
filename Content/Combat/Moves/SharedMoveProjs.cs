@@ -383,22 +383,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			HenshinProjUtil.HomingAI(Projectile, Homing, HomingTurnRate);
-			Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.YellowTorch, 0f, 0f, 80, HenshinFxDraw.SparkGold, 1.15f);
-			d.noGravity = true;
+			// 粒子纪律：本体已是自绘贴图，飞行中不撒粒子。
 			Lighting.AddLight(Projectile.Center, HenshinFxDraw.SparkGold.ToVector3());
 		}
 
+		// 贴图 Assets/Fx/ThunderShockBolt/ThunderShockBolt.png：4 帧 × 3 tick，40×18/帧，朝右，中心 (20,8)。
+		private static ReLogic.Content.Asset<Texture2D> _boltSheet;
+
 		public override bool PreDraw(ref Color lightColor)
 		{
+			_boltSheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/ThunderShockBolt/ThunderShockBolt", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _boltSheet.Value;
+			int frameH = tex.Height / 4;
+			int frame = (Projectile.timeLeft / 3) % 4;
 			Vector2 dir = Projectile.velocity.LengthSquared() > 0.01f ? Vector2.Normalize(Projectile.velocity) : Vector2.UnitX;
-			float rot = dir.ToRotation();
-			int frame = 1 + ((Projectile.timeLeft / 3) % 4);
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawBeamSegment(HenshinFxDraw.LightShot, Projectile.Center - dir * 18f, Projectile.Center + dir * 6f,
-				HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGold, 0.8f), 7f);
-			HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneySpark(frame), Projectile.Center,
-				HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGold, 0.82f), 40f, rot);
-			HenshinFxDraw.EndAdditive();
+			Rectangle src = new(0, frameH * frame, tex.Width, frameH);
+			// 自发光：不吃环境光，贴图已预乘，直接 Color.White（夜里同样亮）。
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), src, Color.White, dir.ToRotation(),
+				new Vector2(20f, 8f), 1.25f, SpriteEffects.None, 0f);
 			return false;
 		}
 
@@ -1047,46 +1049,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = p.Center;
 			int dust = Projectile.ai[0] > 0 ? (int)Projectile.ai[0] : DustID.Cloud;
 
-			if (_flare && !InBrake)
-			{
-				Vector2 perp = new Vector2(-_dir.Y, _dir.X);
-				// 贴身包裹火焰
-				for (int i = 0; i < 5; i++)
-				{
-					Vector2 wrap = p.Center + Main.rand.NextVector2Circular(22f, 26f);
-					Dust d = Dust.NewDustPerfect(wrap, DustID.Torch,
-						-_dir * Main.rand.NextFloat(0.5f, 2.5f) + Main.rand.NextVector2Circular(1.2f, 1.2f),
-						50, default, Main.rand.NextFloat(1.3f, 1.9f));
-					d.noGravity = true;
-				}
-				// 错落多线火径
-				if (Vector2.DistanceSquared(_lastTrail, p.Center) > 18f * 18f)
-				{
-					_lastTrail = p.Center;
-					for (int lane = -2; lane <= 2; lane++)
-					{
-						float side = lane * 10f + Main.rand.NextFloat(-2f, 2f);
-						Vector2 basePos = p.Center + perp * side;
-						for (int i = 0; i < 3; i++)
-						{
-							Dust trail = Dust.NewDustPerfect(basePos - _dir * (i * 7f), DustID.Torch,
-								-_dir * Main.rand.NextFloat(0.4f, 1.2f) + perp * Main.rand.NextFloat(-0.4f, 0.4f),
-								70, default, Main.rand.NextFloat(1.1f, 1.55f));
-							trail.noGravity = true;
-							trail.fadeIn = 1.05f;
-						}
-					}
-				}
-			}
-			else if (!_flare)
-			{
-				Dust.NewDustPerfect(p.Center, dust, -p.velocity * 0.2f, 100, default, 1.2f).noGravity = true;
-				Dust.NewDustPerfect(p.Center - _dir * 12f, dust, -_dir * 2f, 120, default, 1.0f).noGravity = true;
-			}
-			else if (InBrake && Main.rand.NextBool(2))
-			{
-				Dust.NewDustPerfect(p.Center, DustID.Torch, -_dir * 1.5f + Main.rand.NextVector2Circular(2f, 2f), 100, default, 1.2f).noGravity = true;
-			}
+			// 粒子纪律：出招/刹车期间不沿线撒粒子；命中特效由 TackleHitFxProj 负责（火系染橙）。
 
 			int immuneGate = BrakeTicks + System.Math.Max(8, _dashLife * 5 / 8);
 			if (Projectile.timeLeft >= immuneGate && Projectile.owner == Main.myPlayer)
@@ -1102,20 +1065,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			int dust = Projectile.ai[0] > 0 ? (int)Projectile.ai[0] : DustID.Smoke;
 			SoundEngine.PlaySound(SoundID.Item14, target.Center);
-			for (int i = 0; i < 16; i++)
-			{
-				Dust d = Dust.NewDustPerfect(target.Center, dust, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.45f);
-				d.noGravity = Main.rand.NextBool();
-			}
-			for (int i = 0; i < 8; i++)
-				Dust.NewDustPerfect(target.Center, DustID.Smoke, Main.rand.NextVector2Circular(4f, 4f), 100, default, 1.3f).noGravity = true;
+			// 命中特效：TackleHitFxProj（自带 3 颗 ai0 色尘；火系用橙色调）。
+			if (Projectile.owner == Main.myPlayer)
+				Projectile.NewProjectile(Projectile.GetSource_FromThis(), target.Center, Vector2.Zero,
+					ModContent.ProjectileType<TackleHitFxProj>(), 0, 0f, Projectile.owner, dust);
 			if (Projectile.ai[1] > 0)
 				target.AddBuff((int)Projectile.ai[1], 180);
-			if (dust == DustID.Torch)
-			{
-				for (int i = 0; i < 10; i++)
-					Dust.NewDustPerfect(target.Center, DustID.Torch, Main.rand.NextVector2Circular(6f, 6f), 60, default, 1.5f).noGravity = true;
-			}
 		}
 
 		public override void OnKill(int timeLeft)
@@ -1174,14 +1129,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			else
 			{
-				for (int i = 1; i <= 3; i++)
-				{
-					Vector2 pos = Projectile.Center - _dir * (i * 14f);
-					Color c = HenshinFxDraw.WithAlpha(new Color(220, 230, 255), 0.45f * life * (1f - i * 0.2f));
-					HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, pos, c, 0.28f);
-				}
+				// 非火系：去掉 3 团 SoftGlow 拖尾，只留一点微光核心。
 				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-					HenshinFxDraw.WithAlpha(Color.White, 0.55f * life), 0.4f);
+					HenshinFxDraw.WithAlpha(Color.White, 0.3f * life), 0.4f);
 			}
 			HenshinFxDraw.EndAdditive();
 			return false;

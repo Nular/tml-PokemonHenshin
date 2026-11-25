@@ -459,12 +459,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinProjUtil.HomingAI(Projectile, true, 0.06f);
 			}
 
-			Color c = new(255, 100, 30);
-			for (int i = 0; i < 2; i++)
-			{
-				Dust d = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(10f, 10f), DustID.Torch, -Projectile.velocity * 0.1f, 80, c, 1.4f);
-				d.noGravity = true;
-			}
 			Lighting.AddLight(Projectile.Center, 1f, 0.4f, 0.1f);
 		}
 
@@ -488,21 +482,25 @@ namespace PokemonHenshin.Content.Combat.Moves
 			target.AddBuff(BuffID.OnFire, 180);
 		}
 
+		private static ReLogic.Content.Asset<Texture2D> _sheet;
+		private static ReLogic.Content.Asset<Texture2D> _light;
+
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Texture2D tex = TextureAssets.Projectile[ProjectileID.Typhoon].Value;
-			int frames = System.Math.Max(1, Main.projFrames[ProjectileID.Typhoon]);
-			if (frames > 1)
-			{
-				Projectile.frameCounter++;
-				if (Projectile.frameCounter >= 4)
-				{
-					Projectile.frameCounter = 0;
-					Projectile.frame = (Projectile.frame + 1) % frames;
-				}
-			}
-			Rectangle frame = tex.Frame(1, frames, 0, Projectile.frame);
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, new Color(255, 110, 40), Projectile.rotation, frame.Size() * 0.5f, 1.15f, SpriteEffects.None, 0);
+			_sheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/FireSpin/FireSpin", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			_light ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/FireSpin/FireSpin_Light", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _sheet.Value;
+			const int Frames = 4;
+			int frameH = tex.Height / Frames;
+			int frame = (Projectile.timeLeft / 3) % Frames;
+			Rectangle src = new(0, frameH * frame, tex.Width, frameH);
+			Rectangle lightSrc = new(0, frameH * frame, _light.Value.Width, frameH);
+			Vector2 pos = (Projectile.Center - Main.screenPosition).Floor();
+			Vector2 origin = new(tex.Width * 0.5f, frameH * 0.5f);
+			Main.EntitySpriteDraw(tex, pos, src, Color.White, 0f, origin, 1f, SpriteEffects.None, 0f);
+			HenshinFxDraw.BeginAdditive();
+			Main.EntitySpriteDraw(_light.Value, pos, lightSrc, Color.White * 0.5f, 0f, origin, 1f, SpriteEffects.None, 0f);
+			HenshinFxDraw.EndAdditive();
 			return false;
 		}
 	}
@@ -540,8 +538,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_texType <= 0)
 				_texType = ProjectileID.WaterStream;
 			Projectile.rotation = Projectile.velocity.ToRotation();
-			Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.Water, Projectile.velocity * 0.2f, 100, default, 1.3f);
-			d.noGravity = true;
+			// 水弹本体是可见贴图；粒子纪律：飞行中不撒水滴。
 		}
 
 		public override bool OnTileCollide(Vector2 oldVelocity)
@@ -567,11 +564,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>草系鞭：皮鞭级射程，草尘段点。</summary>
+	/// <summary>草系鞭：皮鞭级射程；自绘藤蔓（Assets/Fx/VineWhip）沿弧线逐段平铺，鞭尖叶苞。出招期间不撒粒子，命中只留 2 颗草屑。方向取主人鼠标（经 NetOp.SyncAim 同步，360°）。</summary>
 	public class GrassWhipProj : HenshinMoveProj
 	{
 		private const float Range = 176f; // ~11 tiles, leather-whip-like
 		private const int Lifetime = 28;
+		private static ReLogic.Content.Asset<Texture2D> _vine;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
@@ -589,6 +587,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = 12;
 		}
 
+		private float Reach01 => 1f - Projectile.timeLeft / (float)Lifetime;
+
+		private Vector2 AimDir(Player owner)
+		{
+			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
+			if (aim == Vector2.Zero)
+				aim = new Vector2(owner.direction, 0f);
+			aim.Normalize();
+			return aim;
+		}
+
 		public override void AI()
 		{
 			Player owner = Main.player[Projectile.owner];
@@ -598,41 +607,75 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 
-			float t = 1f - Projectile.timeLeft / (float)Lifetime;
+			float t = Reach01;
 			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
-			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
-			if (aim == Vector2.Zero)
-				aim = new Vector2(owner.direction, 0f);
-			aim.Normalize();
+			Vector2 aim = AimDir(owner);
 			float swing = (float)System.Math.Sin(t * MathHelper.Pi) * 0.35f;
-			Vector2 tip = owner.MountedCenter + aim.RotatedBy(swing) * reach;
-			Projectile.Center = tip;
-
-			for (float s = 0.15f; s <= 1f; s += 0.12f)
-			{
-				Vector2 p = Vector2.Lerp(owner.MountedCenter, tip, s);
-				Dust d = Dust.NewDustPerfect(p, DustID.Grass, aim * 0.5f, 80, new Color(80, 200, 80), 1.25f);
-				d.noGravity = true;
-				if (Main.rand.NextBool(3))
-					Dust.NewDustPerfect(p, DustID.ChlorophyteWeapon, Vector2.Zero, 120, default, 0.9f).noGravity = true;
-			}
+			Projectile.Center = owner.MountedCenter + aim.RotatedBy(swing) * reach;
+			Lighting.AddLight(Projectile.Center, 0.1f, 0.3f, 0.1f);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
 		{
 			Player owner = Main.player[Projectile.owner];
-			float t = 1f - Projectile.timeLeft / (float)Lifetime;
+			float t = Reach01;
 			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
-			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
-			if (aim == Vector2.Zero)
-				aim = new Vector2(owner.direction, 0f);
-			aim.Normalize();
-			Vector2 tip = owner.MountedCenter + aim * reach;
+			Vector2 tip = owner.MountedCenter + AimDir(owner) * reach;
 			float point = 0f;
 			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), owner.MountedCenter, tip, 22f, ref point);
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			if (Main.dedServ)
+				return;
+			for (int i = 0; i < 2; i++)
+			{
+				Dust d = Dust.NewDustPerfect(target.Center + Main.rand.NextVector2Circular(8f, 8f), DustID.Grass,
+					Main.rand.NextVector2Circular(2.5f, 2.5f), 60, default, 1f);
+				d.noGravity = true;
+			}
+		}
+
+		// 贴图 Assets/Fx/VineWhip/VineWhip.png：3 帧 24×20（0 藤段、1 带叶藤段、2 鞭尖叶苞），朝右，藤中心 (12,10)。
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Player owner = Main.player[Projectile.owner];
+			if (!owner.active)
+				return false;
+			_vine ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/VineWhip/VineWhip", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _vine.Value;
+			int fh = tex.Height / 3;
+			float t = Reach01;
+			float reach = Range * MathHelper.Clamp(t * 1.6f, 0f, 1f);
+			if (reach < 10f)
+				return false;
+			Vector2 aim = AimDir(owner);
+			float swing = (float)System.Math.Sin(t * MathHelper.Pi) * 0.35f;
+			Vector2 start = owner.MountedCenter;
+			Vector2 end = start + aim.RotatedBy(swing) * reach;
+			// 控制点向挥动反方向滞后，鞭身呈弧；全程二次贝塞尔。
+			Vector2 perp = new(-aim.Y, aim.X);
+			Vector2 ctrl = (start + end) * 0.5f - perp * (float)System.Math.Sin(t * MathHelper.Pi) * reach * 0.18f;
+			int n = System.Math.Max(2, (int)System.Math.Ceiling(reach / 20f));
+			float opacity = System.Math.Min(1f, Projectile.timeLeft / 6f);
+			Color c = new(System.Math.Max(lightColor.R, (byte)110), System.Math.Max(lightColor.G, (byte)120), System.Math.Max(lightColor.B, (byte)100));
+			c *= opacity;
+			Vector2 origin = new(12f, 10f);
+			for (int i = 1; i <= n; i++)
+			{
+				float u = i / (float)n;
+				float v = 1f - u;
+				Vector2 pos = v * v * start + 2f * u * v * ctrl + u * u * end;
+				Vector2 tan = 2f * v * (ctrl - start) + 2f * u * (end - ctrl);
+				float rot = tan.ToRotation();
+				int frame = i == n ? 2 : (i % 3 == 1 ? 1 : 0);
+				SpriteEffects fx = System.Math.Cos(rot) < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
+				Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh), c, rot,
+					i == n ? new Vector2(14f, 10f) : origin, 1f, fx, 0f);
+			}
+			return false;
+		}
 	}
 
 	/// <summary>电光一闪：闪现至指针最近敌人；身周 Kenney 电火花；伤害在落点爆发上打三下。</summary>
@@ -689,10 +732,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 					p.Teleport(dest, -1);
 					p.immune = true;
 					p.immuneTime = System.Math.Max(p.immuneTime, 15);
-					for (int i = 0; i < 8; i++)
+					for (int i = 0; i < 2; i++)
 					{
-						Dust.NewDustPerfect(from, DustID.YellowTorch, Main.rand.NextVector2Circular(4f, 4f), 80, HenshinFxDraw.SparkGold, 1.2f).noGravity = true;
-						Dust.NewDustPerfect(p.Center, DustID.YellowTorch, Main.rand.NextVector2Circular(4f, 4f), 80, HenshinFxDraw.SparkGold, 1.2f).noGravity = true;
+						Dust.NewDustPerfect(from, DustID.YellowTorch, Main.rand.NextVector2Circular(4f, 4f), 80, HenshinFxDraw.SparkGold, 1.1f).noGravity = true;
+						Dust.NewDustPerfect(p.Center, DustID.YellowTorch, Main.rand.NextVector2Circular(4f, 4f), 80, HenshinFxDraw.SparkGold, 1.1f).noGravity = true;
 					}
 					SoundEngine.PlaySound(SoundID.Item8, p.Center);
 					SpawnGhostTrail(Projectile, p, from);
@@ -902,10 +945,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (age % HitGap == 0 && age <= HitGap * (HitCount - 1))
 				SoundEngine.PlaySound(SoundID.Item94 with { Volume = 0.55f, Pitch = 0.12f }, Projectile.Center);
 
-			if (Main.rand.NextBool(2))
+			if (Main.rand.NextBool(6))
 			{
 				Dust d = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2CircularEdge(28f, 28f),
-					DustID.YellowTorch, Main.rand.NextVector2Circular(2f, 2f), 40, HenshinFxDraw.SparkGold, 1.1f);
+					DustID.YellowTorch, Main.rand.NextVector2Circular(2f, 2f), 40, HenshinFxDraw.SparkGold, 1.0f);
 				d.noGravity = true;
 			}
 			Lighting.AddLight(Projectile.Center, HenshinFxDraw.SparkGold.ToVector3() * 0.85f);
@@ -939,13 +982,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return false;
 		}
 
-		/// <summary>Kenney spark_01–04 绕身体一圈。Additive 保留 Alpha。</summary>
+		private static ReLogic.Content.Asset<Texture2D> _sparkSheet;
+
+		/// <summary>自绘 BlinkSpark（Assets/Fx/BlinkSpark，4 帧 26×26/帧，中心 (13,13)）绕身体一圈；自发光，不吃环境光。</summary>
 		public static void DrawBodySparks(Vector2 worldCenter, int age, float fade, bool pulse)
 		{
 			fade = MathHelper.Clamp(fade, 0f, 1f);
 			if (fade <= 0.02f)
 				return;
-			HenshinFxDraw.BeginAdditive();
+			_sparkSheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/BlinkSpark/BlinkSpark", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D sheet = _sparkSheet.Value;
+			int sparkH = sheet.Height / 4;
 			const int count = 4;
 			float spin = age * 0.32f;
 			float boost = pulse ? 1.22f : 1f;
@@ -954,13 +1001,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float ang = spin + i * (MathHelper.TwoPi / count);
 				float radius = (30f + 8f * System.MathF.Sin(age * 0.5f + i)) * (pulse ? 1.08f : 1f);
 				Vector2 pos = worldCenter + ang.ToRotationVector2() * radius;
-				int frame = 1 + ((age / 2 + i) % 4);
-				float diam = (52f + 14f * (i % 2)) * boost;
-				float intensity = (pulse ? 0.92f : 0.74f) * fade;
-				Color c = HenshinFxDraw.WithAlpha(HenshinFxDraw.SparkGold, intensity);
-				HenshinFxDraw.DrawKenneyWorld(HenshinFxDraw.KenneySpark(frame), pos, c, diam, ang * 0.5f + age * 0.14f);
+				int frame = (age / 2 + i) % 4;
+				float scale = (1.5f + 0.4f * (i % 2)) * boost;
+				Color c = Color.White * ((pulse ? 1f : 0.85f) * fade);
+				Main.EntitySpriteDraw(sheet, (pos - Main.screenPosition).Floor(), new Rectangle(0, sparkH * frame, sheet.Width, sparkH), c,
+					0f, new Vector2(sheet.Width * 0.5f, sparkH * 0.5f), scale, SpriteEffects.None, 0f);
 			}
-			HenshinFxDraw.EndAdditive();
 		}
 	}
 
@@ -1185,14 +1231,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = center + _startOff * (1f - pull);
 			Projectile.rotation += 0.12f;
 
-			Dust trail = Dust.NewDustPerfect(Projectile.Center, DustID.Stone, Main.rand.NextVector2Circular(1.5f, 1.5f), 100, new Color(140, 100, 60), 1.1f);
-			trail.noGravity = true;
-
 			if (t > 0.85f && !_shattered)
 			{
 				_shattered = true;
 				SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
-				for (int i = 0; i < 18; i++)
+				for (int i = 0; i < 3; i++)
 				{
 					Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.Stone, Main.rand.NextVector2Circular(6f, 6f), 80, new Color(140, 100, 60), 1.4f);
 					d.noGravity = Main.rand.NextBool();
@@ -1216,8 +1259,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const int Lifetime = 20;
 		private Vector2 _dir;
 		private bool _spawnedDash;
+		private static ReLogic.Content.Asset<Texture2D> _crossSheet;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		/// <summary>CrossSlash 5 帧 112x112；0..4 帧，原点取帧中心。懒加载，dedServ 不会走到 PreDraw。</summary>
+		internal static void DrawCross(Vector2 center, float rot, int frame, float scale, float opacity)
+		{
+			Texture2D tex = (_crossSheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/CrossSlash/CrossSlash", ReLogic.Content.AssetRequestMode.ImmediateLoad)).Value;
+			int fh = tex.Height / 5;
+			Rectangle src = new(0, fh * frame, tex.Width, fh);
+			Main.EntitySpriteDraw(tex, (center - Main.screenPosition).Floor(), src, Color.White * opacity, rot, src.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+		}
 
 		public override void SetDefaults()
 		{
@@ -1253,18 +1306,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = owner.MountedCenter + _dir * 40f;
 			float t = 1f - Projectile.timeLeft / (float)Lifetime;
 
-			// X 形十字：两条对角线
-			float arm = 42f + t * 20f;
-			for (int s = -1; s <= 1; s += 2)
-			{
-				Vector2 a = _dir.RotatedBy(MathHelper.PiOver4 * s);
-				for (float u = -1f; u <= 1f; u += 0.1f)
-				{
-					Vector2 pos = Projectile.Center + a * (u * arm);
-					Dust d = Dust.NewDustPerfect(pos, DustID.Blood, a * s * 1.5f, 50, new Color(255, 210, 210), 1.45f);
-					d.noGravity = true;
-				}
-			}
+			// X 形剑气由 PreDraw 的 CrossSlash 贴图承担；出招期间不撒粒子。
+			Lighting.AddLight(Projectile.Center, 0.9f, 0.4f, 0.2f * (1f - t));
 
 			if (!_spawnedDash && Projectile.timeLeft <= Lifetime - 8 && Projectile.owner == Main.myPlayer)
 			{
@@ -1274,7 +1317,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override bool PreDraw(ref Color lightColor)
+		{
+			if (Projectile.localAI[0] == 0f)
+				return false;
+			int age = Lifetime - Projectile.timeLeft;
+			int frame = age < 3 ? 0 : age < 6 ? 1 : age < 12 ? 2 : age < 16 ? 3 : 4;
+			float opacity = frame == 4 ? System.Math.Min(1f, Projectile.timeLeft / 3f) : 1f;
+			DrawCross(Projectile.Center, _dir.ToRotation(), frame, 1f, opacity);
+			return false;
+		}
 	}
 
 	/// <summary>十字劈前冲：飞行约 64 格，沿途伤害。</summary>
@@ -1308,17 +1360,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 
-			Vector2 dir = Projectile.velocity;
-			if (dir != Vector2.Zero)
-				dir.Normalize();
-			for (int s = -1; s <= 1; s += 2)
-			{
-				Vector2 a = dir.RotatedBy(MathHelper.PiOver4 * s);
-				Dust.NewDustPerfect(Projectile.Center + a * 12f, DustID.Blood, -dir * 2f, 60, new Color(255, 200, 200), 1.3f).noGravity = true;
-			}
+			Lighting.AddLight(Projectile.Center, 0.6f, 0.25f, 0.1f);
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		public override bool PreDraw(ref Color lightColor)
+		{
+			if (Projectile.velocity == Vector2.Zero)
+				return false;
+			// 前飞：缩小的 X 剑气（帧 2 最亮帧）随行，不撒粒子。
+			float fade = System.Math.Min(1f, Projectile.timeLeft / 10f);
+			CrossChopArcProj.DrawCross(Projectile.Center, Projectile.velocity.ToRotation(), 2, 0.6f, fade);
+			return false;
+		}
 	}
 
 	/// <summary>
@@ -1385,10 +1438,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 					HenshinTileImpact.GroundDebris(Projectile);
 			}
 
-			for (int i = 0; i < 3; i++)
+			// 粒子纪律：Typhoon 本体已够显眼，只每 5 tick 漏一缕风。
+			if (Projectile.timeLeft % 5 == 0 && !(_grounded && Projectile.tileCollide && Projectile.velocity.Y == 0f))
 			{
 				Vector2 off = Main.rand.NextVector2CircularEdge(18f, 18f);
-				Dust d = Dust.NewDustPerfect(Projectile.Center + off, DustID.Cloud, off.RotatedBy(0.6f) * 0.08f, 100, new Color(60, 90, 200), 1.25f);
+				Dust d = Dust.NewDustPerfect(Projectile.Center + off, DustID.Cloud, off.RotatedBy(0.6f) * 0.08f, 100, new Color(60, 90, 200), 1.1f);
 				d.noGravity = true;
 			}
 		}
@@ -1498,15 +1552,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_dir.Normalize();
 			}
 			Projectile.Center = owner.MountedCenter + _dir * (Length * 0.45f);
-
-			for (float s = 0.05f; s <= 1f; s += 0.08f)
-			{
-				float width = (1f - s) * 28f;
-				Vector2 along = owner.MountedCenter + _dir * (Length * s);
-				Vector2 perp = _dir.RotatedBy(MathHelper.PiOver2) * Main.rand.NextFloat(-width, width);
-				Dust d = Dust.NewDustPerfect(along + perp, DustID.Cloud, _dir * 3f, 80, default, 1.2f);
-				d.noGravity = true;
-			}
+			// 出招期间不沿线撒粒子；只在刺尖留一颗风尘。
+			if (Projectile.timeLeft == 10 && !Main.dedServ)
+				Dust.NewDustPerfect(owner.MountedCenter + _dir * Length, DustID.Cloud, _dir * 2f, 80, default, 1.1f).noGravity = true;
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -1517,7 +1565,67 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), owner.MountedCenter, tip, 36f, ref point);
 		}
 
-		public override bool PreDraw(ref Color lightColor) => false;
+		// 贴图 Assets/Fx/PeckBeak/PeckBeak.png：4 帧 × 4 tick，268×40/帧，朝右，刺根在 (6,20)，全长 254 px ≈ 16 格。
+		private const int PeckFrames = 4;
+		private const int PeckTicksPerFrame = 4;
+		private static ReLogic.Content.Asset<Texture2D> _beakSheet;
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			if (_dir == Vector2.Zero)
+				return false;
+			Player owner = Main.player[Projectile.owner];
+			if (!owner.active)
+				return false;
+			_beakSheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/PeckBeak/PeckBeak", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _beakSheet.Value;
+			int frameH = tex.Height / PeckFrames;
+			int age = 16 - Projectile.timeLeft;
+			int frame = System.Math.Clamp(age / PeckTicksPerFrame, 0, PeckFrames - 1);
+			Rectangle src = new(0, frameH * frame, tex.Width, frameH);
+			float rot = _dir.ToRotation();
+			// 朝左半圈上下翻转，让受光面（贴图上半）始终朝上。
+			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
+			Color c = new(System.Math.Max(lightColor.R, (byte)130), System.Math.Max(lightColor.G, (byte)120), System.Math.Max(lightColor.B, (byte)110));
+			float opacity = frame == PeckFrames - 1 ? 0.5f + 0.5f * (Projectile.timeLeft / (float)PeckTicksPerFrame) : 1f;
+			Main.EntitySpriteDraw(tex, (owner.MountedCenter - Main.screenPosition).Floor(), src, c * opacity, rot, new Vector2(6f, frameH * 0.5f), 1f, fx, 0f);
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// 燕返：沿用 LungeProj 的位移/判定/无敌（不改），只换外观：自绘风刃锥拖尾 + 命中只留 3 颗云尘。
+	/// 贴图 Assets/Fx/AerialAceDash/AerialAceDash.png：3 帧 × 3 tick，96×44/帧，朝右，头在 (92,22)。
+	/// </summary>
+	public class AerialAceLungeProj : LungeProj
+	{
+		private static ReLogic.Content.Asset<Texture2D> _dashSheet;
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.6f }, target.Center);
+			for (int i = 0; i < 3; i++)
+				Dust.NewDustPerfect(target.Center, DustID.Cloud, Main.rand.NextVector2Circular(4f, 4f), 80, default, 1.2f).noGravity = true;
+			if (Projectile.ai[1] > 0)
+				target.AddBuff((int)Projectile.ai[1], 180);
+		}
+
+		public override bool PreDraw(ref Color lightColor)
+		{
+			Player p = Main.player[Projectile.owner];
+			Vector2 v = p.velocity;
+			if (!p.active || v.LengthSquared() < 4f)
+				return false;
+			_dashSheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/AerialAceDash/AerialAceDash", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _dashSheet.Value;
+			int frameH = tex.Height / 3;
+			int frame = (Projectile.timeLeft / 3) % 3;
+			// 刹车段淡出；贴图已预乘，用 Color.White * 不透明度（自发光）。
+			float fade = Projectile.timeLeft < 10 ? Projectile.timeLeft / 10f : 1f;
+			Main.EntitySpriteDraw(tex, (p.Center - Main.screenPosition).Floor(), new Rectangle(0, frameH * frame, tex.Width, frameH),
+				Color.White * (0.9f * fade), v.ToRotation(), new Vector2(86f, frameH * 0.5f), 1f, SpriteEffects.None, 0f);
+			return false;
+		}
 	}
 
 	/// <summary>意念头锤：鼠标处幽灵锤下砸范围伤（放大）。</summary>
@@ -1561,7 +1669,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
 					if (Projectile.owner == Main.myPlayer)
 						Main.instance.CameraModifiers.Add(new PunchCameraModifier(Projectile.Center, Vector2.UnitY, 5f, 8f, 14, 1000f, "ZenHammer"));
-					for (int i = 0; i < 36; i++)
+					for (int i = 0; i < 3; i++)
 					{
 						Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.MagicMirror, Main.rand.NextVector2Circular(9f, 6f), 80, new Color(200, 180, 255), 1.6f);
 						d.noGravity = true;
@@ -1570,7 +1678,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				}
 			}
 
-			Dust.NewDustPerfect(Projectile.Center + new Vector2(0f, _raise), DustID.PurpleTorch, Vector2.Zero, 120, default, 1.25f).noGravity = true;
 		}
 
 		public override bool? CanDamage() => _smashed;

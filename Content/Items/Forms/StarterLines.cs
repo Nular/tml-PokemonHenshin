@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
@@ -219,6 +219,21 @@ namespace PokemonHenshin.Content.Items.Forms
 				KeyConflict = KeyConflictLevel.ModKeybind
 			};
 
+		/// <summary>跃起（鲤鱼王）：与 Strike 同参数，射弹换成水柱 SplashFallProj。</summary>
+		public static MoveSpec SplashStrike(string nameKey, float mult)
+			=> new()
+			{
+				Delivery = MoveDelivery.StrikeFall,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<SplashFallProj>(),
+				DamageMultiplier = mult,
+				UseTime = 45,
+				ShootSpeed = 0f,
+				Knockback = 3f,
+				Ai1 = DustID.Water,
+				KeyConflict = KeyConflictLevel.ModKeybind
+			};
+
 		public static MoveSpec Beam(string nameKey, float mult, bool aftermath = false, bool ignoreDef = false)
 			=> new()
 			{
@@ -360,7 +375,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			{
 				Delivery = MoveDelivery.Barrage,
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<BarrageDirectorProj>(),
+				ProjectileType = ModContent.ProjectileType<SeedGunDirectorProj>(),
 				DamageMultiplier = mult,
 				UseTime = 48,
 				ShootSpeed = 0f,
@@ -536,6 +551,22 @@ namespace PokemonHenshin.Content.Items.Forms
 				Knockback = 2.5f,
 				IsRangedProjectile = true,
 				BalanceTag = BalanceTag.WideAoE
+			};
+
+		/// <summary>燕返：同 Lunge 数值与机制，仅换成 AerialAceLungeProj 的专属外观。</summary>
+		public static MoveSpec AerialAceLunge(string nameKey, float mult, int use, int dust, KeyConflictLevel key = KeyConflictLevel.None)
+			=> new()
+			{
+				Delivery = MoveDelivery.Lunge,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<AerialAceLungeProj>(),
+				DamageMultiplier = mult,
+				UseTime = use,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				Ai0 = dust,
+				RequiresLungeCooldown = true,
+				KeyConflict = key
 			};
 
 		public static MoveSpec PeckCone(string nameKey, float mult = 1.2f, int use = 18)

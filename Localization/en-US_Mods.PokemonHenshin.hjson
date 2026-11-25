@@ -2124,4 +2124,10 @@ Projectiles: {
 	ScratchHitFxProj.DisplayName: Scratch Hit Fx Proj
 	ShadowClawHitFxProj.DisplayName: Shadow Claw Hit Fx Proj
 	ShadowClawStrikeProj.DisplayName: Shadow Claw Strike Proj
+	AerialAceLungeProj.DisplayName: Aerial Ace Lunge Proj
+	SeedBombBlastProj.DisplayName: Seed Bomb Blast Proj
+	SeedGunDirectorProj.DisplayName: Seed Gun Director Proj
+	SeedGunShotProj.DisplayName: Seed Gun Shot Proj
+	SplashFallProj.DisplayName: Splash Fall Proj
+	TackleHitFxProj.DisplayName: Tackle Hit Fx Proj
 }

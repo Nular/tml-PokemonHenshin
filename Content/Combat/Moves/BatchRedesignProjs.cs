@@ -475,6 +475,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	{
 		private const int Life = 10;
 		private Vector2 _dir;
+		private static ReLogic.Content.Asset<Texture2D> _punchSheet;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
@@ -511,13 +512,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float life = Projectile.timeLeft / (float)Life;
-			int frame = HenshinFxDraw.AgeFrame(Life, Projectile.timeLeft, 2, HenshinFxDraw.HitJaggedFrames);
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawHitJaggedFrame(Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 230, 200), 0.85f * life),
-				0.95f, Projectile.rotation + MathHelper.Pi, frame);
-			HenshinFxDraw.EndAdditive();
+			if (Projectile.localAI[0] == 0f)
+				return false;
+			// BulletPunch.png：3 帧 96x40，朝右，拳头中心在 (79,20)，尾迹向左；朝左半圈上下翻转保持受光面朝上。
+			Texture2D tex = (_punchSheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/BulletPunch/BulletPunch", ReLogic.Content.AssetRequestMode.ImmediateLoad)).Value;
+			int fh = tex.Height / 3;
+			int age = Life - Projectile.timeLeft;
+			int frame = age < 3 ? 0 : age < 7 ? 1 : 2;
+			Rectangle src = new(0, fh * frame, tex.Width, fh);
+			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), src, Color.White, Projectile.rotation, new Vector2(79f, 20f), 1f, fx, 0f);
 			return false;
 		}
 	}

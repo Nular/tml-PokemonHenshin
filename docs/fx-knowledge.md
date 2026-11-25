@@ -318,6 +318,35 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 > **注：** **Stage 6 / Wave3 / Stage7+ 均已验收（2026-09-07）**。Stage7+ 当时含钢尾灰罩、猛撞灰日耀、暗影抓/恶波动、彗星拳 StarWrath、破灭自缓加粗、龙俯冲/画龙点睛纯黑龙、逆鳞火球、流星群64、洛奇亚三招、超梦强念×6+精神击破64球。**2026-09-25 改版批：** 画龙现为闪现+青 SoftGlow 光迹+延迟反色日耀（旧纯黑龙已退役）；金属怪臂锤/金属爪 Kenney；洛奇亚路径气爆；神鸟/陀螺去误无敌。
 
+### 4.9 肉前特效批（2026-11-26，构建通过，本地验收 + 联机 pending）
+共性：自绘贴图在 `Assets/Fx/<招式>/`，PreDraw 里 `ModContent.Request(..., ImmediateLoad)` 缓存到 static `Asset` 字段，不碰 `LoadProjectile`；出招沿线不撒粒子；数值/判定/冷却均未改；用 `OwnerMouseWorld` / `OwnerAimDir`，不用 `Main.MouseWorld`。
+
+| 招式 | 类 | 贴图 | 要点 |
+|---|---|---|---|
+| 火花（L01_F01 S1） | `EmberBoltProj` | `EmberBolt` 36×22×4 + `_Light` | 朝右，rotation=速度方向，朝左半圈 FlipVertically 并镜像原点 Y；`_Light` 加法 ×0.7，与本体同一帧矩形；命中 12→3 颗 |
+| 火焰漩涡（L01_F01 大招） | `FlareBoltUltProj` | `FireSpin` 56×56×4 + `_Light` | 3 臂每帧转 30° 无缝；帧号 `timeLeft/3 % 4`；`_Light` ×0.5，与本体同一帧矩形；只留撞墙停住后 1 颗/12tick 火星 |
+| 撞击（非火系，含妙蛙种子/杰尼龟/鲤鱼王/地鼠） | `LungeProj` → `TackleHitFxProj` | `TackleHit` 24×24×5 + `_Light` | 出招不撒尘/不拖尾；命中生成 0 伤害冲击星，`ai0`=Dust ID 染色（Water 水蓝/Grass 草绿/其余奶白），只在拥有者端生成；火系（Torch）同走此星，`Tint` 染橙，出招/刹车期间也不撒粒子 |
+| 跃起（鲤鱼王） | `SplashFallProj`（`FormItemUtil.SplashStrike`） | `SplashColumn` 20×44×5 + `_Light` | 原点 (10,42) 水柱脚底；判定同 `StrikeFallProj`（40×80/18 tick）；`StrikeFallProj` 留给电系，勿改；非拥有者端等 `ai0` 同步后才绘制 |
+| 抓狂（鲤鱼王） | `FlailBarrageProj` | 共用 `Scratch/Scratch.png` | 按 `Len/贴图宽` 缩放，帧节奏 2/2/2/4/4 tick；每道 2 颗烟，命中血 3 颗 |
+| 水枪（杰尼龟） | `AquaScepterShotProj` | 原版水弹 | 只降粒子：飞行中不撒水滴（水弹贴图本体可见） |
+| 藤鞭（L03_F01 S1） | `GrassWhipProj` | `VineWhip` 24×20×3 | 二次贝塞尔逐段（≤20px）平铺，段朝切线旋转，朝左半圈 FlipVertically；末 6 tick 淡出；命中 2 颗草屑 |
+| 种子机关枪（L03_F01 大招） | `SeedGunDirectorProj` + `SeedGunShotProj` | `SeedShot` 18×10 | 施放时 `OwnerAimDir` 锁方向；EasyCrit 经 ai1 同步；无拖尾；撞墙仍走 `HenshinTileImpact` Seed；旧 `BarrageDirectorProj.ModeSeed` 已无人用 |
+| 飞叶快刀（L03_F02 S1） | `LeafSpreadProj` | 原版 Leaf | 只降粒子：枪口 15→5 |
+| 种子炸弹（L03_F02 大招） | `SeedBombProj` + `SeedBombBlastProj` | `SeedBomb` 22×22、`SeedBombBlast` 160×160×6 | 爆圈 320×320 草系 AoE，24 tick，同弹 6 tick；整数 2 倍绘制；爆点只 4 颗草屑；爆点音效只播一次；爆点生成后 `Center` 校正并 `netUpdate = true`（让远端位置对） |
+| 电击（L04_F01 S1） | `ThunderBoltHenshinProj` | `ThunderShockBolt` 20×9×4 | Color.White 自发光；飞行中无粒子；去 LightShot 光束段 |
+| 电光一闪（L04_F01 S2） | `BlinkStrikeProj` 系 | `BlinkSpark` 13×13×4 | 身周 4 星换自绘；起止点 Dust 每端 2 颗；落点 Dust 概率降；残影/传送不动 |
+| 啄（L11_F01 S2） | `PeckConeProj` | `PeckBeak` 134×20×4 | 贴图根 (3,10)，全长 254px=16 格判定；方向 `_dir`；朝左 FlipVertically；沿线粒子全删，仅 timeLeft==10 刺尖 1 颗风尘 |
+| 燕返（L11_F01 大招） | `AerialAceLungeProj : LungeProj`（`FormItemUtil.AerialAceLunge`） | `AerialAceDash` 48×22×3 | 只覆写 PreDraw+OnHitNPC；工厂是整份初始化器（`MoveSpec` 属性 init），改 `Lunge` 数值时要同步；拖尾沿 `player.velocity`；基类 `LungeProj.AI` 仍每 tick 2 颗 Cloud |
+| 起风（L11_F01 S1） | `GroundCycloneProj` | 原版 Typhoon | 只降粒子：每 5 tick 一次——贴地滚动时只出 `GroundDebris`，否则一缕云尘 |
+| 子弹拳（L05_F01 S2） | `BulletPunchProj` | `BulletPunch` 48×20×3 | 拳头在右端，原点 (79,20) px；朝左上下翻转；不再画 HitJagged |
+| 十字劈（Machop 大招） | `CrossChopArcProj` + `CrossChopDashProj` | `CrossSlash` 56×56×5 | 以射弹 Center 为中心按 `_dir` 旋转；X 对称不翻转；前飞段用同图最亮帧 ×0.6；`DrawCross` 为 `internal static`；`CrossChopArcXProj`（豪力）未动 |
+| 挖洞爆发（L10_F01 大招） | `DigUltBurstProj` | `DigBurst` 56×56×5 | 首个 AI tick 记 `p.Bottom` 当锚点（非 OnSpawn，各端自算）；`Lerp(lightColor, White, 0.45)` 抬亮；删 Fog/DiffusionCircle，出土瞬间 3 颗 |
+| 岩石封锁 / 掷泥 / 意念头锤 | `RockTombShardProj` / `MudSlapBoltProj` / `ZenHammerSmashProj` | 原版 | 只降粒子：碎裂 18→3；掷泥删尾迹；头锤落地 72→6、删每 tick 拖尾 |
+
+保留不动：泡沫光线、潮旋水分支、十万伏特、龙之波动（`NebulaPulse*` 多形态共用，爆炸 28+12 偏多，待统筹）、念力、精神强念、咬住、闪焰冲锋（走 `LungeProj`）。
+
+已知：`VineWhip`/`SeedShot`/`SeedBomb` 的 pxt check 有 1 WARN（内容贴帧边，藤段需首尾相接/单帧无邻帧）；其余新图 0 WARN。`LungeProj` 共享改动影响所有非火系撞击（命中尘 24→3 颗并多一个冲击星），逐形态未看。
+
 ### Sleep Buff cookbook（Accepted 2026-09-07）
 - `HenshinSleepDebuff` + `HenshinNpcGlobalNPC`：`PreAI=false` 定身、`CanHitPlayer=false`、首伤 `FinalDamage*=2` 后 DelBuff；**不清**已在飞敌弹。催眠施加端跳过 Boss。
 - 睡眠 VFX：`DrawEffects` 强制 `Color(255,255,255,100)` + 头顶 3 路 `z/Z/Zz`。
