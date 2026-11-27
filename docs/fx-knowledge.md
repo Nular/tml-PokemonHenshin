@@ -489,13 +489,24 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 1. **水柱（WaterJetProj 技能 + 加农）**：灰板的根因是近白泡沫 + 贴图全不透明 + 低亮度。本体改 `LitSegment(..., darkFade: true)`（可加 `keepHue: true`），暗处 alpha 乘 `0.35 + 0.65·k`（k = 光最亮通道 / 255），变半透明露出背景；再沿中心加一条淡加色芯线（`A=0`，强度 0.15–0.25，芯线自己留 0.3 下限）。只有**加农大招**再加沿线小灯（每 3 格，每通道 ≤0.2）或外缘 IceTorch，二选一，先灯。技能版不加光。
 2. **大招**：lit 实物大招（水/草/岩/土/风）可加一盏 0.35–0.5 的色光；glow 大招主光 0.8–1.2。发光粒子一律走 `HenshinUltGlow.Emit`：外缘 0.8–1.1 倍半径、默认 0.5 颗/tick、每 owner 每 tick 合计 ≤2 颗、粒子自带光时不再 `AddLight`。导演比子弹先死时由子弹发，`sampleN` 抽样（子弹 ≥16 颗时 N ≥16）。位置只用 `Projectile.Center` / `ai[]` / 同步字段。
 
+**第 2 轮落地规则（整合后，2026-11-28）：**
+
+| 项 | 规则 |
+|---|---|
+| 暗处淡出 + 芯线 | 只给水：水柱 `LitSegment(keepHue, darkFade)`；泡泡/水弹/溅落/潮旋用 `LitHue × DarkFadeAt`。芯线只在 WaterJetProj：Additive 批次、`(150,210,255)`、A=255、RGB × `0.2·(0.3+0.7k)·alpha`，宽 8px（技能）/ 14px（加农）。4f9674c 接缝（浮点分片 + 满透明时重叠 2px + 末片拉到终点）不能动。加农选沿线灯：每 48px `(0.07,0.13,0.2)`，不加 IceTorch。 |
+| keepHue | 水、草、风、舌、龙尾这些吃光长条/本体用 `LitHue` / `Strip(lit, keepHue)`。岩、土、钢、拳脚保持 RGB 乘光。吃光类不加粒子。 |
+| 大招判定 | 只认 36 个形态的 `CreateUltimate`（35 个工厂，巨金怪与暴鲤龙共用 HyperBeamUlt）。类被技能共用时按 `TierOf(...) == HitTier.Ultimate` 或 ai 标记（如岩崩 `ai2>150`、龙之怒 `ai2=1`、破坏光线 `_thick`）只在大招发。 |
+| 发射者 | 导演活着时只导演发；子弹传 `yieldToType: 导演 type`，导演还在就不发（粒子与 forceLight 光都不发），导演死后按 `sampleN` 抽样接着发。导演钉在玩家身上（泡沫连射、种子机关枪）或无位置（预知未来、雷柱、热风、金属爪、画龙点睛）时导演不发，只子弹发。 |
+| 上限 | 每实例默认 0.5 颗/tick，持续光束 1 颗/tick；每 owner 每 tick ≤2 颗（`MaxPerOwnerPerTick`）；`extraUpdates>0` 的类只在 `numUpdates == 0` 调。 |
+| 大招光例外 | 大招里的 mixed / lit 自身光可超 0.2（如流沙地狱 0.26、地震每刺 0.28、爆裂拳 0.4），仍不超 0.5；技能版保持 ≤0.2。 |
+
 **第 2 轮共用工具（默认值 = 旧行为）：**
 
 - `HenshinFxDraw.LightK(l)`、`DarkFade(l, floor=0.35f)`、`DarkFadeAt(world)`：暗处淡出系数。AlphaBlend（预乘）下 `color * f`；NonPremultiplied 只乘 A。
 - `HenshinFxDraw.LitHue(world, tint, sceneMix=0.25f)` / `LitHueFrom(light, tint)`：按最亮通道变暗、保色相，混 25% 光色。白光下等于 `Lit`，全黑仍黑。
 - `HenshinFxDraw.LitSegment(from, to, t, tint, step=48, keepHue=false, darkFade=false)`；`LightAlong(from, to, t, step)` 只取光。
 - `HenshinTrail.Strip` / `StripPoints` 末尾加 `keepHue=false, darkFade=false`（只在 `lit:true` 时生效）。
-- `HenshinUltGlow.Emit(Projectile p, radius, dustType, lightRgb, everyTicks=2, selfLit=null, sampleN=1, forceLight=false, dustScale=1f)`；坐标版 `Emit(center, owner, sampleKey, ...)`。`HenshinUltGlow.SelfLights(type)`：反编译核实的自带光 dust（6、59–65、135、86–92、27、226）。宝石 dust 光 ∝ (0.6·scale)²，scale 1 时只有约 0.36，需要更亮就 `forceLight` 或换火把类。
+- `HenshinUltGlow.Emit(Projectile p, radius, dustType, lightRgb, everyTicks=2, selfLit=null, sampleN=1, forceLight=false, dustScale=1f, yieldToType=-1)`；坐标版 `Emit(center, owner, sampleKey, ...)`。`HenshinUltGlow.SelfLights(type)`：反编译核实的自带光 dust（6、59–65、135、86–92、27、226）。宝石 dust 光 ∝ (0.6·scale)²，scale 1 时只有约 0.36，需要更亮就 `forceLight` 或换火把类。
 
 细节、签名、自带光表与各组用法见 `Assets/TEMP_ASSETS/fx-light2/a.md`（本地，不入库）。
 

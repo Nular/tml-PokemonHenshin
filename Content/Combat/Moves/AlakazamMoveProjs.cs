@@ -320,7 +320,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Age < FadeTicks)
 			{
 				Projectile.velocity *= 0.85f;
-				Lighting.AddLight(Projectile.Center, H3Fx.VariantLight[0] * fade);
+				Lighting.AddLight(Projectile.Center, H3Fx.VariantLight[0] * (1.25f * fade));
+				EmitUltGlow(fade);
 				return;
 			}
 
@@ -346,7 +347,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.velocity = Main.rand.NextVector2CircularEdge(FlightSpeed, FlightSpeed);
 			}
 
-			Lighting.AddLight(Projectile.Center, H3Fx.VariantLight[0]);
+			// 光照第 2 轮大招加亮 ×1.25。
+			Lighting.AddLight(Projectile.Center, H3Fx.VariantLight[0] * 1.25f);
+			EmitUltGlow(1f);
+		}
+
+		// 导演只活 12 tick、只在主人端选敌、没有有意义的位置，所以由每颗金弹自己发（弹数 = 屏上敌人数，可能只有 1 颗，
+		// 不抽样；每颗每 4 tick 至多 1 颗，同主人每 tick 合计 ≤2 由 HenshinUltGlow 限）。GemTopaz 与金色同色、自带弱光。
+		private void EmitUltGlow(float k)
+		{
+			if (k < 0.3f)
+				return;
+			HenshinUltGlow.Emit(Projectile, 22f, DustID.GemTopaz, Vector3.Zero, everyTicks: 4, dustScale: 0.9f);
 		}
 
 		private NPC ResolveTarget()

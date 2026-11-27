@@ -159,7 +159,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			// 沿雷撒的金尘（每 2 tick 一颗）删去：雷贴图 + 落点爆炸配方已足够。
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.55f);
-			Lighting.AddLight(_to, ChantColor.ToVector3() * _envelope * 1.2f);
+			// 大招档（皮卡丘十万伏特根弹 / 分叉、雷丘雷暴落雷）：落点光 1.2 → 1.4，落点外缘少量电粒子（Electric 自带光）。
+			// 雷暴导演只活 6 tick、落雷活 26 tick：由落雷按 whoAmI 抽样发（根弹 N=1、落雷 N=3、分叉/连锁 N=4）。
+			// _to 各端在首帧由同步的生成位置 / ai / 玩家位置 / 同步鼠标算出，不是 owner 私有写入。
+			bool ult = HenshinHitFeel.TierOf(Projectile, HitTier.Light) == HitTier.Ultimate;
+			Lighting.AddLight(_to, ChantColor.ToVector3() * _envelope * (ult ? 1.4f : 1.2f));
+			if (ult && !Main.dedServ && _envelope > 0.3f)
+			{
+				bool ultRootBolt = !fallMode && Projectile.ai[1] <= 0f && AllowsChain;
+				int n = ultRootBolt ? 1 : (fallMode ? 3 : 4);
+				HenshinUltGlow.Emit(_to, Projectile.owner, Projectile.whoAmI, 26f * _widthMul, DustID.Electric, Vector3.Zero, sampleN: n);
+			}
 
 			if (AllowsChain && !_chainScheduled && Projectile.owner == Main.myPlayer)
 			{

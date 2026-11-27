@@ -86,7 +86,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = p.MountedCenter;
 			// R3 手感（G2）：起手只留共享 UltCast（根弹各端自动播），删 Item29；蓄光光照随蓄力变强。
 			float charge = age / (float)ChargeTicks;
-			Lighting.AddLight(OrbPos(p, charge), new Vector3(0.5f, 0.75f, 1f) * (0.6f + 0.9f * charge));
+			// 光照第 2 轮 D 组：蓄光稍亮（×1.2）；蓄力弹（导演）活着时在玩家中心外缘发少量钻石粒子（只用同步的 Center，避开胸前光球）。
+			Lighting.AddLight(OrbPos(p, charge), new Vector3(0.6f, 0.9f, 1.2f) * (0.6f + 0.9f * charge));
+			HenshinUltGlow.Emit(Projectile, 60f, DustID.GemDiamond, Vector3.Zero);
 			if (age == ChargeTicks)
 			{
 				// 开炮：各端播钢系施放音 + 枪口 S 爆（原 Item72 只在主人端响）；主人端重档后坐震屏。
@@ -149,6 +151,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			Lighting.AddLight(Projectile.Center, 0.8f, 1.05f, 1.25f);
+			// 光照第 2 轮 D 组：蓄力弹已死，光弹（单颗，N=1）接着发；已有强光，粒子不另加光。
+			HenshinUltGlow.Emit(Projectile, 44f, DustID.GemDiamond, Vector3.Zero);
 		}
 
 		// 穿透命中：同步钢火花（光 + S 爆 + 钢命中音）+ 打击感（出自大招槽 → Ultimate 档，20 tick 内只震一次）。
@@ -270,7 +274,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
-			Lighting.AddLight(Projectile.Center, 0.5f * Projectile.timeLeft / Life + 0.1f, 0.65f * Projectile.timeLeft / Life + 0.1f, 0.75f * Projectile.timeLeft / Life + 0.1f);
+			// 光照第 2 轮 D 组：余辉稍亮（×1.2）+ 光场外缘少量钻石粒子（光弹已死，余辉单颗 N=1 接着发）。
+			float k = 1.2f * Projectile.timeLeft / Life;
+			Lighting.AddLight(Projectile.Center, 0.5f * k + 0.1f, 0.65f * k + 0.1f, 0.75f * k + 0.1f);
+			HenshinUltGlow.Emit(Projectile, Radius, DustID.GemDiamond, Vector3.Zero, everyTicks: 3);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -364,6 +371,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 落石铁律：任何时候都不向上（也兜住远端位置/速度校正）。
 			if (Projectile.velocity.Y < MinFallSpeed)
 				Projectile.velocity.Y = MinFallSpeed;
+			// 光照第 2 轮 D 组：岩崩大招 12 块，导演（40 tick）比落石（90 tick）先死 → 大块按 whoAmI % 4 抽样发黄晶粒子 + 色光（lit 大招例外）。
+			if (IsUltRock)
+				HenshinUltGlow.Emit(Projectile, 40f, DustID.GemTopaz, new Vector3(0.4f, 0.32f, 0.2f), sampleN: 4, forceLight: true,
+					yieldToType: ModContent.ProjectileType<RockSlideDirectorProj>());
 		}
 
 		/// <summary>停追条件：与任一敌对 NPC 重叠（含无敌帧、假人、不受伤），或已越过锁定目标中心高度。</summary>

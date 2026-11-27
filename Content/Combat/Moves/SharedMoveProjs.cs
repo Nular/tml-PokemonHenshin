@@ -1141,7 +1141,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			PlayCastSfx(p);
 			// 闪焰冲锋全程照亮（原来冲刺不加光）；刹车段渐弱。
 			if (_flare)
-				Lighting.AddLight(Projectile.Center, new Vector3(1f, 0.5f, 0.15f) * (InBrake ? 0.5f : 1f));
+			{
+				// 闪焰冲锋（大招档）：主光略升 1 → 1.2，身周外缘少量火把粒子（Torch 自带光；位置 = 同步的 Center = 玩家中心）。
+				bool ult = HenshinHitFeel.TierOf(Projectile, HitTier.Light) == HitTier.Ultimate;
+				Lighting.AddLight(Projectile.Center, new Vector3(1f, 0.5f, 0.15f) * (InBrake ? 0.5f : 1f) * (ult ? 1.2f : 1f));
+				if (ult && !InBrake)
+					HenshinUltGlow.Emit(Projectile, 34f, DustID.Torch, Vector3.Zero);
+			}
 
 			// 粒子纪律：出招/刹车期间不沿线撒粒子；命中特效由 TackleHitFxProj 负责（火系染橙）。
 

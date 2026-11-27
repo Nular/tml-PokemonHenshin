@@ -119,8 +119,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			// 每 tick 一颗云尘删去，改淡蓝风带拖尾（PreDraw）。
 			// 光照 D 组：技能 = lit（风无光，删 AddLight）；大招 = mixed，自身光 ≤0.2（原 0.55/0.7/0.95）。
-			if (IsUlt)
+			// 光照第 2 轮 D 组：大招主弹（与 4 道伴随风同寿命，导演即主弹）稍亮一点 + 外缘少量钻石粒子；伴随风保持 ≤0.2。
+			if (IsUlt && IsCompanion)
 				Lighting.AddLight(Projectile.Center, 0.12f, 0.15f, 0.2f);
+			else if (IsUlt)
+				HenshinUltGlow.Emit(Projectile, 52f, DustID.GemDiamond, new Vector3(0.22f, 0.28f, 0.36f), forceLight: true);
 
 			if (_impactCooldown > 0)
 				_impactCooldown--;
@@ -259,7 +262,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float scale = IsCompanion ? 0.95f : 1.2f;
 			// 淡蓝风带拖尾（宽、淡、无芯感），大招更亮。贴地滚动时也连成一条。
 			// 光照 D 组：风带拖尾 lit；本体乘光；SoftGlow 技能删去，大招（mixed）留 0.15。
-			HenshinTrail.Strip(Projectile, new Color(150, 190, 240), 34f * scale, new Color(225, 240, 255), 0.25f, 6f, IsUlt ? 0.55f : 0.4f, lit: true);
+			// 光照第 2 轮 D 组：风带 keepHue 保色（暖光下不发灰）。
+			HenshinTrail.Strip(Projectile, new Color(150, 190, 240), 34f * scale, new Color(225, 240, 255), 0.25f, 6f, IsUlt ? 0.55f : 0.4f, lit: true, keepHue: true);
 			// 直立天候棒动画，不绕圆心转
 			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, lightColor,
 				0f, src.Size() * 0.5f, scale, SpriteEffects.None);
@@ -267,7 +271,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				HenshinFxDraw.BeginAdditive();
 				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-					HenshinFxDraw.WithAlpha(new Color(140, 180, 230), 0.15f), 0.5f * scale);
+					HenshinFxDraw.WithAlpha(new Color(140, 180, 230), 0.2f), 0.5f * scale); // 第 2 轮：大招稍亮 0.15→0.2
 				HenshinFxDraw.EndAdditive();
 			}
 			return false;

@@ -266,7 +266,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			float gl = Grow();
 			// 光照修正：mixed，中心光 ≤0.2（原 0.6 / 0.3），边缘 4 盏弱灯已去掉，免得沙涡照亮自己的 lightColor。
-			Lighting.AddLight(Projectile.Center, 0.2f * gl, 0.15f * gl, 0.07f * gl);
+			// 光照第 2 轮 D 组：大招稍亮，只到 0.26（上轮刚降到 0.2，别超太多）；沙涡外缘少量黄晶粒子（单颗大招弹，N=1；宝石粒子光很弱，不另加光）。
+			Lighting.AddLight(Projectile.Center, 0.26f * gl, 0.2f * gl, 0.09f * gl);
+			if (Projectile.timeLeft > FadeTicks)
+				HenshinUltGlow.Emit(Projectile, HitRadius * 1.05f * (0.25f + 0.75f * gl), DustID.GemTopaz, Vector3.Zero);
 
 			if (Main.netMode != NetmodeID.MultiplayerClient && Projectile.timeLeft > FadeTicks)
 				PullNpcs();

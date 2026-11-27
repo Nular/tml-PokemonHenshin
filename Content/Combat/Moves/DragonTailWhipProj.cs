@@ -278,7 +278,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 					mid = pts[i];
 					scale = new Vector2(1f, 1f);
 				}
-				Color c = HenshinFxDraw.LightAt(mid) * opacity;
+				// 光照第 2 轮：长鞭类保色（LitHue，亮度取光的最亮通道），暖光下龙尾不发灰；钢尾属金属仍 RGB 乘光。
+				Color c = HenshinFxDraw.LitHue(mid, Color.White) * opacity;
 				Main.EntitySpriteDraw(tex, (mid - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh), c, rot,
 					origin, scale, fx, 0f);
 			}

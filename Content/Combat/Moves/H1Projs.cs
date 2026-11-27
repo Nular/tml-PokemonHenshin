@@ -206,7 +206,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int age = Life - Projectile.timeLeft;
 			// 起爆那一下最亮（L 档光脉冲，光点随冲击环外扩），之后保底一层余热。
 			HenshinExplosion.Pulse(Projectile.Center, HeatTint, BlastSize.L, age / (float)Life, 420f);
-			Lighting.AddLight(Projectile.Center, 0.6f, 0.3f, 0.1f);
+			// 大招：保底余热光略升（0.6/0.3/0.1 → 0.8/0.4/0.13），爆圈外缘少量火把粒子（Torch 自带光）。
+			Lighting.AddLight(Projectile.Center, 0.8f, 0.4f, 0.13f);
+			HenshinUltGlow.Emit(Projectile, 200f, DustID.Torch, Vector3.Zero);
 			if (age % 6 == 0 && age / 6 < 5)
 			{
 				if (age == 0)
@@ -319,7 +321,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					float ang = dirSign * spin + MathHelper.TwoPi * i / Petals + ring * 0.4f;
 					Vector2 pos = Projectile.Center + ang.ToRotationVector2() * r;
 					int frame = (age / 4 + i) % 4;
-					Color c = HenshinFxDraw.LightAt(pos) * fadeOut;
+					Color c = HenshinFxDraw.LitHue(pos, Color.White) * fadeOut; // 草：保色吃光
 					H1Tex.DrawFrame(tex, 4, frame, pos, c, ang + MathHelper.PiOver2 * dirSign, new Vector2(ring == 0 ? 1.5f : 1.9f));
 				}
 			}
@@ -365,6 +367,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinSfx.Play(SfxKey.UltCharge, owner.MountedCenter);
 			}
 			Lighting.AddLight(Projectile.Center, 1.3f * charge, 1.05f * charge, 0.35f * charge);
+			// 大招蓄力：太阳球外缘少量黄火把粒子（自带光），半径随球长大。
+			HenshinUltGlow.Emit(Projectile, 18f + 26f * charge, DustID.YellowTorch, Vector3.Zero);
 
 			if (Projectile.timeLeft == 8 && Projectile.owner == Main.myPlayer)
 			{
@@ -465,8 +469,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			owner.direction = aim.X >= 0f ? 1 : -1;
 			if (first)
 				HenshinExplosion.Spawn(_from + aim * 24f, BlastSize.L, SolarTint, 200f, kenneyFrame: false); // 枪口白闪
-			Lighting.AddLight(Projectile.Center, 1.1f, 0.9f, 0.35f);
+			// 大招：光柱主光略升（1.1/0.9/0.35 → 1.25/1/0.4）；光柱两侧外缘每 tick ≤1 颗黄火把粒子（持续光束）。
+			// _from/_to 各端每 tick 由玩家位置 + 同步鼠标算出（非 owner 私有写入）。
+			Lighting.AddLight(Projectile.Center, 1.25f, 1f, 0.4f);
 			Lighting.AddLight(_from + aim * 40f, 1.2f * Env(), 1.0f * Env(), 0.4f * Env());
+			if (!Main.dedServ)
+				HenshinUltGlow.Emit(Vector2.Lerp(_from, _to, Main.rand.NextFloat(0.05f, 0.85f)), Projectile.owner, Projectile.whoAmI,
+					44f * Math.Max(0.3f, Env()), DustID.YellowTorch, Vector3.Zero, everyTicks: 1);
 		}
 
 		private static readonly Color SolarTint = new(255, 220, 110);

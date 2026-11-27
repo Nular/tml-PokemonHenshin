@@ -65,6 +65,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 
 			Projectile.Center = p.Center;
+			// 光照第 2 轮 D 组：导演活到终结爆之后，由它在玩家（同步位置 = Projectile.Center）外缘发少量白火把粒子。
+			// WhiteTorch 自带光，不另加光；各端都跑（放在 owner 早退之前），不用 owner-only 的 _c/_from/_to。
+			HenshinUltGlow.Emit(Projectile, 40f, DustID.WhiteTorch, Vector3.Zero);
 			if (Projectile.owner != Main.myPlayer)
 				return;
 
@@ -405,7 +408,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, new Color(150, 210, 255), Projectile.width, kenneyFrame: false);
 				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate);
 			}
-			Lighting.AddLight(Projectile.Center, 0.55f, 0.8f, 1f);
+			Lighting.AddLight(Projectile.Center, 0.65f, 0.92f, 1.12f); // 第 2 轮：终结爆稍亮（原 0.55/0.8/1）
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)

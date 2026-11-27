@@ -278,13 +278,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			for (int i = 0; i < n; i++)
 			{
 				Vector2 p = _root + dir * (step * (i + 0.5f) + seg * 0.5f);
-				// 舌头最长约十几格：每节按自己位置逐段取光（lit）。
-				Color segLit = HenshinFxDraw.LitSegment(_root, _tip, (p - _root).Length() / len, Color.White);
+				// 舌头最长约十几格：每节按自己位置逐段取光（lit）；keepHue 保粉色，暖光下不发灰。
+				Color segLit = HenshinFxDraw.LitSegment(_root, _tip, (p - _root).Length() / len, Color.White, keepHue: true);
 				Main.EntitySpriteDraw(tex, (p - Main.screenPosition).Floor(), bodySrc, segLit, rot, origin,
 					new Vector2(step / seg * 1.06f, 1f), fx, 0f);
 			}
 			Vector2 tipPos = _tip - dir * (seg * 0.5f);
-			Main.EntitySpriteDraw(tex, (tipPos - Main.screenPosition).Floor(), tipSrc, HenshinFxDraw.LightAt(tipPos), rot, origin, 1f, fx, 0f);
+			Main.EntitySpriteDraw(tex, (tipPos - Main.screenPosition).Floor(), tipSrc, HenshinFxDraw.LitHue(tipPos, Color.White), rot, origin, 1f, fx, 0f);
 			return false;
 		}
 
@@ -353,9 +353,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int age = Life - Projectile.timeLeft;
 			// 场域光：整段先亮后衰，照亮身周（光点随环外扩）。
 			HenshinExplosion.Pulse(Projectile.Center, SpiralTint, BlastSize.L, age / (float)Life, 420f, 0.8f);
-			// 超能大招 glow：本体补紫光（峰值 0.6，末 10 tick 随淡出衰减）。
+			// 超能大招 glow：本体补紫光（峰值 0.75，末 10 tick 随淡出衰减）。光照第 2 轮：×1.25 加亮。
 			float glowFade = Math.Min(1f, Projectile.timeLeft / 10f);
-			Lighting.AddLight(Projectile.Center, 0.49f * glowFade, 0.26f * glowFade, 0.6f * glowFade);
+			Lighting.AddLight(Projectile.Center, 0.61f * glowFade, 0.33f * glowFade, 0.75f * glowFade);
+			// 大招发光粒子：主弹自己发（随主人走，Center 已同步），撒在螺旋外缘；PurpleTorch 自带光，不再补灯。
+			float ringR = 80f + 130f * MathHelper.Clamp(age / (float)SleepBeatAge, 0f, 1f);
+			HenshinUltGlow.Emit(Projectile, ringR, DustID.PurpleTorch, Vector3.Zero);
 			// 螺旋张满的一拍：低沉幽灵音 + 主人端大招震屏 + 已入睡敌人白闪（睡眠 buff 由服务器同步，各端读到即闪，纯表现）。
 			if (age == SleepBeatAge && Projectile.localAI[1] == 0f)
 			{

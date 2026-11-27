@@ -13,6 +13,7 @@
 		<AdditionalFiles Remove="docs\**" />
 		<Compile Remove="tools\**" />
 		<None Remove="tools\**" />
+		<Compile Remove="Assets\TEMP_ASSETS\**" />
 		<Compile Remove="obj\**" />
 		<Compile Remove="bin\**" />
 	</ItemGroup>

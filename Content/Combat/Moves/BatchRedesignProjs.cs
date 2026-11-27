@@ -264,6 +264,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 光照 D 组：mixed，自身光 ≤0.2（原 0.45/0.6/0.8）
 			Lighting.AddLight(_fixed + new Vector2(34f, 0f), new Vector3(0.11f, 0.15f, 0.2f) * reveal);
 			Lighting.AddLight(_fixed - new Vector2(34f, 0f), new Vector3(0.11f, 0.15f, 0.2f) * reveal);
+			// 光照第 2 轮大招：导演 8 tick 就死，爪场只有 1 个、活 48 tick，由爪场自己发（不抽样）。
+			// GemDiamond 自带光弱，forceLight 补一盏钢白光（大招例外 ≤0.4）；只用已同步的 Projectile.Center。
+			if (reveal > 0.2f)
+				HenshinUltGlow.Emit(Projectile, 100f, DustID.GemDiamond, new Vector3(0.3f, 0.34f, 0.4f) * reveal, forceLight: true, dustScale: 0.9f);
 		}
 
 		private static readonly Color ClawTint = new(180, 220, 255);
@@ -310,8 +314,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Vector2 org = new Vector2(56f, 2f);
 			// 光照 D 组：mixed，爪身 = Lerp(光, 白, 0.4)。
 			// shortcut: 爪高 16 格只在爪中段取一次光（H5Fx.Draw 不能分段），要分段时改成按源矩形切条绘制。
-			Color clawR = Color.Lerp(HenshinFxDraw.LightAt(_fixed + new Vector2(34f, 0f)), Color.White, 0.15f);
-			Color clawL = Color.Lerp(HenshinFxDraw.LightAt(_fixed - new Vector2(34f, 0f)), Color.White, 0.15f);
+			// 光照第 2 轮大招加亮：白拉 0.15 → 0.25。
+			Color clawR = Color.Lerp(HenshinFxDraw.LightAt(_fixed + new Vector2(34f, 0f)), Color.White, 0.25f);
+			Color clawL = Color.Lerp(HenshinFxDraw.LightAt(_fixed - new Vector2(34f, 0f)), Color.White, 0.25f);
 			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(34f, 0f), org, 0f, s, alpha, SpriteEffects.None, clawR);
 			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(-34f, 0f), org, 0f, s, alpha, SpriteEffects.FlipHorizontally, clawL);
 			return false;
@@ -860,8 +865,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinHitFeel.Shake(Projectile.owner, _to, HitTier.Ultimate, _to - _from);
 			}
 			// 路径青光：沿线 6 盏随寿命衰减的灯（原每 tick 的 DungeonWater 路径尘删掉，光束 + 龙形已够）
+			// 光照第 2 轮大招加亮 ×1.25（原 0.1/0.6/0.65）。
 			for (int k = 0; k <= 5; k++)
-				Lighting.AddLight(Vector2.Lerp(_from, _to, k / 5f), 0.1f * life, 0.6f * life, 0.65f * life);
+				Lighting.AddLight(Vector2.Lerp(_from, _to, k / 5f), 0.125f * life, 0.75f * life, 0.81f * life);
+			// 大招发光粒子：闪现导演 8 tick 就死、其 _from 只在主人端写，所以由路径弹发。
+			// 落点只由同步的 Center（路径中点）和 velocity（整段位移，ShouldUpdatePosition=false 不变）算；Main.rand 只影响画面。
+			if (life > 0.25f)
+			{
+				Vector2 along = Projectile.Center + Projectile.velocity * Main.rand.NextFloat(-0.5f, 0.5f);
+				HenshinUltGlow.Emit(along, Projectile.owner, Projectile.whoAmI, 28f, DustID.GreenTorch, Vector3.Zero, dustScale: 0.9f);
+			}
 
 			// 延迟依次爆炸：沿路径按年龄分批触发（上一版手感）
 			int age = Life - Projectile.timeLeft;

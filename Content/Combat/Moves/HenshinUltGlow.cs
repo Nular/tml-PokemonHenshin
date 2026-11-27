@@ -39,11 +39,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// </summary>
 		/// <returns>本次发出的粒子数（0–1）。</returns>
 		public static int Emit(Projectile p, float radius, int dustType, Vector3 lightRgb, int everyTicks = 2,
-			bool? selfLit = null, int sampleN = 1, bool forceLight = false, float dustScale = 1f)
+			bool? selfLit = null, int sampleN = 1, bool forceLight = false, float dustScale = 1f, int yieldToType = -1)
 		{
 			if (Main.dedServ || p == null || !p.active)
 				return 0;
-			return Emit(p.Center, p.owner, p.whoAmI, radius, dustType, lightRgb, everyTicks, selfLit, sampleN, forceLight, dustScale);
+			return Emit(p.Center, p.owner, p.whoAmI, radius, dustType, lightRgb, everyTicks, selfLit, sampleN, forceLight, dustScale, yieldToType);
+		}
+
+		/// <summary>同 owner 有活着的 <paramref name="type"/> 弹幕（导演）→ true。</summary>
+		public static bool OwnerHasActive(int owner, int type)
+		{
+			for (int i = 0; i < Main.maxProjectiles; i++)
+			{
+				Projectile q = Main.projectile[i];
+				if (q.active && q.type == type && q.owner == owner)
+					return true;
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -57,13 +69,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// <param name="sampleN">子弹抽样：只有 sampleKey % sampleN == 0 的实例发粒子与光（≤1 = 全发）。</param>
 		/// <param name="forceLight">true = 即使粒子自带光也 AddLight（要更亮时）。</param>
 		/// <param name="dustScale">粒子基准大小（再随机 0.9–1.2 倍）。宝石 dust 光很弱，可传 1.2–1.5。</param>
+		/// <param name="yieldToType">子弹用：传导演弹 type；导演还活着时子弹不发（粒子与光），由导演发。-1 = 不等。</param>
 		/// <returns>本次发出的粒子数（0–1）。</returns>
 		public static int Emit(Vector2 center, int owner, int sampleKey, float radius, int dustType, Vector3 lightRgb,
-			int everyTicks = 2, bool? selfLit = null, int sampleN = 1, bool forceLight = false, float dustScale = 1f)
+			int everyTicks = 2, bool? selfLit = null, int sampleN = 1, bool forceLight = false, float dustScale = 1f, int yieldToType = -1)
 		{
 			if (Main.dedServ)
 				return 0;
 			if (sampleN > 1 && Math.Abs(sampleKey) % sampleN != 0)
+				return 0;
+			if (yieldToType >= 0 && OwnerHasActive(owner, yieldToType))
 				return 0;
 
 			bool dustLights = selfLit ?? SelfLights(dustType);

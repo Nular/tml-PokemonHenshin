@@ -305,8 +305,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinExplosion.Spawn(at, BlastSize.M, HeatTint, 150f + 45f * w);
 				HenshinHitFeel.Shake(Projectile.owner, at, w == 3 ? HitTier.Ultimate : HitTier.Heavy, Projectile.velocity);
 			}
-			float lk = 0.85f + 0.15f * w;
+			// 光照第 2 轮 D 组：大招稍亮（×1.15）；导演（34 tick）比热浪（50 tick）先死 → 每道热浪自己发（只 3 道，N=1），
+			// 外缘少量火把粒子，Torch 自带光，不另加光；everyTicks 3 免得 3 道叠满上限。
+			float lk = (0.85f + 0.15f * w) * 1.15f;
 			Lighting.AddLight(Projectile.Center, 0.9f * lk, 0.5f * lk, 0.15f * lk);
+			HenshinUltGlow.Emit(Projectile, Projectile.width * 0.62f, DustID.Torch, Vector3.Zero, everyTicks: 3, dustScale: 1.2f);
 			// R3: the wind blows through walls (no tile kill), so it never dies on the ground. 旧的火把尘删掉（风带 + 热晕已够）。
 		}
 

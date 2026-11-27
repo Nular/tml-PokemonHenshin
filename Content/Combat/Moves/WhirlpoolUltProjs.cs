@@ -102,9 +102,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate, -Vector2.UnitY);
 			}
 
-			// mixed（水，但是大招）：本体吃光，只留一盏 ≤0.2 的淡蓝光。
+			// 水大招：本体吃光；中心色光按 lit 大招例外升到 ≤0.4（0.05/0.11/0.2 → 0.1/0.22/0.38），漩涡外缘少量蓝火把粒子（自带光）。
 			float ramp = Math.Clamp(age / (float)GrowTicks, 0f, 1f);
-			Lighting.AddLight(Projectile.Center, 0.05f * ramp, 0.11f * ramp, 0.2f * ramp);
+			Lighting.AddLight(Projectile.Center, 0.1f * ramp, 0.22f * ramp, 0.38f * ramp);
+			if (ramp > 0.5f)
+				HenshinUltGlow.Emit(Projectile, spout ? SpoutHitRadius : HitRadius, DustID.BlueTorch, Vector3.Zero);
 
 			if (Main.netMode != NetmodeID.MultiplayerClient)
 				PullNpcs(age, spout, ramp, lift);
@@ -223,7 +225,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 				// 发光小部件：_Light 层压到 0.3。
 				HenshinFxDraw.BeginAdditive();
-				Main.EntitySpriteDraw(_ringLight.Value, pos, src, Color.White * (0.3f * op), 0f, origin, scale, SpriteEffects.None, 0f);
+				Main.EntitySpriteDraw(_ringLight.Value, pos, src, Color.White * (0.4f * op), 0f, origin, scale, SpriteEffects.None, 0f);
 				HenshinFxDraw.EndAdditive();
 			}
 
@@ -240,7 +242,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				// 水柱约 16 格高：竖切 6 段逐段取光；_Light 层压到 0.3。
 				DrawLitGrid(tex, Projectile.Center + new Vector2(0f, 36f), basePos, src, origin, s, 1f, 1, 6, SpriteEffects.None);
 				HenshinFxDraw.BeginAdditive();
-				Main.EntitySpriteDraw(_spoutLight.Value, basePos, src, Color.White * 0.3f, 0f, origin, s, SpriteEffects.None, 0f);
+				Main.EntitySpriteDraw(_spoutLight.Value, basePos, src, Color.White * 0.4f, 0f, origin, s, SpriteEffects.None, 0f);
 				HenshinFxDraw.EndAdditive();
 			}
 			return false;
@@ -266,7 +268,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 					float left = flipX ? src.Width - x1 : x0;
 					Vector2 cellOrigin = new(origin.X - left, origin.Y - y0);
 					Vector2 cellCenter = new(left + (x1 - x0) * 0.5f, (y0 + y1) * 0.5f);
-					Color c = HenshinFxDraw.Lit(worldAnchor + (cellCenter - origin) * scale, Color.White) * opacity;
+					// 水：保色吃光，暗处降不透明度（DarkFade），不变灰板。
+					Vector2 cellWorld = worldAnchor + (cellCenter - origin) * scale;
+					Color c = HenshinFxDraw.LitHue(cellWorld, Color.White) * (opacity * HenshinFxDraw.DarkFadeAt(cellWorld));
 					Rectangle part = new(src.X + x0, src.Y + y0, x1 - x0, y1 - y0);
 					Main.EntitySpriteDraw(tex, screenPos, part, c, 0f, cellOrigin, scale, fx, 0f);
 				}

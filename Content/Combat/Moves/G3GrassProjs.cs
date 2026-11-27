@@ -127,7 +127,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			HenshinProjUtil.HomingAI(Projectile, Homing, HomingTurnRate);
-			// 种子是 lit：不自己发光。
+			// 种子是 lit：本体不自己发光。
+			// 大招（种子机关枪 64 发）：导演 48 tick 就死、种子还飞约 67 tick，所以由种子按 whoAmI % 16 抽样发绿火把粒子（自带光，约 4 颗种子在发）。
+			if (Projectile.numUpdates == 0 && HenshinHitFeel.TierOf(Projectile, HitTier.Light) == HitTier.Ultimate)
+				HenshinUltGlow.Emit(Projectile, 12f, DustID.GreenTorch, Vector3.Zero, sampleN: 16);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -157,8 +160,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			_tex ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/SeedGun/SeedShot", AssetRequestMode.ImmediateLoad);
 			Texture2D tex = _tex.Value;
-			HenshinTrail.Strip(Projectile, new Color(110, 220, 80), 8f, new Color(230, 255, 180), 0.4f, 0f, 0.75f, lit: true);
-			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), null, lightColor, Projectile.rotation,
+			// 草：拖尾与本体保色吃光。
+			HenshinTrail.Strip(Projectile, new Color(110, 220, 80), 8f, new Color(230, 255, 180), 0.4f, 0f, 0.75f, lit: true, keepHue: true);
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), null, HenshinFxDraw.LitHueFrom(lightColor, Color.White), Projectile.rotation,
 				new Vector2(tex.Width * 0.5f, tex.Height * 0.5f), 1f, SpriteEffects.None, 0f);
 			return false;
 		}
@@ -195,7 +199,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.velocity = Vector2.Zero;
 			// 先亮后衰的爆炸光（HenshinExplosion 试点），光点随冲击环外扩。
 			// 种荚爆是 lit 招式：光脉冲压到 0.5。
-			HenshinExplosion.Pulse(Projectile.Center, BlastTint, BlastSize.L, (Life - Projectile.timeLeft) / (float)Life, Projectile.width, 0.5f);
+			// 大招爆点：光脉冲 0.5 → 0.6（lit 大招例外），爆圈外缘少量绿火把粒子（自带光）。
+			HenshinExplosion.Pulse(Projectile.Center, BlastTint, BlastSize.L, (Life - Projectile.timeLeft) / (float)Life, Projectile.width, 0.6f);
+			HenshinUltGlow.Emit(Projectile, 140f, DustID.GreenTorch, Vector3.Zero);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -225,7 +231,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					int x1 = tex.Width * (gx + 1) / Grid;
 					Rectangle part = new(x0, src.Y + y0, x1 - x0, y1 - y0);
 					Vector2 sample = Projectile.Center + (new Vector2((x0 + x1) * 0.5f, (y0 + y1) * 0.5f) - origin) * 2f;
-					Main.EntitySpriteDraw(tex, screenCenter, part, HenshinFxDraw.Lit(sample, Color.White), 0f,
+					Main.EntitySpriteDraw(tex, screenCenter, part, HenshinFxDraw.LitHue(sample, Color.White), 0f,
 						origin - new Vector2(x0, y0), 2f, SpriteEffects.None, 0f);
 				}
 			}

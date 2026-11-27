@@ -212,7 +212,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				int y1 = frameH * (b + 1) / Bands;
 				Rectangle part = new(src.X, src.Y + y0, src.Width, y1 - y0);
 				Vector2 sample = foot - new Vector2(0f, origin.Y - (y0 + y1) * 0.5f);
-				Main.EntitySpriteDraw(tex, pos, part, HenshinFxDraw.Lit(sample, Color.White), 0f, origin - new Vector2(0f, y0), 1f, SpriteEffects.None, 0f);
+				// 水：保色吃光，暗处降不透明度（DarkFade），不变灰板。
+				Color c = HenshinFxDraw.LitHue(sample, Color.White) * HenshinFxDraw.DarkFadeAt(sample);
+				Main.EntitySpriteDraw(tex, pos, part, c, 0f, origin - new Vector2(0f, y0), 1f, SpriteEffects.None, 0f);
 			}
 			if (frame is 2 or 3)
 			{

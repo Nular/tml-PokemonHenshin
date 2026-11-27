@@ -140,8 +140,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			// R3 手感（G2）：删掉沿线紫尘；光沿光束每 6 格一点（只取屏幕附近），枪口单独一团强光。
 			float env = BeamEnvelope();
-			Vector3 beamLight = new Vector3(0.75f, 0.3f, 1f) * env;
+			// 光照第 2 轮 E 组：破坏光线（只 ModeHyperBeam = 大招）沿线光 ×1.3。
+			Vector3 beamLight = new Vector3(0.75f, 0.3f, 1f) * env * (_thick ? 1.3f : 1f);
 			Lighting.AddLight(_from + aim * 24f, beamLight * 1.6f);
+			if (_thick && env > 0.05f)
+			{
+				// 大招发光粒子：光束两侧交替，离中线 40px（光晕半宽 24px 之外），不盖光束；紫火把自带光，不另 AddLight。
+				// 位置只由主人位置 + 同步鼠标算出（_from/aim 各端自算）。
+				float along = Main.rand.NextFloat(96f, 900f);
+				float side = (Main.GameUpdateCount & 1) == 0 ? 1f : -1f;
+				Vector2 perp = new(-aim.Y, aim.X);
+				HenshinUltGlow.Emit(_from + aim * along + perp * (40f * side), Projectile.owner, Projectile.whoAmI, 8f,
+					DustID.PurpleTorch, Vector3.Zero, everyTicks: 1);
+			}
 			for (float d = 96f; d < MaxLength; d += 96f)
 			{
 				Vector2 at = _from + aim * d;
@@ -397,7 +408,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Kill();
 				return;
 			}
-			Lighting.AddLight(Projectile.Center, 0.55f, 0.4f, 0.95f);
+			// 光照第 2 轮 E 组：大招球光 ×1.25。
+			Lighting.AddLight(Projectile.Center, skillOrb ? new Vector3(0.55f, 0.4f, 0.95f) : new Vector3(0.69f, 0.5f, 1.19f));
+			// 大招发光粒子：导演（44 tick）比球（135 tick）先死，改由球按 whoAmI % 16 抽样发（32 球约 2 颗在发）；
+			// 球身直径 ~26px，粒子落在半径 18–25px 外缘；extraUpdates=1，只在最后一次更新发。
+			if (!skillOrb && Projectile.numUpdates == 0)
+				HenshinUltGlow.Emit(Projectile, 22f, DustID.BlueTorch, Vector3.Zero, sampleN: 16);
 			// H4：球体改手绘贴图，不再逐 tick 撒尘。
 		}
 
@@ -690,8 +706,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinExplosion.Spawn(_from + _aimDir * 36f, BlastSize.M, new Color(90, 170, 255), 150f, kenneyFrame: false, strength: 0.6f);
 			}
 			// 光照：水是 lit，水柱本体逐段吃光（见 PreDraw），技能版不加光；加农（大招，mixed）只留枪口一盏小灯（≤0.2）。
-			if (IsCannon)
-				Lighting.AddLight(_from + _aimDir * 40f, 0.06f, 0.12f, 0.2f);
+			if (IsCannon && !Main.dedServ)
+			{
+				// 光照第 2 轮 E 组（§4.15 大招例外）：枪口灯 0.2→0.3 略亮；沿水柱每 3 格一盏小蓝灯（≤0.2/通道），
+				// 灯先照亮水柱所在格，PreDraw 取光时水柱自然偏蓝。只取玩家附近 ~88 格。按加农淡入淡出缩放。用灯不用粒子（plan-review §7 二选一）。
+				float fade = MathHelper.Clamp((Life - Projectile.timeLeft) / 6f, 0f, 1f) * MathHelper.Clamp(Projectile.timeLeft / 8f, 0f, 1f);
+				Lighting.AddLight(_from + _aimDir * 40f, 0.1f * fade, 0.18f * fade, 0.3f * fade);
+				for (float d = 48f; d < len; d += 48f)
+				{
+					Vector2 at = _from + _aimDir * d;
+					if (Vector2.DistanceSquared(at, owner.Center) > 1400f * 1400f)
+						break;
+					Lighting.AddLight(at, 0.07f * fade, 0.13f * fade, 0.2f * fade);
+				}
+			}
 
 			// 水柱本体已是自绘贴图（H1），不再沿线撒粒子。
 		}
@@ -804,10 +832,31 @@ namespace PokemonHenshin.Content.Combat.Moves
 					break;
 				int sw = Math.Min(SliceTex, Math.Max(1, (int)Math.Ceiling(part / k)));
 				float drawLen = i < slices - 1 ? part + overlap : part;
-				Color c = HenshinFxDraw.LitSegment(_from, _to, (start + part * 0.5f) / len, Color.White) * alpha;
+				// 光照第 2 轮 E 组：keepHue 保蓝（暖光下不发灰）+ darkFade 暗处整片变半透明（0.35 + 0.65·k），不再是一整条灰板。
+				Color c = HenshinFxDraw.LitSegment(_from, _to, (start + part * 0.5f) / len, Color.White, keepHue: true, darkFade: true) * alpha;
 				Rectangle src = new(i % slicesPerTile * SliceTex, fh * frame, sw, fh);
 				Main.EntitySpriteDraw(tex, _from + n * start - Main.screenPosition, src, c, rot,
 					origin, new Vector2(drawLen / sw, k * wMul), SpriteEffects.None, 0f);
+			}
+			// 芯线（光照第 2 轮 E 组）：沿中线一条很淡的蓝色加色细线，亮度 0.3 + 0.7·k（暗处仍能看出水柱走向），不发光、不加粒子。
+			Texture2D glow = HenshinFxDraw.SoftGlow;
+			if (glow != null && alpha > 0.01f)
+			{
+				float coreW = (IsCannon ? 14f : 8f) * wMul;
+				float gw = Math.Max(1f, glow.Width) * 0.55f; // SoftGlow 亮芯约占 55%
+				float stepPx = slicePx * 2f;
+				Vector2 coreScale = new(stepPx * 1.6f / gw, coreW / gw);
+				HenshinFxDraw.BeginAdditive();
+				for (float d = stepPx * 0.5f; d < len; d += stepPx)
+				{
+					float t = d / len;
+					float coreK = 0.3f + 0.7f * HenshinFxDraw.LightK(HenshinFxDraw.LightAlong(_from, _to, t));
+					// Additive 批次按 src.rgb × src.A 叠加：RGB 直接乘强度、A 保持 255，实际加上的就是 0.2·coreK（WithAlpha 会平方成 0.04，几乎看不见）。
+					Color coreC = new Color(150, 210, 255) * (0.2f * coreK * alpha);
+					coreC.A = 255;
+					HenshinFxDraw.DrawAdditiveCentered(glow, _from + n * d, coreC, coreScale, rot);
+				}
+				HenshinFxDraw.EndAdditive();
 			}
 			return false;
 		}
@@ -876,7 +925,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				// 加农水爆（G1）：每 tick 6 颗水尘删去，改 M 档爆炸配方光 + 首帧中爆声。
 				// 光照 C 组：水爆是 lit 招式的爆炸，光 ×0.45。
-				HenshinExplosion.Pulse(Projectile.Center, WaterBurstTint, BlastSize.M, BurstT, Projectile.width, 0.45f);
+				// 光照第 2 轮 E 组：加农末段水爆算大招，光 0.45→0.6；外缘少量蓝宝石光点（自带光，每 3 tick 至多 1 颗）。
+				HenshinExplosion.Pulse(Projectile.Center, WaterBurstTint, BlastSize.M, BurstT, Projectile.width, 0.6f);
+				HenshinUltGlow.Emit(Projectile, Projectile.width * 0.5f, DustID.GemSapphire, Vector3.Zero, everyTicks: 3);
 				if (Projectile.localAI[1] == 0f)
 					HenshinSfx.PlayCooldown(SfxKey.BlastM, Projectile.Center, 8);
 			}
@@ -987,8 +1038,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				// 光照 C 组：水是 lit。圈与泡沫的颜色先乘中心光（黑处变暗、不自发光），强度再降；爆炸 strength 0.5。
 				float ringScale = HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam);
 				Color wl = HenshinFxDraw.LightAt(Projectile.Center);
-				Color ring = HenshinFxDraw.WithAlpha(new Color(40, 120, 220).MultiplyRGBA(wl), 0.65f * life);
-				Color foam = HenshinFxDraw.WithAlpha(new Color(140, 210, 255).MultiplyRGBA(wl), 0.55f * life);
+				// 光照第 2 轮 E 组：保色吃光（LitHueFrom），暖光下水爆不发灰。
+				Color ring = HenshinFxDraw.WithAlpha(HenshinFxDraw.LitHueFrom(wl, new Color(40, 120, 220)), 0.65f * life);
+				Color foam = HenshinFxDraw.WithAlpha(HenshinFxDraw.LitHueFrom(wl, new Color(140, 210, 255)), 0.55f * life);
 				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center, ring, ringScale * (1f + (1f - life) * 0.3f));
 				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center, foam,
 					HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, diam * 0.5f));
@@ -1244,6 +1296,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 				else
 					HenshinSfx.Play(SfxKey.RockCast, Projectile.Center);
 			}
+			// 光照第 2 轮 E 组：大招（ai2=192）落区外缘少量黄宝石光点 + 一盏土色灯（lit 大招 0.4，宝石光弱故 forceLight）。
+			// 放在主人早退之前，各端都发；位置 = 同步的 Projectile.Center。落石在 H5（D 组），这里只由导演发（导演活到最后一块石头生成）。
+			if (Projectile.ai[2] > 150f)
+				HenshinUltGlow.Emit(Projectile, Projectile.ai[2], DustID.GemTopaz, new Vector3(0.4f, 0.32f, 0.2f), forceLight: true, dustScale: 1.2f);
 			if (Projectile.owner != Main.myPlayer)
 				return;
 			int total = (int)System.Math.Max(1, Projectile.ai[1]);
@@ -1612,6 +1668,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.velocity.Y += 0.25f;
 			Projectile.rotation += 0.2f;
 			// 光照 C 组：种荚是 lit，自己不发光（原 AddLight 0.85 删去）。
+			// 光照第 2 轮 E 组（§4.15 大招例外）：飞行中外缘少量绿火把光点（自带光，代替色光），种荚半径 ~14px，粒子落在 22–30px。
+			HenshinUltGlow.Emit(Projectile, 27f, DustID.GreenTorch, Vector3.Zero);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -1620,8 +1678,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D tex = _pod.Value;
 			// 种荚抛物线拖尾：草绿粗带 + 嫩黄绿芯。
 			// 光照 C 组：尾巴吃光；本体去掉 140/150/120 下限，直接乘环境光。
-			HenshinTrail.Strip(Projectile, new Color(90, 220, 80), 18f, new Color(225, 255, 170), 0.36f, 0f, 0.85f, lit: true);
-			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), null, lightColor, Projectile.rotation,
+			// 光照第 2 轮 E 组：拖尾与本体保色吃光（keepHue / LitHueFrom），暖光下不发灰。
+			HenshinTrail.Strip(Projectile, new Color(90, 220, 80), 18f, new Color(225, 255, 170), 0.36f, 0f, 0.85f, lit: true, keepHue: true);
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), null, HenshinFxDraw.LitHueFrom(lightColor, Color.White), Projectile.rotation,
 				new Vector2(tex.Width * 0.5f, tex.Height * 0.5f), 1.25f, SpriteEffects.None, 0f);
 			return false;
 		}
@@ -1707,7 +1766,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				// 光照 C 组：风大招是 mixed，只留场心一盏小灯（≤0.2）；场边 8 盏灯删去（风不发光，范围由云尘提示）。
 				float a = Math.Min(1f, age / 10f) * Math.Min(1f, Projectile.timeLeft / 14f);
-				Lighting.AddLight(p.Center, 0.1f * a, 0.14f * a, 0.2f * a);
+				// 光照第 2 轮 E 组（§4.15 大招例外）：场心灯 0.2→0.4 略亮；外环之外（1.15 倍半径）少量钻石光点（自带光）。
+				Lighting.AddLight(p.Center, 0.22f * a, 0.3f * a, 0.4f * a);
+				HenshinUltGlow.Emit(Projectile, edgeR * 1.15f, DustID.GemDiamond, Vector3.Zero, dustScale: 1.3f);
 			}
 			// 场边云尘 = 范围提示（F14），保留
 			for (int i = 0; i < 1; i++)
@@ -1753,7 +1814,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Color ringLight = AvgRingLight(Projectile.Center, diamPx * 0.46f);
 			HenshinFxDraw.BeginAdditive();
 			HenshinFxDraw.DrawAdditiveSheet(ring, 1, 4, fr, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(190, 230, 255).MultiplyRGBA(ringLight), 0.5f * a), diamPx * 0.92f / 112f, Projectile.rotation);
+				HenshinFxDraw.WithAlpha(HenshinFxDraw.LitHueFrom(ringLight, new Color(190, 230, 255)), 0.5f * a), diamPx * 0.92f / 112f, Projectile.rotation); // 光照第 2 轮 E 组：保色
 			HenshinFxDraw.DrawAdditiveSheet(ring, 1, 4, (fr + 2) & 3, Projectile.Center,
 				HenshinFxDraw.WithAlpha(Color.White, 0.4f * a), diamPx * 0.5f / 112f, -Projectile.rotation * 1.3f);
 			HenshinFxDraw.EndAdditive();
@@ -1935,8 +1996,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinSfx.Play(SfxKey.DragonCast, owner.Center, 1f, -0.45f);
 				HenshinHitFeel.Shake(Projectile.owner, owner.Center, HitTier.Heavy);
 			}
-			// 狂暴期身周红光（旧版导演弹不发光）。
-			Lighting.AddLight(owner.Center, 0.9f, 0.32f, 0.12f);
+			// 狂暴期身周红光（旧版导演弹不发光）。光照第 2 轮 E 组：×1.3。
+			Lighting.AddLight(owner.Center, 1.17f, 0.42f, 0.16f);
+			// 大招发光粒子：导演活满 132 tick（火球在 Stage7/C 组，不碰），由导演发；火把 / 紫火把交替，落在红环（半径 62–75px）外缘 72–99px。
+			HenshinUltGlow.Emit(Projectile, 90f, (Main.GameUpdateCount / 2 & 1) == 0 ? DustID.Torch : DustID.PurpleTorch, Vector3.Zero);
 			if (Projectile.timeLeft == 1)
 			{
 				// 收尾爆发（纯表现，不加伤害）：大爆声 + 大招命中音 + L 档红爆 + 主人端大震。
@@ -2158,8 +2221,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 				};
 				// 每道爪痕一声快挥（限频 4 tick，避免 20 声糊成噪音）；爪痕本体是 Scratch 贴图，点缀尘去掉。
 				HenshinSfx.PlayCooldown(SfxKey.Swing, mid, 4, 0.75f, Main.rand.NextFloat(-0.2f, 0.25f));
-				Lighting.AddLight(mid, 0.18f, 0.18f, 0.2f); // 光照 C 组：mixed，≤0.2（原 0.4）
+				Lighting.AddLight(mid, 0.25f, 0.27f, 0.32f); // 光照 C 组：mixed，≤0.2（原 0.4）；光照第 2 轮 E 组大招例外 → 0.32
 			}
+			// 光照第 2 轮 E 组：爪痕区（半径 15 格）外缘少量蓝宝石光点（自带光）。位置 = 同步的玩家中心。
+			HenshinUltGlow.Emit(Projectile, RadiusTiles * 16f * 1.1f, DustID.GemSapphire, Vector3.Zero, dustScale: 1.3f);
 		}
 
 		private int _lastHitFx = -100;
@@ -2958,7 +3023,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float ang = Projectile.rotation + MathHelper.TwoPi * i / PetalCount;
 				Vector2 pos = Projectile.Center + ang.ToRotationVector2() * OrbitRadius;
 				// 光照 C 组：花瓣是 lit，每片按自己位置取光（原固定粉色，黑处全亮）。
-				Color c = HenshinFxDraw.Lit(pos, new Color(255, 180, 220, 220));
+				Color c = HenshinFxDraw.LitHue(pos, new Color(255, 180, 220, 220)); // 光照第 2 轮 E 组：保色
 				Main.EntitySpriteDraw(tex, pos - Main.screenPosition, null, c, ang + MathHelper.PiOver2, tex.Size() * 0.5f, 1.25f, SpriteEffects.None);
 			}
 			return false;
@@ -3601,7 +3666,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = _origin + _dir * (48f + Reach * u);
 			Projectile.rotation = _dir.ToRotation(); // 只给残影取朝向
 			// 拳头由 DynamicFist 贴图承担，出招不撒尘。光照 C 组：拳 mixed，暖光 0.7→≤0.2。
-			Lighting.AddLight(Projectile.Center, 0.2f, 0.14f, 0.07f);
+			// 光照第 2 轮 E 组（§4.15 大招例外）：暖光 0.2→0.4；巨拳（约 154×119px）外缘 80–110px 少量火把光点（自带光）。
+			Lighting.AddLight(Projectile.Center, 0.4f, 0.27f, 0.1f);
+			HenshinUltGlow.Emit(Projectile, 100f, DustID.Torch, Vector3.Zero);
 
 			if (!_burstSpawned && Projectile.timeLeft <= 4)
 				SpawnRockBurst(Projectile.Center);
@@ -4118,6 +4185,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_groundSet = true;
 				_ground = p.Bottom; // 土喷泉锚在出土点，玩家弹起后不跟着走
 			}
+			// 光照第 2 轮 E 组（§4.15 大招例外）：土喷泉（112px 帧）外缘少量黄宝石光点 + 一盏土色灯（宝石光弱，forceLight）。
+			// _ground 各端首帧由同步的玩家位置自算（不是主人专有字段）。碎石 28 tick 只比本弹多 8 tick、且同类被技能共用，不在碎石上发。
+			HenshinUltGlow.Emit(_ground - new Vector2(0f, 40f), Projectile.owner, Projectile.whoAmI, 64f, DustID.GemTopaz,
+				new Vector3(0.45f, 0.32f, 0.15f) * Math.Min(1f, Projectile.timeLeft / 6f), forceLight: true, dustScale: 1.2f);
 			if (Projectile.timeLeft == 19)
 			{
 				// 破土（各端）：中爆 + 岩系命中两层替掉 Item14；土爆配方（M，土色、不叠火烟帧）锚在出土点；主人端竖直震屏。
@@ -4306,9 +4377,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 						continue;
 					Vector2 at = new(_sx[si * MaxSpikes + i], _sy[si * MaxSpikes + i] - 24f);
 					float k = 1f - t / 8f;
-					Lighting.AddLight(at, 0.2f * k, 0.14f * k, 0.06f * k); // 光照 C 组：地震 mixed，每刺灯 0.55→≤0.2
+					Lighting.AddLight(at, 0.28f * k, 0.2f * k, 0.09f * k); // 光照 C 组：地震 mixed，每刺灯 0.55→≤0.2；光照第 2 轮 E 组大招例外 → 0.28
 					if (t == 0)
 						HenshinSfx.PlayCooldown(SfxKey.RockHit, at, 5, 0.8f, -0.35f);
+					// 光照第 2 轮 E 组：刚顶出的刺（t==0）上方 ~50px 处少量黄宝石光点（刺高 ~56px，粒子落在刺尖之上，不盖刺）。
+					// 刺位置由施放时的玩家位置（localAI，各端首帧自算）+ 地形推出，各端一致。两侧各用一个抽样键错峰，每侧约 0.4 颗/tick。
+					if (t == 0)
+						HenshinUltGlow.Emit(at - new Vector2(0f, 50f), Projectile.owner, Projectile.whoAmI + si, 10f, DustID.GemTopaz, Vector3.Zero, dustScale: 1.2f);
 				}
 			}
 			if (qAge == 25)

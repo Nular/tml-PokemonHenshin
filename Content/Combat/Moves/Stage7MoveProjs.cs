@@ -729,6 +729,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 			Projectile.Center = owner.Center;
+			// 光照第 2 轮大招：导演活着的 8 tick 由它发（各端都跑，只用 Center）；补一盏暗紫光，Shadowflame 自带光。
+			Lighting.AddLight(Projectile.Center, 0.4f, 0.15f, 0.6f);
+			HenshinUltGlow.Emit(Projectile, 40f, DustID.Shadowflame, Vector3.Zero, everyTicks: 1, dustScale: 0.9f);
 			if (Projectile.localAI[0] == 0f && Projectile.owner == Main.myPlayer)
 			{
 				Projectile.localAI[0] = 1f;
@@ -782,7 +785,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
-			Lighting.AddLight(Projectile.Center, 0.22f, 0.08f, 0.38f);
+			// 光照第 2 轮大招加亮（原 0.22/0.08/0.38）。
+			Lighting.AddLight(Projectile.Center, 0.28f, 0.1f, 0.48f);
+			// 导演只活 8 tick，子弹活 120：32 颗按 whoAmI % 16 抽样发 Shadowflame（自带光，不补灯），撒在球外缘。
+			HenshinUltGlow.Emit(Projectile, 20f, DustID.Shadowflame, Vector3.Zero, sampleN: 16, dustScale: 0.8f,
+				yieldToType: ModContent.ProjectileType<DarkPulseBarrageProj>());
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -1037,8 +1044,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
 			Projectile.rotation += 0.2f;
-			// H4：球体改手绘 OutrageOrb 贴图，不再逐 tick 撒尘。G1：红橙尾 + 飞行光。
-			Lighting.AddLight(Projectile.Center, 0.6f, 0.25f, 0.08f);
+			// H4：球体改手绘 OutrageOrb 贴图，不再逐 tick 撒尘。G1：红橙尾 + 飞行光。光照第 2 轮大招加亮 ×1.3。
+			Lighting.AddLight(Projectile.Center, 0.78f, 0.33f, 0.1f);
+			// 大招发光粒子：导演（E 组）收尾后火球还飞 ≤100 tick，由火球按 whoAmI % 8 抽样发；Torch / PurpleTorch 交替，都自带光。
+			HenshinUltGlow.Emit(Projectile, 20f, (Projectile.whoAmI / 8) % 2 == 0 ? DustID.Torch : DustID.PurpleTorch,
+				Vector3.Zero, everyTicks: 4, sampleN: 8, dustScale: 0.8f, yieldToType: ModContent.ProjectileType<OutrageDirectorProj>());
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -1142,6 +1152,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinExplosion.Spawn(sky, BlastSize.M, new Color(255, 150, 80), 220f);
 				HenshinSfx.Play(SfxKey.DragonCast, sky, 0.9f, -0.45f);
 			}
+			// 光照第 2 轮大招：导演活着时在落点区（Center，不动）外缘发 PurpleTorch（自带光），再补一盏龙紫光；各端都跑。
+			Lighting.AddLight(Projectile.Center, 0.6f, 0.35f, 0.9f);
+			HenshinUltGlow.Emit(Projectile, 120f, DustID.PurpleTorch, Vector3.Zero);
 			if (Projectile.owner != Main.myPlayer)
 				return;
 			if (_spawned >= Total)
@@ -1209,7 +1222,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
 			Projectile.rotation = Projectile.velocity.ToRotation();
-			Lighting.AddLight(Projectile.Center, 0.7f, 0.35f, 0.15f);
+			// 光照第 2 轮大招加亮（原 0.7/0.35/0.15）。
+			Lighting.AddLight(Projectile.Center, 0.85f, 0.42f, 0.18f);
+			// 导演约 52 tick 就收，流星活到 100：64 颗按 whoAmI % 16 抽样发 Torch（与橙尾同色，自带光）。
+			HenshinUltGlow.Emit(Projectile, 18f, DustID.Torch, Vector3.Zero, sampleN: 16, dustScale: 0.8f,
+				yieldToType: ModContent.ProjectileType<DracoMeteorDirectorProj>());
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -1238,7 +1255,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int fh = tex.Height / 3;
 			int frame = (int)((Main.GameUpdateCount / 4 + (uint)Projectile.whoAmI) % 3);
 			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh),
-				Color.Lerp(H6Fx.Lit(Projectile.Center, 140), Color.White, 0.6f), Projectile.rotation,
+				Color.Lerp(H6Fx.Lit(Projectile.Center, 140), Color.White, 0.7f), Projectile.rotation,
 				new Vector2(70f, fh * 0.5f), 1f, SpriteEffects.None, 0f);
 			return false;
 		}
@@ -1499,6 +1516,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			NPC target = Main.npc[_targetWho];
 			Projectile.Center = target.Center;
+			// 光照第 2 轮大招：导演活着（38 tick）时在念弹环外缘发 PurpleTorch（自带光），再补一盏紫光。目标由 ai0 同步，各端一致。
+			Lighting.AddLight(Projectile.Center, 0.8f, 0.35f, 0.9f);
+			HenshinUltGlow.Emit(Projectile, OrbOrbitRadius, DustID.PurpleTorch, Vector3.Zero);
 
 			if (Projectile.owner == Main.myPlayer && _spawned < TotalOrbs)
 			{
@@ -1638,7 +1658,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.rotation = Projectile.velocity.ToRotation();
 			else if (target != null)
 				Projectile.rotation = (target.Center - Projectile.Center).ToRotation();
-			Lighting.AddLight(Projectile.Center, H3Fx.VariantLight[2] * 0.3f * _appear);
+			// 光照第 2 轮大招加亮：0.3 → 0.4。导演 38 tick 先死、念弹活到 240：64 颗按 whoAmI % 16 抽样发 PurpleTorch。
+			Lighting.AddLight(Projectile.Center, H3Fx.VariantLight[2] * 0.4f * _appear);
+			HenshinUltGlow.Emit(Projectile, Diameter * 0.5f + 8f, DustID.PurpleTorch, Vector3.Zero, sampleN: 16, dustScale: 0.8f,
+				yieldToType: ModContent.ProjectileType<MewtwoPsystrikeDirectorProj>());
 
 			if (!_charging)
 			{

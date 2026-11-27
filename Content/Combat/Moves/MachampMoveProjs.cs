@@ -424,7 +424,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			// 连击期间身前暖白光；最后 1 tick 收尾重击（纯表现：大爆声 + 大招命中音 + M 档爆 + 主人端大震）。
 			// mixed：连击光 ≤ 0.2（原 0.6/0.5/0.35 等比缩）；收尾 M 爆炸是大招，保持 glow。
-			Lighting.AddLight(Projectile.Center, 0.2f, 0.17f, 0.12f);
+			// 光照第 2 轮大招加亮：0.2 → 0.28；外缘（拳影最远 44px 之外）少量 Torch，Torch 自带光不另补灯。
+			Lighting.AddLight(Projectile.Center, 0.28f, 0.24f, 0.17f);
+			HenshinUltGlow.Emit(Projectile, 56f, DustID.Torch, Vector3.Zero, dustScale: 0.8f);
 			if (Projectile.timeLeft == 1)
 			{
 				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 1f, -0.2f);
@@ -512,8 +514,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float a = rng.NextFloat() * MathHelper.TwoPi;
 				float r = 10f + rng.NextFloat() * 34f;
 				Vector2 pos = Projectile.Center + a.ToRotationVector2() * r;
-				// 拳影 mixed：60% 吃光、40% 自亮。
-				Color fistC = Color.Lerp(HenshinFxDraw.LightAt(pos), Color.White, 0.15f);
+				// 拳影 mixed：吃光为主，白拉 0.25（光照第 2 轮大招加亮，原 0.15）。
+				Color fistC = Color.Lerp(HenshinFxDraw.LightAt(pos), Color.White, 0.25f);
 				Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), src, fistC, rng.NextFloat() * MathHelper.TwoPi,
 					src.Size() * 0.5f, 0.7f + rng.NextFloat() * 0.4f, SpriteEffects.None, 0f);
 			}
