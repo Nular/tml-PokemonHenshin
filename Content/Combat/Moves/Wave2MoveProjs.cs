@@ -776,7 +776,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 水炮 Assets/Fx/WaterJet/WaterStream（高 28px×1.4≈40），加农 WaterCannon（高 48px×1.5=72，与碰撞宽度一致）。
 			Texture2D tex = IsCannon ? H1Tex.Get(ref _cannonTex, "WaterJet/WaterCannon") : H1Tex.Get(ref _pumpTex, "WaterJet/WaterStream");
 			float k = IsCannon ? 1.5f : 1.4f;
-			float seg = 48f * k;
 			Vector2 delta = _to - _from;
 			float len = delta.Length();
 			if (len < 1f)
@@ -787,17 +786,28 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int frame = (int)(Main.GameUpdateCount / 3 % 4);
 			int fh = tex.Height / 4;
 			float alpha = Math.Min(1f, env * 1.2f);
-			int tiles = (int)Math.Ceiling(len / seg);
-			for (int i = 0; i < tiles; i++)
+			// 接缝修复：旧版每块位置 .Floor() 取整，斜向时相邻块各自舍入最多差 1px，露出细缝；末块源宽 int 截断也会短一截。
+			// 现在按 8 texel 一片沿线浮点定位（不取整），每片往前多画 2px 盖住下一片起点（满透明度时贴图 alpha 只有 0/255，重叠看不出）；
+			// 淡入淡出（alpha<1）时不重叠，免得半透明叠出深色条。末片按剩余长度拉伸，正好落在 _to。
+			// 每片单独按沿线插值取光（光照 C 组：水是 lit），光照台阶从每 67px 一级缩到每 11px 一级。
+			const int SliceTex = 8;
+			int slicesPerTile = Math.Max(1, tex.Width / SliceTex);
+			float slicePx = SliceTex * k;
+			float overlap = alpha >= 0.99f ? 2f : 0f;
+			int slices = (int)Math.Ceiling(len / slicePx);
+			Vector2 origin = new(0f, fh * 0.5f);
+			for (int i = 0; i < slices; i++)
 			{
-				float start = i * seg;
-				float part = Math.Min(seg, len - start);
-				// 光照 C 组：水是 lit，每块按块中点沿线取光（水炮可长达 88 格）。
+				float start = i * slicePx;
+				float part = Math.Min(slicePx, len - start);
+				if (part <= 0.01f)
+					break;
+				int sw = Math.Min(SliceTex, Math.Max(1, (int)Math.Ceiling(part / k)));
+				float drawLen = i < slices - 1 ? part + overlap : part;
 				Color c = HenshinFxDraw.LitSegment(_from, _to, (start + part * 0.5f) / len, Color.White) * alpha;
-				// 末块按剩余长度裁切源矩形，避免越过终点
-				Rectangle src = new(0, fh * frame, Math.Max(1, (int)(tex.Width * part / seg)), fh);
-				Main.EntitySpriteDraw(tex, (_from + n * start - Main.screenPosition).Floor(), src, c, rot,
-					new Vector2(0f, fh * 0.5f), new Vector2(k, k * wMul), SpriteEffects.None, 0f);
+				Rectangle src = new(i % slicesPerTile * SliceTex, fh * frame, sw, fh);
+				Main.EntitySpriteDraw(tex, _from + n * start - Main.screenPosition, src, c, rot,
+					origin, new Vector2(drawLen / sw, k * wMul), SpriteEffects.None, 0f);
 			}
 			return false;
 		}
