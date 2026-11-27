@@ -481,7 +481,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			float u = MathHelper.SmoothStep(0f, 1f, Progress);
 			Projectile.Center = _origin + _dir * (40f + Reach * u);
-			Lighting.AddLight(Projectile.Center, 0.6f, 0.45f, 0.25f);
+			// 气拳 mixed：AddLight ≤ 0.2（原 0.6/0.45/0.25 等比缩）。
+			Lighting.AddLight(Projectile.Center, 0.2f, 0.15f, 0.08f);
 		}
 
 		// 命中冲击：额外击退 +4（真气拳 1.8 倍率不变）。
@@ -511,12 +512,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int age = Lifetime - Projectile.timeLeft;
 			if (age < 12)
 				H3Fx.Draw(H3Fx.FocusAura, 4, age / 3, _origin + _dir * 44f, 0f, 1.3f, Color.White);
+			// 气场保持全亮（glow）；拳头 mixed：一半吃光一半自亮。
+			Color fistC = Color.Lerp(HenshinFxDraw.LightAt(Projectile.Center), Color.White, 0.5f);
 			if (Progress < 0.85f)
 			{
 				for (int i = 2; i >= 1; i--)
-					H3Fx.Draw(H3Fx.FocusFist, 4, frame, Projectile.Center - _dir * (14f * i), rot, FistScale, Color.White * (0.35f / i), fx);
+					H3Fx.Draw(H3Fx.FocusFist, 4, frame, Projectile.Center - _dir * (14f * i), rot, FistScale, fistC * (0.35f / i), fx);
 			}
-			H3Fx.Draw(H3Fx.FocusFist, 4, frame, Projectile.Center, rot, FistScale, Color.White, fx);
+			H3Fx.Draw(H3Fx.FocusFist, 4, frame, Projectile.Center, rot, FistScale, fistC, fx);
 			return false;
 		}
 	}

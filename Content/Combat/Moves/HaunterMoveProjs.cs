@@ -224,7 +224,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			_tip = _root + _aimDir * Math.Max(_length, 1f);
 			Projectile.Center = Vector2.Lerp(_root, _tip, 0.55f);
 			owner.direction = _aimDir.X >= 0f ? 1 : -1;
-			Lighting.AddLight(Vector2.Lerp(_root, _tip, 0.5f), 0.45f, 0.15f, 0.35f);
+			// 舌头是肉（lit）：不自己发光。
 		}
 
 		public override bool? CanDamage() => _phase == 0 && !_hitLatch ? null : false;
@@ -242,8 +242,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			target.AddBuff(BuffID.Confused, ConfusedTicks);
 			target.velocity *= 0.25f;
 			// 命中音挪到命中特效弹首帧（原 NPCHit13 只有主人听得到）。
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.LickHit, 0.9f, Projectile.owner, 0f, SfxKey.GhostHit);
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 120, 200), target.Center);
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.LickHit, 0.9f, Projectile.owner, 0f, SfxKey.GhostHit, soft: true);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 120, 200), target.Center, 0.5f);
 			if (!_hitLatch)
 			{
 				_hitLatch = true;
@@ -278,11 +278,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			for (int i = 0; i < n; i++)
 			{
 				Vector2 p = _root + dir * (step * (i + 0.5f) + seg * 0.5f);
-				Main.EntitySpriteDraw(tex, (p - Main.screenPosition).Floor(), bodySrc, Color.White, rot, origin,
+				// 舌头最长约十几格：每节按自己位置逐段取光（lit）。
+				Color segLit = HenshinFxDraw.LitSegment(_root, _tip, (p - _root).Length() / len, Color.White);
+				Main.EntitySpriteDraw(tex, (p - Main.screenPosition).Floor(), bodySrc, segLit, rot, origin,
 					new Vector2(step / seg * 1.06f, 1f), fx, 0f);
 			}
 			Vector2 tipPos = _tip - dir * (seg * 0.5f);
-			Main.EntitySpriteDraw(tex, (tipPos - Main.screenPosition).Floor(), tipSrc, Color.White, rot, origin, 1f, fx, 0f);
+			Main.EntitySpriteDraw(tex, (tipPos - Main.screenPosition).Floor(), tipSrc, HenshinFxDraw.LightAt(tipPos), rot, origin, 1f, fx, 0f);
 			return false;
 		}
 
@@ -351,6 +353,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int age = Life - Projectile.timeLeft;
 			// 场域光：整段先亮后衰，照亮身周（光点随环外扩）。
 			HenshinExplosion.Pulse(Projectile.Center, SpiralTint, BlastSize.L, age / (float)Life, 420f, 0.8f);
+			// 超能大招 glow：本体补紫光（峰值 0.6，末 10 tick 随淡出衰减）。
+			float glowFade = Math.Min(1f, Projectile.timeLeft / 10f);
+			Lighting.AddLight(Projectile.Center, 0.49f * glowFade, 0.26f * glowFade, 0.6f * glowFade);
 			// 螺旋张满的一拍：低沉幽灵音 + 主人端大招震屏 + 已入睡敌人白闪（睡眠 buff 由服务器同步，各端读到即闪，纯表现）。
 			if (age == SleepBeatAge && Projectile.localAI[1] == 0f)
 			{

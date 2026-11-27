@@ -140,7 +140,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			Projectile.velocity = Vector2.Zero;
-			Lighting.AddLight(Projectile.Center, 0.3f, 0.4f, 0.6f);
+			// 光照 D 组：羽毛 = lit，删自身光（原 0.3/0.4/0.6）
 			if (Main.netMode != NetmodeID.MultiplayerClient && Age < PullTicks)
 				PullNpcs();
 			// 汇集结束：只由拥有者生成爆炸判定弹（弹幕 spawn 包同步到各端）
@@ -195,7 +195,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Vector2 pos = Projectile.Center + a.ToRotationVector2() * r;
 				// 羽尖朝向收拢方向并带点切向偏转（螺旋）
 				float rot = a + MathHelper.Pi - 0.5f;
-				R4DragonFx.DrawFeather(pos, Age / 3 + i, rot, 0.9f, Color.White * fade);
+				R4DragonFx.DrawFeather(pos, Age / 3 + i, rot, 0.9f, HenshinFxDraw.LightAt(pos) * fade); // 光照 D 组：每根羽毛取自己位置的光
 			}
 			return false;
 		}
@@ -232,7 +232,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.timeLeft == Lifetime && !Main.dedServ)
 				Terraria.Audio.SoundEngine.PlaySound(SoundID.Item74 with { Pitch = 0.5f, Volume = 0.55f }, Projectile.Center);
 			if (Projectile.timeLeft > Lifetime - 6)
-				Lighting.AddLight(Projectile.Center, 0.3f, 0.45f, 0.8f);
+				Lighting.AddLight(Projectile.Center, 0.08f, 0.12f, 0.2f); // 光照 D 组：mixed 小光 ≤0.2（原 0.3/0.45/0.8）
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -245,7 +245,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int frame = (Lifetime - Projectile.timeLeft) / TicksPerFrame;
-			H4Fx.DrawFrame(R4DragonFx.Burst(), Frames, frame, Projectile.Center, Color.White, 0f, DrawScale);
+			// 光照 D 组：羽爆 mixed = Lerp(光, 白, 0.4)；直径约 11 格只取中心光（有 0.4 白底，不会全黑）
+			H4Fx.DrawFrame(R4DragonFx.Burst(), Frames, frame, Projectile.Center, Color.Lerp(lightColor, Color.White, 0.4f), 0f, DrawScale);
 			return false;
 		}
 	}

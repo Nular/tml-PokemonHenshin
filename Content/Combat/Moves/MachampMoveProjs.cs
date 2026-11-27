@@ -145,8 +145,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					HenshinSfx.Play(SfxKey.SwingHeavy, owner.MountedCenter, 0.6f, -0.2f);
 				}
 			}
-			// 刺尖一盏暖光，随刺伸出。
-			Lighting.AddLight(owner.MountedCenter + _dir * reachNow, 0.45f * jab, 0.35f * jab, 0.18f * jab);
+			// 石刺是实物（lit）：不自己发光（原刺尖暖光已删）。
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -162,7 +161,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.velocity += _dir * 8f;
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), new Color(220, 170, 110), target.Center);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), new Color(220, 170, 110), target.Center, 0.5f);
 			TryBurst(target.Center);
 			// 穿透：不 Kill，尖刺保持到寿命结束
 		}
@@ -273,8 +272,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			else if (Projectile.timeLeft == Lifetime / 2)
 				HenshinSfx.Play(SfxKey.SwingHeavy, Projectile.Center, 1f, 0.1f);
 			int age = Lifetime - Projectile.timeLeft;
+			// mixed：AddLight ≤ 0.2（原 0.55/0.45/0.3 等比缩）。
 			if (age >= 2 && age < 15)
-				Lighting.AddLight(Projectile.Center, 0.55f, 0.45f, 0.3f);
+				Lighting.AddLight(Projectile.Center, 0.2f, 0.16f, 0.11f);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -292,7 +292,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int age = Lifetime - Projectile.timeLeft;
 			int frame = age < 2 ? 0 : age < 4 ? 1 : age < 10 ? 2 : age < 15 ? 3 : 4;
 			float opacity = frame == 4 ? Math.Min(1f, Projectile.timeLeft / 3f) : 1f;
-			CrossChopArcProj.DrawCross(Projectile.Center, _aim.ToRotation(), frame, 1.6f, opacity);
+			// mixed：X 刃 60% 吃光、40% 自亮（DrawCross 的 color 参数由 B 组加）。
+			Color crossC = Color.Lerp(HenshinFxDraw.LightAt(Projectile.Center), Color.White, 0.4f);
+			CrossChopArcProj.DrawCross(Projectile.Center, _aim.ToRotation(), frame, 1.6f, opacity, crossC);
 			return false;
 		}
 
@@ -421,7 +423,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Vector2 aimDir = Vector2.Normalize(aim);
 
 			// 连击期间身前暖白光；最后 1 tick 收尾重击（纯表现：大爆声 + 大招命中音 + M 档爆 + 主人端大震）。
-			Lighting.AddLight(Projectile.Center, 0.6f, 0.5f, 0.35f);
+			// mixed：连击光 ≤ 0.2（原 0.6/0.5/0.35 等比缩）；收尾 M 爆炸是大招，保持 glow。
+			Lighting.AddLight(Projectile.Center, 0.2f, 0.17f, 0.12f);
 			if (Projectile.timeLeft == 1)
 			{
 				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 1f, -0.2f);
@@ -509,7 +512,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float a = rng.NextFloat() * MathHelper.TwoPi;
 				float r = 10f + rng.NextFloat() * 34f;
 				Vector2 pos = Projectile.Center + a.ToRotationVector2() * r;
-				Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), src, Color.White, rng.NextFloat() * MathHelper.TwoPi,
+				// 拳影 mixed：60% 吃光、40% 自亮。
+				Color fistC = Color.Lerp(HenshinFxDraw.LightAt(pos), Color.White, 0.4f);
+				Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), src, fistC, rng.NextFloat() * MathHelper.TwoPi,
 					src.Size() * 0.5f, 0.7f + rng.NextFloat() * 0.4f, SpriteEffects.None, 0f);
 			}
 			return false;

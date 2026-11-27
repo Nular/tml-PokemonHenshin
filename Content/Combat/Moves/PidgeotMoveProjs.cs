@@ -117,11 +117,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 						HenshinSfx.Play(SfxKey.WindCast, at);
 				}
 			}
-			// 大招比技能亮；每 tick 一颗云尘删去，改淡蓝风带拖尾（PreDraw）。
+			// 每 tick 一颗云尘删去，改淡蓝风带拖尾（PreDraw）。
+			// 光照 D 组：技能 = lit（风无光，删 AddLight）；大招 = mixed，自身光 ≤0.2（原 0.55/0.7/0.95）。
 			if (IsUlt)
-				Lighting.AddLight(Projectile.Center, 0.55f, 0.7f, 0.95f);
-			else
-				Lighting.AddLight(Projectile.Center, 0.42f, 0.52f, 0.72f);
+				Lighting.AddLight(Projectile.Center, 0.12f, 0.15f, 0.2f);
 
 			if (_impactCooldown > 0)
 				_impactCooldown--;
@@ -202,7 +201,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.Slow, IsUlt ? 40 : 24);
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(160, 200, 255), target.Center);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(160, 200, 255), target.Center, IsUlt ? 1f : 0.5f);
 			// 穿透：不因命中结束；仅首次命中锚定环绕风（主弹，非伴随）
 			if (IsCompanion || Projectile.owner != Main.myPlayer)
 				return;
@@ -259,14 +258,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Rectangle src = tex.Frame(1, frames, 0, frame);
 			float scale = IsCompanion ? 0.95f : 1.2f;
 			// 淡蓝风带拖尾（宽、淡、无芯感），大招更亮。贴地滚动时也连成一条。
-			HenshinTrail.Strip(Projectile, new Color(150, 190, 240), 34f * scale, new Color(225, 240, 255), 0.25f, 6f, IsUlt ? 0.55f : 0.4f);
+			// 光照 D 组：风带拖尾 lit；本体乘光；SoftGlow 技能删去，大招（mixed）留 0.15。
+			HenshinTrail.Strip(Projectile, new Color(150, 190, 240), 34f * scale, new Color(225, 240, 255), 0.25f, 6f, IsUlt ? 0.55f : 0.4f, lit: true);
 			// 直立天候棒动画，不绕圆心转
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, Color.White,
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, lightColor,
 				0f, src.Size() * 0.5f, scale, SpriteEffects.None);
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(140, 180, 230), 0.4f), 0.5f * scale);
-			HenshinFxDraw.EndAdditive();
+			if (IsUlt)
+			{
+				HenshinFxDraw.BeginAdditive();
+				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+					HenshinFxDraw.WithAlpha(new Color(140, 180, 230), 0.15f), 0.5f * scale);
+				HenshinFxDraw.EndAdditive();
+			}
 			return false;
 		}
 	}
@@ -343,7 +346,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 					}
 				}
 			}
-			Lighting.AddLight(Projectile.Center, 0.3f, 0.4f, 0.6f);
+			// 光照 D 组：技能 lit 不发光；大招 mixed ≤0.2（原 0.3/0.4/0.6）
+			if (ult)
+				Lighting.AddLight(Projectile.Center, 0.1f, 0.13f, 0.2f);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -352,7 +357,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (knock.LengthSquared() > 1f)
 				target.velocity += Vector2.Normalize(knock) * 1.8f;
 			target.AddBuff(BuffID.Slow, 20);
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(160, 200, 255), target.Center);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(160, 200, 255), target.Center,
+				Projectile.ai[2] > 0.5f ? 1f : 0.5f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -361,7 +367,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.WeatherPainShot);
 			int frames = Math.Max(1, Main.projFrames[ProjectileID.WeatherPainShot]);
 			Rectangle src = tex.Frame(1, frames, 0, Projectile.frame % frames);
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, Color.White * 0.95f,
+			// 光照 D 组：本体乘光（大招的发光部分只是 AI 里的 ≤0.2 小光）
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, lightColor * 0.95f,
 				0f, src.Size() * 0.5f, 1.05f, SpriteEffects.None);
 			return false;
 		}

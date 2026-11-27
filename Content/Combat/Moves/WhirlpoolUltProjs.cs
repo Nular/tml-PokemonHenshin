@@ -98,12 +98,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				SoundEngine.PlaySound(SoundID.Item21 with { Volume = 0.7f, Pitch = -0.35f }, Projectile.Center);
 				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 0.9f, -0.1f);
 				HenshinSfx.Play(SfxKey.WaterHit, Projectile.Center, 1f, -0.3f);
-				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, new Color(90, 180, 255), SpoutHitRadius * 2f, kenneyFrame: false);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, new Color(90, 180, 255), SpoutHitRadius * 2f, kenneyFrame: false, strength: 0.6f);
 				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate, -Vector2.UnitY);
 			}
 
+			// mixed（水，但是大招）：本体吃光，只留一盏 ≤0.2 的淡蓝光。
 			float ramp = Math.Clamp(age / (float)GrowTicks, 0f, 1f);
-			Lighting.AddLight(Projectile.Center, 0.15f * ramp, 0.35f * ramp, 0.65f * ramp);
+			Lighting.AddLight(Projectile.Center, 0.05f * ramp, 0.11f * ramp, 0.2f * ramp);
 
 			if (Main.netMode != NetmodeID.MultiplayerClient)
 				PullNpcs(age, spout, ramp, lift);
@@ -215,13 +216,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Rectangle src = new(0, fh * fr, tex.Width, fh);
 				Rectangle srcOpp = new(0, fh * ((frames - fr) % frames), tex.Width, fh);
 
-				// 外层：反向旋转（水平翻转 + 倒放帧）的淡圈，扩到吸力圈大小
-				Main.EntitySpriteDraw(tex, pos, srcOpp, Color.White * (0.3f * op), 0f, origin, scale * 1.5f, SpriteEffects.FlipHorizontally, 0f);
+				// 外层：反向旋转（水平翻转 + 倒放帧）的淡圈，扩到吸力圈大小。本体吃光，按格切片逐段取光。
+				DrawLitGrid(tex, Projectile.Center, pos, srcOpp, origin, scale * 1.5f, 0.3f * op, 8, 8, SpriteEffects.FlipHorizontally);
 				// 主体
-				Main.EntitySpriteDraw(tex, pos, src, Color.White * op, 0f, origin, scale, SpriteEffects.None, 0f);
+				DrawLitGrid(tex, Projectile.Center, pos, src, origin, scale, op, 6, 6, SpriteEffects.None);
 
+				// 发光小部件：_Light 层压到 0.3。
 				HenshinFxDraw.BeginAdditive();
-				Main.EntitySpriteDraw(_ringLight.Value, pos, src, Color.White * op, 0f, origin, scale, SpriteEffects.None, 0f);
+				Main.EntitySpriteDraw(_ringLight.Value, pos, src, Color.White * (0.3f * op), 0f, origin, scale, SpriteEffects.None, 0f);
 				HenshinFxDraw.EndAdditive();
 			}
 
@@ -235,12 +237,40 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Vector2 origin = new(tex.Width * 0.5f, fh - 8f); // art (28,88) → px (56,176)
 				Vector2 basePos = pos + new Vector2(0f, 36f);
 				const float s = 1.5f;
-				Main.EntitySpriteDraw(tex, basePos, src, Color.White, 0f, origin, s, SpriteEffects.None, 0f);
+				// 水柱约 16 格高：竖切 6 段逐段取光；_Light 层压到 0.3。
+				DrawLitGrid(tex, Projectile.Center + new Vector2(0f, 36f), basePos, src, origin, s, 1f, 1, 6, SpriteEffects.None);
 				HenshinFxDraw.BeginAdditive();
-				Main.EntitySpriteDraw(_spoutLight.Value, basePos, src, Color.White, 0f, origin, s, SpriteEffects.None, 0f);
+				Main.EntitySpriteDraw(_spoutLight.Value, basePos, src, Color.White * 0.3f, 0f, origin, s, SpriteEffects.None, 0f);
 				HenshinFxDraw.EndAdditive();
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// 大贴图逐格吃光：把 src 切成 cols×rows 块，每块在自己中心的世界坐标取光（<see cref="HenshinFxDraw.Lit"/>），
+		/// 拼回原位置。只支持 rot=0；水平翻转时按镜像位置摆块（SpriteBatch 只在块内翻转纹理坐标）。
+		/// </summary>
+		private static void DrawLitGrid(Texture2D tex, Vector2 worldAnchor, Vector2 screenPos, Rectangle src, Vector2 origin,
+			float scale, float opacity, int cols, int rows, SpriteEffects fx)
+		{
+			bool flipX = (fx & SpriteEffects.FlipHorizontally) != 0;
+			for (int gy = 0; gy < rows; gy++)
+			{
+				int y0 = src.Height * gy / rows;
+				int y1 = src.Height * (gy + 1) / rows;
+				for (int gx = 0; gx < cols; gx++)
+				{
+					int x0 = src.Width * gx / cols;
+					int x1 = src.Width * (gx + 1) / cols;
+					// 块在画面里的左边（以整图左上为 0）；翻转时 [x0,x1] 落在镜像位置 [W-x1, W-x0]。
+					float left = flipX ? src.Width - x1 : x0;
+					Vector2 cellOrigin = new(origin.X - left, origin.Y - y0);
+					Vector2 cellCenter = new(left + (x1 - x0) * 0.5f, (y0 + y1) * 0.5f);
+					Color c = HenshinFxDraw.Lit(worldAnchor + (cellCenter - origin) * scale, Color.White) * opacity;
+					Rectangle part = new(src.X + x0, src.Y + y0, x1 - x0, y1 - y0);
+					Main.EntitySpriteDraw(tex, screenPos, part, c, 0f, cellOrigin, scale, fx, 0f);
+				}
+			}
 		}
 	}
 }

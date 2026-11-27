@@ -158,13 +158,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				else
 					SoundEngine.PlaySound(SoundID.Item153 with { Pitch = -0.3f }, pts[Segs]);
 			}
-			if (age >= CrackTick - 2 && age <= CrackTick + 6)
-			{
-				if (steelTail)
-					Lighting.AddLight(pts[Segs], 0.75f, 0.85f, 1.0f);
-				else
-					Lighting.AddLight(pts[Segs], 0.45f, 0.65f, 1.05f);
-			}
+			// 光照 D 组：铁尾 = lit 不发光；龙尾 = mixed，鞭梢「啪」光 ≤0.2（原 0.45/0.65/1.05；集成按 mixed 规则再降）
+			if (!steelTail && age >= CrackTick - 2 && age <= CrackTick + 6)
+				Lighting.AddLight(pts[Segs], 0.09f, 0.13f, 0.2f);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -223,12 +219,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (steel)
 			{
 				// R4（G2 跨组需求，大钢蛇铁尾）：钢色命中火花 + SteelHit（H3 特效弹首帧各端播），不用龙系蓝紫爆。
-				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), at, H3Fx.SteelSpark, 1.2f, Projectile.owner, 0f, SfxKey.SteelHit);
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), at, H3Fx.SteelSpark, 1.2f, Projectile.owner, 0f, SfxKey.SteelHit, soft: true);
 			}
 			else
 				H4Fx.Hit(Projectile, at, H4Fx.StyleDragon, 1.2f, G1HitSfx.Code(Projectile, SfxKey.DragonHit, 4));
 			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy),
-				steel ? new Color(190, 220, 255) : new Color(120, 160, 255), at);
+				steel ? new Color(190, 220, 255) : new Color(120, 160, 255), at, steel ? 0.5f : 1f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -253,15 +249,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 					Vector2 d = b - a;
 					float r = d.LengthSquared() > 0.01f ? d.ToRotation() : Angle;
 					bool isTip = i == n - 1;
+					// 光照 D 组：铁尾 lit，每节取该节中点的光
 					H5Fx.Draw("IronTail", 3, isTip ? 2 : i % 2, (a + b) * 0.5f, new Vector2(26f, 18f), r,
-						isTip ? 1.3f : 0.7f + i * 0.04f, opacity, Math.Cos(r) < 0.0 ? SpriteEffects.FlipVertically : SpriteEffects.None);
+						isTip ? 1.3f : 0.7f + i * 0.04f, opacity, Math.Cos(r) < 0.0 ? SpriteEffects.FlipVertically : SpriteEffects.None,
+						HenshinFxDraw.LightAt((a + b) * 0.5f));
 				}
 				return false;
 			}
 
 			Texture2D tex = H4Fx.Tail();
 			int fh = tex.Height / 4;
-			Color c = new Color(Math.Max(lightColor.R, (byte)120), Math.Max(lightColor.G, (byte)130), Math.Max(lightColor.B, (byte)150)) * opacity;
+			// 光照 D 组：龙尾 mixed = 尾身每节乘该节的光（去掉 120/130/150 下限）+ 鞭梢「啪」仍发光
 			Vector2 origin = new(12f, 10f);
 			for (int i = 1; i <= Segs; i++)
 			{
@@ -280,6 +278,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					mid = pts[i];
 					scale = new Vector2(1f, 1f);
 				}
+				Color c = HenshinFxDraw.LightAt(mid) * opacity;
 				Main.EntitySpriteDraw(tex, (mid - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh), c, rot,
 					origin, scale, fx, 0f);
 			}

@@ -141,7 +141,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinSfx.Play(SfxKey.WindCast, Main.player[Projectile.owner].Center, 1f, 0.25f);
 			}
 			Projectile.rotation = Projectile.velocity.ToRotation();
-			Lighting.AddLight(Projectile.Center, 0.4f, 0.75f, 0.9f);
+			// 风刃 mixed：AddLight ≤ 0.2（原 0.4/0.75/0.9 等比缩）。
+			Lighting.AddLight(Projectile.Center, 0.09f, 0.17f, 0.2f);
 			// shortcut: wall limit = centre buried >6 ticks (~100 px) in solid tiles ends the blade; upgrade if it must stop at the first wall.
 			if (Collision.SolidCollision(Projectile.Center - new Vector2(4f), 8, 8))
 			{
@@ -174,6 +175,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D streak = H7Tex.Get("AirStreak");
 			Vector2 dir = Projectile.velocity.SafeNormalize(Vector2.UnitX);
 			Vector2 side = new Vector2(-dir.Y, dir.X);
+			// mixed：发光部分降到 0.55；刃身另加 0.45 × 环境亮度（亮处仍是原来的全亮，暗处只剩 0.55）。
+			const float MixedAdd = 0.55f;
+			Color amb = HenshinFxDraw.LightAt(Projectile.Center);
+			float bodyA = MixedAdd + (1f - MixedAdd) * (Math.Max(amb.R, Math.Max(amb.G, amb.B)) / 255f);
 			HenshinFxDraw.BeginAdditive();
 			// airflow residue: thin wind ribbons left behind the blade, drifting sideways and fading with distance
 			for (int k = 1; k <= 4; k++)
@@ -182,7 +187,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (back > age * Speed)
 					break;
 				float sway = MathF.Sin(age * 0.35f + k * 1.7f) * 10f;
-				float a = fade * 0.5f / k;
+				float a = MixedAdd * fade * 0.5f / k;
 				for (int j = -1; j <= 1; j += 2)
 					HenshinFxDraw.DrawAdditiveSheet(streak, 1, 4, ((age / 3) + k) & 3, Projectile.Center - dir * (back + 16f) + side * (j * (16f + k * 5f) + sway),
 						HenshinFxDraw.WithAlpha(Color.White, a), 0.9f, Projectile.rotation);
@@ -190,7 +195,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			for (int i = 2; i >= 0; i--) // after-image
 			{
 				HenshinFxDraw.DrawAdditiveSheet(tex, 1, 4, frame, Projectile.Center - Projectile.velocity * (i * 0.9f),
-					HenshinFxDraw.WithAlpha(Color.White, fade * (i == 0 ? 1f : 0.28f / i)), 1.35f, Projectile.rotation);
+					HenshinFxDraw.WithAlpha(Color.White, fade * (i == 0 ? bodyA : MixedAdd * 0.28f / i)), 1.35f, Projectile.rotation);
 			}
 			HenshinFxDraw.EndAdditive();
 			return false;

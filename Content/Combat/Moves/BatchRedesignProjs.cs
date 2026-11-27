@@ -51,7 +51,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			HenshinSfx.Play(SfxKey.SteelHit, _impact, 1f, -0.25f);
 			HenshinSfx.Play(SfxKey.BlastS, _impact, 0.8f, -0.2f);
-			HenshinExplosion.Spawn(_impact, BlastSize.M, SteelTint, 112f, kenneyFrame: false);
+			// 光照 D 组：臂锤 = lit（钢拳实体），落地爆减半
+			HenshinExplosion.Spawn(_impact, BlastSize.M, SteelTint, 112f, kenneyFrame: false, strength: 0.5f);
 			HenshinHitFeel.Shake(Projectile.owner, _impact, HitTier.Heavy, Vector2.UnitY);
 		}
 
@@ -117,7 +118,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), SteelTint, _impact);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), SteelTint, _impact, 0.5f);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -141,12 +142,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 				fistScale = new Vector2(1.2f + 0.4f * peak, 1.2f - 0.4f * peak);
 			}
 			float fistAlpha = _smashed ? MathHelper.Clamp(1.2f - _smashAge / 16f, 0f, 1f) : 1f;
-			H5Fx.Draw("ArmHammer", 4, 0, drawFist + new Vector2(0f, 20f * fistScale.Y), new Vector2(40f, 58f), 0f, fistScale, fistAlpha);
+			// 光照 D 组：lit，拳与冲击环各取所在处的光
+			H5Fx.Draw("ArmHammer", 4, 0, drawFist + new Vector2(0f, 20f * fistScale.Y), new Vector2(40f, 58f), 0f, fistScale, fistAlpha,
+				SpriteEffects.None, HenshinFxDraw.LightAt(drawFist));
 			if (_smashed)
 			{
 				int ring = 1 + Math.Min(2, _smashAge / 4);
 				float ringA = MathHelper.Clamp(1f - _smashAge / 14f, 0f, 1f);
-				H5Fx.Draw("ArmHammer", 4, ring, _impact + new Vector2(0f, 24f), new Vector2(40f, 58f), 0f, 1.5f, ringA);
+				H5Fx.Draw("ArmHammer", 4, ring, _impact + new Vector2(0f, 24f), new Vector2(40f, 58f), 0f, 1.5f, ringA,
+					SpriteEffects.None, HenshinFxDraw.LightAt(_impact));
 			}
 			return false;
 		}
@@ -257,8 +261,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinHitFeel.Shake(Projectile.owner, _fixed, HitTier.Ultimate, Vector2.UnitY);
 			}
 			float reveal = ClawRevealAmount(age);
-			Lighting.AddLight(_fixed + new Vector2(34f, 0f), new Vector3(0.45f, 0.6f, 0.8f) * reveal);
-			Lighting.AddLight(_fixed - new Vector2(34f, 0f), new Vector3(0.45f, 0.6f, 0.8f) * reveal);
+			// 光照 D 组：mixed，自身光 ≤0.2（原 0.45/0.6/0.8）
+			Lighting.AddLight(_fixed + new Vector2(34f, 0f), new Vector3(0.11f, 0.15f, 0.2f) * reveal);
+			Lighting.AddLight(_fixed - new Vector2(34f, 0f), new Vector3(0.11f, 0.15f, 0.2f) * reveal);
 		}
 
 		private static readonly Color ClawTint = new(180, 220, 255);
@@ -303,8 +308,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float s = RangeTiles * 16f / 160f;
 			Vector2 top = _fixed + new Vector2(0f, -RangeTiles * 8f);
 			Vector2 org = new Vector2(56f, 2f);
-			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(34f, 0f), org, 0f, s, alpha);
-			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(-34f, 0f), org, 0f, s, alpha, SpriteEffects.FlipHorizontally);
+			// 光照 D 组：mixed，爪身 = Lerp(光, 白, 0.4)。
+			// shortcut: 爪高 16 格只在爪中段取一次光（H5Fx.Draw 不能分段），要分段时改成按源矩形切条绘制。
+			Color clawR = Color.Lerp(HenshinFxDraw.LightAt(_fixed + new Vector2(34f, 0f)), Color.White, 0.4f);
+			Color clawL = Color.Lerp(HenshinFxDraw.LightAt(_fixed - new Vector2(34f, 0f)), Color.White, 0.4f);
+			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(34f, 0f), org, 0f, s, alpha, SpriteEffects.None, clawR);
+			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(-34f, 0f), org, 0f, s, alpha, SpriteEffects.FlipHorizontally, clawL);
 			return false;
 		}
 	}
@@ -411,20 +420,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			_spin += 0.55f;
 			Projectile.rotation = _spin;
-			Lighting.AddLight(Projectile.Center, 0.35f, 0.42f, 0.52f);
+			// 光照 D 组：陀螺球 = lit（钢球实体），不自发光
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.SteelSpark, 1.4f, Projectile.owner, 0f, SfxKey.SteelHit);
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), DiscTint);
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.SteelSpark, 1.4f, Projectile.owner, 0f, SfxKey.SteelHit, soft: true);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), DiscTint, null, 0.5f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			HenshinTrail.Strip(Projectile, DiscTint, 34f, new Color(245, 250, 255), 0.3f, 0f, 0.6f);
-			// 自绘 Assets/Fx/GyroDisc：4 帧钢齿轮（8 齿，帧间转 11°）+ 代码旋转
-			H5Fx.Draw("GyroDisc", 4, (int)(Main.GameUpdateCount / 2) % 4, Projectile.Center, new Vector2(26f, 26f), _spin, 1.2f);
+			HenshinTrail.Strip(Projectile, DiscTint, 34f, new Color(245, 250, 255), 0.3f, 0f, 0.6f, lit: true);
+			// 自绘 Assets/Fx/GyroDisc：4 帧钢齿轮（8 齿，帧间转 11°）+ 代码旋转；光照 D 组：乘场景光
+			H5Fx.Draw("GyroDisc", 4, (int)(Main.GameUpdateCount / 2) % 4, Projectile.Center, new Vector2(26f, 26f), _spin, 1.2f,
+				1f, SpriteEffects.None, lightColor);
 			return false;
 		}
 	}
@@ -476,10 +486,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[1] == 2f)
 			{
 				HenshinSfx.Play(SfxKey.RockCast, Projectile.Center, 1f, -0.1f);
-				HenshinExplosion.Spawn(Projectile.Center, BlastSize.S, RockTint, 110f, kenneyFrame: false);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.S, RockTint, 110f, kenneyFrame: false, strength: 0.5f);
 			}
-			// 常驻弱光 = 场地范围提示，略提亮
-			Lighting.AddLight(Projectile.Center, 0.3f, 0.26f, 0.18f);
+			// 光照 D 组：石块 lit；只留一点微光（≤0.2，原 0.3/0.26/0.18），黑暗里还能找到陷阱
+			Lighting.AddLight(Projectile.Center, 0.12f, 0.1f, 0.07f);
 		}
 
 		private static readonly Color RockTint = new(215, 195, 160);
@@ -489,7 +499,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			HitTier tier = HenshinHitFeel.TierOf(Projectile, HitTier.Light);
-			HenshinHitFeel.OnHit(Projectile, target, tier, RockTint, target.Center);
+			HenshinHitFeel.OnHit(Projectile, target, tier, RockTint, target.Center, 0.5f);
 			H6Fx.SpawnBurst(Projectile, target.Center, H6Fx.KindStone, 0.7f, H6Fx.FxOf(tier));
 		}
 
@@ -512,7 +522,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					if (front != (pass == 1))
 						continue;
 					Vector2 pos = Projectile.Center + new Vector2(MathF.Cos(ang) * 34f * grow, MathF.Sin(ang) * 12f * grow + MathF.Sin(age * 0.08f + k * 1.7f) * 3f);
-					Color c = H6Fx.Lit(pos, 120) * (fade * (front ? 1f : 0.7f));
+					Color c = H6Fx.Lit(pos, 40) * (fade * (front ? 1f : 0.7f));
 					Rectangle src = new(0, fh * (k % 3), tex.Width, fh);
 					Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), src, c, MathF.Cos(ang) * 0.45f,
 						new Vector2(16f, 20f), grow, SpriteEffects.None, 0f);
@@ -569,7 +579,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinSfx.Play(SfxKey.Swing, p.Center, 0.8f, 0.35f);
 			}
 			float t = 1f - Projectile.timeLeft / (float)Life;
-			Lighting.AddLight(Projectile.Center, 0.25f, 0.27f, 0.32f);
+			// 光照 D 组：mixed，自身光 ≤0.2（原 0.25/0.27/0.32）
+			Lighting.AddLight(Projectile.Center, 0.15f, 0.16f, 0.2f);
 			// 前伸略加长：96 → 112
 			Projectile.Center = p.MountedCenter + _dir * MathHelper.Lerp(24f, 112f, t);
 			Projectile.rotation = _dir.ToRotation();
@@ -586,7 +597,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int frame = age < 3 ? 0 : age < 7 ? 1 : 2;
 			Rectangle src = new(0, fh * frame, tex.Width, fh);
 			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
-			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), src, Color.White, Projectile.rotation, new Vector2(79f, 20f), 1f, fx, 0f);
+			// 光照 D 组：mixed，钢拳 = Lerp(光, 白, 0.4)
+			Color fist = Color.Lerp(lightColor, Color.White, 0.4f);
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), src, fist, Projectile.rotation, new Vector2(79f, 20f), 1f, fx, 0f);
 			return false;
 		}
 	}
@@ -1140,7 +1153,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (age == 6 || age == 12)
 				HenshinSfx.Play(SfxKey.SteelHit, _fixed, 0.75f, age == 6 ? -0.4f : -0.25f);
 			if ((age >= 6 && age <= 8) || (age >= 12 && age <= 14))
-				Lighting.AddLight(_fixed, 0.5f, 0.35f, 0.75f);
+				Lighting.AddLight(_fixed, 0.13f, 0.09f, 0.2f); // 光照 D 组：mixed ≤0.2（原 0.5/0.35/0.75）
 		}
 
 		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
@@ -1184,7 +1197,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				pos += new Vector2((float)Math.Sin(Projectile.timeLeft * 5.1f), (float)Math.Cos(Projectile.timeLeft * 4.3f)) * 3f;
 			pos = pos.Floor();
 			float opacity = frame == frames - 1 ? Projectile.timeLeft / 3f : 1f;
-			Color c = new(Math.Max(lightColor.R, (byte)120) * 185 / 255, Math.Max(lightColor.G, (byte)110) * 175 / 255, Math.Max(lightColor.B, (byte)100) * 220 / 255);
+			// 光照 D 组：mixed，牙身纯乘光（去掉 120/110/100 下限），_Light 紫边仍 Additive 发光
+			Color c = new(lightColor.R * 185 / 255, lightColor.G * 175 / 255, lightColor.B * 220 / 255);
 			Main.EntitySpriteDraw(tex, pos, src, c * opacity, 0f, origin, scale, SpriteEffects.None, 0f);
 			HenshinFxDraw.BeginAdditive();
 			Main.EntitySpriteDraw(_jawsLight.Value, pos, src, new Color(200, 160, 255) * opacity, 0f, origin, scale, SpriteEffects.None, 0f);

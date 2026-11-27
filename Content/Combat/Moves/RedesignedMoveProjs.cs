@@ -297,8 +297,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 					d.noGravity = true;
 				}
 			}
-			Lighting.AddLight(Projectile.Center, _tint.ToVector3() * 0.35f);
+			// 泡泡、种子是实物（lit）：不自己发光，和原版泡泡枪一样在洞里变暗。彩虹弹、火旋仍发光。
+			if (!IsLitBody)
+				Lighting.AddLight(Projectile.Center, _tint.ToVector3() * 0.35f);
 		}
+
+		private bool IsLitBody => _texType == ProjectileID.Bubble || _texType == ProjectileID.Seed;
 
 		private void PopBubbles()
 		{
@@ -335,7 +339,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			PopBubbles();
 			bool rainbow = _texType == ProjectileID.RainbowRodBullet;
 			HitTier tier = HenshinHitFeel.TierOf(Projectile, HitTier.Light);
-			HenshinHitFeel.OnHit(Projectile, target, tier, rainbow ? new Color(200, 120, 255) : new Color(110, 190, 255));
+			HenshinHitFeel.OnHit(Projectile, target, tier, rainbow ? new Color(200, 120, 255) : new Color(110, 190, 255), null, IsLitBody ? 0.5f : 1f);
 			// 精神强念：命中光圈（同步特效弹，命中音在它 AI 首帧播，ai0=1 表示大招档）。
 			if (rainbow && Projectile.owner == Main.myPlayer)
 			{
@@ -368,11 +372,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 					float sway = (float)System.Math.Sin(Projectile.localAI[0] * 0.15f + i) * 3f;
 					Vector2 pos = Projectile.Center - back * (10f * i) + perp * sway;
 					float s = Projectile.scale * (0.35f - i * 0.08f);
-					Color c = Color.White * (0.55f / i);
+					Color c = HenshinFxDraw.Lit(pos, Color.White) * (0.55f / i);
 					Main.EntitySpriteDraw(tex, pos - Main.screenPosition, frame, c, 0f, origin, s, SpriteEffects.None, 0);
 				}
 			}
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, _tint, Projectile.rotation, origin, Projectile.scale, SpriteEffects.None, 0);
+			Color body = IsLitBody ? _tint.MultiplyRGBA(lightColor) : _tint;
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, body, Projectile.rotation, origin, Projectile.scale, SpriteEffects.None, 0);
 			return false;
 		}
 	}
@@ -424,7 +429,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.Bubble);
 			Rectangle frame = tex.Frame();
 			float fade = 1f - Projectile.alpha / 255f;
-			Color c = Color.White * fade;
+			Color c = lightColor * fade; // 水泡：lit
 			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, c, 0f, frame.Size() * 0.5f, Projectile.scale, SpriteEffects.None, 0);
 			return false;
 		}
@@ -612,14 +617,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinSfx.Play(SfxKey.WaterCast, Projectile.Center);
 			}
 			Projectile.rotation = Projectile.velocity.ToRotation();
-			// 水弹本体是可见贴图 + 淡蓝拖尾；粒子纪律：飞行中不撒水滴。
-			Lighting.AddLight(Projectile.Center, 0.06f, 0.16f, 0.3f);
+			// 水弹本体是可见贴图 + 淡蓝拖尾；粒子纪律：飞行中不撒水滴。水是 lit，不自己发光。
 		}
 
 		public override void OnKill(int timeLeft)
 		{
 			if (timeLeft > 0)
-				HenshinExplosion.SpawnLight(Projectile.Center, WaterTint, BlastSize.S, 0.6f);
+				HenshinExplosion.SpawnLight(Projectile.Center, WaterTint, BlastSize.S, 0.3f);
 		}
 
 		public override bool OnTileCollide(Vector2 oldVelocity)
@@ -631,7 +635,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.Wet, 180);
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), WaterTint);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), WaterTint, null, 0.5f);
 			TackleHitFxProj.Spawn(Projectile, Vector2.Lerp(target.Center, Projectile.Center, 0.4f), DustID.Water, SfxKey.WaterHit, HitTier.Light);
 		}
 
@@ -641,9 +645,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D tex = TextureAssets.Projectile[drawId].Value;
 			if (tex.Width <= 1)
 				tex = TextureAssets.Projectile[ProjectileID.WaterBolt].Value;
-			HenshinTrail.Strip(Projectile, WaterTint, 12f, new Color(215, 240, 255), 0.4f, 0f, 0.75f);
+			HenshinTrail.Strip(Projectile, WaterTint, 12f, new Color(215, 240, 255), 0.4f, 0f, 0.75f, lit: true);
 			Rectangle frame = tex.Frame();
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, new Color(120, 200, 255), Projectile.rotation, frame.Size() * 0.5f, 1.2f, SpriteEffects.None, 0);
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, new Color(120, 200, 255).MultiplyRGBA(lightColor), Projectile.rotation, frame.Size() * 0.5f, 1.2f, SpriteEffects.None, 0);
 			return false;
 		}
 	}
@@ -777,8 +781,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Terraria.Audio.SoundEngine.PlaySound(SoundID.Item153, pts[Segs]);
 			}
-			if (age >= CrackTick - 2 && age <= CrackTick + 6)
-				Lighting.AddLight(pts[Segs], 0.35f, 0.8f, 0.3f);
+			// 藤鞭是草（lit）：不自己发光。
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -809,7 +812,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			// 2 颗草屑 → 同步命中星（草绿，带 GrassHit 命中音，各端都响）。
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(120, 230, 90));
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(120, 230, 90), null, 0.5f);
 			TackleHitFxProj.Spawn(Projectile, Vector2.Clamp(Projectile.Center, target.position, target.BottomRight), DustID.Grass, SfxKey.GrassHit, HitTier.Light);
 		}
 
@@ -828,8 +831,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int fh = tex.Height / 4;
 			Vector2[] pts = Pts(owner, age);
 			float opacity = System.Math.Min(1f, (Lifetime - age) / 6f);
-			Color c = new(System.Math.Max(lightColor.R, (byte)110), System.Math.Max(lightColor.G, (byte)120), System.Math.Max(lightColor.B, (byte)100));
-			c *= opacity;
 			Vector2 origin = new(12f, 10f);
 			for (int i = 1; i <= Segs; i++)
 			{
@@ -848,6 +849,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 					mid = pts[i];
 					scale = new Vector2(0.9f, 0.9f);
 				}
+				// 鞭长约 11 格：每段在自己中点取光（段长约 15px，比 LitSegment 的 48px 更密）。
+				Color c = HenshinFxDraw.Lit(mid, Color.White) * opacity;
 				Main.EntitySpriteDraw(tex, (mid - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh), c, rot,
 					i == Segs ? new Vector2(10f, 10f) : origin, scale, fx, 0f);
 			}
@@ -859,7 +862,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Texture2D ct = _crack.Value;
 				int ch = ct.Height / 4;
 				float grow = cf == 0 ? 1.15f : 1f;
-				Main.EntitySpriteDraw(ct, (pts[Segs] - Main.screenPosition).Floor(), new Rectangle(0, ch * cf, ct.Width, ch), Color.White,
+				Main.EntitySpriteDraw(ct, (pts[Segs] - Main.screenPosition).Floor(), new Rectangle(0, ch * cf, ct.Width, ch), HenshinFxDraw.Lit(pts[Segs], Color.White),
 					0f, new Vector2(ct.Width * 0.5f, ch * 0.5f), grow, SpriteEffects.None, 0f);
 			}
 			return false;
@@ -1037,6 +1040,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			float lifeT = 1f - Projectile.timeLeft / (float)Life;
 			_envelope = lifeT < 0.12f ? 1f : 1f - System.MathF.Pow((lifeT - 0.12f) / 0.88f, 2f);
+			// 残影是 glow（电光、燕返大招）：路径中点一盏弱白光。
+			Lighting.AddLight(Vector2.Lerp(_from, _to, 0.5f), new Vector3(0.3f) * _envelope);
 		}
 
 		public override bool? CanDamage() => false;
@@ -1370,7 +1375,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_blastFx = true;
 				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 0.8f);
 				HenshinSfx.Play(SfxKey.RockHit, Projectile.Center);
-				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, new Color(220, 150, 80), 100f, kenneyFrame: false);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, new Color(220, 150, 80), 100f, kenneyFrame: false, strength: 0.5f);
 			}
 			if (!_spawned && Projectile.owner == Main.myPlayer)
 			{
@@ -1456,14 +1461,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), new Color(220, 150, 80), target.Center);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), new Color(220, 150, 80), target.Center, 0.5f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
 			Texture2D tex = TextureAssets.Projectile[ProjectileID.Boulder].Value;
 			Rectangle frame = tex.Frame();
-			Color brown = new Color(160, 110, 60);
+			Color brown = new Color(160, 110, 60).MultiplyRGBA(lightColor); // 岩石：lit
 			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, brown, Projectile.rotation, frame.Size() * 0.5f, 0.55f, SpriteEffects.None, 0);
 			return false;
 		}
@@ -1479,13 +1484,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
-		/// <summary>CrossSlash 5 帧 112x112；0..4 帧，原点取帧中心。懒加载，dedServ 不会走到 PreDraw。</summary>
-		internal static void DrawCross(Vector2 center, float rot, int frame, float scale, float opacity)
+		/// <summary>CrossSlash 5 帧 112x112；0..4 帧，原点取帧中心。懒加载，dedServ 不会走到 PreDraw。
+		/// color：null = 白色自发光（glow，旧行为）；lit/mixed 调用方传 lightColor 或 Lerp(lightColor, White, 0.4f)。</summary>
+		public static void DrawCross(Vector2 center, float rot, int frame, float scale, float opacity, Color? color = null)
 		{
 			Texture2D tex = (_crossSheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/CrossSlash/CrossSlash", ReLogic.Content.AssetRequestMode.ImmediateLoad)).Value;
 			int fh = tex.Height / 5;
 			Rectangle src = new(0, fh * frame, tex.Width, fh);
-			Main.EntitySpriteDraw(tex, (center - Main.screenPosition).Floor(), src, Color.White * opacity, rot, src.Size() * 0.5f, scale, SpriteEffects.None, 0f);
+			Main.EntitySpriteDraw(tex, (center - Main.screenPosition).Floor(), src, (color ?? Color.White) * opacity, rot, src.Size() * 0.5f, scale, SpriteEffects.None, 0f);
 		}
 
 		public override void SetDefaults()
@@ -1686,7 +1692,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_castSfx = true;
 				HenshinSfx.Play(SfxKey.WindCast, Projectile.Center);
 			}
-			Lighting.AddLight(Projectile.Center, 0.12f, 0.18f, 0.32f);
+			// 风是 lit：不自己发光。
 		}
 
 		private bool _castSfx;
@@ -1699,7 +1705,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(150, 190, 255));
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(150, 190, 255), null, 0.5f);
 			TackleHitFxProj.Spawn(Projectile, Vector2.Clamp(Projectile.Center, target.position, target.BottomRight), DustID.Cloud, SfxKey.WindHit, HitTier.Light);
 		}
 
@@ -1766,8 +1772,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Center = c;
 			}
 			// 风带拖尾：冷白淡蓝，半透明，宽同龙卷一半。
-			HenshinTrail.Strip(Projectile, new Color(110, 150, 255), 22f, new Color(225, 240, 255), 0.3f, 0f, 0.5f);
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, new Color(70, 100, 220), Projectile.rotation, frame.Size() * 0.5f, 1f, SpriteEffects.None, 0);
+			HenshinTrail.Strip(Projectile, new Color(110, 150, 255), 22f, new Color(225, 240, 255), 0.3f, 0f, 0.5f, lit: true);
+			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, frame, new Color(70, 100, 220).MultiplyRGBA(lightColor), Projectile.rotation, frame.Size() * 0.5f, 1f, SpriteEffects.None, 0);
 			return false;
 		}
 	}
@@ -1816,8 +1822,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_castSfx = true;
 				HenshinSfx.Play(SfxKey.Swing, owner.MountedCenter, 0.9f, 0.35f);
 			}
-			if (Projectile.timeLeft >= 8)
-				Lighting.AddLight(owner.MountedCenter + _dir * Length, 0.2f, 0.22f, 0.26f);
+			// 喙是普通物理（lit）：不自己发光。
 		}
 
 		private bool _castSfx;
@@ -1829,7 +1834,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Player owner = Main.player[Projectile.owner];
 			float along = MathHelper.Clamp(Vector2.Dot(target.Center - owner.MountedCenter, _dir), 0f, Length);
 			Vector2 at = owner.MountedCenter + _dir * along;
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 240, 215), at);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 240, 215), at, 0.5f);
 			TackleHitFxProj.Spawn(Projectile, at, 0, SfxKey.HitLight, HitTier.Light);
 		}
 
@@ -1862,9 +1867,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float rot = _dir.ToRotation();
 			// 朝左半圈上下翻转，让受光面（贴图上半）始终朝上。
 			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
-			Color c = new(System.Math.Max(lightColor.R, (byte)130), System.Math.Max(lightColor.G, (byte)120), System.Math.Max(lightColor.B, (byte)110));
 			float opacity = frame == PeckFrames - 1 ? 0.5f + 0.5f * (Projectile.timeLeft / (float)PeckTicksPerFrame) : 1f;
-			Main.EntitySpriteDraw(tex, (owner.MountedCenter - Main.screenPosition).Floor(), src, c * opacity, rot, new Vector2(6f, frameH * 0.5f), 1f, fx, 0f);
+			// 喙长 16 格：按 48px 切片逐段取光（同一刺根、同一旋转，只换源矩形与原点）。
+			Vector2 root = owner.MountedCenter;
+			Vector2 screenRoot = (root - Main.screenPosition).Floor();
+			const int Slice = 48;
+			for (int x0 = 0; x0 < tex.Width; x0 += Slice)
+			{
+				int w = System.Math.Min(Slice, tex.Width - x0);
+				Rectangle part = new(x0, src.Y, w, frameH);
+				Color c = HenshinFxDraw.Lit(root + _dir * (x0 + w * 0.5f - 6f), Color.White) * opacity;
+				Main.EntitySpriteDraw(tex, screenRoot, part, c, rot, new Vector2(6f - x0, frameH * 0.5f), 1f, fx, 0f);
+			}
 			return false;
 		}
 	}
@@ -1950,7 +1964,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 					H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.RingPurple, 1.6f, Projectile.owner); // R4：Abra/Mewtwo 都按「其他形态用紫」
 				}
 			}
-
+			// 念力锤是超能（glow）：锤身粉紫光。
+			Lighting.AddLight(Projectile.Center + new Vector2(0f, _raise), new Vector3(0.4f, 0.2f, 0.5f));
 		}
 
 		public override bool? CanDamage() => _smashed;

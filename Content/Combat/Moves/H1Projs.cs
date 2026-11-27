@@ -79,7 +79,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					HenshinExplosion.Spawn(Projectile.Center, BlastSize.S, new Color(110, 190, 255), 96f * scale, kenneyFrame: false);
 			}
 			if (kind == KindSplash)
-				HenshinExplosion.Pulse(Projectile.Center, new Color(90, 170, 255), BlastSize.S, (Frames * Tpf - Projectile.timeLeft) / (float)(Frames * Tpf), 48f * scale, 0.6f);
+				HenshinExplosion.Pulse(Projectile.Center, new Color(90, 170, 255), BlastSize.S, (Frames * Tpf - Projectile.timeLeft) / (float)(Frames * Tpf), 48f * scale, 0.45f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -89,7 +89,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int frame = Math.Clamp((Frames * Tpf - Projectile.timeLeft) / Tpf, 0, Frames - 1);
 			Texture2D tex = kind == KindAura ? H1Tex.Get(ref _aura, "AuraSphere/AuraSphereBurst") : H1Tex.Get(ref _splash, "WaterJet/WaterSplash");
 			float s = kind == KindAura ? 1.5f * scale : 1.25f * scale;
-			H1Tex.DrawFrame(tex, Frames, frame, Projectile.Center, Color.White, 0f, new Vector2(s));
+			// 波导爆是能量（glow，全亮）；水花是实物（lit，乘光）。
+			Color c = kind == KindAura ? Color.White : HenshinFxDraw.LightAt(Projectile.Center);
+			H1Tex.DrawFrame(tex, Frames, frame, Projectile.Center, c, 0f, new Vector2(s));
 			return false;
 		}
 	}
@@ -286,7 +288,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 			Projectile.Center = p.Center;
-			Lighting.AddLight(Projectile.Center, 0.6f, 0.28f, 0.45f);
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
@@ -308,8 +309,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float open = MathHelper.Clamp(age / 12f, 0f, 1f);
 			float fadeOut = MathHelper.Clamp(Projectile.timeLeft / 12f, 0f, 1f);
 			float spin = age * 0.13f;
-			Color c = new(Math.Max(lightColor.R, (byte)200), Math.Max(lightColor.G, (byte)170), Math.Max(lightColor.B, (byte)200));
-			c *= fadeOut;
+			// 花瓣是实物（lit）：每片在自己位置取光（外圈离主人约 13 格），不设亮度下限。
 			for (int ring = 0; ring < 2; ring++)
 			{
 				float r = (ring == 0 ? 120f : 215f) * open;
@@ -319,6 +319,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					float ang = dirSign * spin + MathHelper.TwoPi * i / Petals + ring * 0.4f;
 					Vector2 pos = Projectile.Center + ang.ToRotationVector2() * r;
 					int frame = (age / 4 + i) % 4;
+					Color c = HenshinFxDraw.LightAt(pos) * fadeOut;
 					H1Tex.DrawFrame(tex, 4, frame, pos, c, ang + MathHelper.PiOver2 * dirSign, new Vector2(ring == 0 ? 1.5f : 1.9f));
 				}
 			}

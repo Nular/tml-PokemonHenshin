@@ -127,13 +127,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			HenshinProjUtil.HomingAI(Projectile, Homing, HomingTurnRate);
-			Lighting.AddLight(Projectile.Center, 0.18f, 0.45f, 0.14f);
+			// 种子是 lit：不自己发光。
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			// 出自大招槽 → 大招档：白闪 + 震屏/顿帧 20 tick 一次（64 发连射成节奏脉冲）。
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(120, 230, 90));
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(120, 230, 90), null, 0.5f);
 		}
 
 		public override bool OnTileCollide(Vector2 oldVelocity)
@@ -148,7 +148,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			// 各端：草系命中限频（64 发同端 4 tick 内一声）+ 小光脉冲；草屑 2 → 1。
 			HenshinSfx.PlayCooldown(SfxKey.GrassHit, Projectile.Center, 4, 0.8f);
-			HenshinExplosion.SpawnLight(Projectile.Center, new Color(120, 230, 90), BlastSize.S, 0.5f);
+			HenshinExplosion.SpawnLight(Projectile.Center, new Color(120, 230, 90), BlastSize.S, 0.25f);
 			Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.Grass, Main.rand.NextVector2Circular(2f, 2f), 60, default, 1f);
 			d.noGravity = true;
 		}
@@ -157,9 +157,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			_tex ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/SeedGun/SeedShot", AssetRequestMode.ImmediateLoad);
 			Texture2D tex = _tex.Value;
-			HenshinTrail.Strip(Projectile, new Color(110, 220, 80), 8f, new Color(230, 255, 180), 0.4f, 0f, 0.75f);
-			Color c = new(Math.Max(lightColor.R, (byte)130), Math.Max(lightColor.G, (byte)130), Math.Max(lightColor.B, (byte)110));
-			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), null, c, Projectile.rotation,
+			HenshinTrail.Strip(Projectile, new Color(110, 220, 80), 8f, new Color(230, 255, 180), 0.4f, 0f, 0.75f, lit: true);
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), null, lightColor, Projectile.rotation,
 				new Vector2(tex.Width * 0.5f, tex.Height * 0.5f), 1f, SpriteEffects.None, 0f);
 			return false;
 		}
@@ -195,13 +194,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			Projectile.velocity = Vector2.Zero;
 			// 先亮后衰的爆炸光（HenshinExplosion 试点），光点随冲击环外扩。
-			HenshinExplosion.Pulse(Projectile.Center, BlastTint, BlastSize.L, (Life - Projectile.timeLeft) / (float)Life, Projectile.width);
+			// 种荚爆是 lit 招式：光脉冲压到 0.5。
+			HenshinExplosion.Pulse(Projectile.Center, BlastTint, BlastSize.L, (Life - Projectile.timeLeft) / (float)Life, Projectile.width, 0.5f);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			// 大招命中手感（HenshinHitFeel 试点）：白闪 + 光脉冲 + 主人端震屏与表现顿帧（20 tick 窗口内 1 次）。本弹只由种子炸弹大招生成，直接写 Ultimate。
-			HenshinHitFeel.OnHit(Projectile, target, HitTier.Ultimate, BlastTint);
+			HenshinHitFeel.OnHit(Projectile, target, HitTier.Ultimate, BlastTint, null, 0.5f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -211,13 +211,27 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int fh = tex.Height / Frames;
 			int frame = Math.Clamp((Life - Projectile.timeLeft) / TicksPerFrame, 0, Frames - 1);
 			Rectangle src = new(0, fh * frame, tex.Width, fh);
-			// 帧 160 px → 世界直径 320：整数倍 2，像素不糊。自发光爆圈，夜里也读得出。
-			Color c = new(Math.Max(lightColor.R, (byte)170), Math.Max(lightColor.G, (byte)200), Math.Max(lightColor.B, (byte)150));
-			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), src, c, 0f,
-				new Vector2(tex.Width * 0.5f, fh * 0.5f), 2f, SpriteEffects.None, 0f);
-			// 爆炸配方（HenshinExplosion 试点）：白热核心 + 双冲击环 + 放射亮条，叠在手绘爆圈之上；草系不叠 Kenney 火烟帧。
+			// 帧 160 px → 世界直径 320：整数倍 2，像素不糊。草爆圈是 lit：直径 20 格，切 8×8 格（每格 40 px）各取各的光，无下限。
+			Vector2 screenCenter = (Projectile.Center - Main.screenPosition).Floor();
+			Vector2 origin = new(tex.Width * 0.5f, fh * 0.5f);
+			const int Grid = 8;
+			for (int gy = 0; gy < Grid; gy++)
+			{
+				int y0 = fh * gy / Grid;
+				int y1 = fh * (gy + 1) / Grid;
+				for (int gx = 0; gx < Grid; gx++)
+				{
+					int x0 = tex.Width * gx / Grid;
+					int x1 = tex.Width * (gx + 1) / Grid;
+					Rectangle part = new(x0, src.Y + y0, x1 - x0, y1 - y0);
+					Vector2 sample = Projectile.Center + (new Vector2((x0 + x1) * 0.5f, (y0 + y1) * 0.5f) - origin) * 2f;
+					Main.EntitySpriteDraw(tex, screenCenter, part, HenshinFxDraw.Lit(sample, Color.White), 0f,
+						origin - new Vector2(x0, y0), 2f, SpriteEffects.None, 0f);
+				}
+			}
+			// 爆炸配方（HenshinExplosion 试点）：白热核心 + 双冲击环 + 放射亮条，叠在手绘爆圈之上；草系不叠 Kenney 火烟帧。lit 招式 strength 0.5。
 			HenshinFxDraw.BeginAdditive();
-			HenshinExplosion.Draw(Projectile.Center, BlastSize.L, BlastTint, (Life - Projectile.timeLeft) / (float)Life, Projectile.width, 0f, kenneyFrame: false);
+			HenshinExplosion.Draw(Projectile.Center, BlastSize.L, BlastTint, (Life - Projectile.timeLeft) / (float)Life, Projectile.width, 0f, kenneyFrame: false, strength: 0.5f);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}

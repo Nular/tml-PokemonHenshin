@@ -213,6 +213,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 						HenshinExplosion.SpawnLight(at, AscentCyan, BlastSize.S, 0.9f);
 					}
 				}
+				// 光照 D 组：青日耀本体补弱光（glow，随寿命衰减）
+				Lighting.AddLight(Projectile.Center, new Vector3(0.07f, 0.19f, 0.2f) * (Projectile.timeLeft / (float)Life));
 			}
 			Projectile.frameCounter++;
 			int frames = Math.Max(1, Main.projFrames[ProjectileID.SolarWhipSwordExplosion]);
@@ -898,7 +900,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			float u = MathHelper.SmoothStep(0f, 1f, Progress);
 			Projectile.Center = _origin + _dir * (40f + Reach * u);
-			Lighting.AddLight(Projectile.Center, 0.25f, 0.5f, 0.7f);
+			// 光照 D 组：拳 mixed，自身光 ≤0.2（原 0.25/0.5/0.7）；彗星星仍 glow
+			Lighting.AddLight(Projectile.Center, 0.07f, 0.14f, 0.2f);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -932,7 +935,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int age = Lifetime - Projectile.timeLeft;
 			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
 			float alpha = Math.Min(1f, Projectile.timeLeft / 4f);
-			H5Fx.Draw("MeteorFist", 3, Math.Min(2, age / 6), Projectile.Center, new Vector2(72f, 24f), _dir.ToRotation(), 1.15f, alpha, fx);
+			H5Fx.Draw("MeteorFist", 3, Math.Min(2, age / 6), Projectile.Center, new Vector2(72f, 24f), _dir.ToRotation(), 1.15f, alpha, fx,
+				Color.Lerp(lightColor, Color.White, 0.4f));
 			return false;
 		}
 	}

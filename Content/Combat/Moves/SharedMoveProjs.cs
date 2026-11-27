@@ -819,7 +819,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Vector2 off = Main.rand.NextVector2Circular(12f, 12f);
 				Main.EntitySpriteDraw(dirt, Projectile.Center + off - Main.screenPosition, null,
-					new Color(160, 110, 70, 200), Main.rand.NextFloat(MathHelper.TwoPi), dirt.Size() * 0.5f, 0.7f, SpriteEffects.None);
+					new Color(160, 110, 70, 200).MultiplyRGBA(lightColor), Main.rand.NextFloat(MathHelper.TwoPi), dirt.Size() * 0.5f, 0.7f, SpriteEffects.None);
 			}
 			return false;
 		}
@@ -910,8 +910,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 
 			Projectile.Center = p.Center;
-			// R3 手感：每 4 tick 的土尘删掉，改为 PreDraw 里沿冲刺方向的土色尾带；身边一盏暖土灯。
-			Lighting.AddLight(p.Center, 0.35f, 0.25f, 0.12f);
+			// R3 手感：每 4 tick 的土尘删掉，改为 PreDraw 里沿冲刺方向的土色尾带。土是 lit：不再点暖土灯。
 		}
 
 		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
@@ -931,7 +930,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			// 命中音改到同步爆点首 tick（各端，节流）；原 Item14 每 8 tick 叠爆音删掉。
 			HitTier tier = HenshinHitFeel.TierOf(Projectile, HitTier.Heavy);
-			HenshinHitFeel.OnHit(Projectile, target, tier, new Color(215, 165, 100), target.Center);
+			HenshinHitFeel.OnHit(Projectile, target, tier, new Color(215, 165, 100), target.Center, 0.5f);
 			H6Fx.SpawnBurst(Projectile, target.Center, H6Fx.KindDirt, 0.9f, H6Fx.FxOf(tier));
 		}
 
@@ -949,7 +948,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			for (int i = 0; i < pts.Length; i++)
 				pts[i] = Projectile.Center - _dir * (len * i / (pts.Length - 1f));
 			float fade = Projectile.timeLeft < 6 ? Projectile.timeLeft / 6f : 1f;
-			HenshinTrail.StripPoints(pts, new Color(200, 140, 80), 26f, new Color(240, 205, 150), 0.32f, 0f, 0.55f * fade);
+			HenshinTrail.StripPoints(pts, new Color(200, 140, 80), 26f, new Color(240, 205, 150), 0.32f, 0f, 0.55f * fade, lit: true);
 			return false;
 		}
 	}
@@ -1171,7 +1170,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinHitFeel.Shake(Projectile.owner, target.Center, tier, _dir);
 			}
 			else
-				HenshinHitFeel.OnHit(Projectile, target, tier, tint, target.Center);
+				HenshinHitFeel.OnHit(Projectile, target, tier, tint, target.Center, flare ? 1f : 0.5f);
 			// 命中特效：TackleHitFxProj（同步；命中音在它 AI 首帧各端播；火系用橙色调）。
 			TackleHitFxProj.Spawn(Projectile, target.Center, dust, flare ? SfxKey.FireHit : SfxKey.HitLight, tier);
 			if (Projectile.ai[1] > 0)
@@ -1196,8 +1195,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float life = InBrake
 				? Projectile.timeLeft / (float)BrakeTicks * 0.45f
 				: System.Math.Min(1f, Projectile.timeLeft / (float)System.Math.Max(1, _dashLife));
+			// 非火系（撞击等普通物理）是 lit：白色 SoftGlow 核心删掉，本体就是玩家自己。
+			if (!_flare)
+				return false;
 			HenshinFxDraw.BeginAdditive();
-			if (_flare)
 			{
 				int fireFrame = HenshinFxDraw.AgeFrame(_lifetime, Projectile.timeLeft, 2, HenshinFxDraw.FireFrames);
 				Vector2 perp = new Vector2(-_dir.Y, _dir.X);
@@ -1231,12 +1232,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 						}
 					}
 				}
-			}
-			else
-			{
-				// 非火系：去掉 3 团 SoftGlow 拖尾，只留一点微光核心。
-				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-					HenshinFxDraw.WithAlpha(Color.White, 0.3f * life), 0.4f);
 			}
 			HenshinFxDraw.EndAdditive();
 			return false;

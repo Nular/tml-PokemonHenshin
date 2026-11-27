@@ -76,8 +76,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 					for (int i = 0; i < 2; i++)
 						Dust.NewDustPerfect(Projectile.Center, dust, Main.rand.NextVector2Circular(3f, 3f), 80, default, 1.1f).noGravity = true;
 					HitTier tier = Tier;
+					// 命中光：火系（闪焰冲锋）全强度；水/草/普通物理是 lit 招式，光减半。
+					float lightK = dust == DustID.Torch ? 1f : 0.5f;
 					HenshinExplosion.SpawnLight(Projectile.Center, Tint(dust), tier == HitTier.Ultimate ? BlastSize.M : BlastSize.S,
-						tier == HitTier.Light ? 0.6f : 1f);
+						(tier == HitTier.Light ? 0.6f : 1f) * lightK);
 					int key = (int)Projectile.ai[1] - 1;
 					if (key >= 0 && key < (int)SfxKey.Count)
 						HenshinSfx.PlayCooldown((SfxKey)key, Projectile.Center, 3);
@@ -112,8 +114,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Vector2 pos = (Projectile.Center - Main.screenPosition).Floor();
 			Vector2 origin = new(tex.Width * 0.5f, frameH * 0.5f);
 			Color tint = Tint((int)Projectile.ai[0]);
-			// 抬亮：夜里也看得见（暗色抬亮）
-			Color c = new(Math.Max(lightColor.R, (byte)150), Math.Max(lightColor.G, (byte)150), Math.Max(lightColor.B, (byte)150));
+			// mixed：冲击星本体吃光（下限 40，火系不吃光），加法 _Light 层保留当小亮点。
+			Color c = (int)Projectile.ai[0] == DustID.Torch
+				? Color.White
+				: new Color(Math.Max(lightColor.R, (byte)40), Math.Max(lightColor.G, (byte)40), Math.Max(lightColor.B, (byte)40));
 			c = new Color(c.R * tint.R / 255, c.G * tint.G / 255, c.B * tint.B / 255);
 			float scale = DrawScale;
 			Main.EntitySpriteDraw(tex, pos, src, c, 0f, origin, scale, SpriteEffects.None, 0f);
@@ -171,18 +175,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (!Main.dedServ)
 				{
 					// 脚底小水花爆（S，水系不叠火烟帧）替掉 3 颗水尘。
-					HenshinExplosion.Spawn(Projectile.Bottom - new Vector2(0f, 6f), BlastSize.S, new Color(110, 190, 255), 64f, kenneyFrame: false);
+					HenshinExplosion.Spawn(Projectile.Bottom - new Vector2(0f, 6f), BlastSize.S, new Color(110, 190, 255), 64f, kenneyFrame: false, strength: 0.5f);
 				}
 			}
-			if (Projectile.timeLeft > 4)
-				Lighting.AddLight(Projectile.Center, 0.18f, 0.38f, 0.7f);
+			// 水柱是 lit：不自己发光。
 		}
 
 		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(110, 190, 255));
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(110, 190, 255), null, 0.5f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -200,12 +203,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 原点 = 水柱脚底（art 10,42 → px 20,84）；落在判定盒底边。
 			Vector2 pos = (new Vector2(Projectile.Center.X, Projectile.Center.Y + Projectile.height * 0.5f) - Main.screenPosition).Floor();
 			Vector2 origin = new(tex.Width * 0.5f, frameH - 4f);
-			Color c = new(Math.Max(lightColor.R, (byte)130), Math.Max(lightColor.G, (byte)140), Math.Max(lightColor.B, (byte)160));
-			Main.EntitySpriteDraw(tex, pos, src, c, 0f, origin, 1f, SpriteEffects.None, 0f);
+			// 水柱约 5.5 格高：分 3 段竖切，各段在自己中心取光（lit，无下限）。
+			Vector2 foot = new(Projectile.Center.X, Projectile.Center.Y + Projectile.height * 0.5f);
+			const int Bands = 3;
+			for (int b = 0; b < Bands; b++)
+			{
+				int y0 = frameH * b / Bands;
+				int y1 = frameH * (b + 1) / Bands;
+				Rectangle part = new(src.X, src.Y + y0, src.Width, y1 - y0);
+				Vector2 sample = foot - new Vector2(0f, origin.Y - (y0 + y1) * 0.5f);
+				Main.EntitySpriteDraw(tex, pos, part, HenshinFxDraw.Lit(sample, Color.White), 0f, origin - new Vector2(0f, y0), 1f, SpriteEffects.None, 0f);
+			}
 			if (frame is 2 or 3)
 			{
 				HenshinFxDraw.BeginAdditive();
-				Main.EntitySpriteDraw(_light.Value, pos, src, Color.White, 0f, origin, 1f, SpriteEffects.None, 0f);
+				Main.EntitySpriteDraw(_light.Value, pos, src, Color.White * 0.25f, 0f, origin, 1f, SpriteEffects.None, 0f);
 				HenshinFxDraw.EndAdditive();
 			}
 			return false;

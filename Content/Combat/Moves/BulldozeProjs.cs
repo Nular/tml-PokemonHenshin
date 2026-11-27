@@ -184,7 +184,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			target.AddBuff(BuffID.Slow, 90);
 			// 轻档白闪 + 土色光；土尘 2 → 同步命中星（岩系命中音，各端都响）。
 			Vector2 at = target.Center + new Vector2(0f, target.height * 0.3f);
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(200, 150, 90), at);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(200, 150, 90), at, 0.5f);
 			TackleHitFxProj.Spawn(Projectile, at, DustID.Dirt, SfxKey.RockHit, HitTier.Light);
 		}
 
@@ -207,9 +207,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				int frame = Math.Clamp(t / TicksPerFrame, 0, Frames - 1);
 				Rectangle src = new(0, frameH * frame, tex.Width, frameH);
 				Vector2 pos = (new Vector2(_cx[i], _cy[i] + 2f) - Main.screenPosition).Floor();
-				// 受光但抬亮暗处（夜里 / 洞里也读得出土浪）；末帧淡出。贴图已预乘，整色相乘即可。
-				Color l = Lighting.GetColor((int)(_cx[i] / 16f), (int)((_cy[i] - 8f) / 16f));
-				Color c = new(Math.Max(l.R, (byte)120), Math.Max(l.G, (byte)110), Math.Max(l.B, (byte)100));
+				// 土浪是 lit：直接吃光，不再抬亮（取样点贴地，LightAt 遇实心格自动上移一格到空气里）；末帧淡出。贴图已预乘，整色相乘即可。
+				Color c = HenshinFxDraw.LightAt(new Vector2(_cx[i], _cy[i] - 8f));
 				if (frame == Frames - 1)
 					c *= 0.45f + 0.55f * (1f - (t - (Frames - 1) * TicksPerFrame) / (float)TicksPerFrame);
 				Main.EntitySpriteDraw(tex, pos, src, c, 0f, origin, 1f, fx, 0f);

@@ -227,7 +227,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			else if (age == Stroke2Start)
 				HenshinSfx.Play(SfxKey.SwingHeavy, owner.MountedCenter, 1f, 0.1f);
-			Lighting.AddLight(Projectile.Center, 0.45f, 0.55f, 0.75f);
+			// 翅膀与风是实物（lit）：不自己发光。
 		}
 
 		private bool _pullSpawned;
@@ -290,7 +290,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			H4Fx.Hit(Projectile, hitAt, H4Fx.StyleDragon, second ? 1.3f : 1.0f,
 				G1HitSfx.Code(Projectile, second ? SfxKey.HitHeavy : SfxKey.WindHit, 4));
 			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, second ? HitTier.Heavy : HitTier.Light),
-				new Color(150, 190, 255), hitAt);
+				new Color(150, 190, 255), hitAt, 0.5f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -311,7 +311,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float rot = Angle;
 			// 正手 / 反手：第二击上下翻转；朝左半圈再翻一次，保持受光面朝上。
 			bool flip = second ^ (Math.Cos(rot) < 0);
-			Main.EntitySpriteDraw(tex, (owner.MountedCenter + rot.ToRotationVector2() * 8f - Main.screenPosition).Floor(), src, Color.White, rot,
+			// shortcut: 翅膀是一张 152px 贴图，只在中点取一次光；要逐段吃光得把贴图切段画。
+			Color wingLit = HenshinFxDraw.LightAt(owner.MountedCenter + rot.ToRotationVector2() * 76f);
+			Main.EntitySpriteDraw(tex, (owner.MountedCenter + rot.ToRotationVector2() * 8f - Main.screenPosition).Floor(), src, wingLit, rot,
 				new Vector2(0f, h * 0.5f), 1f, flip ? SpriteEffects.FlipVertically : SpriteEffects.None, 0f);
 			return false;
 		}
@@ -323,9 +325,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int fh = g.Height / 2;
 			float t = sAge / 9f;
 			float rot = Angle;
-			Color c = Color.White * (1f - t * t);
 			float dist = Reach * (second ? Stroke2ReachMul : 1f) * (0.25f + 0.7f * t);
 			Vector2 o = owner.MountedCenter;
+			Color c = HenshinFxDraw.LightAt(o + rot.ToRotationVector2() * dist) * (1f - t * t);
 			Main.EntitySpriteDraw(g, (o + rot.ToRotationVector2() * dist - Main.screenPosition).Floor(), new Rectangle(0, 0, g.Width, fh), c, rot,
 				new Vector2(4f, fh * 0.5f), second ? 1.4f : 1.0f, SpriteEffects.None, 0f);
 			if (!second)
