@@ -81,21 +81,27 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (aim.LengthSquared() > 4f) _dir = Vector2.Normalize(aim);
 			int age = ChargeTicks + 1 - Projectile.timeLeft;
 			Projectile.Center = p.MountedCenter;
-			if (Projectile.localAI[0] == 0f)
+			// R3 手感（G2）：起手只留共享 UltCast（根弹各端自动播），删 Item29；蓄光光照随蓄力变强。
+			float charge = age / (float)ChargeTicks;
+			Lighting.AddLight(OrbPos(p, charge), new Vector3(0.5f, 0.75f, 1f) * (0.6f + 0.9f * charge));
+			if (age == ChargeTicks)
 			{
-				Projectile.localAI[0] = 1f;
-				SoundEngine.PlaySound(SoundID.Item29 with { Pitch = 0.2f, Volume = 0.8f }, p.Center);
+				// 开炮：各端播钢系施放音 + 枪口 S 爆（原 Item72 只在主人端响）；主人端重档后坐震屏。
+				Vector2 muzzle = OrbPos(p, 1f);
+				HenshinSfx.Play(SfxKey.SteelCast, muzzle, 1f, 0.2f);
+				HenshinExplosion.Spawn(muzzle, BlastSize.S, CannonTint, 90f, kenneyFrame: false);
+				HenshinHitFeel.Shake(Projectile.owner, muzzle, HitTier.Heavy, -_dir);
 			}
-			Lighting.AddLight(OrbPos(p, age / (float)ChargeTicks), 0.5f, 0.75f, 1f);
 			if (age == ChargeTicks && Projectile.owner == Main.myPlayer)
 			{
 				Vector2 at = OrbPos(p, 1f);
 				int dmg = Math.Max(1, (int)(Projectile.damage * 0.35f));
 				H5Fx.SpawnChild(Projectile, ModContent.ProjectileType<FlashCannonShotProj>(), at, _dir * 22f, dmg, Math.Max(6f, Projectile.knockBack), 0f, 0f, MoveDelivery.Bolt);
-				SoundEngine.PlaySound(SoundID.Item72 with { Pitch = 0.3f }, p.Center);
 				// 蓄光完成，全部伤害已转交光弹/闪光爆
 			}
 		}
+
+		internal static readonly Color CannonTint = new(150, 215, 255);
 
 		public override bool? CanDamage() => false;
 
@@ -133,10 +139,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.ignoreWater = true;
 		}
 
+		// R3 手感（G2）：HenshinTrail 光尾代替固定 64px 直光束，沿真实弹道收尖（速度 22 → 约 220px）。
+		public override void SetStaticDefaults() => HenshinTrail.Setup(Type, 10);
+
 		public override void AI()
 		{
 			Projectile.rotation = Projectile.velocity.ToRotation();
-			Lighting.AddLight(Projectile.Center, 0.6f, 0.85f, 1f);
+			Lighting.AddLight(Projectile.Center, 0.8f, 1.05f, 1.25f);
+		}
+
+		// 穿透命中：同步钢火花（光 + S 爆 + 钢命中音）+ 打击感（出自大招槽 → Ultimate 档，20 tick 内只震一次）。
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.SteelSpark, 1.2f, Projectile.owner, 0f, SfxKey.SteelHit);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), FlashCannonChargeProj.CannonTint);
 		}
 
 		public override void OnKill(int timeLeft)
@@ -153,12 +169,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Vector2 dir = Projectile.velocity.SafeNormalize(Vector2.UnitX);
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawContinuousBeam(Projectile.Center - dir * 64f, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(235, 248, 255), 0.9f), HenshinFxDraw.WithAlpha(new Color(110, 200, 255), 0.6f), 10f, 26f);
-			HenshinFxDraw.EndAdditive();
+			HenshinTrail.Strip(Projectile, new Color(110, 200, 255), 30f, new Color(240, 250, 255), 0.4f, 0f, 0.95f);
 			H5Fx.Draw("FlashCannonOrb", 4, (int)(Main.GameUpdateCount / 3) % 4, Projectile.Center, new Vector2(26f, 26f), Projectile.rotation, 1.45f);
+			HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(FlashCannonChargeProj.CannonTint, 0.55f), HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, 70f));
+			HenshinFxDraw.EndAdditive();
 			return false;
 		}
 	}
@@ -187,9 +203,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				SoundEngine.PlaySound(SoundID.Item14 with { Pitch = 0.1f, Volume = 0.8f }, Projectile.Center);
+				// R3 手感（G2）：自制大爆音（各端）+ 主人端大招震屏（20 tick 窗口，命中再震不叠）。
+				HenshinSfx.Play(SfxKey.BlastL, Projectile.Center);
+				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate);
 			}
-			Lighting.AddLight(Projectile.Center, 0.8f, 0.95f, 1f);
+			int age = Life - Projectile.timeLeft;
+			HenshinExplosion.Pulse(Projectile.Center, FlashCannonChargeProj.CannonTint, BlastSize.L, age / (float)Life, Radius * 2f);
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), FlashCannonChargeProj.CannonTint);
+			// 每次施放第一下命中补一记 HitUlt（同步特效弹播，各端都听得到）。
+			if (H3Fx.TryUltBeat(Projectile.owner))
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.SteelSpark, 1.6f, Projectile.owner, 0f, SfxKey.HitUlt);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -199,26 +226,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return Vector2.DistanceSquared(closest, c) <= Radius * Radius;
 		}
 
-		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
-		{
-			// 命中 3 颗钢屑，不撒满屏
-			for (int i = 0; i < 3; i++)
-				Dust.NewDustPerfect(target.Center, DustID.Iron, Main.rand.NextVector2Circular(4f, 4f), 80, new Color(200, 225, 255), 1.1f).noGravity = true;
-		}
-
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int age = Life - Projectile.timeLeft;
 			int frame = Math.Min(5, age * 6 / Life);
 			// 帧内光环外径≈88px(art 44)，按 Radius 对齐
 			H5Fx.Draw("FlashCannonBlast", 6, frame, Projectile.Center, new Vector2(50f, 50f), 0f, Radius / 44f);
-			if (age < 6)
-			{
-				HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.BeginAdditive();
+			// R3：白热核心闪拉长到 10 tick、更亮；再叠 L 号爆炸配方（双冲击环 + 放射亮条，不叠 Kenney 火烟）。
+			if (age < 10)
 				HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-					HenshinFxDraw.WithAlpha(new Color(200, 235, 255), 0.5f * (1f - age / 6f)), HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, Radius * 1.6f));
-				HenshinFxDraw.EndAdditive();
-			}
+					HenshinFxDraw.WithAlpha(new Color(220, 242, 255), 0.75f * (1f - age / 10f)), HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, Radius * 1.6f));
+			HenshinExplosion.Draw(Projectile.Center, BlastSize.L, FlashCannonChargeProj.CannonTint, age / (float)Life, Radius * 2f, 0f, kenneyFrame: false);
+			HenshinFxDraw.EndAdditive();
 			return false;
 		}
 	}
@@ -288,6 +308,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		private const float MaxSteerDeg = 55f;   // 追踪后速度方向与竖直向下夹角上限
 		private const float MinFallSpeed = 6f;   // 速度 Y 下限（向下），出生 ≥10（Wave2MoveProjs RockSlideDirectorProj）
+
+		// R3 手感（G2）：只加表现（拖尾 / 落地音 / 爆炸 / 震屏），追踪与停追逻辑一行未动。
+		private static readonly Color DustTint = new(215, 180, 130);
+		private bool IsUltRock => Projectile.ai[1] > 0.5f;
+
+		public override void SetStaticDefaults() => HenshinTrail.Setup(Type, 8);
 
 		public override void SetDefaults()
 		{
@@ -382,9 +408,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnKill(int timeLeft)
 		{
-			SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.6f }, Projectile.Center);
-			for (int i = 0; i < 3; i++)
-				Dust.NewDustPerfect(Projectile.Center, DustID.Stone, Main.rand.NextVector2Circular(3f, 3f), 80, new Color(150, 130, 110), 1.1f);
+			// OnKill 各端都跑：落地音（节流，12 石不再 12 声 Item14）、爆炸配方、主人端震屏都放这里；删 3 颗石屑尘。
+			// 大招：每次施放第一块落地补一记 BlastL（90 tick 窗口），之后每块 RockHit；技能 3 石只 RockHit。
+			if (IsUltRock && HenshinSfx.PlayCooldown(SfxKey.BlastL, Projectile.Center, 90))
+				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate, Vector2.UnitY);
+			else
+				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, IsUltRock ? HitTier.Heavy : HitTier.Light, Vector2.UnitY);
+			HenshinSfx.PlayCooldown(SfxKey.RockHit, Projectile.Center, 4, IsUltRock ? 1f : 0.85f);
+			HenshinExplosion.Spawn(Projectile.Center, IsUltRock ? BlastSize.M : BlastSize.S, DustTint, IsUltRock ? 96f : 56f, kenneyFrame: false);
 			if (Projectile.ai[0] > 0.5f && Projectile.owner == Main.myPlayer)
 			{
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, Vector2.Zero,
@@ -401,6 +432,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			float s = Projectile.ai[1] > 0.5f ? 1.3f : 0.95f;
+			// 短尘线：暖灰外晕 + 淡白芯，比石块窄，不盖住贴图。
+			HenshinTrail.Strip(Projectile, DustTint, IsUltRock ? 22f : 14f, new Color(255, 240, 215), 0.3f, 0f, 0.55f);
 			H5Fx.Draw("RockFall", 6, _variant, Projectile.Center, new Vector2(26f, 26f), Projectile.rotation, s);
 			return false;
 		}
@@ -441,6 +474,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			target.AddBuff(BuffID.Confused, 40);
 			target.velocity *= 0.2f;
+			// 打击感（G2）：大岩蛇大招 → Ultimate 档（20 tick 只震一次），技能 → Light。
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(215, 180, 130), Projectile.Center);
 		}
 
 		public override bool PreDraw(ref Color lightColor)

@@ -62,12 +62,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = Lifetime; // 每个目标只吃一次
 		}
 
+		private static readonly Color PulseTint = new(80, 150, 255);
+
 		public override void AI()
 		{
 			Projectile.velocity = Vector2.Zero;
-			if (Projectile.timeLeft > Lifetime - 6)
-				Lighting.AddLight(Projectile.Center, 0.35f, 0.5f, 1f);
+			// 各端首帧：龙系命中（4 tick 节流，10 发连射不叠）+ 低沉小爆。
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				HenshinSfx.PlayCooldown(SfxKey.DragonHit, Projectile.Center, 4);
+				HenshinSfx.PlayCooldown(SfxKey.BlastS, Projectile.Center, 6, 0.6f, -0.25f);
+			}
+			// S 档爆炸光（先亮后衰，替代旧 6 tick 平光）。
+			HenshinExplosion.Pulse(Projectile.Center, PulseTint, BlastSize.S, (Lifetime - Projectile.timeLeft) / (float)Lifetime, BlastRadius * 2f);
 		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+			=> HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), PulseTint, target.Center);
 
 		private const float BlastRadius = 60f; // 贴图 96px x 1.25 缩放 = 直径 120px
 
@@ -81,6 +93,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int frame = (Lifetime - Projectile.timeLeft) / TicksPerFrame;
+			// S 档爆炸配方（白热核 + 冲击环）垫在手绘 PulseBlast 下面。
+			HenshinFxDraw.BeginAdditive();
+			HenshinExplosion.Draw(Projectile.Center, BlastSize.S, PulseTint, (Lifetime - Projectile.timeLeft) / (float)Lifetime, BlastRadius * 2f, 0f, kenneyFrame: false);
+			HenshinFxDraw.EndAdditive();
 			H4Fx.DrawFrame(R4DragonFx.Blast(), Frames, frame, Projectile.Center, Color.White, 0f, 1.25f);
 			return false;
 		}

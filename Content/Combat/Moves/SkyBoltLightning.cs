@@ -129,9 +129,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 					}
 				}
 				BuildJaggedPath();
-				SoundEngine.PlaySound(SoundID.Item122 with { Volume = 0.6f, Pitch = fallMode ? -0.1f : 0.2f }, _to);
-				for (int i = 0; i < 10; i++)
-					Dust.NewDustPerfect(_to, DustID.YellowTorch, Main.rand.NextVector2Circular(5f, 5f), 40, VoltWhite, 1.5f).noGravity = true;
+				// 落点：电击命中 + 小爆（本端节流：雷暴 20 道 / 分叉 3 道不叠成一团）；旧 Item122 + 10 颗金尘删去。
+				// 主雷鸣在 SkyBoltRainUltProj 首帧放。施放音不 claim：技能保留物品 UseSound，皮卡丘大招保留共享 UltCast。
+				if (fallMode)
+					HenshinSfx.PlayCooldown(SfxKey.BlastL, _to, 30, 1f, -0.2f); // 雷暴主雷鸣兜底（导演弹已放过则被冷却挡掉）
+				HenshinSfx.PlayCooldown(SfxKey.ElecHit, _to, fallMode ? 6 : 3);
+				// 皮卡丘大招根弹（ThunderboltUlt：ai0=0、ai1=0、ai2=0，随生成包同步）落点用 L 爆 + BlastL（R4 跨组需求）。
+				bool ultRoot = !fallMode && Projectile.ai[1] <= 0f && AllowsChain;
+				if (ultRoot)
+				{
+					HenshinSfx.PlayCooldown(SfxKey.BlastL, _to, 30, 1f, -0.1f);
+					HenshinExplosion.Spawn(_to, BlastSize.L, ChantColor, 220f, kenneyFrame: false);
+				}
+				else
+				{
+					HenshinSfx.PlayCooldown(SfxKey.BlastS, _to, fallMode ? 6 : 4, UseSpawnAsOrigin ? 0.4f : 0.6f, 0.1f);
+					HenshinExplosion.Spawn(_to, fallMode ? BlastSize.M : BlastSize.S, ChantColor, fallMode ? 120f : 64f, kenneyFrame: false);
+				}
 			}
 
 			float lifeT = 1f - Projectile.timeLeft / (float)Life;
@@ -143,12 +157,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				BuildJaggedPath();
 			}
 
-			if (_pts != null && Projectile.timeLeft % 2 == 0)
-			{
-				int idx = Main.rand.Next(_pts.Length);
-				Dust.NewDustPerfect(_pts[idx], DustID.YellowTorch, Main.rand.NextVector2Circular(2f, 2f), 60, ChantColor, 1.2f).noGravity = true;
-			}
-
+			// 沿雷撒的金尘（每 2 tick 一颗）删去：雷贴图 + 落点爆炸配方已足够。
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.55f);
 			Lighting.AddLight(_to, ChantColor.ToVector3() * _envelope * 1.2f);
 
@@ -236,6 +245,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Main.rand.NextFloat() < 0.5f)
 				target.AddBuff(BuffID.Electrified, 300);
 
+			// 出自大招槽（皮卡丘大招 / 雷丘雷暴）→ Ultimate；雷丘技能 → Light。
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), ChantColor, target.Center);
 			TrySpawnForks(target);
 		}
 
@@ -387,6 +398,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			// 各端首帧：一声压住全场的主雷鸣（大爆 + 低音高电击）+ 施法者身边 L 档金白闪光（当"天亮了一下"）；主人端大招震屏。
+			// 放在主人门之前；localAI[1] 防重（localAI[0] 归主人生成逻辑）。共享 UltCast 照常（根弹旗）。
+			if (Projectile.localAI[1] == 0f)
+			{
+				Projectile.localAI[1] = 1f;
+				Player caster = Main.player[Projectile.owner];
+				Vector2 at = caster.active ? caster.MountedCenter : Projectile.Center;
+				// 用 30 tick 冷却：第一道落雷也会补这一声（见 SkyBoltLightningProj），这里先放到就挡掉那边。
+				HenshinSfx.PlayCooldown(SfxKey.BlastL, at, 30, 1f, -0.2f);
+				HenshinSfx.Play(SfxKey.ElecHit, at, 1f, -0.5f);
+				HenshinExplosion.Spawn(at - Vector2.UnitY * 160f, BlastSize.L, HenshinFxDraw.SparkGold, 520f, kenneyFrame: false);
+				HenshinHitFeel.Shake(Projectile.owner, at, HitTier.Ultimate, Vector2.UnitY);
+			}
 			if (Projectile.owner != Main.myPlayer || Projectile.localAI[0] > 0f)
 				return;
 			Projectile.localAI[0] = 1f;
@@ -422,7 +446,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					ModContent.ProjectileType<SkyBoltLightningProj>(), Projectile.damage, Projectile.knockBack, Projectile.owner,
 					1f, 1.85f, SkyBoltLightningProj.AiNoChainNoFork);
 			}
-			Projectile.Kill();
+			// R4 复查 M1：不再首帧 Kill，活满 timeLeft=6（无伤、不画），远端才收得到根弹、播共享 UltCast。
 		}
 
 		public override bool? CanDamage() => false;

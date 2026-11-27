@@ -33,6 +33,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private bool IsUlt => Projectile.ai[2] > 0.5f;
 		private bool IsCompanion => Projectile.ai[1] > 0.5f;
 
+		// 施放音自己放（AI 首帧各端）：技能 WindCast；大招主弹 UltCast + 风啸（claim 后共享 UltCast 不叠）。伴随风不出声。
+		public override void SetStaticDefaults()
+		{
+			HenshinSfx.ClaimCastSound(Type);
+			HenshinTrail.Setup(Type, 14);
+		}
+
 		public override void SetDefaults()
 		{
 			Projectile.width = 48;
@@ -93,10 +100,28 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.frame = (Projectile.frame + 1) % frames;
 			}
 
-			Lighting.AddLight(Projectile.Center, 0.35f, 0.45f, 0.6f);
-			Dust.NewDustPerfect(Projectile.Center, DustID.Cloud,
-				-Projectile.velocity * 0.1f + Main.rand.NextVector2Circular(1.5f, 1.5f), 100,
-				new Color(160, 190, 230), 1.2f).noGravity = true;
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				if (!IsCompanion)
+				{
+					Player caster = Main.player[Projectile.owner];
+					Vector2 at = caster.active ? caster.MountedCenter : Projectile.Center;
+					if (IsUlt)
+					{
+						HenshinSfx.Play(SfxKey.UltCast, at);
+						HenshinSfx.Play(SfxKey.WindCast, at, 1f, -0.35f);
+						HenshinHitFeel.Shake(Projectile.owner, at, HitTier.Heavy, Vector2.Normalize(Projectile.velocity + Vector2.UnitX * 0.001f));
+					}
+					else
+						HenshinSfx.Play(SfxKey.WindCast, at);
+				}
+			}
+			// 大招比技能亮；每 tick 一颗云尘删去，改淡蓝风带拖尾（PreDraw）。
+			if (IsUlt)
+				Lighting.AddLight(Projectile.Center, 0.55f, 0.7f, 0.95f);
+			else
+				Lighting.AddLight(Projectile.Center, 0.42f, 0.52f, 0.72f);
 
 			if (_impactCooldown > 0)
 				_impactCooldown--;
@@ -177,6 +202,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.Slow, IsUlt ? 40 : 24);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(160, 200, 255), target.Center);
 			// 穿透：不因命中结束；仅首次命中锚定环绕风（主弹，非伴随）
 			if (IsCompanion || Projectile.owner != Main.myPlayer)
 				return;
@@ -210,7 +236,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		private void SpawnSideWinds(NPC target)
 		{
-			SoundEngine.PlaySound(SoundID.Item66, target.Center);
+			// 只主人听得到的 Item66 删去：风命中声由第一根环绕风（ai1=0）首帧各端放。
 			int dmg = Math.Max(1, Projectile.damage * 2 / 3);
 			int count = IsUlt ? 4 : 2;
 			for (int i = 0; i < count; i++)
@@ -232,6 +258,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int frame = Projectile.frame % frames;
 			Rectangle src = tex.Frame(1, frames, 0, frame);
 			float scale = IsCompanion ? 0.95f : 1.2f;
+			// 淡蓝风带拖尾（宽、淡、无芯感），大招更亮。贴地滚动时也连成一条。
+			HenshinTrail.Strip(Projectile, new Color(150, 190, 240), 34f * scale, new Color(225, 240, 255), 0.25f, 6f, IsUlt ? 0.55f : 0.4f);
 			// 直立天候棒动画，不绕圆心转
 			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, Color.White,
 				0f, src.Size() * 0.5f, scale, SpriteEffects.None);
@@ -301,8 +329,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 					target.velocity = Vector2.Lerp(target.velocity, Vector2.Normalize(pull) * (ult ? 3.5f : 2.2f), 0.2f);
 			}
 
-			Dust.NewDustPerfect(Projectile.Center, DustID.Cloud, Main.rand.NextVector2Circular(2f, 2f), 120,
-				new Color(150, 185, 230), 1.1f).noGravity = true;
+			// 每 tick 一颗云尘删去。第一根（ai1=0）首帧各端放风命中声；大招另补一声 HitUlt + 一次风爆光。
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				if (Projectile.ai[1] < 0.01f)
+				{
+					HenshinSfx.PlayCooldown(SfxKey.WindHit, target.Center, 6);
+					if (ult)
+					{
+						HenshinSfx.PlayCooldown(SfxKey.HitUlt, target.Center, HenshinHitFeel.UltimateWindowTicks);
+						HenshinExplosion.Spawn(target.Center, BlastSize.M, new Color(150, 200, 255), 140f, kenneyFrame: false);
+					}
+				}
+			}
+			Lighting.AddLight(Projectile.Center, 0.3f, 0.4f, 0.6f);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -311,6 +352,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (knock.LengthSquared() > 1f)
 				target.velocity += Vector2.Normalize(knock) * 1.8f;
 			target.AddBuff(BuffID.Slow, 20);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(160, 200, 255), target.Center);
 		}
 
 		public override bool PreDraw(ref Color lightColor)

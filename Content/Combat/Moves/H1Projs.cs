@@ -31,8 +31,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>
-	/// 命中特效（无伤害、一次性）。ai0：0=波导弹爆圈（5帧）、1=水炮溅花（5帧）。
-	/// 由所有者生成，tML 自动同步；各端只按 timeLeft 推帧。
+	/// 命中特效（无伤害、一次性）。ai0：0=波导弹爆圈（5帧）、1=水炮溅花（5帧）；ai1=缩放；ai2=G1HitSfx 命中音码。
+	/// 由所有者生成，tML 自动同步；各端只按 timeLeft 推帧，AI 首帧各端播命中音。
 	/// </summary>
 	public class H1HitFxProj : ModProjectile
 	{
@@ -59,11 +59,27 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool ShouldUpdatePosition() => false;
 
-		public static void Spawn(Projectile src, Vector2 at, int kind, float scale = 1f)
+		public static void Spawn(Projectile src, Vector2 at, int kind, float scale = 1f, float sfx = 0f)
 		{
 			if (src.owner != Main.myPlayer)
 				return;
-			Projectile.NewProjectile(src.GetSource_FromThis(), at, Vector2.Zero, ModContent.ProjectileType<H1HitFxProj>(), 0, 0f, src.owner, kind, scale);
+			Projectile.NewProjectile(src.GetSource_FromThis(), at, Vector2.Zero, ModContent.ProjectileType<H1HitFxProj>(), 0, 0f, src.owner, kind, scale, sfx);
+		}
+
+		public override void AI()
+		{
+			int kind = (int)Projectile.ai[0];
+			float scale = Projectile.ai[1] > 0f ? Projectile.ai[1] : 1f;
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				G1HitSfx.Play(Projectile.ai[2], Projectile.Center);
+				// 波导弹爆点：S 档爆炸配方（白热核 + 冲击环），不叠火烟帧。
+				if (kind == KindAura)
+					HenshinExplosion.Spawn(Projectile.Center, BlastSize.S, new Color(110, 190, 255), 96f * scale, kenneyFrame: false);
+			}
+			if (kind == KindSplash)
+				HenshinExplosion.Pulse(Projectile.Center, new Color(90, 170, 255), BlastSize.S, (Frames * Tpf - Projectile.timeLeft) / (float)(Frames * Tpf), 48f * scale, 0.6f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -86,6 +102,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool HandlesOwnHoming => true;
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+		private static readonly Color AuraGlow = new(90, 170, 255);
+
+		public override void SetStaticDefaults()
+		{
+			HenshinTrail.Setup(Type, 12, 1);
+			HenshinSfx.ClaimCastSound(Type);
+		}
 
 		public override void SetDefaults()
 		{
@@ -112,25 +135,35 @@ namespace PokemonHenshin.Content.Combat.Moves
 					: Vector2.Normalize(aim)) * 9f;
 			}
 			HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
-			Lighting.AddLight(Projectile.Center, 0.25f, 0.55f, 0.95f);
+			if (Projectile.localAI[1] == 0f)
+			{
+				Projectile.localAI[1] = 1f;
+				HenshinSfx.Play(SfxKey.PsyCast, Projectile.Center, 0.9f, 0.3f);
+			}
+			Lighting.AddLight(Projectile.Center, 0.4f, 0.75f, 1.2f);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			_hit = true;
-			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = 0.2f }, Projectile.Center);
-			for (int i = 0; i < 3; i++)
-				Dust.NewDustPerfect(target.Center, DustID.DungeonWater, Main.rand.NextVector2Circular(5f, 5f), 60, new Color(140, 210, 255), 1.3f).noGravity = true;
+			// 命中音由 H1HitFxProj 首帧各端播；旧 Item10 + 3 颗尘删去（爆圈 + 爆炸配方替代）。
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Heavy), AuraGlow);
 		}
 
 		public override void OnKill(int timeLeft)
 		{
 			if (_hit)
-				H1HitFxProj.Spawn(Projectile, Projectile.Center, H1HitFxProj.KindAura);
+				H1HitFxProj.Spawn(Projectile, Projectile.Center, H1HitFxProj.KindAura, 1f, G1HitSfx.Code(SfxKey.HitHeavy, 4));
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
+			// 蓝→白细尾（约 1.5 倍弹径），球后加一层 SoftGlow 外晕，球体不再发平。
+			HenshinTrail.Strip(Projectile, AuraGlow, 30f, new Color(220, 240, 255), 0.36f, 0f, 0.85f);
+			HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center, HenshinFxDraw.WithAlpha(AuraGlow, 0.32f),
+				HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, 56f * 1.8f));
+			HenshinFxDraw.EndAdditive();
 			Texture2D tex = H1Tex.Get(ref _tex, "AuraSphere/AuraSphere");
 			int frame = (int)(Main.GameUpdateCount / 4 % 4);
 			H1Tex.DrawFrame(tex, 4, frame, Projectile.Center, Color.White, 0f, new Vector2(1.45f));
@@ -164,16 +197,28 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool ShouldUpdatePosition() => false;
 
+		private static readonly Color HeatTint = new(255, 120, 40);
+
 		public override void AI()
 		{
 			int age = Life - Projectile.timeLeft;
-			Lighting.AddLight(Projectile.Center, 1.2f, 0.6f, 0.2f);
+			// 起爆那一下最亮（L 档光脉冲，光点随冲击环外扩），之后保底一层余热。
+			HenshinExplosion.Pulse(Projectile.Center, HeatTint, BlastSize.L, age / (float)Life, 420f);
+			Lighting.AddLight(Projectile.Center, 0.6f, 0.3f, 0.1f);
 			if (age % 6 == 0 && age / 6 < 5)
 			{
-				SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.7f }, Projectile.Center);
-				for (int i = 0; i < 2; i++)
-					Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2CircularEdge(200f, 200f), DustID.Torch,
-						Main.rand.NextVector2Circular(3f, 3f), 60, default, 1.4f).noGravity = true;
+				if (age == 0)
+				{
+					// 第 0 段：大爆 + 大招命中音 + 大招震屏（主人端）；后 4 段只是小声余波。
+					HenshinSfx.Play(SfxKey.BlastL, Projectile.Center);
+					HenshinSfx.Play(SfxKey.FireHit, Projectile.Center, 1f, -0.3f);
+					HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate);
+				}
+				else
+				{
+					HenshinSfx.Play(SfxKey.BlastS, Projectile.Center, 0.55f, -0.1f * (age / 6));
+					HenshinExplosion.SpawnLight(Projectile.Center, HeatTint, BlastSize.M, 0.6f);
+				}
 			}
 		}
 
@@ -187,14 +232,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			if (Projectile.ai[1] > 0)
 				target.AddBuff((int)Projectile.ai[1], 180);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Ultimate), HeatTint, target.Center);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
 			Texture2D tex = H1Tex.Get(ref _tex, "Overheat/OverheatBlast");
-			int frame = Math.Clamp((Life - Projectile.timeLeft) / 5, 0, 5);
+			int age = Life - Projectile.timeLeft;
+			int frame = Math.Clamp(age / 5, 0, 5);
 			float fade = frame >= 5 ? 0.8f : 1f;
 			HenshinFxDraw.BeginAdditive();
+			// 爆炸配方 L（起爆白闪 + 双冲击环 + 10 道放射亮条 + Kenney 火烟帧）垫在手绘爆炎下面。
+			HenshinExplosion.Draw(Projectile.Center, BlastSize.L, HeatTint, age / (float)Life, 420f);
 			HenshinFxDraw.DrawAdditiveSheet(tex, 1, 6, frame, Projectile.Center, HenshinFxDraw.WithAlpha(Color.White, fade), 3f);
 			HenshinFxDraw.EndAdditive();
 			return false;
@@ -212,6 +261,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private static Asset<Texture2D> _tex;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
 
 		public override void SetDefaults()
 		{
@@ -235,15 +286,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 			Projectile.Center = p.Center;
-			Lighting.AddLight(Projectile.Center, 0.5f, 0.2f, 0.35f);
-			if (Projectile.timeLeft == Life - 1)
-				SoundEngine.PlaySound(SoundID.Item7 with { Pitch = 0.3f }, p.Center);
+			Lighting.AddLight(Projectile.Center, 0.6f, 0.28f, 0.45f);
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				HenshinSfx.Play(SfxKey.GrassCast, p.Center, 1f, 0.2f);
+			}
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			for (int i = 0; i < 2; i++)
-				Dust.NewDustPerfect(target.Center, DustID.Firework_Pink, Main.rand.NextVector2Circular(3f, 3f), 80, default, 1.2f).noGravity = true;
+			// 没有命中特效弹：命中音只在主人端（节流 12 tick）；旧 2 颗粉尘删去，改白闪 + 命中光。
+			HenshinSfx.PlayCooldown(SfxKey.GrassHit, target.Center, 12, 0.8f, 0.25f);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 140, 200), target.Center);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -279,6 +334,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
+		// 蓄力起点自己放 UltCharge（各端），放出光柱时 SolarBeamProj 再放 UltCast；不要共享 UltCast 在蓄力第一帧抢先。
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
+
 		public override void SetDefaults()
 		{
 			Projectile.width = 8;
@@ -300,7 +358,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			Projectile.Center = owner.MountedCenter;
 			float charge = 1f - Projectile.timeLeft / (float)Life;
-			Lighting.AddLight(Projectile.Center, 0.8f * charge, 0.65f * charge, 0.2f * charge);
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				HenshinSfx.Play(SfxKey.UltCharge, owner.MountedCenter);
+			}
+			Lighting.AddLight(Projectile.Center, 1.3f * charge, 1.05f * charge, 0.35f * charge);
 
 			if (Projectile.timeLeft == 8 && Projectile.owner == Main.myPlayer)
 			{
@@ -382,10 +445,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.Kill();
 				return;
 			}
-			if (!_inited)
+			bool first = !_inited;
+			if (first)
 			{
 				_inited = true;
-				SoundEngine.PlaySound(SoundID.Item67 with { Pitch = 0.2f }, owner.MountedCenter);
+				// 放出：大招施放音 + 大爆低频（蓄力根弹已 claim，共享 UltCast 不会再响）+ 主人端大招震屏。
+				HenshinSfx.Play(SfxKey.UltCast, owner.MountedCenter);
+				HenshinSfx.Play(SfxKey.BlastL, owner.MountedCenter, 0.75f, 0.15f);
+				HenshinHitFeel.Shake(Projectile.owner, owner.MountedCenter, HitTier.Ultimate);
 			}
 			_from = owner.MountedCenter;
 			Vector2 aim = HenshinProjUtil.OwnerMouseWorld(Projectile) - _from;
@@ -395,7 +462,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 			_to = _from + aim * MaxLength;
 			Projectile.Center = Vector2.Lerp(_from, _to, 0.4f);
 			owner.direction = aim.X >= 0f ? 1 : -1;
+			if (first)
+				HenshinExplosion.Spawn(_from + aim * 24f, BlastSize.L, SolarTint, 200f, kenneyFrame: false); // 枪口白闪
 			Lighting.AddLight(Projectile.Center, 1.1f, 0.9f, 0.35f);
+			Lighting.AddLight(_from + aim * 40f, 1.2f * Env(), 1.0f * Env(), 0.4f * Env());
+		}
+
+		private static readonly Color SolarTint = new(255, 220, 110);
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			// 光柱没有命中特效弹：命中音只在主人端（重击 8 tick 节流 + 每次施放一声 HitUlt）。
+			HenshinSfx.PlayCooldown(SfxKey.HitHeavy, target.Center, 8, 0.8f);
+			HenshinSfx.PlayCooldown(SfxKey.HitUlt, target.Center, 60);
+			// 100 tick 持续光柱每 4 tick 一段：只用 Light 档（白闪 + 命中光），重震只在放出那一下，免得全程抖屏。
+			HenshinHitFeel.OnHit(Projectile, target, HitTier.Light, SolarTint, target.Center);
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)

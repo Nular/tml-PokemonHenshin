@@ -100,7 +100,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>纯视觉命中星（0 伤害）：FlurryHit 4 帧，ai0 = 缩放（0 = 1），ai1 = 旋转。</summary>
+	/// <summary>纯视觉命中星（0 伤害）：FlurryHit 4 帧，ai0 = 缩放（0 = 1），ai1 = 旋转，ai2 = G1HitSfx 命中音码。</summary>
 	public class H2HitFxProj : ModProjectile
 	{
 		private const int Lifetime = 8;
@@ -122,7 +122,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool? CanDamage() => false;
 
-		public override void AI() => Projectile.velocity = Vector2.Zero;
+		public override void AI()
+		{
+			Projectile.velocity = Vector2.Zero;
+			// ai2 = G1HitSfx 命中音码：随生成包同步，首帧各端播。
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				G1HitSfx.Play(Projectile.ai[2], Projectile.Center);
+			}
+			float sc = Projectile.ai[0] > 0.01f ? Projectile.ai[0] : 1f;
+			HenshinExplosion.Pulse(Projectile.Center, new Color(255, 200, 140), BlastSize.S, (Lifetime - Projectile.timeLeft) / (float)Lifetime, 48f * sc, 0.6f);
+		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
@@ -136,11 +147,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 
 		/// <summary>仅拥有者端调用；射弹由 Terraria 正常同步给旁观者。</summary>
-		public static void Spawn(Projectile src, Vector2 at, float scale, float rot)
+		public static void Spawn(Projectile src, Vector2 at, float scale, float rot, float sfx = 0f)
 		{
 			if (src.owner != Main.myPlayer)
 				return;
-			int id = Projectile.NewProjectile(src.GetSource_FromThis(), at, Vector2.Zero, ModContent.ProjectileType<H2HitFxProj>(), 0, 0f, src.owner, scale, rot);
+			int id = Projectile.NewProjectile(src.GetSource_FromThis(), at, Vector2.Zero, ModContent.ProjectileType<H2HitFxProj>(), 0, 0f, src.owner, scale, rot, sfx);
 			if (id >= 0)
 				Main.projectile[id].Center = at;
 		}

@@ -59,17 +59,51 @@ namespace PokemonHenshin.Content.Combat.Moves
 				new Vector2(tex.Width * 0.5f, h * 0.5f), scale, SpriteEffects.None, 0f);
 		}
 
-		/// <summary>拥有者端生成 0 伤害命中特效（弹幕自动联机同步）。</summary>
-		public static void Hit(Projectile src, Vector2 pos, int style, float scale = 1.2f)
+		/// <summary>拥有者端生成 0 伤害命中特效（弹幕自动联机同步）。sfx = <see cref="G1HitSfx.Code"/>，由特效弹 AI 首帧在各端播。</summary>
+		public static void Hit(Projectile src, Vector2 pos, int style, float scale = 1.2f, float sfx = 0f)
 		{
 			if (src.owner != Main.myPlayer)
 				return;
 			Projectile.NewProjectile(src.GetSource_FromThis(), pos, Vector2.Zero,
-				ModContent.ProjectileType<H4HitFxProj>(), 0, 0f, src.owner, style, 0f, scale);
+				ModContent.ProjectileType<H4HitFxProj>(), 0, 0f, src.owner, style, sfx, scale);
 		}
 	}
 
-	/// <summary>H4 命中特效（纯视觉，0 伤害）：ai0 = 风格（0 龙系蓝紫 / 1 逆鳞红橙），ai2 = 缩放。贴图 Assets/Fx/DragonBurst/，5 帧 × 3 tick。</summary>
+	/// <summary>
+	/// G1 命中音编码：生成方把 (SfxKey, 冷却, 是否补大招命中音) 编成一个 float 写进命中特效弹的 ai[]（随生成包同步），
+	/// 特效弹在 AI 首帧（各端都跑）调 <see cref="Play"/>。0 = 不放声。整数 &lt; 2^24，float 精确。
+	/// </summary>
+	internal static class G1HitSfx
+	{
+		/// <param name="cooldown">同键本端节流 tick；0 = 不节流。</param>
+		/// <param name="ult">另补一声 HitUlt（本端 20 tick 节流，约等于每次施放 1 次）。</param>
+		public static float Code(SfxKey key, int cooldown = 0, bool ult = false)
+			=> (int)key + 1 + 100 * Math.Clamp(cooldown, 0, 99) + (ult ? 10000 : 0);
+
+		/// <summary>按弹出自大招槽补 HitUlt（共用类用）。</summary>
+		public static float Code(Projectile src, SfxKey key, int cooldown = 0)
+			=> Code(key, cooldown, HenshinHitFeel.TierOf(src, HitTier.Light) == HitTier.Ultimate);
+
+		public static void Play(float code, Vector2 pos)
+		{
+			int c = (int)code;
+			if (c <= 0 || Main.dedServ)
+				return;
+			int key = c % 100 - 1;
+			int cd = c / 100 % 100;
+			if (key >= 0 && key < (int)SfxKey.Count)
+			{
+				if (cd > 0)
+					HenshinSfx.PlayCooldown((SfxKey)key, pos, cd);
+				else
+					HenshinSfx.Play((SfxKey)key, pos);
+			}
+			if (c >= 10000)
+				HenshinSfx.PlayCooldown(SfxKey.HitUlt, pos, HenshinHitFeel.UltimateWindowTicks);
+		}
+	}
+
+	/// <summary>H4 命中特效（纯视觉，0 伤害）：ai0 = 风格（0 龙系蓝紫 / 1 逆鳞红橙），ai1 = G1HitSfx 命中音码，ai2 = 缩放。贴图 Assets/Fx/DragonBurst/，5 帧 × 3 tick。</summary>
 	public class H4HitFxProj : ModProjectile
 	{
 		private const int Frames = 5, TicksPerFrame = 3, Lifetime = Frames * TicksPerFrame;
@@ -94,8 +128,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			Projectile.velocity = Vector2.Zero;
 			bool red = (int)Projectile.ai[0] == H4Fx.StyleOutrage;
-			if (Projectile.timeLeft > Lifetime - 6)
-				Lighting.AddLight(Projectile.Center, red ? 0.8f : 0.45f, red ? 0.3f : 0.3f, red ? 0.1f : 0.85f);
+			// 命中音：特效弹随生成包同步，AI 首帧各端都播（OnHitNPC 只在主人端）。
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				G1HitSfx.Play(Projectile.ai[1], Projectile.Center);
+			}
+			// 先亮后衰的命中光（S 档），直径随命中图缩放。
+			float scale = Projectile.ai[2] > 0.1f ? Projectile.ai[2] : 1.2f;
+			HenshinExplosion.Pulse(Projectile.Center, red ? new Color(255, 110, 50) : new Color(110, 90, 255), BlastSize.S,
+				(Lifetime - Projectile.timeLeft) / (float)Lifetime, 48f * scale);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -127,6 +169,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const float Stroke2ReachMul = 1.2f;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		// 两击挥动声在本弹 AI 里播（各端），不要物品 UseSound 再叠一声。
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
 
 		private bool Aimed => Projectile.ai[1] > 0.5f;
 		private float Angle => Projectile.ai[1] - AimBias;
@@ -174,9 +219,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.velocity = Vector2.Zero;
 
 			int age = Lifetime - Projectile.timeLeft;
-			if ((age == 0 || age == Stroke2Start) && !Main.dedServ)
-				SoundEngine.PlaySound(SoundID.Item1 with { Pitch = age == 0 ? 0.1f : 0.3f, Volume = 0.8f }, owner.MountedCenter);
-			Lighting.AddLight(Projectile.Center, 0.35f, 0.45f, 0.6f);
+			// 正手轻挥 + 风声；反手（更强那一击）重挥。
+			if (age == 0)
+			{
+				HenshinSfx.Play(SfxKey.Swing, owner.MountedCenter, 0.9f, 0.1f);
+				HenshinSfx.Play(SfxKey.WindCast, owner.MountedCenter, 0.7f);
+			}
+			else if (age == Stroke2Start)
+				HenshinSfx.Play(SfxKey.SwingHeavy, owner.MountedCenter, 1f, 0.1f);
+			Lighting.AddLight(Projectile.Center, 0.45f, 0.55f, 0.75f);
 		}
 
 		private bool _pullSpawned;
@@ -235,7 +286,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 						ModContent.ProjectileType<WingFeatherPullProj>(), WingFeatherPullProj.BurstDamage(Projectile.damage), 0f, Projectile.owner);
 				}
 			}
-			H4Fx.Hit(Projectile, owner.MountedCenter + Angle.ToRotationVector2() * along, H4Fx.StyleDragon, second ? 1.3f : 1.0f);
+			Vector2 hitAt = owner.MountedCenter + Angle.ToRotationVector2() * along;
+			H4Fx.Hit(Projectile, hitAt, H4Fx.StyleDragon, second ? 1.3f : 1.0f,
+				G1HitSfx.Code(Projectile, second ? SfxKey.HitHeavy : SfxKey.WindHit, 4));
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, second ? HitTier.Heavy : HitTier.Light),
+				new Color(150, 190, 255), hitAt);
 		}
 
 		public override bool PreDraw(ref Color lightColor)

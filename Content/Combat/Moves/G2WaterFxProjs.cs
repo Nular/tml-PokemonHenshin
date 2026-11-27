@@ -40,6 +40,29 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool? CanDamage() => false;
 
+		/// <summary>
+		/// 主人端在 OnHitNPC 里生成（生成包同步到各端）。ai0 = 招式 Dust（染色），ai1 = 命中音 SfxKey + 1（0 = 无声），ai2 = 档位（0 轻 / 1 重 / 2 大招，定尺寸与光）。
+		/// 命中音在各端 AI 首 tick 播（R3 音效规则 5.2），所以旁观者也听得到。
+		/// </summary>
+		internal static void Spawn(Projectile from, Vector2 at, int dust, SfxKey sfx, HitTier tier)
+		{
+			if (from == null || from.owner != Main.myPlayer)
+				return;
+			int id = Projectile.NewProjectile(from.GetSource_FromThis(), at, Vector2.Zero, ModContent.ProjectileType<TackleHitFxProj>(),
+				0, 0f, from.owner, dust, (int)sfx + 1, (int)tier);
+			if (id >= 0 && id < Main.maxProjectiles)
+				Main.projectile[id].Center = at;
+		}
+
+		private HitTier Tier => (HitTier)Math.Clamp((int)Projectile.ai[2], 0, 2);
+
+		private float DrawScale => Tier switch
+		{
+			HitTier.Ultimate => 2.1f,
+			HitTier.Heavy => 1.6f,
+			_ => 1.25f
+		};
+
 		public override void AI()
 		{
 			Projectile.velocity = Vector2.Zero;
@@ -49,12 +72,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (!Main.dedServ)
 				{
 					int dust = (int)Projectile.ai[0] > 0 ? (int)Projectile.ai[0] : DustID.Smoke;
-					for (int i = 0; i < 3; i++)
+					// 粒子纪律：冲击星 + 光已表达命中，只留 2 颗染色尘。
+					for (int i = 0; i < 2; i++)
 						Dust.NewDustPerfect(Projectile.Center, dust, Main.rand.NextVector2Circular(3f, 3f), 80, default, 1.1f).noGravity = true;
+					HitTier tier = Tier;
+					HenshinExplosion.SpawnLight(Projectile.Center, Tint(dust), tier == HitTier.Ultimate ? BlastSize.M : BlastSize.S,
+						tier == HitTier.Light ? 0.6f : 1f);
+					int key = (int)Projectile.ai[1] - 1;
+					if (key >= 0 && key < (int)SfxKey.Count)
+						HenshinSfx.PlayCooldown((SfxKey)key, Projectile.Center, 3);
+					if (tier == HitTier.Ultimate)
+						HenshinSfx.PlayCooldown(SfxKey.HitUlt, Projectile.Center, HenshinHitFeel.UltimateWindowTicks);
+					else if (tier == HitTier.Heavy && key != (int)SfxKey.HitHeavy)
+						HenshinSfx.PlayCooldown(SfxKey.HitHeavy, Projectile.Center, 6, 0.7f);
 				}
 			}
-			if (Lifetime - Projectile.timeLeft < 6)
-				Lighting.AddLight(Projectile.Center, 0.3f, 0.3f, 0.34f);
 		}
 
 		private static Color Tint(int dust)
@@ -83,11 +115,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 抬亮：夜里也看得见（暗色抬亮）
 			Color c = new(Math.Max(lightColor.R, (byte)150), Math.Max(lightColor.G, (byte)150), Math.Max(lightColor.B, (byte)150));
 			c = new Color(c.R * tint.R / 255, c.G * tint.G / 255, c.B * tint.B / 255);
-			Main.EntitySpriteDraw(tex, pos, src, c, 0f, origin, 1f, SpriteEffects.None, 0f);
-			if (frame <= 1)
+			float scale = DrawScale;
+			Main.EntitySpriteDraw(tex, pos, src, c, 0f, origin, scale, SpriteEffects.None, 0f);
+			if (frame <= 2)
 			{
 				HenshinFxDraw.BeginAdditive();
-				Main.EntitySpriteDraw(_light.Value, pos, src, Color.White, 0f, origin, 1f, SpriteEffects.None, 0f);
+				float k = frame == 2 ? 0.5f : 1f;
+				Main.EntitySpriteDraw(_light.Value, pos, src, Color.White * k, 0f, origin, scale, SpriteEffects.None, 0f);
 				HenshinFxDraw.EndAdditive();
 			}
 			return false;
@@ -133,15 +167,22 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				SoundEngine.PlaySound(SoundID.Splash with { Volume = 0.7f }, Projectile.Center);
+				HenshinSfx.Play(SfxKey.WaterCast, Projectile.Center, 0.8f, 0.15f);
 				if (!Main.dedServ)
 				{
-					for (int i = 0; i < 3; i++)
-						Dust.NewDustPerfect(Projectile.Center + new Vector2(Main.rand.NextFloat(-14f, 14f), 36f), DustID.Water,
-							new Vector2(Main.rand.NextFloat(-1.5f, 1.5f), Main.rand.NextFloat(-3.5f, -1.5f)), 80, default, 1.2f);
+					// 脚底小水花爆（S，水系不叠火烟帧）替掉 3 颗水尘。
+					HenshinExplosion.Spawn(Projectile.Bottom - new Vector2(0f, 6f), BlastSize.S, new Color(110, 190, 255), 64f, kenneyFrame: false);
 				}
 			}
 			if (Projectile.timeLeft > 4)
-				Lighting.AddLight(Projectile.Center, 0.1f, 0.25f, 0.45f);
+				Lighting.AddLight(Projectile.Center, 0.18f, 0.38f, 0.7f);
+		}
+
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(110, 190, 255));
 		}
 
 		public override bool PreDraw(ref Color lightColor)

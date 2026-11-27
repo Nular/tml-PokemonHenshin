@@ -51,30 +51,43 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public static Color Tint(float kind) => kind < 0.5f ? new Color(205, 245, 255) : kind < 1.5f ? new Color(255, 170, 70) : new Color(255, 235, 140);
 
-		public static void Spawn(Projectile src, Vector2 at, int kind)
+		/// <param name="scale">闪光倍率；0 = 默认 0.45。</param>
+		/// <param name="tier">声光档 0 轻 / 1 重 / 2 大招（ai2，随生成包同步，各端首 tick 播命中音）。</param>
+		public static void Spawn(Projectile src, Vector2 at, int kind, float scale = 0f, int tier = 0)
 		{
 			if (src.owner != Main.myPlayer)
 				return;
-			int id = Projectile.NewProjectile(src.GetSource_FromThis(), at, Vector2.Zero, ModContent.ProjectileType<H7HitFxProj>(), 0, 0f, src.owner, kind);
+			int id = Projectile.NewProjectile(src.GetSource_FromThis(), at, Vector2.Zero, ModContent.ProjectileType<H7HitFxProj>(), 0, 0f, src.owner, kind, scale, tier);
 			if (id >= 0)
 				Main.projectile[id].Center = at;
 		}
 
-		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
+		public static int TierIndex(HitTier tier) => tier == HitTier.Ultimate ? 2 : tier == HitTier.Heavy ? 1 : 0;
+
+		public override void AI()
 		{
-			if (Main.dedServ)
+			if (Projectile.localAI[0] != 0f)
 				return;
-			Color c = Tint(Projectile.ai[0]);
-			for (int i = 0; i < 3; i++)
-				Dust.NewDustPerfect(Projectile.Center, DustID.Cloud, Main.rand.NextVector2Circular(3f, 3f), 80, c, 1.1f).noGravity = true;
+			// FX 手感 R3：命中音 + 衰减光放在同步特效弹首 tick（各端）；旧的 3 颗云尘删掉。
+			Projectile.localAI[0] = 1f;
+			Vector2 at = Projectile.Center;
+			int kind = (int)(Projectile.ai[0] + 0.5f);
+			int tier = (int)(Projectile.ai[2] + 0.5f);
+			bool played = tier >= 2 && HenshinSfx.PlayCooldown(SfxKey.HitUlt, at, HenshinHitFeel.UltimateWindowTicks);
+			if (!played && tier == 1)
+				played = HenshinSfx.PlayCooldown(SfxKey.HitHeavy, at, 6, 0.85f, kind == 1 ? -0.1f : 0.05f);
+			if (!played)
+				HenshinSfx.PlayCooldown(kind == 1 ? SfxKey.FireHit : SfxKey.WindHit, at, 3, 1f, kind == 2 ? -0.25f : 0f);
+			HenshinExplosion.SpawnLight(at, Tint(Projectile.ai[0]), tier >= 2 ? BlastSize.M : BlastSize.S, tier == 0 ? 0.6f : 1f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int age = Life - Projectile.timeLeft;
 			float fade = 1f - age / (float)Life;
+			float scale = Projectile.ai[1] > 0.01f ? Projectile.ai[1] : 0.45f;
 			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center, HenshinFxDraw.WithAlpha(Tint(Projectile.ai[0]), 0.9f * fade), 0.45f,
+			HenshinFxDraw.DrawFlashImpactFrame(Projectile.Center, HenshinFxDraw.WithAlpha(Tint(Projectile.ai[0]), 0.9f * fade), scale,
 				Projectile.whoAmI * 0.7f, Math.Min(HenshinFxDraw.FlashImpactFrames - 1, age / 2));
 			HenshinFxDraw.EndAdditive();
 			return false;
@@ -115,13 +128,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 					v = new Vector2(p.direction, 0f);
 			}
 			Projectile.velocity = Vector2.Normalize(v) * Speed;
-			SoundEngine.PlaySound(SoundID.Item8 with { Pitch = 0.5f, Volume = 0.8f }, p.Center);
 		}
+
+		// R3 手感：施放音改到 AI 首 tick（各端）并声明，之力不再响 UseSound。
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
 
 		public override void AI()
 		{
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				HenshinSfx.Play(SfxKey.WindCast, Main.player[Projectile.owner].Center, 1f, 0.25f);
+			}
 			Projectile.rotation = Projectile.velocity.ToRotation();
-			Lighting.AddLight(Projectile.Center, 0.3f, 0.6f, 0.7f);
+			Lighting.AddLight(Projectile.Center, 0.4f, 0.75f, 0.9f);
 			// shortcut: wall limit = centre buried >6 ticks (~100 px) in solid tiles ends the blade; upgrade if it must stop at the first wall.
 			if (Collision.SolidCollision(Projectile.Center - new Vector2(4f), 8, 8))
 			{
@@ -137,7 +157,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			SoundEngine.PlaySound(SoundID.Item10 with { Volume = 0.5f, Pitch = 0.6f }, target.Center);
+			// R3: hit sound now plays in H7HitFxProj's first tick (all clients); the 2nd flash is deduped by the sound cooldown.
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(190, 240, 255), target.Center);
 			// two offset impact flashes along the blade edge read as a cut
 			Vector2 side = new Vector2(-Projectile.velocity.Y, Projectile.velocity.X).SafeNormalize(Vector2.UnitY);
 			H7HitFxProj.Spawn(Projectile, target.Center + side * 14f, 0);
@@ -214,9 +235,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_fired < 3 && age == _fired * 10)
 			{
 				_fired++;
-				SoundEngine.PlaySound(SoundID.Item34 with { Pitch = -0.3f, Volume = 0.9f }, p.Center);
+				// R3 手感：每波的声音改到 H7HeatWaveProj 首 tick（各端都能听到）；ai0 = 第几波（1..3），一波比一波重。
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), p.Center + _dir * 30f, _dir.RotatedBy((_fired - 2) * 0.17f) * 13f,
-					ModContent.ProjectileType<H7HeatWaveProj>(), Math.Max(1, (int)(Projectile.damage / 10f + 0.5f)), Projectile.knockBack, Projectile.owner);
+					ModContent.ProjectileType<H7HeatWaveProj>(), Math.Max(1, (int)(Projectile.damage / 10f + 0.5f)), Projectile.knockBack, Projectile.owner, _fired);
 				if (id >= 0)
 				{
 					Main.projectile[id].originalDamage = Math.Max(1, (int)((Projectile.originalDamage > 0 ? Projectile.originalDamage : Projectile.damage) / 10f + 0.5f));
@@ -256,26 +277,40 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = 8; // R4: 每道热浪每个敌人每 8 tick 一段（原 60=只 1 段）
 		}
 
+		private static readonly Color HeatTint = new(255, 140, 50);
+
+		/// <summary>第几波（1..3，导演弹 ai0 传入并随生成包同步；0 当 1）。</summary>
+		private int Wave => Math.Clamp((int)(Projectile.ai[0] + 0.5f), 1, 3);
+
 		public override void AI()
 		{
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			float grow = 1f + 0.75f * (Life - Projectile.timeLeft) / Life; // hitbox 150 -> 262 px
 			Projectile.Resize((int)(150 * grow), (int)(150 * grow));
-			Lighting.AddLight(Projectile.Center, 0.9f, 0.5f, 0.15f);
-			// R3: the wind blows through walls (no tile kill), so it never dies on the ground.
-			if (!Main.dedServ && Main.rand.NextBool(5))
+			int w = Wave;
+			if (Projectile.localAI[0] == 0f)
 			{
-				Vector2 side = new Vector2(-Projectile.velocity.Y, Projectile.velocity.X).SafeNormalize(Vector2.UnitY);
-				Dust d = Dust.NewDustPerfect(Projectile.Center + side * Main.rand.NextFloat(-1f, 1f) * Projectile.width * 0.45f, DustID.Torch,
-					Projectile.velocity * 0.4f, 100, default, 1.3f);
-				d.noGravity = true;
+				// R3 手感：每波起手 = 火 + 风的"呼"，第 3 波再加中爆；热浪环 M 爆（不叠 Kenney 火烟），第 3 波更大并震大招档。
+				Projectile.localAI[0] = 1f;
+				Vector2 at = Projectile.Center;
+				HenshinSfx.Play(SfxKey.FireCast, at, 1f, -0.35f + 0.12f * (w - 1));
+				HenshinSfx.Play(SfxKey.WindCast, at, 0.8f, -0.4f);
+				if (w == 3)
+					HenshinSfx.Play(SfxKey.BlastM, at, 0.9f, -0.15f);
+				HenshinExplosion.Spawn(at, BlastSize.M, HeatTint, 150f + 45f * w);
+				HenshinHitFeel.Shake(Projectile.owner, at, w == 3 ? HitTier.Ultimate : HitTier.Heavy, Projectile.velocity);
 			}
+			float lk = 0.85f + 0.15f * w;
+			Lighting.AddLight(Projectile.Center, 0.9f * lk, 0.5f * lk, 0.15f * lk);
+			// R3: the wind blows through walls (no tile kill), so it never dies on the ground. 旧的火把尘删掉（风带 + 热晕已够）。
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.OnFire, 240);
-			H7HitFxProj.Spawn(Projectile, target.Center, 1);
+			HitTier tier = HenshinHitFeel.TierOf(Projectile, HitTier.Heavy);
+			HenshinHitFeel.OnHit(Projectile, target, tier, HeatTint, target.Center);
+			H7HitFxProj.Spawn(Projectile, target.Center, 1, 1f, H7HitFxProj.TierIndex(tier));
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -430,10 +465,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localNPCHitCooldown = 8;
 		}
 
+		public override void SetStaticDefaults() => HenshinTrail.Setup(Type, 8);
+
 		public override void AI()
 		{
+			if (Projectile.localAI[0] == 0f)
+			{
+				// R3 手感：6 鸟同 tick 出现，共用冷却只响一声（原 Item102 在 OnHitNPC，只有主人听得到）。
+				Projectile.localAI[0] = 1f;
+				HenshinSfx.PlayCooldown(SfxKey.WindCast, Projectile.Center, 6, 0.9f, 0.2f);
+			}
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			Lighting.AddLight(Projectile.Center, 0.7f, 0.4f, 0.12f);
+		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 200, 110), target.Center);
+			H7HitFxProj.Spawn(Projectile, target.Center, 2, 0.4f, 0);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -441,6 +490,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int age = 36 - Projectile.timeLeft;
 			float fade = Projectile.timeLeft < 8 ? Projectile.timeLeft / 8f : 1f;
 			Texture2D tex = H7Tex.Get("SkyAttackBird");
+			// 火鸟尾焰：橙外晕 + 暖白芯，约 100px 渐细（先画再盖本体）
+			HenshinTrail.Strip(Projectile, new Color(255, 130, 40), 12f, new Color(255, 230, 170), 0.35f, 0f, 0.75f * fade);
 			HenshinFxDraw.BeginAdditive();
 			for (int i = 2; i >= 0; i--)
 				HenshinFxDraw.DrawAdditiveSheet(tex, 1, 4, ((age / 3) + i) & 3, Projectile.Center - Projectile.velocity * (i * 0.7f),

@@ -44,6 +44,10 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
+		private bool _castSfx;
+
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
+
 		public override void SetDefaults()
 		{
 			Projectile.width = 72;
@@ -89,6 +93,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Vector2 normal = new(-dir.Y, dir.X);
 			float reach = ReachPx;
 
+			// 施放音：各端首次拿到朝向时播一次（本弹已 ClaimCastSound，之力不再响 Item1）。
+			if (!_castSfx)
+			{
+				_castSfx = true;
+				HenshinSfx.Play(SfxKey.Swing, owner.MountedCenter, 1f, Dragon ? -0.2f : 0.1f);
+				if (Dragon)
+					HenshinSfx.Play(SfxKey.DragonCast, owner.MountedCenter, 0.7f);
+			}
+
 			Projectile.Center = owner.MountedCenter + dir * Math.Max(36f, reach * 0.55f);
 			Projectile.velocity = Vector2.Zero;
 
@@ -121,11 +134,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			for (int i = 0; i < 3; i++)
-			{
-				Dust d = Dust.NewDustDirect(target.position, target.width, target.height, DustID.Blood, hit.HitDirection * 2.5f, -1.2f);
-				d.noGravity = false;
-			}
+			// 命中尘交给 ScratchHitFxProj（各端都画）；这里只接打击感档位。抓 = 轻，龙爪 = 重。
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, Dragon ? HitTier.Heavy : HitTier.Light),
+				Dragon ? new Color(255, 150, 70) : new Color(255, 225, 190));
 			if (Projectile.owner != Main.myPlayer || !Aimed)
 				return;
 			// 纯视觉命中：落在目标中心沿爪线的投影点。
@@ -211,15 +222,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (!Main.dedServ)
 				{
 					Vector2 d = Projectile.ai[0].ToRotationVector2();
-					for (int i = 0; i < 3; i++)
+					for (int i = 0; i < 2; i++)
 					{
 						Vector2 v = d * Main.rand.NextFloat(1f, 4f) + Main.rand.NextVector2Circular(1.5f, 1.5f);
 						Dust.NewDustPerfect(Projectile.Center, dragon ? DustID.Torch : DustID.Smoke, v, 80, default, 1.2f).noGravity = true;
 					}
+					// 命中音（各端，本弹随生成包同步）：抓 = 轻命中，龙爪 = 龙系命中。
+					if (dragon)
+						HenshinSfx.PlayCooldown(SfxKey.DragonHit, Projectile.Center, 3);
+					else
+						HenshinSfx.PlayCooldown(SfxKey.HitLight, Projectile.Center, 3);
+					HenshinExplosion.SpawnLight(Projectile.Center, dragon ? new Color(255, 150, 70) : new Color(255, 230, 200), BlastSize.S, dragon ? 1f : 0.6f);
 				}
 			}
-			if (dragon)
-				Lighting.AddLight(Projectile.Center, 0.7f, 0.35f, 0.1f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)

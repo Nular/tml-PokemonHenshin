@@ -133,7 +133,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 			ComputeCrests(owner);
 			if (age == 0)
+			{
+				// 起手（各端）：原 Dig 闷响 + 岩系施放；主人端极轻竖直震屏（重档 3.5）。本弹已 claim，之力不再叠 Item20。
 				SoundEngine.PlaySound(SoundID.Dig with { Pitch = -0.35f, Volume = 0.9f }, owner.Center);
+				HenshinSfx.Play(SfxKey.RockCast, owner.Bottom, 0.8f, -0.1f);
+				HenshinHitFeel.Shake(Projectile.owner, owner.Bottom, HitTier.Heavy, Vector2.UnitY);
+			}
 
 			int front = Math.Min(_n - 1, age / Step);
 			if (front >= 0)
@@ -172,16 +177,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return false;
 		}
 
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
+
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.Slow, 90);
-			if (Main.dedServ)
-				return;
-			for (int i = 0; i < 2; i++)
-			{
-				Vector2 v = new(Main.rand.NextFloat(-1.2f, 1.2f), Main.rand.NextFloat(-2.5f, -0.8f));
-				Dust.NewDustPerfect(target.Center + new Vector2(Main.rand.NextFloat(-8f, 8f), target.height * 0.4f), i == 0 ? DustID.Dirt : DustID.Stone, v, 0, default, 1f);
-			}
+			// 轻档白闪 + 土色光；土尘 2 → 同步命中星（岩系命中音，各端都响）。
+			Vector2 at = target.Center + new Vector2(0f, target.height * 0.3f);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(200, 150, 90), at);
+			TackleHitFxProj.Spawn(Projectile, at, DustID.Dirt, SfxKey.RockHit, HitTier.Light);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
