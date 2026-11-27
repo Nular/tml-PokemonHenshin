@@ -9,6 +9,7 @@
 - R6（2026-11-27）：用户觉得除 SteelHit / PsyHit 外都有「风吹麦 / 滋滋」感。诊断出难听组 50-88 % 是宽带噪声（A 计权），干净组 < 12 %。按干净组路线重做 48 个：主体用有音高的成分（正弦、模态、FM、限带锯齿），噪声只做 < 30 ms 瞬态、粉/褐噪或 Q≥4 窄带，全部不饱和，混响不进低频，6 kHz 左右高切。SteelHit1/2、PsyHit1/2 字节不变。报告 `Assets/TEMP_ASSETS/fx-feel/r6-sfx-clean.md`，R5 备份 `r6-sfx-bak/`。
 - 代码入口：`Content/Combat/Moves/HenshinSfx.cs`（`SfxKey` → `SoundStyle`）。
 - R7（2026-11-27）：用户说 R6 没了滋滋但也没了打击感，只剩乐器味。R7 只重做被点名的：打击 = 几毫秒粉噪「咔」+ 音高快速下滑的踢鼓「咚」+ 下扫低通粉噪「啪/嘭」，去掉模态泛音、叮当和和弦尾；爆炸加低通褐噪短尾；UltCast 改成蓄力上升 → 屏息 → 爆发；FireCast/FireHit 去掉噼啪叮；GrassHit 只留沙沙；GhostCast -2.5 dB。其他文件字节不变。报告 `Assets/TEMP_ASSETS/fx-feel/r7-sfx.md`，R6 备份 `r7-sfx-bak/`；生成器 `gen7.py` + `recipes7.py`。
+- R8（2026-11-28）：用户试听后定：ElecCast, ElecHit1, ElecHit2, FireHit1, FireHit2 用回 R5 版（拷自 `r6-sfx-bak/`），其余 47 个保持 R7 字节不变。报告 `Assets/TEMP_ASSETS/fx-feel/r8-merge.md`。
 
 | 文件 | 时长 | 做法 |
 |------|------|------|
@@ -34,17 +35,17 @@
 | `UltCast1.wav` | 0.80s | 0.2s 蓄力：粉噪共振低通 300→3.8kHz 打开 + 110→220Hz 锯齿五度和弦 + 加速颤音 → 12 ms 屏息 → 爆发：粉噪咔 + 160→32 / 62→27Hz 双层踢鼓 + 下扫粉噪爆 + 低通褐噪尾 + 下扫"呼"（R7） |
 | `UltCast2.wav` | 0.80s | 0.2s 蓄力：粉噪共振低通 300→3.8kHz 打开 + 110→220Hz 锯齿五度和弦 + 加速颤音 → 12 ms 屏息 → 爆发：粉噪咔 + 160→32 / 62→27Hz 双层踢鼓 + 下扫粉噪爆 + 低通褐噪尾 + 下扫"呼"（R7） |
 | `FireCast.wav` | 0.30s | 粉噪低通 300→2.0kHz 随钟形包络开合的"呼" + 低通褐噪底 + 80→140Hz 低音 + 开头软"噗"，无噼啪（R7） |
-| `FireHit1.wav` | 0.24s | 粉噪咔 + 190→58Hz 踢鼓 + 3.4k→450Hz 下扫粉噪"轰"(60 ms) + 低通褐噪尾，无噼啪（R7） |
-| `FireHit2.wav` | 0.24s | 粉噪咔 + 190→58Hz 踢鼓 + 3.4k→450Hz 下扫粉噪"轰"(60 ms) + 低通褐噪尾，无噼啪（R7） |
+| `FireHit1.wav` | 0.24s | R5 版：宽带噪声"嚓"+饱和（见 r5-sfx-clip.md），R8 用户试听后选回 |
+| `FireHit2.wav` | 0.24s | R5 版：宽带噪声"嚓"+饱和（见 r5-sfx-clip.md），R8 用户试听后选回 |
 | `WaterCast.wav` | 0.30s | Q8 窄带水流 + 14 个上滑音气泡 |
 | `WaterHit1.wav` | 0.24s | 15 ms 粉噪溅 + 190→85Hz 噗 + 12 个气泡 + 高音水滴 |
 | `WaterHit2.wav` | 0.24s | 15 ms 粉噪溅 + 190→85Hz 噗 + 12 个气泡 + 高音水滴 |
 | `GrassCast.wav` | 0.30s | 软"啪"起手(粉噪咔 + 小踢鼓) + Q2 宽带扫频"唰" + 90 颗粉噪颗粒沙沙(1.2-4.5kHz)（R7） |
 | `GrassHit1.wav` | 0.24s | 只有沙沙：280 颗粉噪颗粒(1.2-4.5kHz)渐稀 + 2.2kHz 宽带"唰" + 软低通"噗"（R7） |
 | `GrassHit2.wav` | 0.24s | 只有沙沙：280 颗粉噪颗粒(1.2-4.5kHz)渐稀 + 2.2kHz 宽带"唰" + 软低通"噗"（R7） |
-| `ElecCast.wav` | 0.30s | 亮粉噪咔(1-4.2kHz) + 小踢鼓 + 限带方波嗡鸣硬断续 + 2.4k→300Hz 快速"啾" + 粉噪火花（R7） |
-| `ElecHit1.wav` | 0.24s | 双粉噪咔 + 180→60Hz 踢鼓 + 方波嗡尾 60 ms + 粉噪火花（R7） |
-| `ElecHit2.wav` | 0.24s | 双粉噪咔 + 180→60Hz 踢鼓 + 方波嗡尾 60 ms + 粉噪火花（R7） |
+| `ElecCast.wav` | 0.30s | R5 版：宽带噪声"嚓"+饱和（见 r5-sfx-clip.md），R8 用户试听后选回 |
+| `ElecHit1.wav` | 0.24s | R5 版：宽带噪声"嚓"+饱和（见 r5-sfx-clip.md），R8 用户试听后选回 |
+| `ElecHit2.wav` | 0.24s | R5 版：宽带噪声"嚓"+饱和（见 r5-sfx-clip.md），R8 用户试听后选回 |
 | `RockCast.wav` | 0.32s | 78→56Hz 正弦地鸣(慢摆动) + FM 摩擦 + 6 个石块磕碰(闷响+双模态) + 14 颗碎石"咔" |
 | `RockHit1.wav` | 0.26s | 瞬态咔 + 155→55Hz 厚"咚" + 240Hz 石块三模态 + 9 颗清脆碎石"咔" |
 | `RockHit2.wav` | 0.26s | 瞬态咔 + 155→55Hz 厚"咚" + 240Hz 石块三模态 + 9 颗清脆碎石"咔" |

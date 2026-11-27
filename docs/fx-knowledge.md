@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-11-27
+**版本日期：** 2026-11-28
 
 ## 1. 权威与硬约束
 
@@ -437,7 +437,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | 表现顿帧 | 同上（`HenshinHitStopGlobalProjectile` + `On_Main.DrawProj`） | 自动 | 只 Ultimate、只本机主人、只 20 tick 窗口里第一次真震屏时。记下 position/velocity/rotation/frame/ai/localAI 快照，4 tick 内绘制时换入、画完换回。**逻辑、位移、伤害、寿命、无敌都不碰**，远端不做。弹私有计时器不冻 |
 | NPC 白闪 | `Content/Combat/HenshinHitFlashGlobalNPC.cs` | `Flash(ticks, power)`（`OnHit` 自动调） | `HitEffect` 各端都跑，只认 `HenshinDamage`；主人端按档加长加亮。`shortcut:` 灾厄部分 Boss 自绘不用 `drawColor`，看不到白闪 |
 | 爆炸配方 | `Content/Combat/Moves/HenshinExplosion.cs` | `Draw`（Additive 批次内）+ `Pulse`（AI 内加光）；`Spawn(center, size, tint, diameter, kenneyFrame)`；`SpawnLight` | `BlastSize` S/M/L = 12/18/28 tick、56/112/224 px。分层：起爆白闪（直径 min(1.3d, 300)，大直径不盖半屏）、外热晕、白热核心、冲击环、放射亮条（M 6 / L 10）、L 档 Kenney 帧（按帧画）+ 第二环。`Spawn`/`SpawnLight` 只放各端都跑的 AI / `OnKill`，**不要**放 `OnHitNPC`。`OnKill` 里只亮 1 tick 的 `AddLight` 换 `SpawnLight`。水/电/念力/草传 `kenneyFrame:false` |
-| 自制音效 | `Content/Combat/Moves/HenshinSfx.cs`，`Assets/Sounds/*.wav`（52 个，程序合成，PCM16 单声道 22.05 kHz，共约 0.73 MB，来源 `Assets/Sounds/SOURCES.md`） | `Play(key, pos, vol, pitch)`；`PlayCooldown(key, pos, minTicks, …)`；`ClaimCastSound(type)` | 服务器直接返回。缺文件时加载期换原版替身并写日志 |
+| 自制音效 | `Content/Combat/Moves/HenshinSfx.cs`，`Assets/Sounds/*.wav`（52 个，程序合成，PCM16 单声道 22.05 kHz，共约 0.73 MB；R7 版，FireHit1/2、ElecCast、ElecHit1/2 用 R5 版；来源与各版做法 `Assets/Sounds/SOURCES.md`） | `Play(key, pos, vol, pitch)`；`PlayCooldown(key, pos, minTicks, …)`；`ClaimCastSound(type)` | 服务器直接返回。缺文件时加载期换原版替身并写日志 |
 
 **音效接线（联机关键）：**
 
@@ -816,6 +816,7 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.20 Living | 2026-11-27 | 增 §4.12 肉后 R4 实现要点（持续引导水柱、广角镜排除/命中停追、牵引弹、弧线判定同源），语义见 `move-effects` §4.18 |
 | 2.21 Living | 2026-11-27 | 增 §4.13 R5–R7 实现要点（劈瓦实心扇形 + 只画手刀/斩痕/前臂、岩崩防上飞、汇集爆炸拥有者生成）；§4.10–§4.13 标本地已验收、剩联机；§8 补 H1–H7、`R4DragonProjs.cs`、调试物品 |
 | 2.22 Living | 2026-11-27 | 增 §4.14 技能效果专项：`HenshinTrail` / `HenshinHitFeel`（含表现顿帧）/ `HenshinHitFlashGlobalNPC` / `HenshinExplosion` / `HenshinSfx`（52 WAV）用法与联机接线规则；构建通过，未验收 |
+| 2.23 Living | 2026-11-28 | §4.14 音效版本：R7 为主，FireHit1/2、ElecCast、ElecHit1/2 按用户试听用回 R5 |
 
 ---
 
