@@ -12,98 +12,114 @@ using Terraria.ModLoader;
 namespace PokemonHenshin.Content.Combat.Moves
 {
 	/// <summary>
-	/// 暗影球：尖端主球有伤；身后 4 节 lagged 不透明紫盘纯 VFX（等效「仅首节有伤」）。
-	/// Fill #220033 / Border #330066，AlphaBlend，禁止 Additive SoftGlow。
+	/// 暗影球：自绘 4 帧紫黑球（Assets/Fx/ShadowBall）+ 两道滞后残影；命中/落地播 ShadowBallHit 帧动画。
+	/// 不沿线撒粒子，不用 Additive。
+	/// R3：球更小、速度 ×1.5；命中后在附近敌人间弹跳最多 5 次，第 n 次弹跳伤害 ×0.8^n（ai0 = 已弹跳次数，随弹同步）。
+	/// 6 个不同敌人全中总量 = 1.35 × (1+0.8+0.64+0.51+0.41+0.33) ≈ 1.35 × 3.69 ≈ 倍率 4.98（单体仍 1.35）。
 	/// </summary>
 	public class BigShadowBallProj : HenshinMoveProj
 	{
-		private const float BaseDiameter = 28f;
-		private const int HistoryLen = 48;
-		// 紧挨拖尾（等间距小滞后）；半径递减 → 共 5 节紫圆
-		private static readonly int[] TrailLags = { 0, 1, 2, 3, 4 };
-		private static readonly float[] TrailRadiusMul = { 1f, 0.82f, 0.64f, 0.48f, 0.36f };
-		private static readonly Color Fill = new(0x22, 0x00, 0x33, 255);
-		private static readonly Color Border = new(0x33, 0x00, 0x66, 255);
+		private const int HistoryLen = 16;
+		private const int MaxBounces = 5;
+		private const float BounceRange = 28f * 16f;
+		private const float BounceDamageFalloff = 0.8f;
+		private const float SpeedBoost = 1.5f;
+		private readonly System.Collections.Generic.List<int> _hit = new(); // 仅拥有者端使用
 
 		private readonly Vector2[] _hist = new Vector2[HistoryLen];
 		private int _histWrite;
 		private int _histFilled;
 
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.ShadowBeamHostile;
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
-			Projectile.width = 22;
-			Projectile.height = 22;
+			Projectile.width = 16;
+			Projectile.height = 16;
 			Projectile.friendly = true;
 			Projectile.DamageType = HenshinDamage.Instance;
-			Projectile.timeLeft = 135;
+			Projectile.timeLeft = 120;
 			Projectile.tileCollide = true;
-			Projectile.penetrate = 1;
+			Projectile.penetrate = -1;
+			Projectile.usesLocalNPCImmunity = true;
+			Projectile.localNPCHitCooldown = -1; // 每个敌人只吃一次
 			Projectile.ignoreWater = true;
 		}
 
+		// OnSpawn 只在发射端跑，加速后的 velocity 随 NewProjectile 同步给其他端。
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
 		{
-			Main.instance.LoadProjectile(ProjectileID.ShadowBeamHostile);
 			Homing = false;
+			Projectile.velocity *= SpeedBoost;
 		}
 
 		public override void AI()
 		{
 			Homing = false;
 			PushHistory(Projectile.Center);
-			Dust.NewDustPerfect(Projectile.Center, DustID.Shadowflame, Vector2.Zero, 100, default, 1.15f).noGravity = true;
-			if (Main.rand.NextBool(3))
-			{
-				Dust.NewDustPerfect(Projectile.Center, DustID.Shadowflame, Main.rand.NextVector2Circular(1.2f, 1.2f),
-					80, new Color(160, 60, 220), 1.2f).noGravity = true;
-			}
 			float pulse = 0.35f + 0.2f * (0.5f + 0.5f * MathF.Sin(Main.GlobalTimeWrappedHourly * 14f));
 			Lighting.AddLight(Projectile.Center, pulse, pulse * 0.2f, pulse * 1.2f);
+		}
+
+		public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
+		{
+			base.ModifyHitNPC(target, ref modifiers);
+			modifiers.SourceDamage *= MathF.Pow(BounceDamageFalloff, Projectile.ai[0]);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.BrokenArmor, 180);
-			SpawnPurpleBurst(target.Center);
+			if (Projectile.owner != Main.myPlayer)
+				return;
+
+			_hit.Add(target.whoAmI);
+			NPC next = null;
+			float best = BounceRange * BounceRange;
+			if (Projectile.ai[0] < MaxBounces)
+			{
+				for (int i = 0; i < Main.maxNPCs; i++)
+				{
+					NPC n = Main.npc[i];
+					if (!n.active || !n.CanBeChasedBy() || _hit.Contains(i))
+						continue;
+					float d = Projectile.DistanceSQ(n.Center);
+					if (d < best)
+					{
+						best = d;
+						next = n;
+					}
+				}
+			}
+
+			if (next == null)
+			{
+				Projectile.Kill();
+				return;
+			}
+
+			Projectile.ai[0]++;
+			float speed = Math.Max(Projectile.velocity.Length(), 9f * SpeedBoost);
+			Projectile.velocity = Projectile.DirectionTo(next.Center) * speed;
+			Projectile.timeLeft = Math.Max(Projectile.timeLeft, 60);
+			Projectile.netUpdate = true;
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.ShadowHit, 0.55f, Projectile.owner);
+			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.1f, Volume = 0.45f }, Projectile.Center);
 		}
 
+		// 末次命中、无下一个目标、落地、超时都会走到 OnKill：命中动画只在这里生成一次。
 		public override void OnKill(int timeLeft)
 		{
-			SpawnPurpleBurst(Projectile.Center);
-		}
-
-		private static void SpawnPurpleBurst(Vector2 at)
-		{
-			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.35f, Volume = 0.7f }, at);
-			for (int i = 0; i < 22; i++)
-			{
-				Vector2 v = Main.rand.NextVector2Circular(4.5f, 4.5f);
-				Dust.NewDustPerfect(at, DustID.Shadowflame, v, 60, new Color(180, 80, 255), 1.45f).noGravity = true;
-			}
-			for (int i = 0; i < 10; i++)
-				Dust.NewDustPerfect(at, DustID.PurpleTorch, Main.rand.NextVector2Circular(3.2f, 3.2f), 80, default, 1.25f).noGravity = true;
+			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.35f, Volume = 0.7f }, Projectile.Center);
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.ShadowHit, 1f, Projectile.owner);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float flicker = 0.82f + 0.18f * MathF.Sin(Main.GlobalTimeWrappedHourly * 16f + Projectile.identity);
-			for (int i = TrailLags.Length - 1; i >= 0; i--)
-			{
-				Vector2 pos = SampleLag(TrailLags[i]);
-				if (i > 0)
-					pos += Main.rand.NextVector2Circular(1.6f, 1.6f); // 拖尾微抖
-				float diam = BaseDiameter * TrailRadiusMul[i] * (i == 0 ? flicker : 1f);
-				Color fill = Fill;
-				Color border = Border;
-				if (i == 0)
-				{
-					fill = Color.Lerp(Fill, new Color(0x55, 0x22, 0x77, 255), (flicker - 0.82f) / 0.36f);
-					border = Color.Lerp(Border, new Color(0x66, 0x33, 0x99, 255), (flicker - 0.82f) / 0.36f);
-				}
-				HenshinFxDraw.DrawOpaqueDisk(pos, diam, fill, border);
-			}
+			int frame = (int)(Main.GameUpdateCount / 3) % 4;
+			H3Fx.Draw(H3Fx.ShadowBall, 4, frame, SampleLag(8), 0f, 0.5f, Color.White * 0.4f);
+			H3Fx.Draw(H3Fx.ShadowBall, 4, frame, SampleLag(4), 0f, 0.62f, Color.White * 0.65f);
+			H3Fx.Draw(H3Fx.ShadowBall, 4, frame, Projectile.Center, 0f, 0.75f, Color.White);
 			return false;
 		}
 
@@ -137,8 +153,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const float MawOffset = 26f;
 		private const float LineWidth = 20f;
 		private const int ConfusedTicks = 40;
-
-		private static Asset<Texture2D> _extra98;
 
 		private Vector2 _root;
 		private Vector2 _tip;
@@ -180,7 +194,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				_extra98 ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/Extra98", AssetRequestMode.ImmediateLoad);
 				SoundEngine.PlaySound(SoundID.Item17 with { Pitch = -0.55f, Volume = 0.95f }, owner.Center);
 				SoundEngine.PlaySound(SoundID.NPCHit18 with { Pitch = -0.25f, Volume = 0.7f }, owner.Center);
 				ResolveAim(owner);
@@ -214,13 +227,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.Center = Vector2.Lerp(_root, _tip, 0.55f);
 			owner.direction = _aimDir.X >= 0f ? 1 : -1;
 			Lighting.AddLight(Vector2.Lerp(_root, _tip, 0.5f), 0.45f, 0.15f, 0.35f);
-
-			if (Main.rand.NextBool(4) && _length > 16f)
-			{
-				Vector2 sample = Vector2.Lerp(_root, _tip, Main.rand.NextFloat(0.2f, 0.95f));
-				Dust.NewDustPerfect(sample, DustID.Shadowflame, _aimDir * Main.rand.NextFloat(0.5f, 2f), 120,
-					new Color(220, 120, 200), 1.05f).noGravity = true;
-			}
 		}
 
 		public override bool? CanDamage() => _phase == 0 && !_hitLatch ? null : false;
@@ -238,6 +244,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			target.AddBuff(BuffID.Confused, ConfusedTicks);
 			target.velocity *= 0.25f;
 			SoundEngine.PlaySound(SoundID.NPCHit13 with { Pitch = -0.4f, Volume = 1.05f }, target.Center);
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.LickHit, 0.9f, Projectile.owner);
 			if (!_hitLatch)
 			{
 				_hitLatch = true;
@@ -250,38 +257,33 @@ namespace PokemonHenshin.Content.Combat.Moves
 			modifiers.FinalDamage *= 0.7f;
 		}
 
+		// 贴图 Assets/Fx/Lick/LickTongue：帧0 = 舌身（28×20 px，可沿长度平铺），帧1 = 舌尖。
 		public override bool PreDraw(ref Color lightColor)
 		{
-			_extra98 ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/Extra98", AssetRequestMode.ImmediateLoad);
-			Texture2D tex = _extra98.Value;
-			if (tex == null || _length < 4f)
-				return false;
-
 			Vector2 delta = _tip - _root;
 			float len = delta.Length();
-			if (len < 2f)
+			if (len < 4f)
 				return false;
 			Vector2 dir = delta / len;
-			float rot = dir.ToRotation() + MathHelper.PiOver2;
-			Vector2 origin = tex.Size() * 0.5f;
-
-			float step = Math.Max(6f, tex.Height * 0.28f);
-			int segs = Math.Max(2, (int)(len / step) + 1);
-			Color flesh = new(255, 140, 200, 255);
-			Color dark = new(180, 70, 140, 240);
-			for (int i = 0; i <= segs; i++)
+			float rot = dir.ToRotation();
+			// 朝左半圈上下翻转，让舌面高光始终朝上。
+			SpriteEffects fx = dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
+			const float seg = 28f;
+			Texture2D tex = H3Fx.Get(H3Fx.LickTongue);
+			int fh = tex.Height / 2;
+			Rectangle bodySrc = new(0, 0, tex.Width, fh);
+			Rectangle tipSrc = new(0, fh, tex.Width, fh);
+			Vector2 origin = bodySrc.Size() * 0.5f;
+			int n = len > seg ? (int)MathF.Ceiling((len - seg) / seg) : 0;
+			float step = n > 0 ? (len - seg) / n : 0f;
+			for (int i = 0; i < n; i++)
 			{
-				float u = i / (float)segs;
-				Vector2 pos = Vector2.Lerp(_root, _tip, u);
-				float taper = MathHelper.Lerp(1.05f, 0.72f, u);
-				float pulse = 1f + 0.06f * MathF.Sin(Main.GlobalTimeWrappedHourly * 10f + u * 6f);
-				Color c = Color.Lerp(dark, flesh, 0.35f + 0.45f * u);
-				Main.spriteBatch.Draw(tex, pos - Main.screenPosition, null, c, rot, origin,
-					new Vector2(0.55f * taper * pulse, 0.7f * taper), SpriteEffects.None, 0f);
+				Vector2 p = _root + dir * (step * (i + 0.5f) + seg * 0.5f);
+				Main.EntitySpriteDraw(tex, (p - Main.screenPosition).Floor(), bodySrc, Color.White, rot, origin,
+					new Vector2(step / seg * 1.06f, 1f), fx, 0f);
 			}
-
-			Main.spriteBatch.Draw(tex, _tip - Main.screenPosition, null, flesh, rot, origin,
-				new Vector2(0.72f, 0.85f), SpriteEffects.None, 0f);
+			Vector2 tipPos = _tip - dir * (seg * 0.5f);
+			Main.EntitySpriteDraw(tex, (tipPos - Main.screenPosition).Floor(), tipSrc, Color.White, rot, origin, 1f, fx, 0f);
 			return false;
 		}
 
@@ -347,30 +349,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (!Main.dedServ)
 					SoundEngine.PlaySound(SoundID.Item8 with { Pitch = -0.35f, Volume = 0.9f }, p.Center);
 			}
-
-			if (!Main.dedServ && Main.rand.NextBool(2))
-			{
-				Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(90f, 70f), DustID.Shadowflame,
-					Vector2.Zero, 150, new Color(180, 80, 255), 1.15f).noGravity = true;
-				Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(70f, 55f), DustID.MagicMirror,
-					Vector2.Zero, 150, default, 1.0f).noGravity = true;
-			}
 		}
 
+		// 贴图 Assets/Fx/Hypnosis/HypnosisRing：6 帧催眠螺旋，随寿命推进并缓慢旋转；末段淡出。
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float life = Projectile.timeLeft / (float)Life;
-			float pulse = 0.85f + 0.2f * MathF.Sin(Main.GlobalTimeWrappedHourly * 9f);
-			float expand = 1f + (1f - life) * 0.55f;
-			float diam = 160f * expand * pulse;
-			HenshinFxDraw.BeginAdditive();
-			Color c = HenshinFxDraw.WithAlpha(new Color(180, 80, 255), 0.55f * life);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center, c,
-				HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, diam));
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.DiffusionCircle, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(140, 60, 220), 0.32f * life),
-				HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.DiffusionCircle, diam * 1.1f));
-			HenshinFxDraw.EndAdditive();
+			int age = Life - Projectile.timeLeft;
+			int frame = Math.Min(5, age * 6 / Life);
+			float fade = Math.Min(1f, Projectile.timeLeft / 10f);
+			float rot = age * 0.07f;
+			H3Fx.Draw(H3Fx.Hypnosis, 6, frame, Projectile.Center, rot, 2.5f, Color.White * fade);
+			H3Fx.Draw(H3Fx.Hypnosis, 6, Math.Max(0, frame - 1), Projectile.Center, -rot * 1.3f + 1f, 1.5f, Color.White * (0.7f * fade));
 			return false;
 		}
 

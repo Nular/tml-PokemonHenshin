@@ -368,6 +368,11 @@ RareCandy: {
 	MaxLevel: 该之力已满级
 }
 
+UltChargeDebug: {
+	On: 无限大招：开
+	Off: 无限大招：关
+}
+
 Recipes.AnyGoldCritter: 任意金小动物
 
 Accessories: {
@@ -540,7 +545,7 @@ Moves: {
 	Psystrike: 精神击破
 	Barrier: 屏障
 	SandField: 沙暴场
-	Aeroblast: 空气爆炸
+	Aeroblast: 气旋攻击
 	CycloneAttack: 气旋攻击
 	DragonAscent: 画龙点睛
 	FireSpin: 火焰漩涡
@@ -560,6 +565,7 @@ Moves: {
 	PetalDance: 花瓣舞
 	ThunderShock: 电击
 	VoltTackle: 伏特攻击
+	Discharge: 放电
 	RockTomb: 岩石封锁
 	RockSlide: 岩崩
 	BrickBreak: 劈瓦
@@ -578,12 +584,14 @@ Moves: {
 	StealthRock: 隐形岩
 	WorkUp: 自我激励
 	DoubleEdge: 舍身冲撞
+	FlashCannon: 闪光炮
 	TakeDown: 猛撞
 	Flail: 抓狂
 	Earthquake: 地震
 	Peck: 啄
 	AerialAce: 燕返
 	BraveBird: 勇鸟猛攻
+	HeatWave: 热风
 	ZenHeadbutt: 意念头锤
 	FocusPunch: 真气拳
 	SandTomb: 流沙地狱
@@ -724,7 +732,7 @@ Items: {
 
 	DragoniteForce: {
 		DisplayName: 快龙之力
-		Tooltip: 龙/飞。暴风、龙之俯冲、逆鳞。
+		Tooltip: 龙/飞。暴风、翅膀攻击、逆鳞。
 	}
 
 	MetangForce: {
@@ -764,7 +772,7 @@ Items: {
 
 	PidgeotForce: {
 		DisplayName: 大比鸟之力
-		Tooltip: 飞/一般。暴风、勇鸟猛攻、自我激励。
+		Tooltip: 飞/一般。暴风、空气斩、热风。
 	}
 
 	AbraForce: {
@@ -784,7 +792,7 @@ Items: {
 
 	SteelixForce: {
 		DisplayName: 大钢蛇之力
-		Tooltip: 钢/地面。岩崩、钢尾、舍身冲撞。
+		Tooltip: 钢/地面。岩崩、钢尾、闪光炮。
 	}
 
 	MewtwoForce: {
@@ -804,7 +812,7 @@ Items: {
 
 	LugiaForce: {
 		DisplayName: 洛奇亚之力
-		Tooltip: 传说·超能/飞。空气爆炸、神鸟猛击、气旋攻击。
+		Tooltip: 传说·超能/飞。气旋攻击、神鸟猛击、暴风。
 	}
 
 	RayquazaForce: {
@@ -819,6 +827,15 @@ Items: {
 			使用后使物品栏第一格的宝可梦之力提升 1 级
 			已达当前进度上限或满级时无法使用
 			烹饪锅：任意金小动物或金鲤鱼
+			'''
+	}
+
+	UltChargeDebugItem: {
+		DisplayName: "[Debug] 无限大招"
+		Tooltip:
+			'''
+			[Debug] 仅供测试
+			使用：开启 / 关闭当前之力的大招能量无限
 			'''
 	}
 
@@ -2136,4 +2153,33 @@ Projectiles: {
 	// AerialAceSlashProj.DisplayName: Aerial Ace Slash Proj
 	// AerialAceUltProj.DisplayName: Aerial Ace Ult Proj
 	// WhirlpoolUltProj.DisplayName: Whirlpool Ult Proj
+	// AuraSphereOrbProj.DisplayName: Aura Sphere Orb Proj
+	// FlashCannonBlastProj.DisplayName: Flash Cannon Blast Proj
+	// FlashCannonChargeProj.DisplayName: Flash Cannon Charge Proj
+	// FlashCannonShotProj.DisplayName: Flash Cannon Shot Proj
+	// H1HitFxProj.DisplayName: H1 Hit Fx Proj
+	// H2DischargeProj.DisplayName: H2 Discharge Proj
+	// H2HitFxProj.DisplayName: H2 Hit Fx Proj
+	// H3HitFxProj.DisplayName: H3 Hit Fx Proj
+	// H4HitFxProj.DisplayName: H4 Hit Fx Proj
+	// H5FallingRockProj.DisplayName: H5 Falling Rock Proj
+	// H5RockBurstProj.DisplayName: H5 Rock Burst Proj
+	// H6BurstFxProj.DisplayName: H6 Burst Fx Proj
+	// H6SandTombProj.DisplayName: H6 Sand Tomb Proj
+	// H7AirSlashProj.DisplayName: H7 Air Slash Proj
+	// H7HeatWaveDirectorProj.DisplayName: H7 Heat Wave Director Proj
+	// H7HeatWaveProj.DisplayName: H7 Heat Wave Proj
+	// H7HitFxProj.DisplayName: H7 Hit Fx Proj
+	// H7SkyAttackProj.DisplayName: H7 Sky Attack Proj
+	// OverheatBlastProj.DisplayName: Overheat Blast Proj
+	// PetalDanceH1Proj.DisplayName: Petal Dance H1 Proj
+	// SolarBeamChargeProj.DisplayName: Solar Beam Charge Proj
+	// SolarBeamProj.DisplayName: Solar Beam Proj
+	// WingAttackProj.DisplayName: Wing Attack Proj
+	// H7SkyBirdCrossProj.DisplayName: H7 Sky Bird Cross Proj
+	// FlashCannonGlowProj.DisplayName: Flash Cannon Glow Proj
+	// DragonAscentBlastProj.DisplayName: Dragon Ascent Blast Proj
+	// DragonPulseBlastProj.DisplayName: Dragon Pulse Blast Proj
+	// WingFeatherPullProj.DisplayName: Wing Feather Pull Proj
+	// WingFeatherBurstProj.DisplayName: Wing Feather Burst Proj
 }

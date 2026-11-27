@@ -705,6 +705,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				Projectile.localAI[0] = 1f;
 				SoundEngine.PlaySound(SoundID.Item8 with { Pitch = -0.4f }, owner.Center);
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), owner.Center, H3Fx.DarkPulseRing, 2.4f, Projectile.owner);
 				int boltDmg = Math.Max(1, Projectile.damage);
 				for (int i = 0; i < Count; i++)
 				{
@@ -727,11 +728,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	public class DarkPulseHomingBallProj : HenshinMoveProj
 	{
 		public override bool HandlesOwnHoming => true;
-		private const float BaseDiameter = 22f;
-		private static readonly Color Fill = new(0x22, 0x00, 0x33, 255);
-		private static readonly Color Border = new(0x33, 0x00, 0x66, 255);
-
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.ShadowBeamHostile;
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
@@ -748,24 +745,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 			InherentHoming = true;
 		}
 
-		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
-		{
-			Main.instance.LoadProjectile(ProjectileID.ShadowBeamHostile);
-		}
-
 		public override void AI()
 		{
 			HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
-			if (Main.rand.NextBool(2))
-			{
-				Dust.NewDustPerfect(Projectile.Center, DustID.Shadowflame, Vector2.Zero, 100,
-					new Color(160, 60, 220), 1.1f).noGravity = true;
-			}
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			SpawnBurst(target.Center);
+			if (Projectile.identity % 2 == 0)
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.ShadowHit, 0.7f, Projectile.owner);
 			if (Projectile.owner == Main.myPlayer)
 			{
 				int aoe = Math.Max(1, Projectile.damage / 2);
@@ -778,15 +767,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		private static void SpawnBurst(Vector2 at)
 		{
-			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.3f, Volume = 0.55f }, at);
-			for (int i = 0; i < 12; i++)
-				Dust.NewDustPerfect(at, DustID.Shadowflame, Main.rand.NextVector2Circular(4f, 4f),
-					60, new Color(180, 80, 255), 1.3f).noGravity = true;
+			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.3f, Volume = 0.35f }, at);
 		}
 
+		// 复用 Assets/Fx/ShadowBall 的暗影球贴图，缩小为 0.7。
 		public override bool PreDraw(ref Color lightColor)
 		{
-			HenshinFxDraw.DrawOpaqueDisk(Projectile.Center, BaseDiameter, Fill, Border);
+			H3Fx.Draw(H3Fx.ShadowBall, 4, (int)(Main.GameUpdateCount / 3) % 4, Projectile.Center, 0f, 0.7f, Color.White);
 			return false;
 		}
 	}
@@ -867,8 +854,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
-				Main.instance.LoadProjectile(ProjectileID.BoxingGlove);
-				Main.instance.LoadProjectile(ProjectileID.StarWrath);
 				_dir = HenshinProjUtil.OwnerMouseWorld(Projectile) - owner.MountedCenter;
 				if (_dir.LengthSquared() < 1f)
 					_dir = new Vector2(owner.direction, 0f);
@@ -880,14 +865,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float u = MathHelper.SmoothStep(0f, 1f, Progress);
 			Projectile.Center = _origin + _dir * (40f + Reach * u);
 
-			Dust iron = Dust.NewDustPerfect(Projectile.Center + Main.rand.NextVector2Circular(12f, 10f),
-				DustID.Iron, new Vector2(Main.rand.NextFloat(-1f, 1f), Main.rand.NextFloat(-3f, -1f)),
-				100, new Color(200, 200, 210), 1.2f);
-			iron.noGravity = true;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
+			for (int i = 0; i < 3; i++)
+				Dust.NewDustPerfect(target.Center, DustID.Iron, Main.rand.NextVector2Circular(4f, 4f), 80, new Color(200, 225, 255), 1.1f).noGravity = true;
 			SpawnStars(target.Center);
 		}
 
@@ -911,24 +894,19 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float rot = _dir.ToRotation();
-			float life = Projectile.timeLeft / (float)Lifetime;
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(200, 210, 230), 0.55f * life), 0.9f);
-			HenshinFxDraw.EndAdditive();
-			Texture2D glove = ProjectileBorrow.RequestProjectileTexture(ProjectileID.BoxingGlove);
-			Color gloveTint = new Color(210, 215, 230, 255);
-			Main.EntitySpriteDraw(glove, Projectile.Center - Main.screenPosition, null, gloveTint,
-				rot + MathHelper.PiOver2, glove.Size() * 0.5f, GloveScale, SpriteEffects.None);
+			// 自绘 Assets/Fx/MeteorFist：钢拳 + 彗尾（3 帧随出拳拉长，朝右，向左半圈上下翻转保持受光面朝上）
+			int age = Lifetime - Projectile.timeLeft;
+			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
+			float alpha = Math.Min(1f, Projectile.timeLeft / 4f);
+			H5Fx.Draw("MeteorFist", 3, Math.Min(2, age / 6), Projectile.Center, new Vector2(72f, 24f), _dir.ToRotation(), 1.15f, alpha, fx);
 			return false;
 		}
 	}
 
-	/// <summary>彗星拳星星：StarWrath 壳，穿墙下落（朝下）。</summary>
+	/// <summary>彗星拳星星：自绘钢青彗星 Assets/Fx/CometStar（40×80 单帧，头朝下、彗尾朝上），穿墙下落。</summary>
 	public class CometStarFallProj : HenshinMoveProj
 	{
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.StarWrath;
+		public override string Texture => "PokemonHenshin/Assets/Fx/CometStar/CometStar";
 
 		public override void SetDefaults()
 		{
@@ -942,11 +920,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.ignoreWater = true;
 		}
 
-		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
-		{
-			Main.instance.LoadProjectile(ProjectileID.StarWrath);
-		}
-
 		public override void AI()
 		{
 			Vector2 aim = new Vector2(Projectile.ai[0], Projectile.ai[1]);
@@ -955,21 +928,20 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Vector2 want = (aim - Projectile.Center).SafeNormalize(Projectile.velocity) * 18f;
 				Projectile.velocity = Vector2.Lerp(Projectile.velocity, want, 0.12f);
 			}
-			// StarWrath 贴图默认朝上；速度朝下时减 Pi/2 使头领路
+			// CometStar 贴图头朝下（+Y）；减 Pi/2 使头领路
 			Projectile.rotation = Projectile.velocity.ToRotation() - MathHelper.PiOver2;
-			Dust.NewDustPerfect(Projectile.Center, DustID.PinkTorch, Vector2.Zero, 100, default, 1.1f).noGravity = true;
+			Lighting.AddLight(Projectile.Center, 0.15f, 0.4f, 0.6f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.StarWrath);
-			int frames = Math.Max(1, Main.projFrames[ProjectileID.StarWrath]);
-			Rectangle src = tex.Frame(1, frames, 0, 0);
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, Color.White,
-				Projectile.rotation, src.Size() * 0.5f, 1.1f, SpriteEffects.None);
+			// 原点放在星头 (21,59)，碰撞箱跟着星头走
+			Texture2D tex = Terraria.GameContent.TextureAssets.Projectile[Type].Value;
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), null, Color.White,
+				Projectile.rotation, new Vector2(21f, 59f), 1f, SpriteEffects.None);
 			HenshinFxDraw.BeginAdditive();
 			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 180, 220), 0.4f), 0.35f);
+				HenshinFxDraw.WithAlpha(new Color(127, 224, 255), 0.4f), 0.35f);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}
@@ -997,14 +969,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
 		{
-			Main.instance.LoadProjectile(ProjectileID.CultistBossFireBall);
+			ProjectileBorrow.SafeLoadProjectile(ProjectileID.CultistBossFireBall);
 		}
 
 		public override void AI()
 		{
 			HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
 			Projectile.rotation += 0.2f;
-			Dust.NewDustPerfect(Projectile.Center, DustID.Torch, Vector2.Zero, 80, default, 1.2f).noGravity = true;
+			// H4：球体改手绘 OutrageOrb 贴图，不再逐 tick 撒尘。
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -1020,18 +992,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnKill(int timeLeft)
 		{
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 2; i++)
 				Dust.NewDustPerfect(Projectile.Center, DustID.Torch, Main.rand.NextVector2Circular(4f, 4f),
 					60, default, 1.3f).noGravity = true;
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.CultistBossFireBall);
-			int frames = Math.Max(1, Main.projFrames[ProjectileID.CultistBossFireBall]);
-			Rectangle src = tex.Frame(1, frames, 0, (int)(Main.GameUpdateCount / 3) % frames);
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, Color.White,
-				Projectile.rotation, src.Size() * 0.5f, 1.1f, SpriteEffects.None);
+			int frame = (int)(Main.GameUpdateCount / 3) % 4;
+			H4Fx.DrawFrame(H4Fx.Orb(true), 4, frame, Projectile.Center, Color.White, 0f, 1.0f);
 			return false;
 		}
 	}
@@ -1055,14 +1024,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float life = Projectile.timeLeft / 10f;
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 140, 40), 0.65f * life), 0.85f);
-			int fireFrame = HenshinFxDraw.AgeFrame(10, Projectile.timeLeft, 2, HenshinFxDraw.FireFrames);
-			HenshinFxDraw.DrawFireFrame(Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 180, 60), 0.8f * life), 0.7f, 0f, fireFrame);
-			HenshinFxDraw.EndAdditive();
+			// H4：手绘 OutrageBurst（5 帧 × 2 tick；碰撞 80px，贴图 52px × 1.5 = 78px）。
+			int frame = (10 - Projectile.timeLeft) / 2;
+			H4Fx.DrawFrame(H4Fx.Burst(H4Fx.StyleOutrage), 5, frame, Projectile.Center, Color.White, 0f, 1.5f);
 			return false;
 		}
 	}
@@ -1116,10 +1080,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
+	/// <summary>
+	/// 流星群的单颗流星：自绘贴图 H6Meteor（3 帧闪烁，朝右绘制，按速度方向旋转），落点爆炸 H6MeteorImpact。
+	/// 倍率 / 数量（64）/ 追踪沿用旧版。
+	/// </summary>
 	public class DracoStarWrathProj : HenshinMoveProj
 	{
+		private static ReLogic.Content.Asset<Texture2D> _meteor;
+
 		public override bool HandlesOwnHoming => true;
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.StarWrath;
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
@@ -1136,51 +1106,30 @@ namespace PokemonHenshin.Content.Combat.Moves
 			InherentHoming = true;
 		}
 
-		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
-		{
-			Main.instance.LoadProjectile(ProjectileID.StarWrath);
-		}
-
 		public override void AI()
 		{
 			HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
-			// 贴图朝下领路（修正原先 +Pi/2 导致头尾颠倒）
-			Projectile.rotation = Projectile.velocity.ToRotation() - MathHelper.PiOver2;
-			Dust.NewDustPerfect(Projectile.Center, DustID.PinkTorch, Vector2.Zero, 100, default, 1.15f).noGravity = true;
+			Projectile.rotation = Projectile.velocity.ToRotation();
+			Lighting.AddLight(Projectile.Center, 0.7f, 0.35f, 0.15f);
 		}
 
-		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		public override void OnKill(int timeLeft)
 		{
-			SpawnGoldPinkBurst(target.Center);
-		}
-
-		public override void OnKill(int timeLeft) => SpawnGoldPinkBurst(Projectile.Center);
-
-		private static void SpawnGoldPinkBurst(Vector2 at)
-		{
-			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = 0.25f }, at);
-			for (int i = 0; i < 16; i++)
-			{
-				Color c = Main.rand.NextBool() ? new Color(255, 200, 80) : new Color(255, 120, 200);
-				Dust.NewDustPerfect(at, DustID.Enchanted_Gold, Main.rand.NextVector2Circular(5f, 5f),
-					60, c, 1.4f).noGravity = true;
-			}
-			for (int i = 0; i < 8; i++)
-				Dust.NewDustPerfect(at, DustID.PinkTorch, Main.rand.NextVector2Circular(4f, 4f),
-					80, default, 1.25f).noGravity = true;
+			// 命中（penetrate=1 随后 Kill）和超时都走这里，只爆一次
+			if (!Main.dedServ)
+				SoundEngine.PlaySound(SoundID.Item14 with { Pitch = 0.2f, Volume = 0.45f }, Projectile.Center);
+			H6Fx.SpawnBurst(Projectile, Projectile.Center, H6Fx.KindMeteor, 0.85f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.StarWrath);
-			int frames = Math.Max(1, Main.projFrames[ProjectileID.StarWrath]);
-			Rectangle src = tex.Frame(1, frames, 0, 0);
-			Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, src, Color.White,
-				Projectile.rotation, src.Size() * 0.5f, 1.1f, SpriteEffects.None);
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(255, 180, 220), 0.45f), 0.4f);
-			HenshinFxDraw.EndAdditive();
+			_meteor ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/H6Meteor/H6Meteor", ReLogic.Content.AssetRequestMode.ImmediateLoad);
+			Texture2D tex = _meteor.Value;
+			int fh = tex.Height / 3;
+			int frame = (int)((Main.GameUpdateCount / 4 + (uint)Projectile.whoAmI) % 3);
+			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), new Rectangle(0, fh * frame, tex.Width, fh),
+				Color.Lerp(H6Fx.Lit(Projectile.Center, 140), Color.White, 0.6f), Projectile.rotation,
+				new Vector2(70f, fh * 0.5f), 1f, SpriteEffects.None, 0f);
 			return false;
 		}
 	}
@@ -1307,7 +1256,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_birdsSpawned)
 				return;
 			_birdsSpawned = true;
-			Main.instance.LoadProjectile(ProjectileID.Raven);
 			SoundEngine.PlaySound(SoundID.Item102, at);
 			int birdDmg = Math.Max(1, Projectile.damage / 4);
 			for (int i = 0; i < 6; i++)
@@ -1317,7 +1265,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (i % 2 == 1)
 					vel = -vel.RotatedBy(0.35f);
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), at - vel * 8f, vel,
-					ModContent.ProjectileType<BraveBirdCrossProj>(), birdDmg, 1.5f, Projectile.owner);
+					ModContent.ProjectileType<H7SkyBirdCrossProj>(), birdDmg, 1.5f, Projectile.owner);
 				if (id >= 0 && Main.projectile[id].ModProjectile is IHenshinMoveProj tagged)
 					tagged.EasyCrit = EasyCrit;
 			}
@@ -1348,7 +1296,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>
-	/// 超梦精神击破：指针 16 格内最近敌；0.5s 内在其身周 8 格渐显 64 暗影球，然后齐冲向目标。
+	/// 超梦精神击破：指针 16 格内最近敌；没有则改选离玩家最近的敌人（60 格内）；都没有则不放（导演自毁，不生成念弹）。
+	/// 选敌只在拥有者端算，结果写 ai0（=whoAmI+1）并 netUpdate，其他客户端读 ai0，联机一致。
+	/// 0.5s 内在目标身周 8 格渐显 64 枚紫色念力波纹弹，然后齐冲向目标。
 	/// </summary>
 	public class MewtwoPsystrikeDirectorProj : HenshinMoveProj
 	{
@@ -1356,6 +1306,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const int TotalOrbs = 64;
 		private const float SelectRadius = 16f * 16f;
 		private const float OrbOrbitRadius = 8f * 16f;
+		private const float FallbackRadius = 60f * 16f;
 
 		private int _targetWho = -1;
 		private int _spawned;
@@ -1376,18 +1327,29 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			if (Projectile.owner == Main.myPlayer && Projectile.ai[0] < 0.5f)
+			{
+				int pick = FindNearestHostile(HenshinProjUtil.OwnerMouseWorld(Projectile), SelectRadius);
+				if (pick < 0)
+					pick = FindNearestHostile(Main.player[Projectile.owner].Center, FallbackRadius);
+				if (pick < 0)
+				{
+					Projectile.Kill();
+					return;
+				}
+				Projectile.ai[0] = pick + 1;
+				Projectile.netUpdate = true;
+			}
+			if (Projectile.ai[0] < 0.5f)
+				return; // 非拥有者：等同步来的目标
+
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
 				_goAt = (int)Main.GameUpdateCount + SpawnTicks;
-				_targetWho = FindNearestHostile(HenshinProjUtil.OwnerMouseWorld(Projectile), SelectRadius);
-				if (_targetWho < 0)
-				{
-					if (Projectile.owner == Main.myPlayer)
-						Projectile.Kill();
-					return;
-				}
+				_targetWho = (int)Projectile.ai[0] - 1;
 				SoundEngine.PlaySound(SoundID.Item8 with { Pitch = -0.2f }, Main.npc[_targetWho].Center);
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Main.npc[_targetWho].Center, H3Fx.RingPurple, 4.5f, Projectile.owner);
 			}
 
 			if (_targetWho < 0 || !Main.npc[_targetWho].active)
@@ -1420,7 +1382,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					int orbDmg = Math.Max(1, Projectile.damage);
 					int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), spawn, Vector2.Zero,
 						ModContent.ProjectileType<MewtwoPsystrikeOrbProj>(), orbDmg, Projectile.knockBack * 0.4f,
-						Projectile.owner, _targetWho, _goAt, diam);
+						Projectile.owner, _targetWho, Math.Max(1, _goAt - (int)Main.GameUpdateCount), diam);
 					if (id >= 0)
 					{
 						Main.projectile[id].Center = spawn;
@@ -1434,6 +1396,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 				}
 			}
 		}
+
+		/// <summary>R4：释放前检查（拥有者端）：鼠标 16 格或玩家 60 格内有敌人。无则 TryFireUltimate 直接返回 false，不扣能量、不进冷却。</summary>
+		public static bool HasTarget(Player player)
+			=> FindNearestHostile(PokemonHenshin.Content.PlayerState.HenshinPlayer.GetMouseWorld(player), SelectRadius) >= 0
+			|| FindNearestHostile(player.Center, FallbackRadius) >= 0;
 
 		private static int FindNearestHostile(Vector2 from, float rangePx)
 		{
@@ -1459,20 +1426,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 	}
 
 	/// <summary>
-	/// 精神击破暗影球：渐显后齐向标记目标冲刺；目标死亡则改追附近敌人。
-	/// ai0=targetWho；ai1=goAt(GameUpdateCount)；ai2=直径。
+	/// 精神击破念弹（超梦紫波纹）：渐显后齐向标记目标冲刺；目标死亡则改追附近敌人。
+	/// ai0=targetWho；ai1=出生后到冲刺的 tick 数（本弹 localAI[1] 自计时，不用各端不同步的 GameUpdateCount）；ai2=直径。
 	/// </summary>
 	public class MewtwoPsystrikeOrbProj : HenshinMoveProj
 	{
 		public override bool HandlesOwnHoming => true;
-		private static readonly Color Fill = new(0x22, 0x00, 0x33, 255);
-		private static readonly Color Border = new(0x33, 0x00, 0x66, 255);
-
 		private float _appear;
 		private bool _charging;
 		private Vector2 _anchor;
 
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.ShadowBeamHostile;
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		private float Diameter => Projectile.ai[2] > 1f ? Projectile.ai[2] : 22f;
 
@@ -1499,17 +1463,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_anchorReady)
 				return;
 			_anchorReady = true;
-			Main.instance.LoadProjectile(ProjectileID.ShadowBeamHostile);
 			_anchor = Projectile.Center;
 		}
 
 		public override void AI()
 		{
 			EnsureAnchor();
-			int goAt = (int)Projectile.ai[1];
+			Projectile.localAI[1]++;
 			_appear = MathHelper.Clamp(_appear + 0.08f, 0f, 1f);
 
-			if (!_charging && Main.GameUpdateCount >= goAt)
+			if (!_charging && Projectile.localAI[1] >= Projectile.ai[1])
 			{
 				_charging = true;
 				Homing = true;
@@ -1529,6 +1492,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				else
 					target = null;
 			}
+
+			// 波纹朝向：蓄势时朝目标，冲刺时朝飞行方向
+			if (_charging && Projectile.velocity.LengthSquared() > 0.25f)
+				Projectile.rotation = Projectile.velocity.ToRotation();
+			else if (target != null)
+				Projectile.rotation = (target.Center - Projectile.Center).ToRotation();
+			Lighting.AddLight(Projectile.Center, H3Fx.VariantLight[2] * 0.3f * _appear);
 
 			if (!_charging)
 			{
@@ -1555,12 +1525,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				HenshinProjUtil.HomingAI(Projectile, true, HomingTurnRate);
 			}
-
-			if (Main.rand.NextBool(3))
-			{
-				Dust.NewDustPerfect(Projectile.Center, DustID.Shadowflame, Vector2.Zero, 100,
-					new Color(160, 60, 220), 1.05f).noGravity = true;
-			}
 		}
 
 		private static int FindNearest(Vector2 from, float rangePx)
@@ -1586,19 +1550,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			for (int i = 0; i < 8; i++)
-				Dust.NewDustPerfect(target.Center, DustID.Shadowflame, Main.rand.NextVector2Circular(3.5f, 3.5f),
-					60, new Color(180, 80, 255), 1.25f).noGravity = true;
+			// 64 枚齐中：每 4 枚才播一次念力环，避免特效射弹爆量。
+			if (Projectile.identity % 4 == 0)
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.RingPurple, 0.6f, Projectile.owner);
 		}
 
+		// 超梦紫念力波纹（与精神强念同款 PsychicWaveT + 扩散回波），按 ai2 直径缩放，渐显。
 		public override bool PreDraw(ref Color lightColor)
 		{
 			float a = _appear;
-			Color fill = Fill;
-			Color border = Border;
-			fill.A = (byte)(Fill.A * a);
-			border.A = (byte)(Border.A * a);
-			HenshinFxDraw.DrawOpaqueDisk(Projectile.Center, Diameter * (0.55f + 0.45f * a), fill, border);
+			float scale = Math.Max(0.6f, Diameter / 30f) * (0.55f + 0.45f * a);
+			H3Fx.DrawRipple(2, Projectile.Center, Projectile.rotation, scale, a);
 			return false;
 		}
 	}

@@ -1,7 +1,7 @@
 # 招式泰拉适配表（权威）
 
-**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 单机已验收**；**v1.4 数值已接线**（含大招后 `UltEnergyLockout`；游戏内 DPS 抽检待本地）。联机瞄准/壳弹**代码已接线**，双端验收 pending（清单 `docs/fx-knowledge.md`）。  
-**版本：** 1.3（表结构）；变更记录至 **1.41（2026-11-26）**  
+**Status：** Implemented（全形态接线）；Wave1～Wave3 / **Stage7+ 单机已验收**；肉后特效批 R2–R7（§4.16–§4.20）**本地已验收 2026-11-27，剩联机**；**v1.4 数值已接线**（含大招后 `UltEnergyLockout`；游戏内 DPS 抽检待本地）。联机瞄准/壳弹**代码已接线**，双端验收 pending（清单 `docs/fx-knowledge.md`）。  
+**版本：** 1.3（表结构）；变更记录至 **1.46（2026-11-27）**  
 **冲突处理：** 与 `docs/requirements.md` 冲突时以需求为准；**已实现招式**以代码为准并回写本表。
 
 ---
@@ -150,7 +150,7 @@
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L07_F01 | 迷你龙 | **蜕皮**：每 5s 约 15% 概率清除自身 1 个可清除 debuff | 龙息 Spread/Bolt+Stun（概率短僵；**线在实心截断**） | 咬住 MeleeArc | 龙之怒 Barrage（12/32 抖动球+5格爆；**大招仍穿墙**） | 耗 100 | 龙息：**128 格** Fire 帧线；怒：`DragonRageBarrage` SoftGlow 球 | Low | Done |
 | L07_F02 | 哈克龙 | **蜕皮**：同上 | 龙之波动 Nebula×10 | 龙尾 星尘龙鞭 15格极强击退 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**；诅咒符 Barrage 穿墙） | 耗 100 | 龙波；`DragonTailWhip`；暴风 WeatherPain 主+**4伴随**穿透牵引 | Medium | Accepted |
-| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 龙之俯冲 瞬抬升空→垂直砸 | 逆鳞 3s 身周火球；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | `DragonDiveSlam`；逆鳞同前 | Medium | Done |
+| L07_F03 | 快龙 | **多重鳞片**：满 HP 时受到伤害 ×0.2（即减伤 80%）；掉血后失效至回满 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | **（1.42 起换为翅膀攻击：360° 两下挥扫 ×0.95×2，见 §4.16）** 旧：龙之俯冲 瞬抬升空→垂直砸 | 逆鳞 3s 身周火球；结束后 **自身混乱 ~2s** | 耗 100；混乱后摇 | `DragonDiveSlam`；逆鳞同前 | Medium | Done |
 
 ### 4.6 钢/超能链 L08（Excel：铁哑铃→金属怪）
 
@@ -193,27 +193,27 @@
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L11_F01 | 波波 | **锐利目光**：全招式伤害 ×1.2 | 起风 GroundCyclone（朝鼠标飞出；落地后水平贴地滚动；本体原版 Typhoon，云尘 1/5 tick） | 啄 Cone~16格尖角 AoE（自绘 `PeckBeak` 尖角喙刺，360° 朝鼠标） | 燕返 锁定后 5 次瞬身往返斩（每斩 ×0.6 + 终结爆 ×2，单目标合计 ≈4.2；整段无敌；不再共用撞击突进 CD；起终点在方块内则缩短半径（≥40px）、斩不穿墙；`AerialAceUltProj`+`AerialAceSlashProj`+`AerialAceBurstProj`；旧 `AerialAceLungeProj` 暂留未用） | 耗 100 | Typhoon 深蓝；射出后贴地滚 | Medium |
-| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | 勇鸟猛攻 Lunge+Recoil（青焰，降倍率） | 自我激励 SelfBuff：攻击 +20% / 12s | 耗 100 | 勇鸟青焰梭形；大招纯 buff `WorkUpBuff` | Medium | Done |
+| L11_F02 | 大比鸟 | **锐利目光**：×1.2 | 暴风 Barrage 穿透飞弹+Stun（**默认撞实心贴地**） | **（1.42 起换为空气斩 ×1.9，穿透气刃 360°）** 旧：勇鸟猛攻 Lunge+Recoil（青焰，降倍率） | **（1.42 起换为热风 3 道扇形热浪 ×3.4）** 旧：自我激励 SelfBuff：攻击 +20% / 12s | 耗 100 | 勇鸟青焰梭形；大招纯 buff `WorkUpBuff` | Medium | Done |
 
 ### 4.12 电系链 L04
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L04_F01 | 皮卡丘 | **静电**：被敌对接触/近战打中时，反弹 Electrify（短 CD） | 电击 Bolt+Electrify **5s**（**撞墙**；戴电气球：弹速+100%/+200%、穿3、加宽；暖金；自绘 `ThunderShockBolt` 4 帧锯齿电弧（原 Kenney spark 已弃）；沿飞行方向判定长度 = 宽度×2） | 电光一闪 Blink（指针最近敌；身周自绘 `BlinkSpark` 4 帧 + 路径形态残影；落点贴身 **3** 段、单段 ×**3.0**；撞击冷却 **3s** + 0.25s 无敌；一屏；电气球冷却 -20%/-40%） | 十万伏特：向前曲折天雷（≤64 格）；50% Electrify；命中后 16 格内最多 **三叉**（分叉不再分）；0.5s 后对感电敌再射（不再分叉）；广角镜软瞄光标 4/8 格；暖金 `(255,168,28)` | 耗满；大招 ×**4.8**（§7.1）；闪 `MultiHit` Factor 0.25 | `SkyBoltLightning` 暖金 + 分叉 `ai2=2`；闪 `BlinkStrike` + `BlinkStrikeGhost` | Medium | Done |
-| L04_F02 | 雷丘 | **静电**：同上 | 十万伏特 SkyBolt 向鼠标（≤**128** 格；穿怪；**不**挂感电二次；命中三叉同上；广角镜软瞄；暖金） | 伏特攻击：闪现到鼠标 + Recoil + i 帧；加粗闪电拖尾 60tick、面板×**3.0**、同怪最多 **6** 段 + 形态残影；暖金 | 打雷：屏内每敌头上一道更粗落雷；同暖金 | 耗 100；伏特 Recoil | S1=`ThunderboltSkill`；拖尾=`VoltTackleTrail`；大招落雷 ai0=1 | Medium | Done |
+| L04_F02 | 雷丘 | **静电**：同上 | 十万伏特 SkyBolt 向鼠标（≤**128** 格；穿怪；**不**挂感电二次；命中三叉同上；广角镜软瞄；暖金） | **（1.42 起换为放电 Discharge ×1.3：身周 8 向电弧 12 格、命中感电，见 §4.16）** 旧：伏特攻击：闪现到鼠标 + Recoil + i 帧；加粗闪电拖尾 60tick、面板×**3.0**、同怪最多 **6** 段 + 形态残影；暖金 | 打雷：屏内每敌头上一道更粗落雷；同暖金 | 耗 100；伏特 Recoil | S1=`ThunderboltSkill`；拖尾=`VoltTackleTrail`；大招落雷 ai0=1 | Medium | Done |
 
 ### 4.13 岩/钢蛇链 L13
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
 | L13_F01 | 大岩蛇 | **坚硬脑袋**：免疫 Recoil 自伤；防御 ×1.2 | 岩石封锁 Bolt+Slow | 陀螺球 旋转钢环砸出（不变身；**无**撞击 CD/无敌） | 岩崩 AoEBurst+Stun | 耗 100 | 大招岩崩 **12** 石、±12格、微偏（`|vx|≤8`）+落地1格爆 | Low | Done |
-| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 钢尾 龙尾式+铁色遮罩 | 舍身冲撞 加长猛撞+额外爆炸（被动免 Recoil） | 耗 100；Recoil 被被动抵消 | `IronTailWhip`；`DoubleEdgeLunge` 约44格 | Medium | Done |
+| L13_F02 | 大钢蛇 | **坚硬脑袋**：同上 | 岩崩 AoEBurst+Stun | 钢尾 龙尾式+铁色遮罩 | **（1.42 起换为闪光炮 ×3.8：光弹 40% + 闪光爆 60%，见 §4.16）** 旧：舍身冲撞 加长猛撞+额外爆炸（被动免 Recoil） | 耗 100；Recoil 被被动抵消 | `IronTailWhip`；`DoubleEdgeLunge` 约44格 | Medium | Done |
 
 ### 4.14 传说 L16 / L14 / L17
 
 | FormId | Name | Passive (Terraria) | Skill1 | Skill2 | Ultimate | Energy/aftermath | VFX note | Net risk |
 |--------|------|-------------------|--------|--------|----------|------------------|----------|----------|
-| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸 朝鼠标路径爆（≤128格，撞墙贴壁停；半径4格；吸16格） | 神鸟猛击 6只红鸟分波（**无**释放者无敌） | 气旋攻击 半径32格 Field | 耗 100 | `AirBurst` 路径节点；`SkyAttackSextetDirector`+红鸟；气旋同前 | High | Done |
+| L16_F01 | 洛奇亚 | **压迫感**：全招式伤害 +50% | 空气爆炸（zh 名「气旋攻击」，key `Aeroblast`）朝鼠标路径爆（≤128格，撞墙贴壁停；半径4格；吸16格） | 神鸟猛击 **（1.42 起为聚光后冲出单只火鸟 ×2.4）** 旧：6只红鸟分波（**无**释放者无敌） | 暴风（1.42 起，key `Hurricane`；原名气旋攻击）半径32格 Field | 耗 100 | `AirBurst` 路径节点；`SkyAttackSextetDirector`+红鸟；气旋同前 | High | Done |
 | L14_F01 | 超梦 | **压迫感**：+50% | 精神强念 胡地式×6穿墙 | 意念头锤 MeleeArc+Stun（技能槽 ×**2.0**） | 精神击破 指针16格选敌→8格渐显64暗影球齐冲 | 耗满 | `MewtwoPsychic`；`MewtwoPsystrike` IgnoreDef | High | Accepted |
 | L17_F01 | 烈空坐 | **气闸**：全招式伤害 +70% | 龙之波动 Nebula×10 | 咬碎 鼠标处远距咬合+DefDown | 画龙点睛 闪现到鼠标（≤80格）→**立刻**青色 SoftGlow 散落光迹；路径上 **Life≈48 依次**反色 GraySolarBurst；生成时**单次**路径伤；释放后 **本模招式伤害 ×0.8 / 5s** | 耗 100；伤降后摇 | `BiteArcAtMouse`；`DragonAscentBlink`+`DragonAscentTrail`（cyan SoftGlow streaks；`GraySolarBurstVfxProj` invert/`ai0=1`） | High | Done |
 
@@ -225,6 +225,95 @@
 | L10_F02 | 三地鼠 | **沙隐**：同上 | 三连刺 Barrage/MeleeArc（三连戳） | 挖洞 Dig（短位移潜地，可接出土） | 地裂 AoEBurst/Field（地面裂伤波；可轻改地形须预算） | 耗 100；地形变更 High 同步 | 三连刺 **8 格**；挖洞 `DigLungeProj` 冲 **20 格**+镐力走廊挖砖；地裂波前小石 | High | Done |
 
 ---
+
+### 4.16 肉后 R2 重做批（1.42，2026-11-26；Stage≥5 的 24 个之力；本地已验收 2026-11-27，剩联机）
+
+原则：肉后之力不再有身体冲撞类（`Lunge` / `LungeProj` / `TakeDownLungeProj`）招式。下表「换招」= 招式本身换了，「重做」= 机制、倍率、判定、冷却不变只换视觉与粒子。贴图均为 `Assets/Fx/` 自绘，沿线粒子基本删除，命中只留 1～3 颗。
+
+| 之力 | 槽 | 旧 → 新 | 类型 | 说明 |
+|------|----|---------|------|------|
+| 喷火龙 | 大招 | 过热 | 重做 | `OverheatBlastProj`：6 帧爆炎环（160px，×3=480 判定圈不变） |
+| 水箭龟 | 技能1 / 技能2 / 大招 | 水炮 / 波导弹 / 水炮大招 | 重做 | `WaterStream`/`WaterCannon` 平铺水柱 + `WaterSplash` 命中；`AuraSphere` 蓝球 + `AuraSphereBurst`；追踪逻辑不变 |
+| 妙蛙花 | 技能2 / 大招 | 花瓣舞 / 日光束 | 重做 | 双圈反向旋转花瓣 `Petal`；蓄力 `SolarOrb` 太阳球 + 单道粗柱 `SolarBeamBody`（原 5 线棱镜束） |
+| 雷丘 | 技能2 | 伏特攻击 → **放电** | **换招** | 原为闪现冲撞；新 `H2DischargeProj`：身周 8 向电弧 12 格，命中感电（`H2Moves.Discharge`，×1.3）。**1.43 起回退为伏特攻击（`VoltTackleBlink`），放电类保留未接线** |
+| 豪力 / 怪力 | 技能2 / 大招 | 劈瓦、爆裂拳 / 十字劈（短）、近身战、尖石 | 重做 | `BrickBreak`、`DynamicFist`、`FlurryHit`、`StoneSpike`；十字劈复用 `CrossSlash` |
+| 鬼斯通 / 耿鬼 | 全 | 暗影球、舌舔、催眠术 / 污泥炸弹、恶之波动 | 重做 | `ShadowBall`、`Lick`、`Hypnosis`、`SludgeBomb`、`DarkPulse`；暗影爪不动 |
+| 胡地 / 超梦 | 全 | 精神强念、真气拳、预知未来 / 精神强念、精神击破 | 重做 | `Psychic`、`FocusPunch` 等，念球/念力环；超梦球为青蓝版 |
+| 金属怪 / 巨金怪 | 技能2 / 大招 | 臂锤、金属爪 / 彗星拳 | 重做 | `ArmHammer`（落点改 360° 朝鼠标）、`MetalClaw` 6 帧、`MeteorFist` |
+| 大岩蛇 / 大钢蛇 | 技能2 / 大招 | 陀螺球、岩崩、铁尾 | 重做 | `GyroDisc`、`RockFall`、`IronTail`（`DragonTailWhipProj` 内铁尾分支） |
+| 大钢蛇 | 大招 | 舍身冲撞 → **闪光炮** | **换招** | 原为身体冲撞；新 `FormItemUtil.FlashCannonUlt`（`FlashCannonOrb`/`FlashCannonBlast`），总倍率 ×3.8：**光弹占 40%、闪光爆占 60%**（同一目标合计 100%；爆圈 5.5 格半径会打到圈内多个敌人，其余敌人各吃 60%）。**1.43 起见 §4.17：光弹 35% 穿透 4 + 闪光爆 50%（8 格）+ 余辉 5×8%，单体 ×4.75**。光弹按 `Bolt`、爆圈按 `AoEBurst` 交付 |
+| 三地鼠 | 技能2 / 大招 | 挖洞 / 地震 | 重做 | `H6DirtBurst` 出入口；`H6QuakeRock` 两侧岩刺依次顶起 |
+| 圆陆鲨 / 烈咬陆鲨 | 技能1 / 大招 | 隐形岩、流沙地狱 / 流星群 | 重做 | `H6StealthShard`（判定 88×88 对齐，联机偏移改首 tick 校正）、`H6SandTomb`（半径 128px）、`H6Meteor` |
+| 迷你龙 / 哈克龙 / 快龙 | 技能1 / 大招 | 龙息、龙之怒、龙尾、逆鳞 | 重做 | `DragonOrb`/`DragonBurst`/`OutrageOrb`/`OutrageBurst`，龙尾去重击粒子 |
+| 快龙 | 技能2 | 龙之俯冲 → **翅膀攻击** | **换招** | 原为垂砸冲撞；新 `WingAttackProj`：360° 朝鼠标，24 tick 两下挥扫，每目标只中 2 次（`localNPCHitCooldown` = `Stroke2Start` = 12），×0.95×2 = 1.9（同旧倍率） |
+| 大比鸟 | 技能2 | 勇鸟猛攻 → **空气斩** | **换招** | 原为冲撞 + 6 鸟；新 `H7AirSlashProj` 射出穿透气刃（`AirSlashBlade`），×1.9（复查后由 2.2 降；同档远程技能无代价） |
+| 大比鸟 | 大招 | 自我激励 → **热风** | **换招** | 原为 0.01 倍 buff；新 `H7HeatWaveDirectorProj` 3 道扇形热浪，总 ×3.4（每道 damage/3 四舍五入，至少 1；Bulbapedia/PokémonDB：大比鸟可学热风，Gen5 教学、Gen9 TM68） |
+| 大比鸟 / 快龙 | 技能1 | 暴风 | 小改 | `WeatherPainHurricane` 裸 `LoadProjectile` → `SafeLoadProjectile` |
+| 洛奇亚 | 技能1 | 空气爆炸 → 气旋攻击（中文名） | 重做 | 机制 `AirBurst` 不变，改画 `WindRing`；本地化 key 仍 `Aeroblast`（en `Aeroblast`，zh 值改「气旋攻击」） |
+| 洛奇亚 | 技能2 | 神鸟猛击 | 重做 | 6 只红鸟 → `H7SkyAttackProj` 前摇聚光后冲出单只火鸟（`SkyAttackBird`），×2.4。**1.43 起回退为旧版 `SkyAttackLungeProj`：吟唱→冲撞→6 只火鸟贴图小鸟（`H7SkyBirdCrossProj`），×1.8（见 §4.17）** |
+| 洛奇亚 | 大招 | 气旋攻击 → 暴风（名） | 重做 | `HurricaneField` 改 `WindRing` 旋转风场；本地化名 → `Hurricane` |
+| 烈空坐 | 大招 | 画龙点睛 | 重做 | 路径删上百次 SoftGlow，改 `DragonStreak` 龙影；闪现不变；**1.43 起：路径一击 ×0.6 + 10 个爆点各 ×0.15 的 AoE（`DragonAscentBlastProj`）；旧“10 次延迟爆有伤害”为误写，爆点此前从未有伤害** |
+| 其余（暗影爪、龙之波动、咬碎、破坏光线、念力、岩石封锁等） | | | 保留 | 已验收共用类，未动 |
+
+Tooltip 同步：雷丘（放电）、大钢蛇（闪光炮）、快龙（翅膀攻击）、大比鸟（空气斩、热风）、洛奇亚（zh 气旋攻击、神鸟猛击、暴风 / en Aeroblast, Sky Attack, Hurricane），zh/en 已改。死代码（无招式引用，待清理，未删）：`DoubleEdgeUlt` / `DoubleEdgeLungeProj`、`BraveBirdSkill` / `BraveBirdLungeProj` / `BraveBirdCrossProj`、`WorkUpUlt` / `WorkUpBuffProj`、`VoltTackleBlink` / `VoltTackleBlinkProj` / `VoltTackleTrailProj`、`DragonDiveSlam` / `DragonDiveSlamProj`、`SkyAttackSextet` / `SkyAttackSextetDirectorProj` / `SkyAttackRedBirdProj`、`MouseVortexProj`。
+
+### 4.17 肉后 R3 批（1.43，2026-11-27；本地已验收，剩联机）
+
+| 招式 | 改动 | 倍率 |
+|------|------|------|
+| 喷射火焰（喷火龙） | 自伤来自白天被动「太阳之力」每命中扣 1 HP；加 `SolarDrainGate` 每 30 tick 至多 1 次 | 不变 |
+| 伏特攻击（雷丘技能2） | 回退（放电弃用），Tooltip 同步 | 旧值 |
+| 咬碎（远距，烈咬陆鲨/烈空坐） | 改用近身同款 `BiteJaws` 贴图，删 MagicPixel 方块牙 | 不变 |
+| 龙之波动 | 自绘 `PulseBolt` 弹体、`PulseHit` 命中环、`PulseShard` 碎片；删飞行尘与死亡尘 | 不变 |
+| 龙尾 / 钢尾 | `DragonTailWhipProj` 重写为 GrassWhip 式真鞭（蓄→甩→抽→收，Lifetime 36，tick 18 啪）；方向由 `ai2` 同步 | 1.35 / 1.6 |
+| 翅膀攻击 | 第一击 ×0.8 + 第二击 ×1.1（射程 ×1.2、击退 ×1.8、Slow 90 tick），风刃/羽毛纯绘制 | 总 1.9 |
+| 画龙点睛 | 路径一击 ×0.6 + 10 个爆点各 ×0.15（半径 88 AoE） | 单目标约 4.5～5.25 |
+| 水炮 | 长度 64→88 格；喷出 10 tick；连发不重置；转向限速 0.16 rad/tick | 不变 |
+| 流沙地狱 | 判定半径 128→176 px，吸力 224→400 px，改为直接位移（不穿墙） | 不变 |
+| 地震 | 重写为逐刺落点判定（爬台阶 3 格、下坑 10 格），射程 392→480 px；刺贴图 80×68 | 3.6 |
+| 岩崩 | 落石/碎石圈 `HandlesOwnHoming`，不再被广角镜追踪抖动；落石贴图重画 | 不变 |
+| 劈瓦 | 手刀自上而下弧形劈砍，扇形 11 射线 180 px（射程由 20 格缩为 11.25 格）；360° 朝鼠标 | 1.4 |
+| 闪光炮 | 光弹 ×0.35 穿透 4；闪光爆 ×0.50 半径 8 格；余辉 `FlashCannonGlowProj` 5 跳×0.08 | 单体 1.25×3.8 = 4.75 |
+| 念力波纹（精神强念 / 预知未来） | 3 道同心弧波纹弹，按形态变色（胡地金 / 巨金怪青 / 超梦紫，variant 存 `ai[1]`） | 不变 |
+| 暗影球 | 弹体缩小，28 格内最多弹跳 5 次，每次 ×0.8 | 单体 1.35，全中约 4.98 |
+| 意念头锤 | 自绘 `ZenHammer` 贴图，缩放 1.6，落锤念力环 | 2.0 |
+| 真气拳 | 蓄力光环、拳影、破防 4 秒、击退 +4、震屏 | 1.8 |
+| 神鸟猛击（洛奇亚） | 回退旧版 `SkyAttackLungeProj` + 6 只火鸟贴图小鸟 | 1.8 |
+| 空气斩 | 不再贴地被擦掉（弹心埋入实心块连续 >6 tick 才散）；身后 `AirStreak` 残痕，命中两侧闪光 | 1.9 |
+| 热风 | 3 道扇形 ±0.17 rad，判定 262 px，不撞墙消失；`HeatWaveStreak` 气流带；灼烧 240 tick | 3.4 |
+### 4.18 肉后 R4 批（1.44，2026-11-27；本地已验收，剩联机）
+
+| 招式 | 改动 | 倍率 |
+|------|------|------|
+| 无限大招（调试物品） | 去掉合成配方，只能由调试手段获得；本地化补 `UltChargeDebug` 提示 | - |
+| 劈瓦 | 判定改为贴图同款弧线：`ArcR=175`、`ArcWidth=44`，12 条射线按当前帧的弧头/弧尾角度判定（`FrameEndDeg`），与 `PreDraw` 同帧 | 1.4 不变 |
+| 龙之波动 | 命中碎裂：删 12 枚小碎片，改生成 1 枚 `DragonPulseBlastProj`（半径 120 px AoE，`PulseBlast.png` 6 帧）；原碎片每枚 0.65x | 不变（爆点约 1.5x） |
+| 翅膀攻击 | 新手绘 `WingFeather` 羽毛（4 帧）；第二击加 `WingFeatherPullProj`：0 伤害、40 tick，前 30 tick 把半径 22 内小怪拉向身前；Boss 与 `knockBackResist<=0` 不拉；仅服务端/单机改位置 | 总 1.9 不变 |
+| 逆鳞 | 持续 180→132 tick，发射间隔 8→4 tick，总发数 22→33；单发 ×0.7；`OutrageUlt.UseTime` 190→142 | 总伤约 +5% |
+| 念力波纹 / 精神强念 / 预知未来 | `H3Fx.DrawRipple`：本体 + 2 圈回波，按形态变色（胡地金 / 巨金怪青 / 超梦紫）；命中 / 撞墙环同色 | 不变 |
+| 彗星拳（落星） | 新手绘 `CometStar` 贴图，替换 StarWrath+PinkTorch 拼贴 | 不变 |
+| 胡地（金色统一） | 精神强念、预知未来预兆、真气拳环一律金色 `RingGold` | 不变 |
+| 精神击破 | 自动索敌，60 tick 无目标自毁；`ai0 = whoAmI+1` 同步 | 4.8 不变 |
+| 水炮 | 持续引导：按住期间只存在 1 道水柱（连发不再各开一道）；松手淡出 8 tick；截止于方块或首个 NPC 外缘（不穿透）；每 3 tick 判定一次；水花仅在截断端生成 | 不变（DPS 约 34/秒，需实测） |
+| 热风 | 不再被广角镜追踪（`HandlesOwnHoming`）；`localNPCHitCooldown` 60→8，总伤分摊 `damage/3`→`damage/8` | 总倍率 +12% |
+| 岩崩（落石） | `H5FallingRockProj` 广角镜追踪命中后停追（`ai[2]=1`），距目标 <40 px 不再转向 | 不变 |
+
+### 4.19 劈瓦 / 岩崩 / 画龙点睛 / 翅膀攻击 / 预知未来 R5（1.45，2026-11-27；本地已验收，剩联机）
+
+| 招式 | 改动 | 伤害 |
+|------|------|------|
+| 劈瓦 | 判定改为实心扇形（圆心=玩家 MountedCenter，半径 184 px，角度 -100° 到当前帧末角 +2°，随帧累积）；40 px 内整圈必中，贴脸可中；目标取 7x7 采样点+最近点；`BrickBreak.png` 5 帧 400x400 与判定同半径；`localNPCHitCooldown=Lifetime(20)` 同一敌人只中一次 | 不变 |
+| 岩崩（岩石） | `H5FallingRockProj` 首次命中后 `ai[2]=1`（netUpdate 同步），此后每 tick 强制 `Homing=false`、`HomingTargetWhoAmI=-1`，不再被广角镜改向 | 不变 |
+| 画龙点睛 | 路径爆炸 `BurstCount` 10→20（每 2 tick 一个）；`DragonAscentBlastProj.idStaticNPCHitCooldown` 14→16；爆炸占比 0.12、路径占比 0.6 不变；每颗爆炸粒子 3→1 | 单体上限 (0.6+3×0.12)×5.0=4.8 倍，在 5.0 内 |
+| 翅膀攻击 | 羽毛汇集 30 tick 结束时，拥有者端生成 `WingFeatherBurstProj`（半径 90 px，5 帧 `WingBurst.png`，每目标一次，不加粒子）；牵引弹带 `BurstDamage = damage×0.7/0.95` | 汇集爆炸 0.7 倍 |
+| 预知未来（夜光弹） | `FlightSpeed` 11→16.5，转向 lerp 0.22→0.33（+50%） | 不变 |
+
+### 4.20 劈瓦动效 / 岩崩防上飞 R6–R7（1.46，2026-11-27；本地已验收，剩联机）
+
+| 招式 | 改动 | 伤害 |
+|------|------|------|
+| 劈瓦（豪力技能2，`BrickBreakProj`） | 判定不动（`ArcR=184`、`ArcStartDeg=-100`、`FrameEndDeg={-62,-30,6,38,38}`、贴脸 40 px 必中、帧 4 不判、同敌一次）。`BrickBreak.png` 重画为 5 帧 400×400：只画发光手刀、外缘细弧斩痕、落点冲击星，扇形内部不填色、无网格/抖点/粒子（R6）；F0–F3 加一条从玩家身后连到掌根的前臂，补上手与身体间的空白（R7） | 不变 |
+| 岩崩（`H5FallingRockProj`，豪力/大岩蛇/大钢蛇共用） | 修广角镜下偶发弹飞上天：拥有者端石头与任一敌对 NPC 重叠、或越过锁定目标中心高度即永久停追（`ai[2]=1` + `netUpdate`）；追踪方向夹在竖直向下 ±55°（`MaxSteerDeg`）；每 tick `velocity.Y ≥ 6`（`MinFallSpeed`）；删旧 40 px 停转区。诅咒之符 super 穿地下落为饰品设计，未改 | 不变 |
 
 ## 5. 实现备注（给编码）
 
@@ -284,3 +373,8 @@
 | 1.39 | 2026-11-26 | 360° 近战批：三连刺、抓、龙爪、咬住、火焰牙、咬碎（近身）、暗影抓由只能左右改为**朝鼠标 360°**；换自绘贴图+命中特效，出招不撒沿线粒子（数值/判定长度不变，见 `fx-knowledge` §5.3）；本地验收通过，联机 pending |
 | 1.40 | 2026-11-26 | 肉前特效批：火花/火焰漩涡、撞击（非火系）/跃起（鲤鱼王）/抓狂、藤鞭/种子机关枪/种子炸弹、电击/电光一闪/啄/燕返、子弹拳/十字劈/挖洞爆发换自绘贴图；水枪/起风/飞叶快刀/岩石封锁/掷泥/意念头锤只减粒子（数值/判定/冷却不变，见 `fx-knowledge` §4.9）；构建通过；复查修复：火花/火焰漩涡辉光按帧、火系冲撞去沿线粒子、电击/水枪去飞行粒子；本地验收与联机 pending |
 | 1.41 | 2026-11-26 | 肉前特效批 R2（构建待游戏关闭后验）：卡咪龟大招潮旋重做为 `WhirlpoolUltProj`（168t 卷起/旋转吸引/水柱，吸力只在服务端）；妙蛙种子藤鞭重做为 40 tick 延迟挥角鞭（`GrassWhipProj`，tick 21「啪」）；波波大招燕返改为锁定 5 斩+终结爆（`AerialAceUltProj`，单目标≈4.2×）；地鼠技能2 由撞击改为重踏 `BulldozeProj`（贴地 9 道土浪）；详见 `fx-knowledge` §4.9；本地验收与联机 pending |
+| 1.42 | 2026-11-26 | 肉后 R2：24 个之力重做 FX；换招 6 处（雷丘放电、大钢蛇闪光炮、快龙翅膀攻击、大比鸟空气斩/热风）；肉后无冲撞类招式；见 §4.16；构建通过，游戏内/联机 pending；R3 复查修：翅膀攻击每目标 2 次、空气斩 ×1.9、闪光炮 40/60 与 Delivery、洛奇亚 A key 回 `Aeroblast`、热风取整 |
+| 1.43 | 2026-11-27 | 肉后 R3 批：见 §4.17（龙系/水地/岩崩劈瓦闪光炮/超能鬼/飞行组重做，雷丘与洛奇亚技能2回退，喷射火焰自伤限频）；C# 构建通过，游戏内/联机 pending |
+| 1.44 | 2026-11-27 | 肉后 R4 批：见 §4.18（水炮持续引导、热风/岩崩广角镜排除、龙之波动爆点、翅膀牵引、逆鳞提频、念力波纹三色、精神击破索敌、劈瓦弧线判定） |
+| 1.45 | 2026-11-27 | R5 五项修订：见 §4.19（劈瓦实心扇形判定、岩崩命中停追、画龙点睛 20 爆、翅膀羽毛汇集爆炸、预知未来提速） |
+| 1.46 | 2026-11-27 | R6–R7：见 §4.20（劈瓦手刀+斩痕+前臂贴图、岩崩防上飞）；§4.16–§4.20 肉后特效批 R2–R7 用户本地验收通过，剩联机 |

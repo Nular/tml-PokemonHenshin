@@ -1732,14 +1732,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 		}
 	}
 
-	/// <summary>意念头锤：鼠标处幽灵锤下砸范围伤（放大）。</summary>
+	/// <summary>意念头锤：鼠标处幽灵锤下砸范围伤。自绘贴图 Assets/Fx/ZenHammer/ZenHammer.png（60×76 单帧，头朝上）；落锤放念力环。</summary>
 	public class ZenHammerSmashProj : HenshinMoveProj
 	{
 		private float _raise;
 		private bool _smashed;
-		private const float DrawScale = 2.15f;
+		private const float DrawScale = 1.6f;
 
-		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.PaladinsHammerFriendly;
+		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		public override void SetDefaults()
 		{
@@ -1773,12 +1773,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
 					if (Projectile.owner == Main.myPlayer)
 						Main.instance.CameraModifiers.Add(new PunchCameraModifier(Projectile.Center, Vector2.UnitY, 5f, 8f, 14, 1000f, "ZenHammer"));
-					for (int i = 0; i < 3; i++)
-					{
-						Dust d = Dust.NewDustPerfect(Projectile.Center, DustID.MagicMirror, Main.rand.NextVector2Circular(9f, 6f), 80, new Color(200, 180, 255), 1.6f);
-						d.noGravity = true;
-						Dust.NewDustPerfect(Projectile.Center, DustID.Shadowflame, Main.rand.NextVector2Circular(7f, 4f), 100, default, 1.35f).noGravity = true;
-					}
+					H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.RingPurple, 1.6f, Projectile.owner); // R4：Abra/Mewtwo 都按「其他形态用紫」
 				}
 			}
 
@@ -1788,11 +1783,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Texture2D tex = TextureAssets.Projectile[ProjectileID.PaladinsHammerFriendly].Value;
-			Rectangle frame = tex.Frame();
-			Vector2 pos = Projectile.Center + new Vector2(0f, _raise) - Main.screenPosition;
-			Color ghost = new Color(180, 160, 255, 200);
-			Main.EntitySpriteDraw(tex, pos, frame, ghost, Projectile.rotation, frame.Size() * 0.5f, DrawScale, SpriteEffects.None, 0);
+			// 贴图 alpha 只有 0/255；「幽灵」感用整体 0.9 透明度。
+			H3Fx.Draw(H3Fx.ZenHammer, 1, 0, Projectile.Center + new Vector2(0f, _raise), Projectile.rotation, DrawScale, Color.White * 0.9f);
 			return false;
 		}
 	}

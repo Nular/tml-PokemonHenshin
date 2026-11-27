@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using PokemonHenshin.Content.Combat;
 using PokemonHenshin.Content.Combat.Moves;
 using PokemonHenshin.Content.Core;
@@ -890,7 +890,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<OutrageDirectorProj>(),
 				DamageMultiplier = mult,
-				UseTime = 190,
+				UseTime = 142,
 				ShootSpeed = 0f,
 				AftermathDamagePenaltyTicks = 120,
 				AftermathDamagePenalty = 0.7f,
@@ -1039,7 +1039,7 @@ namespace PokemonHenshin.Content.Items.Forms
 			{
 				Delivery = MoveDelivery.DoTBind,
 				NameKey = nameKey,
-				ProjectileType = ModContent.ProjectileType<MouseVortexProj>(),
+				ProjectileType = ModContent.ProjectileType<H6SandTombProj>(),
 				DamageMultiplier = mult,
 				UseTime = 40,
 				ShootSpeed = 0f,
@@ -1167,7 +1167,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DragonTailWhipProj>(),
 				DamageMultiplier = mult,
-				UseTime = 18,
+				UseTime = 30,
 				ShootSpeed = 0f,
 				Ai0 = DustID.Cloud
 			};
@@ -1179,7 +1179,7 @@ namespace PokemonHenshin.Content.Items.Forms
 				NameKey = nameKey,
 				ProjectileType = ModContent.ProjectileType<DragonTailWhipProj>(),
 				DamageMultiplier = mult,
-				UseTime = 18,
+				UseTime = 30,
 				ShootSpeed = 0f,
 				Ai0 = DustID.Iron,
 				Ai1 = 1f // 铁色遮罩
@@ -1474,6 +1474,49 @@ namespace PokemonHenshin.Content.Items.Forms
 				BalanceTag = BalanceTag.Ultimate
 			};
 
+		/// <summary>H7 空气斩：朝鼠标 360° 穿透风刃（取代勇鸟猛攻冲撞）。</summary>
+		public static MoveSpec AirSlash(string nameKey, float mult = 2.2f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Barrage,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<H7AirSlashProj>(),
+				DamageMultiplier = mult,
+				UseTime = 30,
+				ShootSpeed = 17f,
+				Knockback = 3f,
+				IsRangedProjectile = true
+			};
+
+		/// <summary>H7 热风：连放 3 道扩散热浪（取代自我激励）。</summary>
+		public static MoveSpec HeatWaveUlt(string nameKey, float mult = 3.4f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Barrage,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<H7HeatWaveDirectorProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
+			};
+
+		/// <summary>H7 神鸟猛击：聚光成鸟后朝鼠标射出一只穿透光鸟（取代六鸟冲刺）。</summary>
+		public static MoveSpec SkyAttackBird(string nameKey, float mult = 2.4f)
+			=> new()
+			{
+				Delivery = MoveDelivery.Barrage,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<H7SkyAttackProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				Knockback = 4f,
+				EasyCrit = true
+			};
+
 		public static MoveSpec BraveBirdSkill(string nameKey, float mult = 2.2f)
 			=> new()
 			{
@@ -1509,6 +1552,21 @@ namespace PokemonHenshin.Content.Items.Forms
 				BalanceTag = BalanceTag.Ultimate
 			};
 
+		/// <summary>闪光炮（大钢蛇大招，替换舍身冲撞）：蓄光 → 朝鼠标射出光弹 → 闪光爆。伤害：光弹 0.35×（穿透 4）+ 闪光爆 0.5×（8 格）+ 余辉 5 跳×0.08×，单体合计 1.25×。</summary>
+		public static MoveSpec FlashCannonUlt(string nameKey, float mult = 3.8f)
+			=> new()
+			{
+				Delivery = MoveDelivery.MeleeArc,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<FlashCannonChargeProj>(),
+				DamageMultiplier = mult,
+				UseTime = 40,
+				ShootSpeed = 0f,
+				Knockback = 6f,
+				KeyConflict = KeyConflictLevel.ModKeybind,
+				BalanceTag = BalanceTag.Ultimate
+			};
+
 		public static MoveSpec DragonDiveSlam(string nameKey, float mult = 1.9f)
 			=> new()
 			{
@@ -1520,6 +1578,20 @@ namespace PokemonHenshin.Content.Items.Forms
 				ShootSpeed = 0f,
 				Knockback = 5f,
 				RequiresLungeCooldown = true
+			};
+
+		/// <summary>翅膀攻击（快龙技能2，取代龙之俯冲）：360° 双翼两击，每击 mult；总倍率 = 2 × mult（0.95 → 1.9，与旧龙之俯冲一致）。</summary>
+		public static MoveSpec WingAttack(string nameKey, float mult = 0.95f)
+			=> new()
+			{
+				Delivery = MoveDelivery.MeleeArc,
+				NameKey = nameKey,
+				ProjectileType = ModContent.ProjectileType<WingAttackProj>(),
+				DamageMultiplier = mult,
+				UseTime = 30,
+				ShootSpeed = 0f,
+				Knockback = 5f,
+				BalanceTag = BalanceTag.MultiHit
 			};
 
 		public static MoveSpec DragonAscentBlinkUlt(string nameKey, float mult = 5.0f)
@@ -1593,7 +1665,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L01_F03", 3, "Mods.PokemonHenshin.Items.CharizardForce.DisplayName", PokemonType.Fire, 7, "L01_F02", FormPassiveKind.SolarPower, secondary: PokemonType.Flying);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.FlameCone("Mods.PokemonHenshin.Moves.Flamethrower", 1.55f, 10);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.Scratch("Mods.PokemonHenshin.Moves.DragonClaw", 1.4f, 16, reachTiles: 20f);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.MouseAoE("Mods.PokemonHenshin.Moves.Overheat", 4.0f, DustID.Torch, BuffID.OnFire, aftermath: true);
+		protected override MoveSpec CreateUltimate() => H1Moves.Overheat("Mods.PokemonHenshin.Moves.Overheat", 4.0f);
 	}
 
 	public class SquirtleForce : HenshinForceItem
@@ -1616,7 +1688,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L02_F03", 6, "Mods.PokemonHenshin.Items.BlastoiseForce.DisplayName", PokemonType.Water, 7, "L02_F02", FormPassiveKind.RainDish);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroPump", 1.7f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.AuraSphere("Mods.PokemonHenshin.Moves.AuraSphere", 1.85f, 56);
+		protected override MoveSpec CreateMoveB() => H1Moves.AuraSphere("Mods.PokemonHenshin.Moves.AuraSphere", 1.85f, 56);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.WaterJet("Mods.PokemonHenshin.Moves.HydroCannon", 4.0f, cannon: true, aftermath: true, selfStun: 90, ult: true);
 	}
 
@@ -1640,7 +1712,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L03_F03", 9, "Mods.PokemonHenshin.Items.VenusaurForce.DisplayName", PokemonType.Grass, 7, "L03_F02", FormPassiveKind.Chlorophyll, secondary: PokemonType.Poison);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.SludgeBolt("Mods.PokemonHenshin.Moves.SludgeBomb", 1.45f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.PetalDance("Mods.PokemonHenshin.Moves.PetalDance", 1.5f);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.ChargeBeamUlt("Mods.PokemonHenshin.Moves.SolarBeam", 4.0f);
+		protected override MoveSpec CreateMoveB() => H1Moves.PetalDance("Mods.PokemonHenshin.Moves.PetalDance", 1.5f);
+		protected override MoveSpec CreateUltimate() => H1Moves.SolarBeam("Mods.PokemonHenshin.Moves.SolarBeam", 4.0f);
 	}
 }

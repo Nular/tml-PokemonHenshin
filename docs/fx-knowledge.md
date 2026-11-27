@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-11-26
+**版本日期：** 2026-11-27
 
 ## 1. 权威与硬约束
 
@@ -227,7 +227,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | ThunderShock/电击 | L04_F01 | Bolt | 金 spark + LightShot；沿飞行方向判定长度 = 宽度×2 | — | 暖金 | Done |
 | QuickAttack/电光一闪 | L04_F01 | Blink | 身周 spark + 路径形态残影（无伤）；落点 3 段 ×3.0；冷却 3s | Kenney spark + 形态帧 | 残影 | Done |
 | Thunderbolt/十万伏特 | L04_F01 Ult / L04_F02 S1 | Beam | SkyBolt 暖金（F02≤128 无连锁） | SkyBolt cookbook | 标杆 | Done |
-| VoltTackle/伏特攻击 | L04_F02 | Blink+Trail | VoltTackle 暖金折线 + 金残影 | SkyBolt 折线 | 暖金 | Done |
+| VoltTackle/伏特攻击（**1.42 起退役，雷丘技能2 = 放电，见 §4.10**） | L04_F02 | Blink+Trail | VoltTackle 暖金折线 + 金残影 | SkyBolt 折线 | 暖金 | Done |
 | Thunder/打雷 | L04_F02 Ult | Pillar | SkyBolt 落雷同暖金 | 同天雷 | 暖金 | Done |
 
 ### 4.5 格斗 L05
@@ -265,7 +265,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | DragonTail/龙尾 | L07_F02,8 | Melee | DragonTailWhip 星尘龙节链15格强击退 | StardustDragon1–4 | 鞭弧 | Accepted |
 | Hurricane/暴风 | L07_F02 Ult | Barrage | WeatherPain **直立帧** 主+**4伴随** 穿透牵引；命中4侧摆；**默认撞实心贴地**（诅咒符 Barrage 穿墙） | WeatherPainShot | 大招风团 | Accepted |
 | Hurricane/暴风 | L07_F03 S1 / L11_F02 S1 | Barrage | WeatherPain 直立帧+穿透牵引；命中左右摆（不自旋）；**默认撞实心贴地** | WeatherPainShot | 天候棒 | Accepted |
-| DragonDive/龙之俯冲 | L07_F03 S2 | Slam | `DragonDiveSlam` 瞬抬升空→垂直砸 | SoftGlow | 垂砸 | Done |
+| DragonDive/龙之俯冲（**1.42 起退役，快龙技能2 = 翅膀攻击，见 §4.10**） | L07_F03 S2 | Slam | `DragonDiveSlam` 瞬抬升空→垂直砸 | SoftGlow | 垂砸 | Done |
 | Outrage/逆鳞 | L07_F03 Ult | Barrage | 3s CultistBossFireBall 壳追踪爆+Confused | CultistBossFireBall | 身周火球 | Accepted |
 
 ### 4.8 其余线路（钢超 / 鱼 / 地鼠 / 飞 / 超能 / 岩钢 / 陆鲨 / 传说）
@@ -292,8 +292,8 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | Gust/起风 | L11_F01,2 | GroundCyclone | 朝鼠标飞出；落地后水平贴地滚动 | Typhoon 深蓝 | 贴地风 | Accepted |
 | Peck/啄 | L11_F01,2 | Cone | PeckCone | — | 尘锥 | Accepted |
 | AerialAce/燕返 | L11_F01 Ult | Lunge | Lunge SoftGlow | — | OK | Accepted |
-| BraveBird/勇鸟猛攻 | L11_F02 S2 | Lunge+Recoil | `BraveBirdLunge` 白拖尾梭形冲+交叉 Raven（降倍率技能2） | 闪焰式加速 | 梭形鸟群 | Accepted |
-| WorkUp/自我激励 | L11_F02 Ult | SelfBuff | `WorkUpBuffProj` 攻击 +20% / 12s | SoftGlow | 纯 buff | Done |
+| BraveBird/勇鸟猛攻（**1.42 起退役，大比鸟技能2 = 空气斩 ×1.9**） | L11_F02 S2 | Lunge+Recoil | `BraveBirdLunge` 白拖尾梭形冲+交叉 Raven（降倍率技能2） | 闪焰式加速 | 梭形鸟群 | Accepted |
+| WorkUp/自我激励（**1.42 起退役，大比鸟大招 = 热风 ×3.4**） | L11_F02 Ult | SelfBuff | `WorkUpBuffProj` 攻击 +20% / 12s | SoftGlow | 纯 buff | Done |
 | ZenHeadbutt/意念头锤 | L12_* / L14 | StrikeFall | ZenHammer←Paladin锤 | PaladinsHammer | 较好 | Accepted |
 | Psychic scatter Ult | L12_F01 Ult | Scatter | Barrage Rainbow | RainbowRod | OK | Accepted |
 | FocusPunch/真气拳 | L12_F02 S2 | Melee | FocusPunch 白气上扬无石爆 | BoxingGlove+Fog | 白气拳 | Accepted |
@@ -302,10 +302,10 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | GyroBall/陀螺球 | L13_F01 S2 | Smash | `GyroBallSmashProj` 旋转钢环砸出（**无**撞击 CD/释放者无敌） | SoftGlow 钢环 | 钢环砸 | Done |
 | RockSlide | L13_F01 Ult / L13_F02 S1 | RockSlide* | 大招**12**石±12格微偏+落地1格爆**无金光**；技能3石同偏 | Boulder+RockShatter | 宽密落地爆 | Accepted |
 | IronTail/钢尾 | L13_F02,9 | Whip | DragonTailWhip 底色+叠 `Color(0,0,16,80)` | StardustDragon | 铁灰罩 | Accepted |
-| DoubleEdge/舍身冲撞 | L13_F02 Ult | Lunge+Recoil | `DoubleEdgeLunge` 加长猛撞+额外爆炸（被动免 Recoil） | SolarWhip 灰爆 | 钢冲 | Done |
-| Aeroblast/空气爆炸 | L16_F01 S1 | Spread | AirBurst 朝鼠标路径节点爆（≤128格；撞实心贴壁；半径**4格**；吸**16格**） | DiffusionCircle/Fog | 路径爆+吸引 | Accepted |
-| CycloneAttack/气旋攻击 | L16_F01 Ult | Field | HurricaneField 半径**32格**；名键独立于 Aeroblast | ScaleForWorldDiameter | 大风场 | Accepted |
-| SkyAttack/神鸟猛击 | L16_F01 | Barrage | SkyAttackSextet 6红鸟分波（**无**释放者无敌/撞击 CD） | Raven 红染 | 六鸟 | Accepted |
+| DoubleEdge/舍身冲撞（**1.42 起退役，大钢蛇大招 = 闪光炮 ×3.8，光弹 40% + 闪光爆 60%**） | L13_F02 Ult | Lunge+Recoil | `DoubleEdgeLunge` 加长猛撞+额外爆炸（被动免 Recoil） | SolarWhip 灰爆 | 钢冲 | Done |
+| Aeroblast/空气爆炸（zh 名「气旋攻击」，key `Aeroblast`；1.42 起改画 `WindRing`） | L16_F01 S1 | Spread | AirBurst 朝鼠标路径节点爆（≤128格；撞实心贴壁；半径**4格**；吸**16格**） | DiffusionCircle/Fog | 路径爆+吸引 | Accepted |
+| CycloneAttack→Hurricane/暴风（**1.42 起大招 key 为 `Hurricane`**，`WindRing` 风场） | L16_F01 Ult | Field | HurricaneField 半径**32格**；名键独立于 Aeroblast | ScaleForWorldDiameter | 大风场 | Accepted |
+| SkyAttack/神鸟猛击（**1.42 起单只火鸟 `H7SkyAttackProj`，旧六鸟 `SkyAttackSextet` 退役**） | L16_F01 | Barrage | SkyAttackSextet 6红鸟分波（**无**释放者无敌/撞击 CD） | Raven 红染 | 六鸟 | Accepted |
 | Psystrike/精神击破 | L14 Ult | MarkOrb | MewtwoPsystrike 指针16格选敌→8格渐显64暗影球齐冲 | DrawOpaqueDisk | 环伺齐射 | Accepted |
 | Psychic/精神强念 | L14_F01 | Bolt | AlakazamPsychic×6 穿墙 | RainbowRod | 六连追 | Accepted |
 | DragonRage | L15_F01,6 | Barrage | `DragonRageBarrage` mode=skill 12发 | SoftGlow 抖动球+5格爆 | 可见 | Implemented |
@@ -369,6 +369,62 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 - 时长约 1.5–2.2 秒（普通 EXP 90 tick / Boss 132 / 升级 108）；前 8% 淡入，45% 起渐隐到 0，到期移除（不突然消失）。
 
 ---
+
+### 4.10 肉后特效批（2026-11-26；R2–R7 本地已验收 2026-11-27，剩联机）
+
+语义见 `move-effects` §4.16。共同做法：
+
+- 贴图在 `Assets/Fx/<名>/`（竖排帧条，scale 2），各组的加载器懒加载（`AsyncLoad`），专用服不 `LoadProjectile`（用 `SafeLoadProjectile`）。
+- 命中特效统一由**拥有者端**生成零伤害一次性射弹，旁观者可见：`H1HitFxProj`（H1）、`H2HitFxProj`（H2）、`H3HitFxProj`（H3）、`H4HitFxProj`（H4）、`H5` 在 `H5MoveProjs.cs` 内、`H6BurstFxProj`（H6）、`H7HitFxProj`（H7）。
+- 出招不沿线撒粒子；命中 1～3 颗。Additive 一律 `WithAlpha`，按帧绘制，禁整图。
+- 方向：360° 招的瞄准角由拥有者写 `ai`/`localAI` 并 `netUpdate`，不用 `Main.MouseWorld`。
+
+| 组 | 文件 | 共享工厂 / 类归属 |
+|----|------|-------------------|
+| H1 喷火龙/水箭龟/妙蛙花 | `H1Projs.cs`、`H1Moves.cs` | `H1Moves.Overheat/AuraSphere/PetalDance/SolarBeam`；`WaterJetProj` 在 `Wave2MoveProjs.cs`（水箭龟两招共用） |
+| H2 雷丘/豪力/怪力 | `H2Projs.cs` | `H2Moves.Discharge`；劈瓦/爆裂拳/尖石/十字劈/近身战改在 `MachampMoveProjs.cs`、`SharedMoveProjs.cs` |
+| H3 鬼斯通/耿鬼/胡地/超梦 | `H3FxProjs.cs` | `H3Fx`（贴图 + `Draw` + `SpawnHit`）；弹类在 `HaunterMoveProjs.cs`、`AlakazamMoveProjs.cs`；胡地/超梦共用 `AlakazamPsychic` 类，超梦用青蓝版 |
+| H4 快龙/迷你龙/哈克龙 | `H4Moves.cs` | `FormItemUtil.WingAttack`（`StarterLines.cs`）、`WingAttackProj`；`DragonRageOrbProj`（`Wave2MoveProjs.cs`，龙之怒与 Gible 技能1 共用）；`DragonTailWhipProj` 同时画龙尾与铁尾（`ai1>0.5`） |
+| H5 钢/岩系 | `H5MoveProjs.cs` | `FormItemUtil.FlashCannonUlt`（光弹 40% + 闪光爆 60%，`H5Fx.SpawnChild` 带 `delivery` 参数：光弹 `Bolt`、爆圈 `AoEBurst`）、`H5FallingRockProj`（`_variant` = `Projectile.identity % 3`，各端一致）；`RockSlideDirectorProj` 豪力/大岩蛇/大钢蛇共用；`SustainedBeamProj` 破坏光线与暴鲤龙共用，未动 |
+| H6 地鼠/陆鲨 | `H6Projs.cs` | `H6SandTombProj`（仅圆陆鲨；卡咪龟潮旋仍 `WhirlpoolUlt`）；`MouseVortex` 的 `ProjectileType` 已指向它；`H6StoneBurst` 地震与隐形岩共用 |
+| H7 飞行/传说 | `H7Projs.cs` | `FormItemUtil.AirSlash/HeatWaveUlt/SkyAttackBird`（`StarterLines.cs`）；`WindRing` 由 `AirBurstProj`（洛奇亚技能1）与 `HurricaneFieldProj`（洛奇亚大招）共用，放大 ≈9 倍 |
+
+已知局限：暴风 `WeatherPainHurricane` 仍用原版天候棒贴图；`DragonStreak` 去掉头尾各 1 美术像素以过 pxt 0 WARN；`WaterStream`/`WaterCannon`/`SolarBeamBody` 的「触帧边」WARN 为首尾平铺所需（故意）。
+
+### 4.11 肉后 R3 批（2026-11-27，本地已验收，剩联机）
+
+语义与倍率见 `move-effects` §4.17。实现要点：
+
+- **H5 岩崩 / 闪光炮**（`H5MoveProjs.cs`）：会被广角镜 `HomingAI` 追踪抖动的穿透/定点弹，一律 `HandlesOwnHoming => true`；碎石圈再 `ShouldUpdatePosition() => false`。
+- **扇形/多射线判定**（劈瓦）：按「已扫过角度」取 11 根射线，`localNPCHitCooldown = Lifetime` 每目标一次；瞄左时垂直翻转贴图与角度。
+- **逐刺落点判定**（地震，仿重踏）：首 tick 记起点，`ComputeSpikes` 每 tick 算落点，PreDraw 与判定共用。
+- **自管位移牵引**（流沙地狱）：地面怪 AI 每 tick 覆盖速度，牵引须直接改 `position`（用 `Collision.TileCollision` 防穿墙）。
+- **ai[] 同步变体**：念力波纹 variant 存 `ai[1]`、暗影球弹跳计数存 `ai[0]`，不靠 OnSpawn 私有字段；龙尾方向用 `ai2` + `netUpdate`。
+- **穿墙判定**（空气斩）：`tileCollide=false` + 弹心埋入实心块连续 >6 tick 才 Kill，避免贴地被擦掉。
+- **被动自伤限频**：「太阳之力」每命中扣血须带间隔门（`SolarDrainGate`），否则多段招式每秒扣数十血。
+- 新贴图目录：`DragonPulse`、`DragonTailWhip`、`AirStreak`、`HeatWaveStreak`、`FocusPunch/FocusAura`、`ZenHammer`、`WingAttack/WingGust`；重画：`H6SandTomb`、`H6QuakeRock`、`BrickBreak`、`RockFall`。
+### 4.12 肉后 R4 批（2026-11-27，本地已验收，剩联机）
+
+语义与倍率见 `move-effects` §4.18。实现要点：
+
+- **持续引导水柱**（水炮 `WaterJetProj`，仅 `ai2=0`）：按住时只保留 1 道。新生成者先 Kill 同主人旧柱；每 tick 续命 `timeLeft=5`，续命条件是 `owner.controlUseItem && !CCed && HeldItem 为 HenshinForceItem`；松手进入 8 tick 淡出，期间不判定。瞄向用 `OwnerMouseWorld`（NetOp.SyncAim），转向限速 0.16 rad/tick，禁 `Main.MouseWorld`。每 tick 重算长度：先 `HenshinTileRay.FirstSolidDistance` 截方块，再 `FirstNpcDistance` 截首个 NPC（取 NPC 沿射线投影与 Hitbox 相交的较小值），所以不穿透；伤害用 `localNPCHitCooldown=3`。水花只在截断端 10 tick 一次，且用 `H1HitFxProj`（自带客户端判断）。
+- **广角镜排除**：不想被 `HomingAI` 追踪抖动的弹，写 `HandlesOwnHoming => true`（热风 `H7HeatWaveProj`、落石 `FallingBoulderProj`）。想自己追踪的（`H5FallingRockProj`），在自己的 `AI()` 里调 `HenshinProjUtil.HomingAI`。
+- **命中停追**：`OnHitNPC` 时置 `ai[2]=1` + `netUpdate`，之后不再转向（R6 起不再只靠命中，见 §4.13；40 px 停转区已删）。
+- **持续多跳招式的倍率分摊**：缩短 `localNPCHitCooldown` 时同步改 `damage/N`，使总伤保持在设计值（热风 3→8 间隔、`damage/3`→`damage/8`）。
+- **牵引型 0 伤弹**（`WingFeatherPullProj`）：只在 `netMode != MultiplayerClient` 改 `velocity/position` 并 `netUpdate`；Boss 与 `knockBackResist<=0` 跳过。
+- **爆点替换碎片**：龙之波动命中改 1 枚 AoE 弹，取代 12 枚碎片，减少弹数与粒子。
+- **弧线判定与贴图同源**：劈瓦的判定射线与 `PreDraw` 共用 `ChopFrame(age)` 与 `FrameEndDeg`，贴图改动时两处一起改。
+- **H3 FX 工具**（`H3FxProjs.cs`）：`H3Fx.DrawRipple` 画念力波纹；`SpawnHit` 仅拥有者客户端生成；新增 kind 6/7/8（`RingGold/RingCyan/RingPurple`）；`RingKind(variant)` 取色。
+- 新贴图：`DragonPulse/PulseBlast`、`WingAttack/WingFeather`、`CometStar/CometStar`、`Psychic/PsychicRingA|M|T`。
+
+### 4.13 肉后 R5–R7（2026-11-27，本地已验收，剩联机）
+
+语义与倍率见 `move-effects` §4.19–§4.20。实现要点：
+
+- **实心扇形判定**（劈瓦 `BrickBreakProj`，`Wave2MoveProjs.cs`）：圆心 = 玩家 `MountedCenter`，半径 184，角度从 -100° 累积到当前帧末角 +2°；40 px 内整圈必中；目标取 7×7 采样点 + 最近点。贴图 5 帧 400×400、帧中心 = 玩家，与判定同半径。
+- **近战贴图只画动作，不涂判定区**：劈瓦画手刀 + 外缘细弧斩痕（贴判定外缘扫过，外缘最亮、往内往尾变淡橙）+ 落点冲击；从玩家身后画前臂连到掌根，肩端藏在玩家身下。全像素 alpha 0/255，无网格/抖点，无粒子。
+- **下落追踪弹防掉头**（岩崩 `H5FallingRockProj`）：共享 `HomingAI` 在广角镜 `HomingTurn=1.0` 时会瞬间把速度整个转向目标且保速；穿过目标后会掉头朝上。修法全在本类内：拥有者端「与任一敌对 NPC 重叠」或「越过目标中心高度」即 `ai[2]=1` 永久停追；追踪后方向夹在竖直向下 ±55°；每 tick `velocity.Y ≥ 6`。不依赖 `OnHitNPC`（共享 `npc.immune` 无敌期内穿身不会触发）。其它用共享 `HomingAI` 的下落类弹未查同类问题。
+- **汇集爆炸只由拥有者生成**（翅膀攻击 `WingFeatherBurstProj`，`R4DragonProjs.cs`）：牵引弹结束时拥有者端生成，避免多端重复。
 
 ## 5. Stage 6 SpecReady（可施工规格 — 已落地，保留作规格档案）
 
@@ -675,6 +731,9 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 胡地（Psychic、FutureSight、FocusPunch） | `AlakazamMoveProjs.cs` |
 | 怪力（StoneEdge、CrossChop、CloseCombat） | `MachampMoveProjs.cs` |
 | 龙尾鞭 | `DragonTailWhipProj.cs` |
+| 肉后特效批 H1–H7（分组见 §4.10） | `H1Projs.cs` / `H1Moves.cs`、`H2Projs.cs`、`H3FxProjs.cs`、`H4Moves.cs`、`H5MoveProjs.cs`、`H6Projs.cs`、`H7Projs.cs` |
+| 龙之波动爆点、翅膀羽毛牵引/汇集爆炸 | `R4DragonProjs.cs` |
+| 无限大招调试物品 | `Content/Items/Debug/UltChargeDebugItem.cs` |
 | 绘制积木（Additive 批次、Sheet 帧、连续束、世界直径） | `HenshinFxDraw.cs` |
 | FX 贴图 | `Assets/Fx/`（§7） |
 | 形态接线 | `StarterLines.cs` / `CombatLinesA.cs` / `UtilityAndLegend.cs` |
@@ -724,6 +783,10 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.15 Living | 2026-09-27 | 暖金压深 `(255,168,28)` / 芯 `(255,206,64)`；电光一闪路径残影；电击沿飞行方向判定×2 |
 | 2.16 Living | 2026-09-27 | §6 撞墙反馈 `HenshinTileImpact`：材质碎屑+属性尘+节流音；10 个在役撞墙/截断/贴地弹接线；穿墙弹不变 |
 | 2.17 Living | 2026-11-26 | 洁癖对齐：§7.1 补 `Kenney/` 库存；§8 补 6 个未索引的招式/绘制文件 |
+| 2.18 Living | 2026-11-26 | §4.10 肉后特效批：24 个之力 FX 重做/换招的实现要点与共享工厂归属；见 `move-effects` §4.16 |
+| 2.19 Living | 2026-11-27 | §4.11 肉后 R3 批实现要点（自管牵引、逐刺判定、HandlesOwnHoming、ai[] 变体、被动自伤限频）；见 `move-effects` §4.17 |
+| 2.20 Living | 2026-11-27 | 增 §4.12 肉后 R4 实现要点（持续引导水柱、广角镜排除/命中停追、牵引弹、弧线判定同源），语义见 `move-effects` §4.18 |
+| 2.21 Living | 2026-11-27 | 增 §4.13 R5–R7 实现要点（劈瓦实心扇形 + 只画手刀/斩痕/前臂、岩崩防上飞、汇集爆炸拥有者生成）；§4.10–§4.13 标本地已验收、剩联机；§8 补 H1–H7、`R4DragonProjs.cs`、调试物品 |
 
 ---
 

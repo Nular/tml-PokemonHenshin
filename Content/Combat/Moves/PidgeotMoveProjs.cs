@@ -48,7 +48,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void OnSpawn(Terraria.DataStructures.IEntitySource source)
 		{
-			Main.instance.LoadProjectile(ProjectileID.WeatherPainShot);
+			ProjectileBorrow.SafeLoadProjectile(ProjectileID.WeatherPainShot);
 			if (Projectile.velocity.LengthSquared() < 1f)
 			{
 				Player p = Main.player[Projectile.owner];
@@ -226,7 +226,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Main.instance.LoadProjectile(ProjectileID.WeatherPainShot);
+			ProjectileBorrow.SafeLoadProjectile(ProjectileID.WeatherPainShot);
 			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.WeatherPainShot);
 			int frames = Math.Max(1, Main.projFrames[ProjectileID.WeatherPainShot]);
 			int frame = Projectile.frame % frames;
@@ -315,7 +315,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Main.instance.LoadProjectile(ProjectileID.WeatherPainShot);
+			ProjectileBorrow.SafeLoadProjectile(ProjectileID.WeatherPainShot);
 			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.WeatherPainShot);
 			int frames = Math.Max(1, Main.projFrames[ProjectileID.WeatherPainShot]);
 			Rectangle src = tex.Frame(1, frames, 0, Projectile.frame % frames);
