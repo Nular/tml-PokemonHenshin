@@ -92,7 +92,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// </summary>
 		/// <param name="tint">光脉冲颜色（暗色自动抬亮）。</param>
 		/// <param name="at">命中点；null = 弹幕与目标连线上贴近目标的一点。</param>
-		public static void OnHit(Projectile p, NPC target, HitTier tier, Color tint, Vector2? at = null)
+		/// <param name="lightScale">命中光脉冲的额外倍率；1 = 旧行为。命中闪算 glow 例外，lit 招式（水 / 石 / 土 / 草 / 风）建议 0.5。</param>
+		public static void OnHit(Projectile p, NPC target, HitTier tier, Color tint, Vector2? at = null, float lightScale = 1f)
 		{
 			if (p == null || target == null || Main.dedServ)
 				return;
@@ -100,7 +101,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			TierSpec spec = Spec(tier);
 			Vector2 hitPos = at ?? Vector2.Lerp(target.Center, p.Center, 0.35f);
-			HenshinExplosion.SpawnLight(hitPos, tint, spec.LightSize, spec.LightScale);
+			if (lightScale > 0f)
+				HenshinExplosion.SpawnLight(hitPos, tint, spec.LightSize, spec.LightScale * lightScale);
 
 			Vector2 dir = p.velocity.LengthSquared() > 1f ? Vector2.Normalize(p.velocity) : SafeDir(target.Center - p.Center);
 			bool fired = Shake(p.owner, hitPos, tier, dir);

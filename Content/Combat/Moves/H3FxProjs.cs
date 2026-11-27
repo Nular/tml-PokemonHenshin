@@ -68,11 +68,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static float Diameter(int kind) => HitDiameter[Math.Clamp(kind, 0, HitDiameter.Length - 1)];
 		public static bool HasSheet(int kind) => HitPath[Math.Clamp(kind, 0, HitPath.Length - 1)] != null;
 
-		// ai0 打包：bit0-3 kind，bit4-9 音效（SfxKey+1，0 = 不播），bit10-11 爆炸（0 无 / 1 S / 2 M / 3 L）。整数 < 2^12，float 精确同步。
+		// ai0 打包：bit0-3 kind，bit4-9 音效（SfxKey+1，0 = 不播），bit10-11 爆炸（0 无 / 1 S / 2 M / 3 L），bit12 soft（lit 招式调用，减弱发光）。整数 < 2^13，float 精确同步。
 		private const int KindMask = 15;
 		private const int SfxShift = 4;
 		private const int SfxMask = 63;
 		private const int BlastShift = 10;
+		private const int SoftBit = 1 << 12;
+
+		/// <summary>soft 命中：lit 招式（舌舔 / 龙尾 / 陀螺球 / 石）调用，加法层与爆炸 ×<see cref="SoftStrength"/>，光脉冲 ×<see cref="SoftLight"/>。RockBurst kind 自动 soft。</summary>
+		public static bool UnpackSoft(float ai0) => ((int)ai0 & SoftBit) != 0 || UnpackKind(ai0) == RockBurst;
+		public const float SoftStrength = 0.5f;
+		public const float SoftLight = 0.4f;
 
 		public static int UnpackKind(float ai0) => (int)ai0 & KindMask;
 		internal static SfxKey? UnpackSfx(float ai0)
@@ -157,15 +163,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// 仅拥有者客户端生成 0 伤害命中动画（随弹同步到其他客户端）。
 		/// <paramref name="sfx"/>：命中音，由特效弹在各端 AI 首帧播（PlayCooldown 节流）；<paramref name="blast"/>：叠一层 HenshinExplosion 爆炸配方。
 		/// 两者默认不带，旧调用方行为只多了加法光层。
+		/// <paramref name="soft"/>：lit 招式（水 / 石 / 土 / 草 / 风 / 普通物理）传 true，命中闪算 glow 例外但减弱（见 <see cref="SoftStrength"/>）；默认 false = 旧行为。
 		/// </summary>
 		internal static void SpawnHit(IEntitySource src, Vector2 pos, int kind, float scale, int owner, float rot = 0f,
-			SfxKey? sfx = null, BlastSize? blast = null)
+			SfxKey? sfx = null, BlastSize? blast = null, bool soft = false)
 		{
 			if (owner != Main.myPlayer)
 				return;
 			int packed = Math.Clamp(kind, 0, KindMask)
 				| ((sfx.HasValue ? (int)sfx.Value + 1 : 0) & SfxMask) << SfxShift
-				| (blast.HasValue ? (int)blast.Value + 1 : 0) << BlastShift;
+				| (blast.HasValue ? (int)blast.Value + 1 : 0) << BlastShift
+				| (soft ? SoftBit : 0);
 			int id = Projectile.NewProjectile(src, pos, Vector2.Zero, ModContent.ProjectileType<H3HitFxProj>(), 0, 0f,
 				owner, packed, rot, scale);
 			if (id >= 0)
@@ -234,7 +242,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.localAI[1]++;
 			float t = MathHelper.Clamp(Projectile.localAI[1] / Life, 0f, 1f);
 			bool blast = H3Fx.UnpackBlast(Projectile.ai[0]).HasValue;
-			HenshinExplosion.Pulse(Projectile.Center, H3Fx.Tint(Kind), LightSize, t, VisualDiameter * 1.2f, blast ? 1f : 0.8f);
+			float soft = H3Fx.UnpackSoft(Projectile.ai[0]) ? H3Fx.SoftLight : 1f;
+			HenshinExplosion.Pulse(Projectile.Center, H3Fx.Tint(Kind), LightSize, t, VisualDiameter * 1.2f, (blast ? 1f : 0.8f) * soft);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -246,11 +255,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Color tint = HenshinExplosion.Lift(H3Fx.Tint(kind));
 			float d = VisualDiameter;
 			Texture2D glow = HenshinFxDraw.SoftGlow;
+			// soft（lit 招式的命中）：加法层与爆炸同乘 k；手绘帧仍按原样画（命中闪例外）。
+			float k = H3Fx.UnpackSoft(Projectile.ai[0]) ? H3Fx.SoftStrength : 1f;
 
 			// 底层柔光：比手绘帧大一圈，(1-t)^1.5 收。
 			float bloom = MathF.Pow(1f - t, 1.5f);
 			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawAdditiveCentered(glow, Projectile.Center, HenshinFxDraw.WithAlpha(tint, 0.5f * bloom),
+			HenshinFxDraw.DrawAdditiveCentered(glow, Projectile.Center, HenshinFxDraw.WithAlpha(tint, 0.5f * bloom * k),
 				HenshinFxDraw.ScaleForWorldDiameter(glow, d * 1.5f));
 			HenshinFxDraw.EndAdditive();
 
@@ -263,15 +274,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 同帧加法亮层（当 _Light 用）：前半段把手绘帧再加一遍，命中瞬间"发光"而不是平涂。
 			if (sheet && t < 0.6f)
 				H3Fx.Draw(H3Fx.HitSheet(kind), H3Fx.HitFrameCount(kind), frame, Projectile.Center, Projectile.ai[1], scale,
-					HenshinFxDraw.WithAlpha(Color.White, 0.45f * (1f - t / 0.6f)));
+					HenshinFxDraw.WithAlpha(Color.White, 0.45f * (1f - t / 0.6f) * k));
 			// 白热核心闪：前 30%。
 			if (t < 0.3f)
 				HenshinFxDraw.DrawAdditiveCentered(glow, Projectile.Center,
-					HenshinFxDraw.WithAlpha(Color.Lerp(tint, Color.White, 0.65f), 0.75f * (1f - t / 0.3f)),
+					HenshinFxDraw.WithAlpha(Color.Lerp(tint, Color.White, 0.65f), 0.75f * (1f - t / 0.3f) * k),
 					HenshinFxDraw.ScaleForWorldDiameter(glow, d * 0.55f));
 			BlastSize? blast = H3Fx.UnpackBlast(Projectile.ai[0]);
 			if (blast.HasValue || !H3Fx.HasSheet(kind))
-				HenshinExplosion.Draw(Projectile.Center, blast ?? BlastSize.S, tint, t, d * 1.2f, Projectile.ai[1], kenneyFrame: false);
+				HenshinExplosion.Draw(Projectile.Center, blast ?? BlastSize.S, tint, t, d * 1.2f, Projectile.ai[1], kenneyFrame: false, strength: k);
 			HenshinFxDraw.EndAdditive();
 			return false;
 		}

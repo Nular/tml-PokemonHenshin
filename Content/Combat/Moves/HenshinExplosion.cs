@@ -41,10 +41,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// <param name="diameter">世界直径；0 = <see cref="Diameter"/>。</param>
 		/// <param name="seed">放射亮条角度种子；0 = 由 center 推导（同位置各端一致）。</param>
 		/// <param name="kenneyFrame">L 档是否叠 Kenney 爆炸帧（火 / 烟感）；水、电、念力类可关。</param>
-		public static void Draw(Vector2 center, BlastSize size, Color tint, float t, float diameter = 0f, float seed = 0f, bool kenneyFrame = true)
+		/// <param name="strength">0..1 整体亮度，乘到每层 alpha 上（Additive 下实际亮度约 strength²）。1 = 旧行为；
+		/// 爆炸算 glow 例外，lit 招式（水 / 石 / 土 / 草 / 风）调用时建议 0.5。</param>
+		public static void Draw(Vector2 center, BlastSize size, Color tint, float t, float diameter = 0f, float seed = 0f, bool kenneyFrame = true,
+			float strength = 1f)
 		{
 			if (Main.dedServ || Main.instance == null || t < 0f || t >= 1f)
 				return;
+			strength = MathHelper.Clamp(strength, 0f, 1f);
+			if (strength <= 0f)
+				return;
+			Color W(Color c, float k) => WithA(c, k * strength);
 			float d = diameter > 0f ? diameter : Diameter(size);
 			Color baseC = Lift(tint);
 			Color hot = Color.Lerp(baseC, Color.White, 0.72f);
@@ -58,24 +65,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				float f = 1f - t / 0.22f;
 				// R4 复查建议 5：大直径（风场 563 / 打雷 520 / 过热 420）时白闪夹到 300px，免得盖半屏。
-				DrawTex(glow, center, WithA(hot, 0.95f * f), Math.Min(d * 1.3f, FlashMaxDiameter));
+				DrawTex(glow, center, W(hot, 0.95f * f), Math.Min(d * 1.3f, FlashMaxDiameter));
 			}
 
 			// 2. 外热晕：主体颜色，随扩散略涨。
-			DrawTex(glow, center, WithA(baseC, 0.8f * MathF.Pow(fade, 0.9f)), d * (0.7f + 0.45f * e));
+			DrawTex(glow, center, W(baseC, 0.8f * MathF.Pow(fade, 0.9f)), d * (0.7f + 0.45f * e));
 
 			// 3. 白热核心：先最亮、半程熄灭；最里再叠一层纯白小芯。
-			DrawTex(glow, center, WithA(hot, MathF.Pow(fade, 1.4f)), d * 0.5f * (1f - 0.4f * t));
+			DrawTex(glow, center, W(hot, MathF.Pow(fade, 1.4f)), d * 0.5f * (1f - 0.4f * t));
 			if (t < 0.5f)
 			{
 				float f = 1f - t / 0.5f;
-				DrawTex(glow, center, WithA(Color.White, f), d * 0.22f);
+				DrawTex(glow, center, W(Color.White, f), d * 0.22f);
 			}
 
 			// 4. 冲击环：亮边 + 内侧淡尾；先快后慢扩到直径 d。
 			float r1 = 0.2f + 0.8f * e;
 			float ringA = size == BlastSize.S ? 0.7f : 0.95f;
-			DrawTex(ring, center, WithA(Color.Lerp(baseC, Color.White, 0.45f), ringA * MathF.Pow(fade, 0.65f)), d * r1);
+			DrawTex(ring, center, W(Color.Lerp(baseC, Color.White, 0.45f), ringA * MathF.Pow(fade, 0.65f)), d * r1);
 
 			// 5. 放射亮条（M 6 / L 10）：前 55% 向外冲出后熄灭。
 			int rays = size == BlastSize.S ? 0 : size == BlastSize.M ? 6 : 10;
@@ -95,7 +102,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					Vector2 dir = ang.ToRotationVector2();
 					Vector2 mid = center + dir * (root + tipI) * 0.5f;
 					float len = Math.Max(2f, tipI - root);
-					DrawStretched(glow, mid, WithA(hot, ra), len * 1.6f, w, ang);
+					DrawStretched(glow, mid, W(hot, ra), len * 1.6f, w, ang);
 				}
 			}
 
@@ -106,7 +113,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (kenneyFrame)
 			{
 				int frame = Math.Clamp((int)(t * HenshinFxDraw.KenneyExplosionFrames), 0, HenshinFxDraw.KenneyExplosionFrames - 1);
-				HenshinFxDraw.DrawKenneyExplosionFrame(center, WithA(Color.Lerp(baseC, Color.White, 0.2f), 0.9f * MathF.Pow(fade, 0.7f)), d * 0.8f, frame);
+				HenshinFxDraw.DrawKenneyExplosionFrame(center, W(Color.Lerp(baseC, Color.White, 0.2f), 0.9f * MathF.Pow(fade, 0.7f)), d * 0.8f, frame);
 			}
 
 			// 7. L：第二环，晚 18% 出发、更宽更慢。
@@ -114,7 +121,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (t2 > 0f)
 			{
 				float r2 = 0.15f + 0.85f * EaseOutCubic(t2);
-				DrawTex(ring, center, WithA(baseC, 0.75f * MathF.Pow(1f - t2, 0.8f)), d * 1.15f * r2);
+				DrawTex(ring, center, W(baseC, 0.75f * MathF.Pow(1f - t2, 0.8f)), d * 1.15f * r2);
 			}
 		}
 
@@ -138,13 +145,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Lighting.AddLight(center + (i * MathHelper.TwoPi / ringPts).ToRotationVector2() * r, rgb * 0.45f);
 		}
 
-		/// <summary>本地队列爆炸（画 + 光照，持续 <see cref="Duration"/>）。须在各端都跑的代码里调；服务器直接返回。</summary>
-		public static void Spawn(Vector2 center, BlastSize size, Color tint, float diameter = 0f, bool kenneyFrame = true)
-			=> Enqueue(center, size, tint, diameter, 1f, draw: true, kenneyFrame);
+		/// <summary>本地队列爆炸（画 + 光照，持续 <see cref="Duration"/>）。须在各端都跑的代码里调；服务器直接返回。
+		/// <paramref name="strength"/> 同时乘画面亮度（见 <see cref="Draw"/>）和光强；1 = 旧行为，lit 招式建议 0.5。</summary>
+		public static void Spawn(Vector2 center, BlastSize size, Color tint, float diameter = 0f, bool kenneyFrame = true, float strength = 1f)
+			=> Enqueue(center, size, tint, diameter, strength, draw: true, kenneyFrame, strength);
 
 		/// <summary>本地队列光照（不画），用于 OnKill 等只亮 1 tick 的旧写法。scale 乘光强。</summary>
 		public static void SpawnLight(Vector2 center, Color tint, BlastSize size, float scale = 1f)
-			=> Enqueue(center, size, tint, 0f, scale, draw: false, kenneyFrame: false);
+			=> Enqueue(center, size, tint, 0f, scale, draw: false, kenneyFrame: false, 1f);
 
 		/// <summary>暗色抬亮：最高通道 &lt; 220 时等比拉到 220。</summary>
 		public static Color Lift(Color c)
@@ -172,11 +180,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 			public bool Draw;
 			public bool Kenney;
 			public float Seed;
+			public float Strength;
 		}
 
 		private static readonly List<Blast> Queue = new();
 
-		private static void Enqueue(Vector2 center, BlastSize size, Color tint, float diameter, float lightScale, bool draw, bool kenneyFrame)
+		private static void Enqueue(Vector2 center, BlastSize size, Color tint, float diameter, float lightScale, bool draw, bool kenneyFrame, float strength)
 		{
 			if (Main.dedServ)
 				return;
@@ -192,7 +201,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Life = draw ? Duration(size) : Math.Max(6, Duration(size) / 2),
 				Draw = draw,
 				Kenney = kenneyFrame,
-				Seed = Main.rand.NextFloat(0.1f, MathHelper.TwoPi)
+				Seed = Main.rand.NextFloat(0.1f, MathHelper.TwoPi),
+				Strength = strength
 			});
 		}
 
@@ -228,7 +238,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			foreach (Blast b in Queue)
 			{
 				if (b.Draw)
-					Draw(b.Center, b.Size, b.Tint, b.Age / (float)b.Life, b.Diameter, b.Seed, b.Kenney);
+					Draw(b.Center, b.Size, b.Tint, b.Age / (float)b.Life, b.Diameter, b.Seed, b.Kenney, b.Strength);
 			}
 			Main.spriteBatch.End();
 		}

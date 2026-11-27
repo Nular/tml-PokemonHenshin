@@ -413,6 +413,50 @@ namespace PokemonHenshin.Content.Combat.Moves
 			DrawAdditiveCentered(Cyclone, worldPos, colorWithAlpha, scale, rotation);
 		}
 
+		// —— 吃光（lit）——
+
+		/// <summary>
+		/// 世界点的光色。该格是实心块时往上取一格（沿地面取光不会比周围更黑），仍实心则用原格。
+		/// </summary>
+		public static Color LightAt(Vector2 world)
+		{
+			int tx = (int)(world.X / 16f);
+			int ty = (int)(world.Y / 16f);
+			if (SolidAt(tx, ty) && !SolidAt(tx, ty - 1))
+				ty--;
+			return Lighting.GetColor(tx, ty);
+		}
+
+		private static bool SolidAt(int x, int y)
+		{
+			if (!WorldGen.InWorld(x, y, 1))
+				return false;
+			Tile t = Framing.GetTileSafely(x, y);
+			return t.HasTile && !t.IsActuated && Main.tileSolid[t.TileType] && !Main.tileSolidTop[t.TileType];
+		}
+
+		/// <summary>实物颜色吃光：tint × 该点光（<see cref="LightAt"/>），A 不变。AlphaBlend 批次用，不要再叠 Additive。</summary>
+		public static Color Lit(Vector2 world, Color tint) => tint.MultiplyRGBA(LightAt(world));
+
+		/// <summary>
+		/// 长物体（鞭、舌、水柱、光束式实物，超过约 3 格）逐段吃光：t=0..1 沿 from→to 的位置，
+		/// 每 <paramref name="step"/> 世界像素（默认 48 = 3 格）取一次光，两次之间线性插值。返回 tint × 光，A 不变。
+		/// </summary>
+		public static Color LitSegment(Vector2 from, Vector2 to, float t, Color tint, float step = 48f)
+		{
+			float len = Vector2.Distance(from, to);
+			t = MathHelper.Clamp(t, 0f, 1f);
+			if (len <= step || step <= 1f)
+				return Lit(Vector2.Lerp(from, to, t), tint);
+			int knots = (int)MathF.Ceiling(len / step);
+			float pos = t * knots;
+			int k0 = Math.Min((int)pos, knots - 1);
+			float f = pos - k0;
+			Color l0 = LightAt(Vector2.Lerp(from, to, k0 / (float)knots));
+			Color l1 = LightAt(Vector2.Lerp(from, to, (k0 + 1) / (float)knots));
+			return tint.MultiplyRGBA(Color.Lerp(l0, l1, f));
+		}
+
 		/// <summary>带 Alpha 的颜色：rgb × intensity，A = 255×intensity（禁止假 Additive）。</summary>
 		public static Color WithAlpha(Color rgb, float intensity)
 		{

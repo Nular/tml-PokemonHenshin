@@ -75,10 +75,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return false;
 		}
 
-		/// <summary>受光但抬亮暗处（夜里 / 洞里也看得出）。</summary>
-		public static Color Lit(Vector2 world, int floor = 110)
+		/// <summary>受光，暗处留一点下限（光照 A 组：默认 110 → 40，夜里 / 洞里像实物一样变暗）。
+		/// 取光走 <see cref="HenshinFxDraw.LightAt"/>：点在实心块里时往上取一格，沿地面的招式不会比周围更黑。</summary>
+		public static Color Lit(Vector2 world, int floor = 40)
 		{
-			Color l = Lighting.GetColor((int)(world.X / 16f), (int)(world.Y / 16f));
+			Color l = HenshinFxDraw.LightAt(world);
 			return new Color(Math.Max(l.R, (byte)floor), Math.Max(l.G, (byte)floor), Math.Max(l.B, (byte)floor));
 		}
 	}
@@ -122,12 +123,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				PlaySound(kind, fx, at);
 				Color tint = H6Fx.Tint(kind);
 				bool big = fx == H6Fx.FxHeavy || fx == H6Fx.FxUlt;
+				// 光照 A 组：陨石 = glow 不变；土 / 石 / 沙 = lit，爆炸和光按命中闪例外保留但减半。
 				if (kind == H6Fx.KindMeteor)
 					HenshinExplosion.Spawn(at, fx == H6Fx.FxHeavy ? BlastSize.M : BlastSize.S, tint, fx == H6Fx.FxHeavy ? 150f : 0f);
 				else if (fx == H6Fx.FxBlast)
-					HenshinExplosion.Spawn(at, BlastSize.S, tint, 80f);
+					HenshinExplosion.Spawn(at, BlastSize.S, tint, 80f, strength: 0.5f);
 				else
-					HenshinExplosion.SpawnLight(at, tint, fx == H6Fx.FxUlt ? BlastSize.M : BlastSize.S, big ? 1f : 0.7f);
+					HenshinExplosion.SpawnLight(at, tint, fx == H6Fx.FxUlt ? BlastSize.M : BlastSize.S, big ? 0.5f : 0.35f);
 			}
 		}
 
@@ -252,24 +254,26 @@ namespace PokemonHenshin.Content.Combat.Moves
 			{
 				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 1f, -0.35f);
 				HenshinSfx.Play(SfxKey.RockCast, Projectile.Center, 0.9f, -0.3f);
-				HenshinExplosion.Spawn(Projectile.Center, BlastSize.L, SandTint, 2f * HitRadius, kenneyFrame: false);
+				// 光照 A 组：沙涡 mixed，起落爆炸保留（大招例外）但降到 0.6。
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.L, SandTint, 2f * HitRadius, kenneyFrame: false, strength: 0.6f);
 				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate, Vector2.UnitY);
 			}
 			if (Projectile.timeLeft <= FadeTicks && Projectile.localAI[2] == 0f)
 			{
 				Projectile.localAI[2] = 1f;
 				HenshinSfx.Play(SfxKey.BlastS, Projectile.Center, 0.9f, -0.3f);
-				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, SandTint, HitRadius * 1.2f, kenneyFrame: false);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, SandTint, HitRadius * 1.2f, kenneyFrame: false, strength: 0.6f);
 			}
 			float gl = Grow();
-			Lighting.AddLight(Projectile.Center, 0.6f * gl, 0.45f * gl, 0.2f * gl);
+			// 光照 A 组：mixed，光 ≤0.3（原 0.6 / 边灯 0.3），免得沙涡照亮自己的 lightColor。
+			Lighting.AddLight(Projectile.Center, 0.3f * gl, 0.22f * gl, 0.1f * gl);
 			if (!Main.dedServ)
 			{
-				// 沙涡边缘 4 盏随涡旋转的灯，地形被照出圈的大小
+				// 沙涡边缘 4 盏随涡旋转的弱灯，地形被照出圈的大小
 				float spin = Age * 0.06f;
 				for (int i = 0; i < 4; i++)
 					Lighting.AddLight(Projectile.Center + (spin + i * MathHelper.PiOver2).ToRotationVector2() * HitRadius * 0.85f * gl,
-						0.3f * gl, 0.22f * gl, 0.1f * gl);
+						0.12f * gl, 0.09f * gl, 0.04f * gl);
 			}
 
 			if (Main.netMode != NetmodeID.MultiplayerClient && Projectile.timeLeft > FadeTicks)
@@ -323,7 +327,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.ai[1] > 0)
 				target.AddBuff((int)Projectile.ai[1], 120);
 			HitTier tier = HenshinHitFeel.TierOf(Projectile, HitTier.Heavy);
-			HenshinHitFeel.OnHit(Projectile, target, tier, SandTint, target.Center);
+			HenshinHitFeel.OnHit(Projectile, target, tier, SandTint, target.Center, 0.5f);
 			H6Fx.SpawnBurst(Projectile, target.Center, H6Fx.KindSand, 0.7f, H6Fx.FxOf(tier));
 		}
 
@@ -338,7 +342,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return false;
 			Vector2 origin = new(tex.Width * 0.5f, fh * 0.5f);
 			Vector2 pos = (Projectile.Center - Main.screenPosition).Floor();
-			Color lit = H6Fx.Lit(Projectile.Center, 150);
+			// 光照 A 组：下限 150 → 40（mixed 的 lit 本体）。沙涡直径 22 格，只取中心一格光。shortcut: 中心取光，洞口半明半暗时整圈同亮；要逐段取光再改。
+			Color lit = H6Fx.Lit(Projectile.Center, 40);
 			int f0 = (int)(Main.GameUpdateCount / 3) % Frames;
 			float s = 2f * HitRadius / (fh - 4f) * (0.25f + 0.75f * g);
 			// 外层大涡 + 内层反向小涡（同一张图，转相位错开，省一张贴图）

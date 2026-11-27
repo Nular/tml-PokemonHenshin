@@ -128,7 +128,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 						Dust d = Dust.NewDustPerfect(pos + Main.rand.NextVector2Circular(4f, 4f), DustID.Water, Spray(normal, 1.0f, 1.5f, 4f) * scale, 60, default, 1.3f);
 						d.noGravity = false;
 					}
-					Lighting.AddLight(pos, 0.15f * scale, 0.35f * scale, 0.6f * scale);
+					// 光照 A 组：水是 lit 实物，撞墙不再发光（原 AddLight 0.15/0.35/0.6）。
 					if (sound)
 						Play(kind, 3, SoundID.SplashWeak with { Volume = 0.5f, Pitch = Jitter(0.2f) }, pos);
 					break;

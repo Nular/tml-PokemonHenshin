@@ -25,18 +25,21 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return t;
 		}
 
-		/// <summary>竖排条带画一帧（Alpha 混合，白色=不受光）。origin 为单帧内像素。</summary>
-		public static void Draw(string name, int frames, int frame, Vector2 world, Vector2 originPx, float rot, Vector2 scale, float alpha = 1f, SpriteEffects fx = SpriteEffects.None)
+		/// <summary>竖排条带画一帧（Alpha 混合）。origin 为单帧内像素。
+		/// <paramref name="color"/>：null = 白色（不受光，glow 招式）；lit 招式传 lightColor 或 <see cref="HenshinFxDraw.Lit"/>；最终色 = color × alpha。</summary>
+		public static void Draw(string name, int frames, int frame, Vector2 world, Vector2 originPx, float rot, Vector2 scale, float alpha = 1f, SpriteEffects fx = SpriteEffects.None,
+			Color? color = null)
 		{
 			Texture2D tex = Sheet(name);
 			int fh = tex.Height / frames;
 			frame = Math.Clamp(frame, 0, frames - 1);
 			Rectangle src = new(0, fh * frame, tex.Width, fh);
-			Main.EntitySpriteDraw(tex, (world - Main.screenPosition).Floor(), src, Color.White * alpha, rot, originPx, scale, fx, 0f);
+			Main.EntitySpriteDraw(tex, (world - Main.screenPosition).Floor(), src, (color ?? Color.White) * alpha, rot, originPx, scale, fx, 0f);
 		}
 
-		public static void Draw(string name, int frames, int frame, Vector2 world, Vector2 originPx, float rot, float scale, float alpha = 1f, SpriteEffects fx = SpriteEffects.None)
-			=> Draw(name, frames, frame, world, originPx, rot, new Vector2(scale), alpha, fx);
+		public static void Draw(string name, int frames, int frame, Vector2 world, Vector2 originPx, float rot, float scale, float alpha = 1f, SpriteEffects fx = SpriteEffects.None,
+			Color? color = null)
+			=> Draw(name, frames, frame, world, originPx, rot, new Vector2(scale), alpha, fx, color);
 
 		/// <summary>从父射弹派生子射弹并继承招式来源（与金属爪导演同一套）。</summary>
 		public static int SpawnChild(Projectile parent, int type, Vector2 pos, Vector2 vel, int damage, float kb, float ai0 = 0f, float ai1 = 0f, MoveDelivery delivery = MoveDelivery.MeleeArc)
@@ -415,7 +418,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			else
 				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, IsUltRock ? HitTier.Heavy : HitTier.Light, Vector2.UnitY);
 			HenshinSfx.PlayCooldown(SfxKey.RockHit, Projectile.Center, 4, IsUltRock ? 1f : 0.85f);
-			HenshinExplosion.Spawn(Projectile.Center, IsUltRock ? BlastSize.M : BlastSize.S, DustTint, IsUltRock ? 96f : 56f, kenneyFrame: false);
+			// 光照 A 组：石头是 lit 招式，落地爆炸按 glow 例外保留，强度减半。
+			HenshinExplosion.Spawn(Projectile.Center, IsUltRock ? BlastSize.M : BlastSize.S, DustTint, IsUltRock ? 96f : 56f, kenneyFrame: false, strength: 0.5f);
 			if (Projectile.ai[0] > 0.5f && Projectile.owner == Main.myPlayer)
 			{
 				int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center, Vector2.Zero,
@@ -432,9 +436,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override bool PreDraw(ref Color lightColor)
 		{
 			float s = Projectile.ai[1] > 0.5f ? 1.3f : 0.95f;
-			// 短尘线：暖灰外晕 + 淡白芯，比石块窄，不盖住贴图。
-			HenshinTrail.Strip(Projectile, DustTint, IsUltRock ? 22f : 14f, new Color(255, 240, 215), 0.3f, 0f, 0.55f);
-			H5Fx.Draw("RockFall", 6, _variant, Projectile.Center, new Vector2(26f, 26f), Projectile.rotation, s);
+			// 短尘线：暖灰外晕 + 淡白芯，比石块窄，不盖住贴图。光照 A 组：尘线和石块都吃光（lit），暗处变暗。
+			HenshinTrail.Strip(Projectile, DustTint, IsUltRock ? 22f : 14f, new Color(255, 240, 215), 0.3f, 0f, 0.55f, lit: true);
+			H5Fx.Draw("RockFall", 6, _variant, Projectile.Center, new Vector2(26f, 26f), Projectile.rotation, s, color: lightColor);
 			return false;
 		}
 	}
@@ -475,14 +479,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 			target.AddBuff(BuffID.Confused, 40);
 			target.velocity *= 0.2f;
 			// 打击感（G2）：大岩蛇大招 → Ultimate 档（20 tick 只震一次），技能 → Light。
-			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(215, 180, 130), Projectile.Center);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(215, 180, 130), Projectile.Center, 0.5f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int age = Life - Projectile.timeLeft;
 			int frame = 3 + Math.Min(2, age * 3 / Life);
-			H5Fx.Draw("RockFall", 6, frame, Projectile.Center, new Vector2(26f, 26f), 0f, Radius / 18f, 1f - age / (float)Life * 0.4f);
+			// 光照 A 组：碎石圈 lit；中心常贴地，用 LightAt（实心格往上取一格）。
+			H5Fx.Draw("RockFall", 6, frame, Projectile.Center, new Vector2(26f, 26f), 0f, Radius / 18f, 1f - age / (float)Life * 0.4f,
+				color: HenshinFxDraw.LightAt(Projectile.Center));
 			return false;
 		}
 

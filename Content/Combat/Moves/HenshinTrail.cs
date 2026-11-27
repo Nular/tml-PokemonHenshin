@@ -10,7 +10,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// <summary>
 	/// 共享拖尾：读 <see cref="Projectile.oldPos"/>，零额外实体、零联机包（各端本地记录）。
 	/// <list type="bullet">
-	/// <item><see cref="Strip(Projectile, Color, float, Color?, float, float, float, int)"/>：Catmull-Rom 平滑后的三角带，宽度与亮度按弧长渐细，外晕 + 亮芯两层，Additive 保 Alpha。</item>
+	/// <item><see cref="Strip(Projectile, Color, float, Color?, float, float, float, int, bool)"/>：Catmull-Rom 平滑后的三角带，宽度与亮度按弧长渐细，外晕 + 亮芯两层，Additive 保 Alpha；lit:true 时逐顶点吃光、NonPremultiplied。</item>
 	/// <item><see cref="Afterimage(Projectile, Action{Vector2, float, float}, int, int, float)"/>：沿 oldPos 画 N 份递减残影。</item>
 	/// </list>
 	/// 条带贴图为运行时生成的横截面软边（不读 Fire / Flashimpact / HitJagged，不调 LoadProjectile）；只在绘制路径创建，服务器永不触发。
@@ -53,22 +53,28 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// <param name="tailWidth">尾端宽度（0 = 尖尾）。</param>
 		/// <param name="opacity">整体强度 0–1（走 WithAlpha，A 同比）。</param>
 		/// <param name="points">只用最近 N 个 oldPos；0 = 全部缓存。</param>
+		/// <param name="lit">
+		/// false（默认）= 旧行为：发光 Additive，暗色抬亮。
+		/// true = 实物拖尾（水、土、石、草、风）：不抬亮，每个顶点乘该点 <see cref="Lighting.GetColor(int, int)"/>，
+		/// 用 <see cref="BlendState.NonPremultiplied"/> 画，暗处变暗、不发光。<b>调用方不要先乘 lightColor 再传进来</b>，传原色即可。
+		/// </param>
 		public static void Strip(Projectile p, Color glow, float width, Color? core = null, float coreRatio = 0.38f,
-			float tailWidth = 0f, float opacity = 1f, int points = 0)
+			float tailWidth = 0f, float opacity = 1f, int points = 0, bool lit = false)
 		{
 			if (Main.dedServ || p == null || !p.active)
 				return;
 			int n = Gather(p, points);
 			if (n < 2)
 				return;
-			StripPoints(new ReadOnlySpan<Vector2>(Raw, 0, n), glow, width, core, coreRatio, tailWidth, opacity);
+			StripPoints(new ReadOnlySpan<Vector2>(Raw, 0, n), glow, width, core, coreRatio, tailWidth, opacity, lit);
 		}
 
 		/// <summary>
-		/// 自定义路径版（头 → 尾的世界坐标，如鞭身、回旋轨迹）。批次要求同 <see cref="Strip(Projectile, Color, float, Color?, float, float, float, int)"/>。
+		/// 自定义路径版（头 → 尾的世界坐标，如鞭身、回旋轨迹）。批次要求同 <see cref="Strip(Projectile, Color, float, Color?, float, float, float, int, bool)"/>。
+		/// <paramref name="lit"/> 同 Strip：true = 逐顶点乘光、NonPremultiplied；调用方不要先乘光。
 		/// </summary>
 		public static void StripPoints(ReadOnlySpan<Vector2> worldPoints, Color glow, float width, Color? core = null,
-			float coreRatio = 0.38f, float tailWidth = 0f, float opacity = 1f)
+			float coreRatio = 0.38f, float tailWidth = 0f, float opacity = 1f, bool lit = false)
 		{
 			if (Main.dedServ || Main.instance == null || worldPoints.Length < 2 || opacity <= 0f || width <= 0f)
 				return;
@@ -76,17 +82,18 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (count < 2 || Arc[count - 1] < 2f)
 				return;
 
-			Color glowC = Lift(glow);
+			// lit：不 Lift（暗色实物就该是暗色）；光在 Append 里逐顶点乘。
+			Color glowC = lit ? glow : Lift(glow);
 			Color coreC = core ?? Color.Lerp(glowC, Color.White, 0.6f);
 			opacity = MathHelper.Clamp(opacity, 0f, 1f);
 
 			int v = 0;
 			int idx = 0;
-			Append(count, glowC, width, tailWidth, opacity, ref v, ref idx);
+			Append(count, glowC, width, tailWidth, opacity, lit, ref v, ref idx);
 			if (coreC.A > 0 && coreRatio > 0f)
-				Append(count, coreC, width * coreRatio, tailWidth * coreRatio, opacity, ref v, ref idx);
+				Append(count, coreC, width * coreRatio, tailWidth * coreRatio, opacity, lit, ref v, ref idx);
 			if (idx > 0)
-				Flush(v, idx);
+				Flush(v, idx, lit ? BlendState.NonPremultiplied : BlendState.Additive);
 		}
 
 		/// <summary>
@@ -224,7 +231,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return count;
 		}
 
-		private static void Append(int count, Color color, float headW, float tailW, float opacity, ref int v, ref int idx)
+		private static void Append(int count, Color color, float headW, float tailW, float opacity, bool lit, ref int v, ref int idx)
 		{
 			float total = Math.Max(1f, Arc[count - 1]);
 			int baseV = v;
@@ -240,7 +247,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float shape = MathF.Pow(1f - t, 0.7f);
 				float half = (tailW + (headW - tailW) * shape) * 0.5f;
 				float a = opacity * MathF.Pow(1f - t, 0.75f); // WithAlpha 在 Additive 下按平方生效，实际约 (1-t)^1.5
-				Color c = HenshinFxDraw.WithAlpha(color, a);
+				Color c;
+				if (lit)
+				{
+					// NonPremultiplied：rgb 原色 × 该点光，A 取 a²（与 Additive 下 WithAlpha 的平方衰减同感）。
+					Color l = HenshinFxDraw.LightAt(Pts[k]);
+					c = new Color(color.R * l.R / 255, color.G * l.G / 255, color.B * l.B / 255, (int)(255f * a * a * color.A / 255f));
+				}
+				else
+					c = HenshinFxDraw.WithAlpha(color, a);
 
 				Vector2 s = Pts[k] - Main.screenPosition;
 				Verts[v++] = new VertexPositionColorTexture(new Vector3(s + normal * half, 0f), c, new Vector2(t, 0f));
@@ -283,7 +298,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 		}
 
-		private static void Flush(int vertexCount, int indexCount)
+		private static void Flush(int vertexCount, int indexCount, BlendState blend)
 		{
 			GraphicsDevice gd = Main.instance.GraphicsDevice;
 			Texture2D tex = Profile;
@@ -295,7 +310,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			_effect.World = Matrix.Identity;
 			_effect.View = Main.GameViewMatrix.TransformationMatrix;
 			_effect.Projection = Matrix.CreateOrthographicOffCenter(0f, vp.Width, vp.Height, 0f, -1f, 1f);
-			gd.BlendState = BlendState.Additive;
+			gd.BlendState = blend;
 			gd.SamplerStates[0] = SamplerState.LinearClamp;
 			gd.RasterizerState = RasterizerState.CullNone;
 			gd.DepthStencilState = DepthStencilState.None;
