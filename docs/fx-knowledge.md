@@ -484,6 +484,21 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 **例外（有意保留）：** 隐形岩石块是 lit，但留 ≤0.12 微光，黑处能找到陷阱；流星群 `H6Fx.Lit(...,140)` 叠白（glow）不改。改动明细与手测清单见 `Assets/TEMP_ASSETS/fx-light/integration.md`（本地，不入库）。
 
+**第 2 轮例外（2026-11-28，A 组共用代码；B–E 组接线）：**
+
+1. **水柱（WaterJetProj 技能 + 加农）**：灰板的根因是近白泡沫 + 贴图全不透明 + 低亮度。本体改 `LitSegment(..., darkFade: true)`（可加 `keepHue: true`），暗处 alpha 乘 `0.35 + 0.65·k`（k = 光最亮通道 / 255），变半透明露出背景；再沿中心加一条淡加色芯线（`A=0`，强度 0.15–0.25，芯线自己留 0.3 下限）。只有**加农大招**再加沿线小灯（每 3 格，每通道 ≤0.2）或外缘 IceTorch，二选一，先灯。技能版不加光。
+2. **大招**：lit 实物大招（水/草/岩/土/风）可加一盏 0.35–0.5 的色光；glow 大招主光 0.8–1.2。发光粒子一律走 `HenshinUltGlow.Emit`：外缘 0.8–1.1 倍半径、默认 0.5 颗/tick、每 owner 每 tick 合计 ≤2 颗、粒子自带光时不再 `AddLight`。导演比子弹先死时由子弹发，`sampleN` 抽样（子弹 ≥16 颗时 N ≥16）。位置只用 `Projectile.Center` / `ai[]` / 同步字段。
+
+**第 2 轮共用工具（默认值 = 旧行为）：**
+
+- `HenshinFxDraw.LightK(l)`、`DarkFade(l, floor=0.35f)`、`DarkFadeAt(world)`：暗处淡出系数。AlphaBlend（预乘）下 `color * f`；NonPremultiplied 只乘 A。
+- `HenshinFxDraw.LitHue(world, tint, sceneMix=0.25f)` / `LitHueFrom(light, tint)`：按最亮通道变暗、保色相，混 25% 光色。白光下等于 `Lit`，全黑仍黑。
+- `HenshinFxDraw.LitSegment(from, to, t, tint, step=48, keepHue=false, darkFade=false)`；`LightAlong(from, to, t, step)` 只取光。
+- `HenshinTrail.Strip` / `StripPoints` 末尾加 `keepHue=false, darkFade=false`（只在 `lit:true` 时生效）。
+- `HenshinUltGlow.Emit(Projectile p, radius, dustType, lightRgb, everyTicks=2, selfLit=null, sampleN=1, forceLight=false, dustScale=1f)`；坐标版 `Emit(center, owner, sampleKey, ...)`。`HenshinUltGlow.SelfLights(type)`：反编译核实的自带光 dust（6、59–65、135、86–92、27、226）。宝石 dust 光 ∝ (0.6·scale)²，scale 1 时只有约 0.36，需要更亮就 `forceLight` 或换火把类。
+
+细节、签名、自带光表与各组用法见 `Assets/TEMP_ASSETS/fx-light2/a.md`（本地，不入库）。
+
 ## 5. Stage 6 SpecReady（可施工规格 — 已落地，保留作规格档案）
 
 仅覆盖计划点名的 **代码 `Stage==6`** 形态招式。原则：留玩法管线，换可见外壳；禁把 LastPrism 金光给龙之怒。

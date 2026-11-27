@@ -441,20 +441,58 @@ namespace PokemonHenshin.Content.Combat.Moves
 		/// <summary>
 		/// 长物体（鞭、舌、水柱、光束式实物，超过约 3 格）逐段吃光：t=0..1 沿 from→to 的位置，
 		/// 每 <paramref name="step"/> 世界像素（默认 48 = 3 格）取一次光，两次之间线性插值。返回 tint × 光，A 不变。
+		/// <paramref name="keepHue"/>：true = 走 <see cref="LitHueFrom"/>（按最亮通道变暗、保色相 + 25% 光色），暖光下水不发灰。
+		/// <paramref name="darkFade"/>：true = 结果再整体乘 <see cref="DarkFade"/>（AlphaBlend 预乘：RGBA 同乘），暗处变半透明露出背景。
+		/// 两者默认 false = 旧行为。
 		/// </summary>
-		public static Color LitSegment(Vector2 from, Vector2 to, float t, Color tint, float step = 48f)
+		public static Color LitSegment(Vector2 from, Vector2 to, float t, Color tint, float step = 48f, bool keepHue = false, bool darkFade = false)
+		{
+			Color l = LightAlong(from, to, t, step);
+			Color c = keepHue ? LitHueFrom(l, tint) : tint.MultiplyRGBA(l);
+			return darkFade ? c * DarkFade(l) : c;
+		}
+
+		/// <summary>沿 from→to 的 t 处的光（与 <see cref="LitSegment"/> 同一取样：每 step 像素一个结点，结点间线性插值）。</summary>
+		public static Color LightAlong(Vector2 from, Vector2 to, float t, float step = 48f)
 		{
 			float len = Vector2.Distance(from, to);
 			t = MathHelper.Clamp(t, 0f, 1f);
 			if (len <= step || step <= 1f)
-				return Lit(Vector2.Lerp(from, to, t), tint);
+				return LightAt(Vector2.Lerp(from, to, t));
 			int knots = (int)MathF.Ceiling(len / step);
 			float pos = t * knots;
 			int k0 = Math.Min((int)pos, knots - 1);
 			float f = pos - k0;
 			Color l0 = LightAt(Vector2.Lerp(from, to, k0 / (float)knots));
 			Color l1 = LightAt(Vector2.Lerp(from, to, (k0 + 1) / (float)knots));
-			return tint.MultiplyRGBA(Color.Lerp(l0, l1, f));
+			return Color.Lerp(l0, l1, f);
+		}
+
+		/// <summary>光的亮度 k = 最亮通道 / 255（0 全黑 → 1 全亮）。</summary>
+		public static float LightK(Color light) => Math.Max(light.R, Math.Max(light.G, light.B)) / 255f;
+
+		/// <summary>
+		/// 暗处淡出系数 = floor + (1-floor)·k（默认 0.35 + 0.65·k）。用法：AlphaBlend（预乘）下 <c>color * DarkFade(l)</c>；
+		/// NonPremultiplied 下只乘 A。水柱等大块不透明实物用：暗处变半透明，不再是一整条灰板。不发光、不加粒子。
+		/// </summary>
+		public static float DarkFade(Color light, float floor = 0.35f)
+			=> MathHelper.Clamp(floor + (1f - floor) * LightK(light), 0f, 1f);
+
+		/// <summary><see cref="DarkFade"/> 的取点版：取 <see cref="LightAt"/> 再算系数。</summary>
+		public static float DarkFadeAt(Vector2 world, float floor = 0.35f) => DarkFade(LightAt(world), floor);
+
+		/// <summary>
+		/// 保色相吃光：tint × k（k = 光的最亮通道），再与 tint × 光（逐通道）按 <paramref name="sceneMix"/> 混合，A 不变。
+		/// 全黑仍是黑，白光下与 <see cref="Lit"/> 相同；只在彩色光（火把、熔岩）下少掉色。
+		/// </summary>
+		public static Color LitHue(Vector2 world, Color tint, float sceneMix = 0.25f) => LitHueFrom(LightAt(world), tint, sceneMix);
+
+		/// <summary><see cref="LitHue"/> 的已取光版（光已由调用方取好，如拖尾逐顶点）。</summary>
+		public static Color LitHueFrom(Color light, Color tint, float sceneMix = 0.25f)
+		{
+			float k = LightK(light);
+			Color hue = new((int)(tint.R * k), (int)(tint.G * k), (int)(tint.B * k), tint.A);
+			return Color.Lerp(hue, tint.MultiplyRGBA(light), MathHelper.Clamp(sceneMix, 0f, 1f));
 		}
 
 		/// <summary>带 Alpha 的颜色：rgb × intensity，A = 255×intensity（禁止假 Additive）。</summary>
