@@ -1,7 +1,7 @@
 # 变身招式 FX 知识库
 
 **Status：** Living（资源/手法目录；玩法数值以 `docs/move-effects.md` / 代码为准）  
-**版本日期：** 2026-11-27
+**版本日期：** 2026-11-28
 
 ## 1. 权威与硬约束
 
@@ -426,6 +426,34 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 - **下落追踪弹防掉头**（岩崩 `H5FallingRockProj`）：共享 `HomingAI` 在广角镜 `HomingTurn=1.0` 时会瞬间把速度整个转向目标且保速；穿过目标后会掉头朝上。修法全在本类内：拥有者端「与任一敌对 NPC 重叠」或「越过目标中心高度」即 `ai[2]=1` 永久停追；追踪后方向夹在竖直向下 ±55°；每 tick `velocity.Y ≥ 6`。不依赖 `OnHitNPC`（共享 `npc.immune` 无敌期内穿身不会触发）。其它用共享 `HomingAI` 的下落类弹未查同类问题。
 - **汇集爆炸只由拥有者生成**（翅膀攻击 `WingFeatherBurstProj`，`R4DragonProjs.cs`）：牵引弹结束时拥有者端生成，避免多端重复。
 
+### 4.14 技能效果专项：拖尾 / 打击感 / 爆炸 / 白闪 / 自制音效（2026-11-27，构建通过，未验收）
+
+全 36 形态的招式都接了下面五套共享工具。只做表现：伤害、判定、冷却、玩法不动。联机用例见 `engineering` §6 N14–N16，待验收见 backlog L15。
+
+| 工具 | 文件 | 入口 | 规则 |
+|---|---|---|---|
+| 拖尾 | `Content/Combat/Moves/HenshinTrail.cs` | `Setup(type, len, extraUpdates)`（SetStaticDefaults）；`Strip(p, glow, width, core, coreRatio, tailWidth, opacity)`；`StripPoints(span, …)`；`Afterimage(…)` | 读 `oldPos`，零实体零发包；Catmull-Rom 细分、按弧长收尖。`Strip` 在普通批次里、画本体之前调，**不要**夹在 `BeginAdditive/EndAdditive` 中间。瞬移（相邻点 > max(32, 2.5×速度+弹身)，上限 220）自动断开；`Afterimage` 用同一阈值，从近到远查到断点后更远的残影不画（`SpawnAtMouse` 弹首帧留在鼠标处的 `oldPos` 不会闪残影）。有 `extraUpdates` 的弹把值传给 `Setup`。**钉身近战不用条带**：画判定外缘细弧；钉身冲刺用 `StripPoints` 沿冲刺方向反推点 |
+| 打击感 | `Content/Combat/Moves/HenshinHitFeel.cs` | `OnHit(p, npc, tier, tint, at)`；`TierOf(p, 默认档)`；`Shake(owner, at, tier, dir)`；`HitStop` | 三档 `Light`（不震）/`Heavy`（3.5，本机 8 tick 节流）/`Ultimate`（7.5，本机 20 tick 一次 + 4 tick 表现顿帧）。`OnHit` 只放 `OnHitNPC`（主人端）。共用类一律 `TierOf`（读同步的出招槽，大招槽 → Ultimate）。**不发声音**。不要自己 `new PunchCameraModifier`，用 `Shake` 并保留原轴向 |
+| 表现顿帧 | 同上（`HenshinHitStopGlobalProjectile` + `On_Main.DrawProj`） | 自动 | 只 Ultimate、只本机主人、只 20 tick 窗口里第一次真震屏时。记下 position/velocity/rotation/frame/ai/localAI 快照，4 tick 内绘制时换入、画完换回。**逻辑、位移、伤害、寿命、无敌都不碰**，远端不做。弹私有计时器不冻 |
+| NPC 白闪 | `Content/Combat/HenshinHitFlashGlobalNPC.cs` | `Flash(ticks, power)`（`OnHit` 自动调） | `HitEffect` 各端都跑，只认 `HenshinDamage`；主人端按档加长加亮。`shortcut:` 灾厄部分 Boss 自绘不用 `drawColor`，看不到白闪 |
+| 爆炸配方 | `Content/Combat/Moves/HenshinExplosion.cs` | `Draw`（Additive 批次内）+ `Pulse`（AI 内加光）；`Spawn(center, size, tint, diameter, kenneyFrame)`；`SpawnLight` | `BlastSize` S/M/L = 12/18/28 tick、56/112/224 px。分层：起爆白闪（直径 min(1.3d, 300)，大直径不盖半屏）、外热晕、白热核心、冲击环、放射亮条（M 6 / L 10）、L 档 Kenney 帧（按帧画）+ 第二环。`Spawn`/`SpawnLight` 只放各端都跑的 AI / `OnKill`，**不要**放 `OnHitNPC`。`OnKill` 里只亮 1 tick 的 `AddLight` 换 `SpawnLight`。水/电/念力/草传 `kenneyFrame:false` |
+| 自制音效 | `Content/Combat/Moves/HenshinSfx.cs`，`Assets/Sounds/*.wav`（52 个，程序合成，PCM16 单声道 22.05 kHz，共约 0.73 MB；R7 版，FireHit1/2、ElecCast、ElecHit1/2 用 R5 版；来源与各版做法 `Assets/Sounds/SOURCES.md`） | `Play(key, pos, vol, pitch)`；`PlayCooldown(key, pos, minTicks, …)`；`ClaimCastSound(type)` | 服务器直接返回。缺文件时加载期换原版替身并写日志 |
+
+**音效接线（联机关键）：**
+
+0. **根弹别首帧自杀**：主人端第一次 AI 就 `Kill()` 的根弹，生成包和销毁包同帧发出，远端 AI / PostAI 都不跑，听不到施放音和共享 `UltCast`。无伤导演弹让它活满 `timeLeft` 自然消失（打雷 `SkyBoltRainUltProj`、飞叶快刀 `LeafSpreadProj`、预知未来、精神击破无目标时都已改）。
+1. **施放音**放招式弹自己的 AI 首次运行（`localAI` 位防重，各端都跑），并在 `SetStaticDefaults` 调 `HenshinSfx.ClaimCastSound(Type)`；claim 后 `HenshinForceItem.CanUseItem` 把 `Item.UseSound` 设为 null，不再叠 Item1/Item20。不要放 `OnSpawn` / `Shoot` / `CanUseItem` / `TryFireUltimate`。
+2. **大招共享 `UltCast`**：`TryFireUltimate` 用带 Context `PokemonHenshin.UltRoot` 的 source 生成根弹 → `HenshinAccGlobalProjectile.OnSpawn` 立同步位 `UltRootCast` → 各端 `PostAI` 首见旗时播一次 `UltCast`（本地位防重；子弹是 `EntitySource_Parent`，不继承）。根弹已 claim 就不播；技能大招共用的类（`LungeProj`、`BarrageDirectorProj`、`WaterJetProj`、`DragonRageBarrageProj`、`WeatherPainHurricaneProj`、`RockSlideDirectorProj`）claim 后按同步的 `ai[]` 模式位自己补 `UltCast`。根弹里原版起手音一律删掉，免得叠两声。
+3. **命中音**放已同步的**命中特效弹** AI 首 tick：`H3Fx.SpawnHit(…, SfxKey?, BlastSize?)`（打包进 ai0）、`H1HitFxProj.Spawn` / `H2HitFxProj.Spawn` / `H4Fx.Hit`（`G1HitSfx.Code` 写进空闲 ai）、`TackleHitFxProj.Spawn(弹, 位置, 尘, SfxKey, 档)`、`H6Fx.SpawnBurst(…, fx)`、`H7HitFxProj.Spawn(src, at, kind, scale, tier)`、`BiteHitFxProj`（按 kind）。**不要**放 `OnHitNPC`，也不要套 `owner == Main.myPlayer`。没有特效弹的招（花瓣舞、日光束）只让主人听到。
+4. **多发节流**：`PlayCooldown` 本端本地、按键分开、全模共享。建议轻 4、重 6、爆炸 8；`HitUlt` 每次施放最多一声（20 tick 窗口，或 `H3Fx.TryUltBeat` 60 tick）。
+5. **选键**：施放 属性 `*Cast` / `Swing` / `SwingHeavy`，蓄力 `UltCharge`；命中 属性 `*Hit` / `HitLight` / `HitHeavy` / `HitUlt`；爆炸 `BlastS/M/L`。属性：火 Fire、水 Water、草 Grass、电 Elec、岩/地 Rock、超能 Psy、鬼/恶 Ghost、龙 Dragon、钢 Steel、飞行/风 Wind、毒 `PoisonHit`。
+
+**少粒子**：接了这些工具的招删掉旧飞行尾尘和多余命中尘（命中尘 0–2 颗），范围提示类的尘保留。
+
+**接不上的**：原版借用弹（飞叶快刀 `Leaf`、喷射火焰 `Flames`）没有招式类可挂拖尾 / `OnHit` / 命中音；要接得在 `HenshinAccGlobalProjectile` 加钩子或换成本模弹（涉及机制，未做）。
+
+**可见性**：`SfxKey` 是 `internal`，带 `SfxKey` 参数的公开方法也要写 `internal`（否则 CS0050/CS0051）。
+
 ## 5. Stage 6 SpecReady（可施工规格 — 已落地，保留作规格档案）
 
 仅覆盖计划点名的 **代码 `Stage==6`** 形态招式。原则：留玩法管线，换可见外壳；禁把 LastPrism 金光给龙之怒。
@@ -787,6 +815,8 @@ tML：`OnSpawn` **只**在 `NewProjectile` 那一端调用。旁观端只有 `Se
 | 2.19 Living | 2026-11-27 | §4.11 肉后 R3 批实现要点（自管牵引、逐刺判定、HandlesOwnHoming、ai[] 变体、被动自伤限频）；见 `move-effects` §4.17 |
 | 2.20 Living | 2026-11-27 | 增 §4.12 肉后 R4 实现要点（持续引导水柱、广角镜排除/命中停追、牵引弹、弧线判定同源），语义见 `move-effects` §4.18 |
 | 2.21 Living | 2026-11-27 | 增 §4.13 R5–R7 实现要点（劈瓦实心扇形 + 只画手刀/斩痕/前臂、岩崩防上飞、汇集爆炸拥有者生成）；§4.10–§4.13 标本地已验收、剩联机；§8 补 H1–H7、`R4DragonProjs.cs`、调试物品 |
+| 2.22 Living | 2026-11-27 | 增 §4.14 技能效果专项：`HenshinTrail` / `HenshinHitFeel`（含表现顿帧）/ `HenshinHitFlashGlobalNPC` / `HenshinExplosion` / `HenshinSfx`（52 WAV）用法与联机接线规则；构建通过，未验收 |
+| 2.23 Living | 2026-11-28 | §4.14 音效版本：R7 为主，FireHit1/2、ElecCast、ElecHit1/2 按用户试听用回 R5 |
 
 ---
 

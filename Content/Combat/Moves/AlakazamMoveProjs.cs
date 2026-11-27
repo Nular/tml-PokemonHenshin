@@ -21,6 +21,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
+		// R3（G2）：导演在 OnSpawn 就自杀，远端未必跑到它的 AI，所以施放音挪到念弹首帧（各端，PsyCast 节流成一声）；声明后之力不再叠 Item1。
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
+
 		public override void SetDefaults()
 		{
 			Projectile.width = 8;
@@ -72,7 +75,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 					}
 				}
 			}
-			SoundEngine.PlaySound(SoundID.Item8 with { Volume = 0.7f, Pitch = 0.15f }, mouse);
 			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), mouse, H3Fx.RingKind((int)variant), 0.9f, Projectile.owner);
 			Projectile.Kill();
 		}
@@ -92,6 +94,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
 		private bool PierceTiles => Projectile.ai[0] > 0.5f;
+
+		// R3 手感（G2）：按色变体的加法拖尾（胡地金 / 巨金怪青蓝 / 超梦紫，颜色固定）；命中 / 撞墙音挪到同步念力环（PsyHit）。
+		private static readonly Color[] TrailGlow = { new(255, 195, 60), new(70, 205, 255), new(185, 90, 255) };
+		private static readonly Color[] TrailCore = { new(255, 245, 205), new(215, 250, 255), new(240, 215, 255) };
+		private int Variant => Math.Clamp((int)Projectile.ai[1], 0, 2);
+
+		public override void SetStaticDefaults() => HenshinTrail.Setup(Type, 10, 1);
 
 		public override void SetDefaults()
 		{
@@ -119,6 +128,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.penetrate = 1;
 			if (Projectile.velocity.LengthSquared() > 0.25f)
 				Projectile.rotation = Projectile.velocity.ToRotation();
+			if (Projectile.localAI[0] == 0f)
+				HenshinSfx.PlayCooldown(SfxKey.PsyCast, Projectile.Center, 6);
 			Projectile.localAI[0]++;
 
 			if (Projectile.localAI[0] >= HomingDelay)
@@ -138,21 +149,22 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool OnTileCollide(Vector2 oldVelocity)
 		{
-			// 撞墙：同色念力环（不再用 TileImpact 的粉色尘）
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.RingKind((int)Projectile.ai[1]), 0.4f, Projectile.owner);
-			SoundEngine.PlaySound(SoundID.Item10 with { Volume = 0.35f, Pitch = 0.3f }, Projectile.Center);
+			// 撞墙：同色念力环（不再用 TileImpact 的粉色尘）；撞墙音随环同步（原 Item10 改 PsyHit）。
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.RingKind((int)Projectile.ai[1]), 0.4f, Projectile.owner, 0f, SfxKey.PsyHit);
 			return true;
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.BrokenArmor, 180);
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.RingKind((int)Projectile.ai[1]), 0.5f, Projectile.owner);
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.RingKind((int)Projectile.ai[1]), 0.5f, Projectile.owner, 0f, SfxKey.PsyHit);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), TrailGlow[Variant], target.Center);
 		}
 
 		// 贴图 Assets/Fx/Psychic/PsychicWave{A,M,T}：朝飞行方向推进的同心波纹（ai1：0 金/1 青蓝/2 紫）。出现时 10 tick 内放大。
 		public override bool PreDraw(ref Color lightColor)
 		{
+			HenshinTrail.Strip(Projectile, TrailGlow[Variant], 13f, TrailCore[Variant], 0.36f, 0f, 0.8f);
 			float grow = MathHelper.Clamp(Projectile.localAI[0] / 10f, 0.3f, 1f);
 			H3Fx.DrawRipple((int)Projectile.ai[1], Projectile.Center, Projectile.rotation, 0.9f * grow, 1f);
 			return false;
@@ -196,7 +208,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Main.screenHeight);
 
 			int boltDmg = Math.Max(1, Projectile.damage);
-			int marked = 0;
 			for (int i = 0; i < Main.maxNPCs; i++)
 			{
 				NPC npc = Main.npc[i];
@@ -217,13 +228,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 						tagged.EasyCrit = EasyCrit;
 						tagged.IgnoreDefensePartial = true;
 					}
-					marked++;
 				}
 			}
 
-			if (marked > 0)
-				SoundEngine.PlaySound(SoundID.Item29 with { Volume = 0.75f, Pitch = -0.1f }, HenshinProjUtil.OwnerMouseWorld(Projectile));
-			Projectile.Kill();
+			// R3（G2）：删 Item29（只主人端响，且会和共享 UltCast 叠）。也不再立刻 Kill：
+			// 原来在 OnSpawn 里就自杀，根弹跑不到 PostAI，共享 UltCast 一端都不响；现在无伤导演自然活满 12 tick。
 		}
 
 		public override bool? CanDamage() => false;
@@ -245,6 +254,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 		public override bool HandlesOwnHoming => true;
+
+		// R3 手感（G2）：预兆出现时各端一声 PsyCast（节流成一声）；飞行金色拖尾；引爆改同步金环 + M 爆 + PsyHit，
+		// 每次施放第一下 HitUlt + L 爆；大招档打击感（20 tick 只震一次）。删原 Item14 叠音。
+		private static readonly Color Gold = new(255, 200, 60);
+
+		public override void SetStaticDefaults() => HenshinTrail.Setup(Type, 12);
 
 		public override void SetDefaults()
 		{
@@ -288,6 +303,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 				return;
 			}
 
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				HenshinSfx.PlayCooldown(SfxKey.PsyCast, Projectile.Center, 10, 0.9f, -0.25f);
+			}
 			float fade = MathHelper.Clamp(Age / (float)FadeTicks, 0f, 1f);
 			Projectile.alpha = (int)((1f - fade) * 255f);
 			// 波纹朝目标（无目标则朝飞行方向）
@@ -371,11 +391,17 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.velocity = Vector2.Zero;
 			if (keepAliveForDraw)
 				Projectile.timeLeft = Math.Max(Projectile.timeLeft, 14);
-			SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.45f, Pitch = 0.35f }, Projectile.Center);
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.RingGold, 1.1f, Projectile.owner);
+			if (H3Fx.TryUltBeat(Projectile.owner))
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.RingGold, 2f, Projectile.owner, 0f, SfxKey.HitUlt, BlastSize.L);
+			else
+				H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.RingGold, 1.1f, Projectile.owner, 0f, SfxKey.PsyHit, BlastSize.M);
 		}
 
-		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone) => BeginExplode(keepAliveForDraw: true);
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+		{
+			BeginExplode(keepAliveForDraw: true);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), Gold, target.Center);
+		}
 
 		public override void OnKill(int timeLeft)
 		{
@@ -389,6 +415,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (_exploding)
 				return false;
 			float a = 1f - Projectile.alpha / 255f;
+			if (Age >= FadeTicks)
+				HenshinTrail.Strip(Projectile, Gold, 14f, new Color(255, 245, 205), 0.36f, 0f, 0.85f);
 			if (Age < FadeTicks)
 				H3Fx.Draw(H3Fx.HitSheet(H3Fx.RingGold), 5, 3, Projectile.Center, Main.GlobalTimeWrappedHourly * 2f,
 					0.5f + 0.5f * a, Color.White * (0.8f * a));
@@ -407,9 +435,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const float FistScale = 1.5f;
 		private Vector2 _dir;
 		private Vector2 _origin;
-		private bool _shook;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		// R3 手感（G2）：出拳 SwingHeavy（各端 AI 首帧）；命中冲击帧 + S 爆 + HitHeavy 由同步特效弹播；震屏迁到 HenshinHitFeel 重档（沿出拳方向）。
+		private static readonly Color FocusTint = new(255, 190, 110);
+
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
 
 		public override void SetDefaults()
 		{
@@ -444,12 +476,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 					_dir = new Vector2(owner.direction, 0f);
 				_dir.Normalize();
 				_origin = owner.MountedCenter;
-				SoundEngine.PlaySound(SoundID.Item1 with { Pitch = 0.2f }, owner.Center);
+				HenshinSfx.Play(SfxKey.SwingHeavy, owner.Center, 1f, 0.15f);
 			}
 
 			float u = MathHelper.SmoothStep(0f, 1f, Progress);
 			Projectile.Center = _origin + _dir * (40f + Reach * u);
-
+			Lighting.AddLight(Projectile.Center, 0.6f, 0.45f, 0.25f);
 		}
 
 		// 命中冲击：额外击退 +4（真气拳 1.8 倍率不变）。
@@ -463,14 +495,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.BrokenArmor, 240);
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.FocusHit, 1.7f, Projectile.owner);
-			if (!_shook && Projectile.owner == Main.myPlayer)
-			{
-				_shook = true;
-				Main.instance.CameraModifiers.Add(new Terraria.Graphics.CameraModifiers.PunchCameraModifier(
-					target.Center, _dir, 6f, 8f, 12, 1000f, "FocusPunch"));
-				SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.5f, Pitch = 0.1f }, target.Center);
-			}
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.FocusHit, 1.7f, Projectile.owner, 0f, SfxKey.HitHeavy, BlastSize.S);
+			// 白闪 + 命中光 + 重档震屏（8 tick 节流，一拳多敌只震一次），轴向沿出拳方向（原 PunchCameraModifier 同轴）。
+			HenshinHitFeel.Flash(target, HitTier.Heavy);
+			HenshinExplosion.SpawnLight(target.Center, FocusTint, BlastSize.S);
+			HenshinHitFeel.Shake(Projectile.owner, target.Center, HitTier.Heavy, _dir);
 		}
 
 		// 贴图 Assets/Fx/FocusPunch：FocusFist（朝右）+ 前 12 tick 向拳头收拢的蓄力光环 FocusAura + 两道拳影；朝左半圈上下翻转。

@@ -18,6 +18,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 	{
 		public const int KindDirt = 0, KindStone = 1, KindMeteor = 2, KindSand = 3;
 
+		/// <summary>
+		/// 爆点的声光档（ai2，随生成包同步；声音在 H6BurstFxProj 首 tick 各端播）：
+		/// Light = 属性命中音；Heavy = HitHeavy（陨石 = BlastM + M 爆）；Ult = HitUlt（20 tick 一次，其余回落属性音）；
+		/// Blast = BlastS + S 爆（挖洞出口）；Quiet = 只有光（入口，施放音已响）。
+		/// </summary>
+		public const int FxLight = 0, FxHeavy = 1, FxUlt = 2, FxBlast = 3, FxQuiet = 4;
+
+		public static int FxOf(HitTier tier) => tier == HitTier.Ultimate ? FxUlt : tier == HitTier.Heavy ? FxHeavy : FxLight;
+
+		/// <summary>各 kind 的光 / 爆炸色。</summary>
+		public static Color Tint(int kind) => kind switch
+		{
+			KindStone => new Color(205, 190, 165),
+			KindMeteor => new Color(255, 140, 60),
+			KindSand => new Color(235, 200, 120),
+			_ => new Color(210, 160, 100)
+		};
+
 		private static Asset<Texture2D> _dirt, _stone, _impact;
 
 		public static Texture2D Dirt => (_dirt ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/H6DirtBurst/H6DirtBurst", AssetRequestMode.ImmediateLoad)).Value;
@@ -25,12 +43,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public static Texture2D Impact => (_impact ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/H6MeteorImpact/H6MeteorImpact", AssetRequestMode.ImmediateLoad)).Value;
 
 		/// <summary>只在主人端生成纯视觉爆点（伤害 0，不可命中）。kind 见常量，scale 为贴图倍率。</summary>
-		public static void SpawnBurst(Projectile src, Vector2 at, int kind, float scale)
+		public static void SpawnBurst(Projectile src, Vector2 at, int kind, float scale, int fx = FxLight)
 		{
 			if (src.owner != Main.myPlayer || Main.netMode == NetmodeID.Server)
 				return;
 			Projectile.NewProjectile(src.GetSource_FromThis(), at, Vector2.Zero,
-				ModContent.ProjectileType<H6BurstFxProj>(), 0, 0f, src.owner, kind, scale);
+				ModContent.ProjectileType<H6BurstFxProj>(), 0, 0f, src.owner, kind, scale, fx);
 		}
 
 		public static bool Solid(int x, int y)
@@ -97,17 +115,51 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
+				// FX 手感 R3：命中音 + 衰减光 / 爆炸配方都在这里（本弹随生成包同步，各端首 tick 各跑一次）。碎屑尘删掉，靠贴图。
 				int kind = (int)Projectile.ai[0];
-				if (!Main.dedServ && kind != H6Fx.KindMeteor)
-				{
-					// 只补 2 颗碎屑，其余靠贴图
-					for (int i = 0; i < 2; i++)
-						Dust.NewDustPerfect(Projectile.Center, kind == H6Fx.KindStone ? DustID.Stone : DustID.Dirt,
-							Main.rand.NextVector2Circular(3f, 3f), 0, default, 1f);
-				}
+				int fx = (int)Projectile.ai[2];
+				Vector2 at = Projectile.Center;
+				PlaySound(kind, fx, at);
+				Color tint = H6Fx.Tint(kind);
+				bool big = fx == H6Fx.FxHeavy || fx == H6Fx.FxUlt;
+				if (kind == H6Fx.KindMeteor)
+					HenshinExplosion.Spawn(at, fx == H6Fx.FxHeavy ? BlastSize.M : BlastSize.S, tint, fx == H6Fx.FxHeavy ? 150f : 0f);
+				else if (fx == H6Fx.FxBlast)
+					HenshinExplosion.Spawn(at, BlastSize.S, tint, 80f);
+				else
+					HenshinExplosion.SpawnLight(at, tint, fx == H6Fx.FxUlt ? BlastSize.M : BlastSize.S, big ? 1f : 0.7f);
 			}
-			if (Projectile.ai[0] == H6Fx.KindMeteor && Lifetime - Projectile.timeLeft < 8)
-				Lighting.AddLight(Projectile.Center, 0.9f, 0.45f, 0.2f);
+		}
+
+		private static void PlaySound(int kind, int fx, Vector2 at)
+		{
+			switch (fx)
+			{
+				case H6Fx.FxQuiet:
+					return;
+				case H6Fx.FxBlast:
+					HenshinSfx.PlayCooldown(SfxKey.BlastS, at, 4, 0.9f, -0.2f);
+					return;
+				case H6Fx.FxUlt:
+					if (HenshinSfx.PlayCooldown(SfxKey.HitUlt, at, HenshinHitFeel.UltimateWindowTicks))
+						return;
+					break;
+				case H6Fx.FxHeavy:
+					if (kind == H6Fx.KindMeteor)
+					{
+						HenshinSfx.PlayCooldown(SfxKey.BlastM, at, 6);
+						return;
+					}
+					if (HenshinSfx.PlayCooldown(SfxKey.HitHeavy, at, 6, 0.9f, -0.1f))
+						return;
+					break;
+			}
+			// 属性音（多发共用冷却 4 tick）：土低一点、沙高一点更"沙沙"；陨石落地 = 小爆。
+			if (kind == H6Fx.KindMeteor)
+				HenshinSfx.PlayCooldown(SfxKey.BlastS, at, 4, 0.8f, 0.1f);
+			else
+				HenshinSfx.PlayCooldown(SfxKey.RockHit, at, 4, kind == H6Fx.KindSand ? 0.7f : 1f,
+					kind == H6Fx.KindSand ? 0.3f : kind == H6Fx.KindDirt ? -0.15f : 0f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -143,6 +195,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private const float PullRadius = 400f; // R3：牵引半径 224→400
 		private const int Frames = 8;
 		private static Asset<Texture2D> _ring;
+		private static readonly Color SandTint = new(235, 195, 115);
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
 
@@ -191,9 +244,33 @@ namespace PokemonHenshin.Content.Combat.Moves
 					Projectile.Center = HenshinProjUtil.OwnerMouseWorld(Projectile);
 					Projectile.netUpdate = true;
 				}
-				SoundEngine.PlaySound(SoundID.Item34 with { Pitch = -0.5f, Volume = 0.8f }, Projectile.Center);
+				// R3 手感：原 Item34（火焰声）删掉；施放由共享 UltCast 负责，落地重击放到本地第 2 tick（远端此时已收到校正后的 Center）。
 			}
-			Lighting.AddLight(Projectile.Center, 0.35f * Grow(), 0.25f * Grow(), 0.1f * Grow());
+			// localAI[1] = 本端年龄；localAI[2] = 收束爆已放
+			Projectile.localAI[1]++;
+			if (Projectile.localAI[1] == 2f)
+			{
+				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 1f, -0.35f);
+				HenshinSfx.Play(SfxKey.RockCast, Projectile.Center, 0.9f, -0.3f);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.L, SandTint, 2f * HitRadius, kenneyFrame: false);
+				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate, Vector2.UnitY);
+			}
+			if (Projectile.timeLeft <= FadeTicks && Projectile.localAI[2] == 0f)
+			{
+				Projectile.localAI[2] = 1f;
+				HenshinSfx.Play(SfxKey.BlastS, Projectile.Center, 0.9f, -0.3f);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, SandTint, HitRadius * 1.2f, kenneyFrame: false);
+			}
+			float gl = Grow();
+			Lighting.AddLight(Projectile.Center, 0.6f * gl, 0.45f * gl, 0.2f * gl);
+			if (!Main.dedServ)
+			{
+				// 沙涡边缘 4 盏随涡旋转的灯，地形被照出圈的大小
+				float spin = Age * 0.06f;
+				for (int i = 0; i < 4; i++)
+					Lighting.AddLight(Projectile.Center + (spin + i * MathHelper.PiOver2).ToRotationVector2() * HitRadius * 0.85f * gl,
+						0.3f * gl, 0.22f * gl, 0.1f * gl);
+			}
 
 			if (Main.netMode != NetmodeID.MultiplayerClient && Projectile.timeLeft > FadeTicks)
 				PullNpcs();
@@ -245,7 +322,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 			target.AddBuff(BuffID.Slow, 90);
 			if (Projectile.ai[1] > 0)
 				target.AddBuff((int)Projectile.ai[1], 120);
-			H6Fx.SpawnBurst(Projectile, target.Center, H6Fx.KindSand, 0.7f);
+			HitTier tier = HenshinHitFeel.TierOf(Projectile, HitTier.Heavy);
+			HenshinHitFeel.OnHit(Projectile, target, tier, SandTint, target.Center);
+			H6Fx.SpawnBurst(Projectile, target.Center, H6Fx.KindSand, 0.7f, H6Fx.FxOf(tier));
 		}
 
 		public override bool PreDraw(ref Color lightColor)

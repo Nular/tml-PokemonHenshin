@@ -22,9 +22,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void SetStaticDefaults()
 		{
-			ProjectileID.Sets.TrailCacheLength[Type] = 4;
-			ProjectileID.Sets.TrailingMode[Type] = 0;
+			HenshinTrail.Setup(Type, 12);
+			HenshinSfx.ClaimCastSound(Type);
 		}
+
+		private bool _castSfx;
 
 		public override void SetDefaults()
 		{
@@ -43,6 +45,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			if (!_castSfx)
+			{
+				_castSfx = true;
+				HenshinSfx.Play(SfxKey.FireCast, Projectile.Center);
+			}
 			HenshinProjUtil.HomingAI(Projectile, Homing, HomingTurnRate);
 			Projectile.rotation = Projectile.velocity.ToRotation();
 			if (++Projectile.frameCounter >= TicksPerFrame)
@@ -68,17 +75,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			target.AddBuff(BuffID.OnFire, 180);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 120, 40));
 		}
 
 		public override void OnKill(int timeLeft)
 		{
-			SoundEngine.PlaySound(SoundID.Item10, Projectile.position);
-			for (int i = 0; i < 3; i++)
-			{
-				Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Torch, 0f, 0f, 80, default, 1.3f);
-				d.noGravity = true;
-				d.velocity = Main.rand.NextVector2Circular(3f, 3f);
-			}
+			// OnKill 各端都跑：命中音 + 小号火爆（S）替掉 Item10 与 3 颗火尘。入水熄灭只留烟（AI 里已撒）。
+			if (Projectile.wet)
+				return;
+			HenshinSfx.PlayCooldown(SfxKey.FireHit, Projectile.Center, 2);
+			HenshinExplosion.Spawn(Projectile.Center, BlastSize.S, new Color(255, 120, 40), 48f);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -96,6 +102,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			SpriteEffects fx = left ? SpriteEffects.FlipVertically : SpriteEffects.None;
 			if (left)
 				origin.Y = frameH - origin.Y;
+			// 拖尾（HenshinTrail 试点）：橙外晕 + 暖白芯，约 100px 渐细，先画再盖本体。
+			HenshinTrail.Strip(Projectile, new Color(255, 110, 24), 15f, new Color(255, 226, 160), 0.36f, 0f, 0.9f);
 			Main.EntitySpriteDraw(tex, pos, src, Color.White, Projectile.rotation, origin, 1f, fx, 0f);
 			HenshinFxDraw.BeginAdditive();
 			Main.EntitySpriteDraw(_light.Value, pos, lightSrc, Color.White * 0.7f, Projectile.rotation, origin, 1f, fx, 0f);

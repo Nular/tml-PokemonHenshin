@@ -179,7 +179,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			p.Center = start; // 折返：瞬身到下一斩起点
 			p.direction = end.X >= start.X ? 1 : -1;
 
-			SoundEngine.PlaySound(SoundID.Item1 with { Pitch = 0.65f, Volume = 0.8f }, p.Center);
+			// 挥斩声挪到 AerialAceSlashProj 首 tick（各端都响；这里只在主人端跑）。
 			SpawnGhost(p, start, end - start);
 
 			int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), start, end - start,
@@ -218,7 +218,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			p.velocity = Vector2.Zero;
 			p.immuneTime = Math.Max(p.immuneTime, 40);
 
-			SoundEngine.PlaySound(SoundID.Item74 with { Volume = 0.6f, Pitch = 0.3f }, _c);
+			// 终结声挪到 AerialAceBurstProj 首 tick（各端都响）。
 			int id = Projectile.NewProjectile(Projectile.GetSource_FromThis(), _c, Vector2.Zero,
 				ModContent.ProjectileType<AerialAceBurstProj>(), Projectile.damage * 2, Projectile.knockBack * 1.5f, Projectile.owner,
 				_target);
@@ -302,9 +302,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 			return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), Projectile.Center, head, 28f, ref pt);
 		}
 
+		public override void AI()
+		{
+			// 每斩一声快挥（各端首 tick），斩序越后音越高；第 1 斩与共享 UltCast 同时响，压低一点音量。
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				int pass = (int)Projectile.ai[2];
+				HenshinSfx.Play(SfxKey.Swing, Projectile.Center, pass == 0 ? 0.7f : 1f, 0.15f + 0.08f * pass);
+			}
+		}
+
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			SoundEngine.PlaySound(SoundID.Item10 with { Volume = 0.5f, Pitch = 0.5f }, target.Center);
+			// 5 斩 ×0.6 = 轻档（不震，免得终结爆前就连震）；同步命中星带风系命中音。
+			Vector2 at = target.Center;
+			HenshinHitFeel.OnHit(Projectile, target, HitTier.Light, new Color(170, 220, 255), at);
+			TackleHitFxProj.Spawn(Projectile, at, DustID.Cloud, SfxKey.WindHit, HitTier.Light);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
@@ -374,12 +388,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override void AI()
 		{
+			// 终结爆（各端首 tick）：中爆 + 风系施放的呼啸，M 号冷白爆炸配方（不叠火烟帧），主人端大招震屏。
+			if (Projectile.localAI[0] == 0f)
+			{
+				Projectile.localAI[0] = 1f;
+				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 1f, 0.15f);
+				HenshinSfx.Play(SfxKey.WindCast, Projectile.Center, 1f, -0.2f);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, new Color(150, 210, 255), Projectile.width, kenneyFrame: false);
+				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate);
+			}
 			Lighting.AddLight(Projectile.Center, 0.55f, 0.8f, 1f);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
-			SoundEngine.PlaySound(SoundID.Item14 with { Volume = 0.5f, Pitch = 0.4f }, target.Center);
+			// 终结爆 = 大招档：白闪 + 顿帧（本弹不动，顿帧只冻住爆的画面）；同步命中星叠 HitUlt。
+			HenshinHitFeel.OnHit(Projectile, target, HitTier.Ultimate, new Color(150, 210, 255), target.Center);
+			TackleHitFxProj.Spawn(Projectile, target.Center, DustID.Cloud, SfxKey.WindHit, HitTier.Ultimate);
 		}
 
 		public override bool PreDraw(ref Color lightColor)

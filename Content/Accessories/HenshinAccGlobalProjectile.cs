@@ -26,6 +26,24 @@ namespace PokemonHenshin.Content.Accessories
 
 		public bool HasSourceMoveSlot { get; set; }
 
+		/// <summary>TryFireUltimate 生成的大招根弹（只此一发；子弹不继承，勿用 SourceMoveSlot 判大招）。随 SendExtraAI 同步。</summary>
+		public bool UltRootCast { get; set; }
+
+		/// <summary>本端已为此根弹播过共享 UltCast。本地位，不同步。</summary>
+		private bool ultCastSfxPlayed;
+
+		/// <summary>大招根弹的 EntitySource_ItemUse.Context；OnSpawn 据此在首个同步包前就立旗。</summary>
+		public const string UltRootSourceContext = "PokemonHenshin.UltRoot";
+
+		/// <summary>显式立大招根弹旗并请求同步（与 OnSpawn 立旗重复无害）。</summary>
+		public static void MarkUltRoot(Projectile projectile)
+		{
+			if (projectile == null || !projectile.active)
+				return;
+			projectile.GetGlobalProjectile<HenshinAccGlobalProjectile>().UltRootCast = true;
+			projectile.netUpdate = true;
+		}
+
 		public static void StampMoveOrigin(Projectile projectile, MoveSlot slot)
 		{
 			if (projectile == null || !projectile.active)
@@ -59,6 +77,10 @@ namespace PokemonHenshin.Content.Accessories
 		{
 			MoveDelivery delivery = MoveDelivery.None;
 			IHenshinMoveProj child = projectile.ModProjectile as IHenshinMoveProj;
+
+			// 只立旗不播音：OnSpawn 只在生成端跑；旗随首个同步包到各端，由 PostAI 播。
+			if (source is EntitySource_ItemUse { Context: UltRootSourceContext })
+				UltRootCast = true;
 
 			if (source is EntitySource_Parent { Entity: Projectile parent })
 			{
@@ -165,6 +187,17 @@ namespace PokemonHenshin.Content.Accessories
 			if (HoldTilePierce)
 				projectile.tileCollide = false;
 
+			// 大招共享施放音：各端首次看到同步旗时播一次（远端可能晚 1 包才收到旗，故不限第 1 tick）。
+			if (UltRootCast && !ultCastSfxPlayed)
+			{
+				ultCastSfxPlayed = true;
+				if (!HenshinSfx.OwnsCastSound(projectile.type))
+				{
+					Player caster = projectile.owner >= 0 && projectile.owner < Main.maxPlayers ? Main.player[projectile.owner] : null;
+					HenshinSfx.Play(SfxKey.UltCast, caster != null && caster.active ? caster.MountedCenter : projectile.Center);
+				}
+			}
+
 			if (projectile.ModProjectile is not IHenshinMoveProj child || !child.Homing)
 				return;
 			if (projectile.ModProjectile is HenshinMoveProj self && self.HandlesOwnHoming)
@@ -177,6 +210,7 @@ namespace PokemonHenshin.Content.Accessories
 		public override void SendExtraAI(Projectile projectile, BitWriter bitWriter, BinaryWriter binaryWriter)
 		{
 			bitWriter.WriteBit(HasSourceMoveSlot);
+			bitWriter.WriteBit(UltRootCast);
 			if (HasSourceMoveSlot)
 				binaryWriter.Write((byte)SourceMoveSlot);
 			if (projectile.ModProjectile is IHenshinMoveProj child)
@@ -186,6 +220,7 @@ namespace PokemonHenshin.Content.Accessories
 		public override void ReceiveExtraAI(Projectile projectile, BitReader bitReader, BinaryReader binaryReader)
 		{
 			HasSourceMoveSlot = bitReader.ReadBit();
+			UltRootCast = bitReader.ReadBit();
 			if (HasSourceMoveSlot)
 				SourceMoveSlot = (MoveSlot)binaryReader.ReadByte();
 			if (projectile.ModProjectile is IHenshinMoveProj child)

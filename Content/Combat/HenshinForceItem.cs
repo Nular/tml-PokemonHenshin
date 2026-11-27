@@ -266,7 +266,11 @@ namespace PokemonHenshin.Content.Combat
 			Item.shoot = move.ProjectileType;
 			Item.shootSpeed = move.ShootSpeed;
 			Item.knockBack = move.Knockback;
-			Item.UseSound = player.altFunctionUse == 2 ? SoundID.Item20 : SoundID.Item1;
+			// 施放音规则（R2 音效）：弹种声明了自带施放音（HenshinSfx.ClaimCastSound，在其 AI 首次运行时播）就不响 UseSound，免得叠两声；
+			// 没声明的招保留原版挥动 / 施法声兜底，不会哑。CanUseItem 各端都跑、判据只看弹种，各端结果一致。
+			Item.UseSound = HenshinSfx.OwnsCastSound(move.ProjectileType)
+				? null
+				: player.altFunctionUse == 2 ? SoundID.Item20 : SoundID.Item1;
 			hp.LastMoveSlot = player.altFunctionUse == 2 ? MoveSlot.Skill2 : MoveSlot.Skill1;
 			return move.ProjectileType > ProjectileID.None || move.GrantsPhasing;
 		}
@@ -319,7 +323,9 @@ namespace PokemonHenshin.Content.Combat
 
 			hp.LastMoveSlot = MoveSlot.Ultimate;
 			hp.BeginUltEnergyLockout();
-			var source = player.GetSource_ItemUse(Item);
+			// 大招共享施放音 UltCast 不在这里播（本函数只在拥有者端跑）：带 Context 的 source 让根弹 OnSpawn 立同步旗，
+			// 各端在 HenshinAccGlobalProjectile.PostAI 首见旗时各播一次。
+			var source = player.GetSource_ItemUse(Item, PokemonHenshin.Content.Accessories.HenshinAccGlobalProjectile.UltRootSourceContext);
 			Vector2 velocity = Vector2.Zero;
 			if (Ultimate.ShootSpeed > 0f)
 			{
@@ -331,7 +337,11 @@ namespace PokemonHenshin.Content.Combat
 
 			int damage = player.GetWeaponDamage(Item);
 			damage = (int)Math.Max(1, Math.Round(damage * Ultimate.DamageMultiplier));
-			FireMove(player, source, Ultimate, player.MountedCenter, velocity, damage, Ultimate.Knockback);
+			int rootId = FireMove(player, source, Ultimate, player.MountedCenter, velocity, damage, Ultimate.Knockback);
+			if (rootId >= 0)
+				PokemonHenshin.Content.Accessories.HenshinAccGlobalProjectile.MarkUltRoot(Main.projectile[rootId]);
+			else
+				HenshinSfx.Play(SfxKey.UltCast, player.MountedCenter); // shortcut: 无根弹的大招（现无）只在本端响；真出现时给它一个根弹。
 
 			if (Ultimate.RecoilSelf)
 				hp.ApplyRecoil(Ultimate.RecoilFraction);
@@ -343,16 +353,17 @@ namespace PokemonHenshin.Content.Combat
 			return true;
 		}
 
-		private void FireMove(Player player, IEntitySource source, MoveSpec move, Vector2 position, Vector2 velocity, int damage, float knockback)
+		/// <summary>出招；返回生成的根弹下标，没生成弹返回 -1。</summary>
+		private int FireMove(Player player, IEntitySource source, MoveSpec move, Vector2 position, Vector2 velocity, int damage, float knockback)
 		{
 			if (move == null)
-				return;
+				return -1;
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
 
 			if (move.RequiresLungeCooldown)
 			{
 				if (!hp.CanLunge)
-					return;
+					return -1;
 				hp.StartLungeCooldown(move.LungeCooldownTicks);
 				player.immune = true;
 				player.immuneTime = Math.Max(player.immuneTime, 15 + hp.LungeIFrameBonus);
@@ -362,7 +373,7 @@ namespace PokemonHenshin.Content.Combat
 				hp.TryStartPhasing();
 
 			if (move.ProjectileType <= ProjectileID.None)
-				return;
+				return -1;
 
 			Vector2 spawn;
 			if (move.SpawnAtMouse)
@@ -403,6 +414,7 @@ namespace PokemonHenshin.Content.Combat
 				hp.ApplyRecoil(move.RecoilFraction);
 			if (move.AftermathDamagePenaltyTicks > 0 && !ReferenceEquals(move, Ultimate))
 				hp.ApplyAftermath(move.AftermathDamagePenaltyTicks, move.AftermathDamagePenalty);
+			return id >= 0 && id < Main.maxProjectiles ? id : -1;
 		}
 
 		public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)

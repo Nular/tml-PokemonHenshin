@@ -86,7 +86,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 					Projectile.Center = HenshinProjUtil.OwnerMouseWorld(Projectile);
 					Projectile.netUpdate = true;
 				}
-				SoundEngine.PlaySound(SoundID.Splash with { Volume = 0.8f, Pitch = -0.4f }, Projectile.Center);
+				// 起手 Splash 删掉：大招根弹的共享 UltCast 已在各端响，避免叠两声。
 			}
 			bool lift = false;
 			if (spout && Projectile.localAI[1] == 0f)
@@ -94,7 +94,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 				Projectile.localAI[1] = 1f;
 				lift = true;
 				Projectile.localNPCHitCooldown = SpoutTicks; // 水柱期只吃一次爆发
-				SoundEngine.PlaySound(SoundID.Item21 with { Volume = 0.9f, Pitch = -0.2f }, Projectile.Center);
+				// 水柱托起 = 全招高潮（各端）：水爆 + 水系命中 + 原 Item21 低沉水涌，M 号水色爆炸配方（不叠火烟帧），主人端大招震屏。
+				SoundEngine.PlaySound(SoundID.Item21 with { Volume = 0.7f, Pitch = -0.35f }, Projectile.Center);
+				HenshinSfx.Play(SfxKey.BlastM, Projectile.Center, 0.9f, -0.1f);
+				HenshinSfx.Play(SfxKey.WaterHit, Projectile.Center, 1f, -0.3f);
+				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, new Color(90, 180, 255), SpoutHitRadius * 2f, kenneyFrame: false);
+				HenshinHitFeel.Shake(Projectile.owner, Projectile.Center, HitTier.Ultimate, -Vector2.UnitY);
 			}
 
 			float ramp = Math.Clamp(age / (float)GrowTicks, 0f, 1f);
@@ -166,6 +171,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			target.AddBuff(BuffID.Slow, 90);
 			target.AddBuff(BuffID.Wet, 120);
+			// 旋涡期 = 轻档（只白闪 + 光，不连震）；水柱托起那一下 = 大招档（白闪 + 命中星 HitUlt；震屏已在托起帧放过，20 tick 内不重复）。
+			bool spoutHit = Age >= SpoutStart;
+			HitTier tier = spoutHit ? HenshinHitFeel.TierOf(Projectile, HitTier.Heavy) : HitTier.Light;
+			HenshinHitFeel.Flash(target, tier);
+			if (spoutHit)
+			{
+				HenshinHitFeel.Shake(Projectile.owner, target.Center, tier, -Vector2.UnitY);
+				TackleHitFxProj.Spawn(Projectile, target.Center, DustID.Water, SfxKey.WaterHit, tier);
+			}
 		}
 
 		public override bool PreDraw(ref Color lightColor)

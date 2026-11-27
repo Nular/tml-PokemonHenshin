@@ -19,18 +19,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 	/// </summary>
 	public class BigShadowBallProj : HenshinMoveProj
 	{
-		private const int HistoryLen = 16;
 		private const int MaxBounces = 5;
 		private const float BounceRange = 28f * 16f;
 		private const float BounceDamageFalloff = 0.8f;
 		private const float SpeedBoost = 1.5f;
 		private readonly System.Collections.Generic.List<int> _hit = new(); // 仅拥有者端使用
 
-		private readonly Vector2[] _hist = new Vector2[HistoryLen];
-		private int _histWrite;
-		private int _histFilled;
+		// R3 手感：暗紫拖尾（HenshinTrail）代替两道滞后残影；施放 / 命中用自制幽灵音。
+		private static readonly Color TrailGlow = new(150, 60, 255);
+		private static readonly Color TrailCore = new(230, 190, 255);
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		public override void SetStaticDefaults()
+		{
+			HenshinTrail.Setup(Type, 14);
+			HenshinSfx.ClaimCastSound(Type);
+		}
 
 		public override void SetDefaults()
 		{
@@ -56,7 +61,11 @@ namespace PokemonHenshin.Content.Combat.Moves
 		public override void AI()
 		{
 			Homing = false;
-			PushHistory(Projectile.Center);
+			if (Projectile.localAI[1] == 0f)
+			{
+				Projectile.localAI[1] = 1f;
+				HenshinSfx.Play(SfxKey.GhostCast, Projectile.Center);
+			}
 			float pulse = 0.35f + 0.2f * (0.5f + 0.5f * MathF.Sin(Main.GlobalTimeWrappedHourly * 14f));
 			Lighting.AddLight(Projectile.Center, pulse, pulse * 0.2f, pulse * 1.2f);
 		}
@@ -73,6 +82,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.owner != Main.myPlayer)
 				return;
 
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), TrailGlow);
 			_hit.Add(target.whoAmI);
 			NPC next = null;
 			float best = BounceRange * BounceRange;
@@ -103,41 +113,26 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Projectile.velocity = Projectile.DirectionTo(next.Center) * speed;
 			Projectile.timeLeft = Math.Max(Projectile.timeLeft, 60);
 			Projectile.netUpdate = true;
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.ShadowHit, 0.55f, Projectile.owner);
-			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.1f, Volume = 0.45f }, Projectile.Center);
+			// 弹跳命中：小号暗影爆 + 幽灵命中音（特效弹各端首帧播）。
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.ShadowHit, 0.55f, Projectile.owner, 0f, SfxKey.GhostHit);
 		}
 
-		// 末次命中、无下一个目标、落地、超时都会走到 OnKill：命中动画只在这里生成一次。
+		// 末次命中、无下一个目标、落地、超时都会走到 OnKill：命中动画只在这里生成一次（S 爆炸配方 + 闷一点的小爆音）。
 		public override void OnKill(int timeLeft)
 		{
-			SoundEngine.PlaySound(SoundID.Item10 with { Pitch = -0.35f, Volume = 0.7f }, Projectile.Center);
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.ShadowHit, 1f, Projectile.owner);
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), Projectile.Center, H3Fx.ShadowHit, 1f, Projectile.owner, 0f, SfxKey.GhostHit, BlastSize.S);
 		}
 
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int frame = (int)(Main.GameUpdateCount / 3) % 4;
-			H3Fx.Draw(H3Fx.ShadowBall, 4, frame, SampleLag(8), 0f, 0.5f, Color.White * 0.4f);
-			H3Fx.Draw(H3Fx.ShadowBall, 4, frame, SampleLag(4), 0f, 0.62f, Color.White * 0.65f);
+			HenshinTrail.Strip(Projectile, TrailGlow, 18f, TrailCore, 0.34f, 0f, 0.85f);
 			H3Fx.Draw(H3Fx.ShadowBall, 4, frame, Projectile.Center, 0f, 0.75f, Color.White);
+			HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(TrailGlow, 0.35f), HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, 44f));
+			HenshinFxDraw.EndAdditive();
 			return false;
-		}
-
-		private void PushHistory(Vector2 p)
-		{
-			_hist[_histWrite] = p;
-			_histWrite = (_histWrite + 1) % HistoryLen;
-			if (_histFilled < HistoryLen)
-				_histFilled++;
-		}
-
-		private Vector2 SampleLag(int lagTicks)
-		{
-			if (_histFilled <= 0)
-				return Projectile.Center;
-			int lag = Math.Min(lagTicks, _histFilled - 1);
-			int idx = (_histWrite - 1 - lag + HistoryLen * 2) % HistoryLen;
-			return _hist[idx];
 		}
 	}
 
@@ -164,6 +159,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		private bool _hitLatch;
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.None;
+
+		// 伸舌音（Item17 + NPCHit18）在 AI 首帧各端播，声明后之力不再叠 Item20。
+		public override void SetStaticDefaults() => HenshinSfx.ClaimCastSound(Type);
 
 		public override void SetDefaults()
 		{
@@ -243,8 +241,9 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			target.AddBuff(BuffID.Confused, ConfusedTicks);
 			target.velocity *= 0.25f;
-			SoundEngine.PlaySound(SoundID.NPCHit13 with { Pitch = -0.4f, Volume = 1.05f }, target.Center);
-			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.LickHit, 0.9f, Projectile.owner);
+			// 命中音挪到命中特效弹首帧（原 NPCHit13 只有主人听得到）。
+			H3Fx.SpawnHit(Projectile.GetSource_FromThis(), target.Center, H3Fx.LickHit, 0.9f, Projectile.owner, 0f, SfxKey.GhostHit);
+			HenshinHitFeel.OnHit(Projectile, target, HenshinHitFeel.TierOf(Projectile, HitTier.Light), new Color(255, 120, 200), target.Center);
 			if (!_hitLatch)
 			{
 				_hitLatch = true;
@@ -342,24 +341,61 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 			Projectile.Center = p.Center;
 
+			// 起手只留共享 UltCast（大招根弹自动播），删掉原 Item8，免得叠两声。
 			if (Projectile.localAI[0] == 0f)
 			{
 				Projectile.localAI[0] = 1f;
 				ApplyScreenSleep(p);
+			}
+
+			int age = Life - Projectile.timeLeft;
+			// 场域光：整段先亮后衰，照亮身周（光点随环外扩）。
+			HenshinExplosion.Pulse(Projectile.Center, SpiralTint, BlastSize.L, age / (float)Life, 420f, 0.8f);
+			// 螺旋张满的一拍：低沉幽灵音 + 主人端大招震屏 + 已入睡敌人白闪（睡眠 buff 由服务器同步，各端读到即闪，纯表现）。
+			if (age == SleepBeatAge && Projectile.localAI[1] == 0f)
+			{
+				Projectile.localAI[1] = 1f;
+				HenshinSfx.Play(SfxKey.GhostHit, p.Center, 1f, -0.45f);
+				HenshinHitFeel.Shake(Projectile.owner, p.Center, HitTier.Ultimate);
 				if (!Main.dedServ)
-					SoundEngine.PlaySound(SoundID.Item8 with { Pitch = -0.35f, Volume = 0.9f }, p.Center);
+				{
+					int sleepType = ModContent.BuffType<HenshinSleepDebuff>();
+					for (int i = 0; i < Main.maxNPCs; i++)
+					{
+						NPC n = Main.npc[i];
+						if (n.active && n.HasBuff(sleepType))
+							HenshinHitFeel.Flash(n, HitTier.Heavy);
+					}
+				}
 			}
 		}
 
+		private const int SleepBeatAge = 14;
+		private static readonly Color SpiralTint = new(210, 110, 255);
+
 		// 贴图 Assets/Fx/Hypnosis/HypnosisRing：6 帧催眠螺旋，随寿命推进并缓慢旋转；末段淡出。
+		// R3：螺旋下垫一层加法紫光（随螺旋张开变大），张满那一拍叠一圈 L 号冲击环（不叠 Kenney 火烟）。
 		public override bool PreDraw(ref Color lightColor)
 		{
 			int age = Life - Projectile.timeLeft;
 			int frame = Math.Min(5, age * 6 / Life);
 			float fade = Math.Min(1f, Projectile.timeLeft / 10f);
 			float rot = age * 0.07f;
+			float open = MathHelper.Clamp(age / (float)SleepBeatAge, 0f, 1f);
+			HenshinFxDraw.BeginAdditive();
+			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
+				HenshinFxDraw.WithAlpha(SpiralTint, 0.45f * fade), HenshinFxDraw.ScaleForWorldDiameter(HenshinFxDraw.SoftGlow, 160f + 260f * open));
+			HenshinFxDraw.EndAdditive();
 			H3Fx.Draw(H3Fx.Hypnosis, 6, frame, Projectile.Center, rot, 2.5f, Color.White * fade);
 			H3Fx.Draw(H3Fx.Hypnosis, 6, Math.Max(0, frame - 1), Projectile.Center, -rot * 1.3f + 1f, 1.5f, Color.White * (0.7f * fade));
+			int beat = age - SleepBeatAge;
+			int beatLife = HenshinExplosion.Duration(BlastSize.L);
+			if (beat >= 0 && beat < beatLife)
+			{
+				HenshinFxDraw.BeginAdditive();
+				HenshinExplosion.Draw(Projectile.Center, BlastSize.L, SpiralTint, beat / (float)beatLife, 420f, 0f, kenneyFrame: false);
+				HenshinFxDraw.EndAdditive();
+			}
 			return false;
 		}
 
