@@ -246,7 +246,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			int frame = (Lifetime - Projectile.timeLeft) / TicksPerFrame;
 			// 光照 D 组：羽爆 mixed = Lerp(光, 白, 0.4)；直径约 11 格只取中心光（有 0.4 白底，不会全黑）
-			H4Fx.DrawFrame(R4DragonFx.Burst(), Frames, frame, Projectile.Center, Color.Lerp(lightColor, Color.White, 0.4f), 0f, DrawScale);
+			H4Fx.DrawFrame(R4DragonFx.Burst(), Frames, frame, Projectile.Center, Color.Lerp(lightColor, Color.White, 0.15f), 0f, DrawScale);
 			return false;
 		}
 	}

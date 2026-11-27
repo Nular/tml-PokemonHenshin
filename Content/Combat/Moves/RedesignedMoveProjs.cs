@@ -1041,7 +1041,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float lifeT = 1f - Projectile.timeLeft / (float)Life;
 			_envelope = lifeT < 0.12f ? 1f : 1f - System.MathF.Pow((lifeT - 0.12f) / 0.88f, 2f);
 			// 残影是 glow（电光、燕返大招）：路径中点一盏弱白光。
-			Lighting.AddLight(Vector2.Lerp(_from, _to, 0.5f), new Vector3(0.3f) * _envelope);
+			Lighting.AddLight(Vector2.Lerp(_from, _to, 0.5f), new Vector3(0.2f) * _envelope);
 		}
 
 		public override bool? CanDamage() => false;

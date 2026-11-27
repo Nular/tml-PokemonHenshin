@@ -172,7 +172,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			SpriteEffects fx = Math.Cos(rot) < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
 			float opacity = frame == 4 ? Math.Min(1f, Projectile.timeLeft / 3f) : 1f;
 			// 抓是物理（mixed）：本体吃爪线中点的光再向白色抬 40%，暗处仍有一点刃光；龙爪是龙能量（glow），保持白。
-			Color body = dragon ? Color.White : Color.Lerp(HenshinFxDraw.LightAt(owner.MountedCenter + dir * (reach * 0.5f)), Color.White, 0.4f);
+			Color body = dragon ? Color.White : Color.Lerp(HenshinFxDraw.LightAt(owner.MountedCenter + dir * (reach * 0.5f)), Color.White, 0.15f);
 			Main.EntitySpriteDraw(tex, pos, src, body * opacity, rot, new Vector2(0f, frameH * 0.5f), 1f, fx, 0f);
 
 			if (dragon)

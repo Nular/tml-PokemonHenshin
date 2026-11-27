@@ -265,16 +265,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				HenshinExplosion.Spawn(Projectile.Center, BlastSize.M, SandTint, HitRadius * 1.2f, kenneyFrame: false, strength: 0.6f);
 			}
 			float gl = Grow();
-			// 光照 A 组：mixed，光 ≤0.3（原 0.6 / 边灯 0.3），免得沙涡照亮自己的 lightColor。
-			Lighting.AddLight(Projectile.Center, 0.3f * gl, 0.22f * gl, 0.1f * gl);
-			if (!Main.dedServ)
-			{
-				// 沙涡边缘 4 盏随涡旋转的弱灯，地形被照出圈的大小
-				float spin = Age * 0.06f;
-				for (int i = 0; i < 4; i++)
-					Lighting.AddLight(Projectile.Center + (spin + i * MathHelper.PiOver2).ToRotationVector2() * HitRadius * 0.85f * gl,
-						0.12f * gl, 0.09f * gl, 0.04f * gl);
-			}
+			// 光照修正：mixed，中心光 ≤0.2（原 0.6 / 0.3），边缘 4 盏弱灯已去掉，免得沙涡照亮自己的 lightColor。
+			Lighting.AddLight(Projectile.Center, 0.2f * gl, 0.15f * gl, 0.07f * gl);
 
 			if (Main.netMode != NetmodeID.MultiplayerClient && Projectile.timeLeft > FadeTicks)
 				PullNpcs();

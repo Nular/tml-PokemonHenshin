@@ -936,7 +936,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
 			float alpha = Math.Min(1f, Projectile.timeLeft / 4f);
 			H5Fx.Draw("MeteorFist", 3, Math.Min(2, age / 6), Projectile.Center, new Vector2(72f, 24f), _dir.ToRotation(), 1.15f, alpha, fx,
-				Color.Lerp(lightColor, Color.White, 0.4f));
+				Color.Lerp(lightColor, Color.White, 0.15f));
 			return false;
 		}
 	}

@@ -513,7 +513,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (age < 12)
 				H3Fx.Draw(H3Fx.FocusAura, 4, age / 3, _origin + _dir * 44f, 0f, 1.3f, Color.White);
 			// 气场保持全亮（glow）；拳头 mixed：一半吃光一半自亮。
-			Color fistC = Color.Lerp(HenshinFxDraw.LightAt(Projectile.Center), Color.White, 0.5f);
+			Color fistC = Color.Lerp(HenshinFxDraw.LightAt(Projectile.Center), Color.White, 0.15f);
 			if (Progress < 0.85f)
 			{
 				for (int i = 2; i >= 1; i--)

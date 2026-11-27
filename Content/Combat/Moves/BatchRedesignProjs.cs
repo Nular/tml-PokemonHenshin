@@ -310,8 +310,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Vector2 org = new Vector2(56f, 2f);
 			// 光照 D 组：mixed，爪身 = Lerp(光, 白, 0.4)。
 			// shortcut: 爪高 16 格只在爪中段取一次光（H5Fx.Draw 不能分段），要分段时改成按源矩形切条绘制。
-			Color clawR = Color.Lerp(HenshinFxDraw.LightAt(_fixed + new Vector2(34f, 0f)), Color.White, 0.4f);
-			Color clawL = Color.Lerp(HenshinFxDraw.LightAt(_fixed - new Vector2(34f, 0f)), Color.White, 0.4f);
+			Color clawR = Color.Lerp(HenshinFxDraw.LightAt(_fixed + new Vector2(34f, 0f)), Color.White, 0.15f);
+			Color clawL = Color.Lerp(HenshinFxDraw.LightAt(_fixed - new Vector2(34f, 0f)), Color.White, 0.15f);
 			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(34f, 0f), org, 0f, s, alpha, SpriteEffects.None, clawR);
 			H5Fx.Draw("MetalClaw", 6, frame, top + new Vector2(-34f, 0f), org, 0f, s, alpha, SpriteEffects.FlipHorizontally, clawL);
 			return false;
@@ -598,7 +598,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Rectangle src = new(0, fh * frame, tex.Width, fh);
 			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
 			// 光照 D 组：mixed，钢拳 = Lerp(光, 白, 0.4)
-			Color fist = Color.Lerp(lightColor, Color.White, 0.4f);
+			Color fist = Color.Lerp(lightColor, Color.White, 0.15f);
 			Main.EntitySpriteDraw(tex, (Projectile.Center - Main.screenPosition).Floor(), src, fist, Projectile.rotation, new Vector2(79f, 20f), 1f, fx, 0f);
 			return false;
 		}

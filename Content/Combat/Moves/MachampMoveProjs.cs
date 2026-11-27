@@ -293,7 +293,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			int frame = age < 2 ? 0 : age < 4 ? 1 : age < 10 ? 2 : age < 15 ? 3 : 4;
 			float opacity = frame == 4 ? Math.Min(1f, Projectile.timeLeft / 3f) : 1f;
 			// mixed：X 刃 60% 吃光、40% 自亮（DrawCross 的 color 参数由 B 组加）。
-			Color crossC = Color.Lerp(HenshinFxDraw.LightAt(Projectile.Center), Color.White, 0.4f);
+			Color crossC = Color.Lerp(HenshinFxDraw.LightAt(Projectile.Center), Color.White, 0.15f);
 			CrossChopArcProj.DrawCross(Projectile.Center, _aim.ToRotation(), frame, 1.6f, opacity, crossC);
 			return false;
 		}
@@ -513,7 +513,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				float r = 10f + rng.NextFloat() * 34f;
 				Vector2 pos = Projectile.Center + a.ToRotationVector2() * r;
 				// 拳影 mixed：60% 吃光、40% 自亮。
-				Color fistC = Color.Lerp(HenshinFxDraw.LightAt(pos), Color.White, 0.4f);
+				Color fistC = Color.Lerp(HenshinFxDraw.LightAt(pos), Color.White, 0.15f);
 				Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), src, fistC, rng.NextFloat() * MathHelper.TwoPi,
 					src.Size() * 0.5f, 0.7f + rng.NextFloat() * 0.4f, SpriteEffects.None, 0f);
 			}

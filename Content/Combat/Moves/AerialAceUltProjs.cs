@@ -311,13 +311,13 @@ namespace PokemonHenshin.Content.Combat.Moves
 				int pass = (int)Projectile.ai[2];
 				HenshinSfx.Play(SfxKey.Swing, Projectile.Center, pass == 0 ? 0.7f : 1f, 0.15f + 0.08f * pass);
 			}
-			// 光照 D 组：斩光补弱白光（0.3），跟刃头走，斩完随淡出
+			// 光照 D 组：斩光补弱白光（0.2），跟刃头走，斩完随淡出
 			int dur = Dur;
 			float lightK = Age <= dur ? 1f : MathHelper.Clamp(1f - (Age - dur) / 6f, 0f, 1f);
 			if (lightK > 0f)
 			{
 				float f = MathHelper.Clamp((Age + 1) / (float)dur, 0f, 1f);
-				Lighting.AddLight(Projectile.Center + Projectile.velocity * f, new Vector3(0.27f, 0.3f, 0.3f) * lightK);
+				Lighting.AddLight(Projectile.Center + Projectile.velocity * f, new Vector3(0.18f, 0.2f, 0.2f) * lightK);
 			}
 		}
 

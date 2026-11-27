@@ -175,8 +175,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Texture2D streak = H7Tex.Get("AirStreak");
 			Vector2 dir = Projectile.velocity.SafeNormalize(Vector2.UnitX);
 			Vector2 side = new Vector2(-dir.Y, dir.X);
-			// mixed：发光部分降到 0.55；刃身另加 0.45 × 环境亮度（亮处仍是原来的全亮，暗处只剩 0.55）。
-			const float MixedAdd = 0.55f;
+			// mixed：发光部分降到 0.3；刃身另加 0.7 × 环境亮度（亮处仍是原来的全亮，暗处只剩 0.3）。
+			const float MixedAdd = 0.3f;
 			Color amb = HenshinFxDraw.LightAt(Projectile.Center);
 			float bodyA = MixedAdd + (1f - MixedAdd) * (Math.Max(amb.R, Math.Max(amb.G, amb.B)) / 255f);
 			HenshinFxDraw.BeginAdditive();

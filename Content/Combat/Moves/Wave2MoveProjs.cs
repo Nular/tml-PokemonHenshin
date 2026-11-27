@@ -2225,7 +2225,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 				SpriteEffects fx = System.Math.Cos(s.Rot) < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
 				Rectangle src = new(0, frameH * frame, tex.Width, frameH);
 				// 光照 C 组：爪痕 mixed，按爪痕中点取光，再向白色拉 0.4（原 Color.White 不吃光）。
-				Color sc = Color.Lerp(HenshinFxDraw.LightAt(s.Mid), Color.White, 0.4f);
+				Color sc = Color.Lerp(HenshinFxDraw.LightAt(s.Mid), Color.White, 0.15f);
 				Main.EntitySpriteDraw(tex, (start - Main.screenPosition).Floor(), src, sc * opacity, s.Rot,
 					new Vector2(0f, frameH * 0.5f), s.Len / tex.Width, fx, 0f);
 			}
@@ -3429,7 +3429,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			// 光照 C 组（mixed）：手臂 + 前臂吃光（取前臂中段，玩家前方 3 格）。
 			// shortcut: BrickBreak.png 没有 _Light 遮罩，刃口 / 落点星分不出来，整图向白色拉 0.5 当 mixed；要刃口全亮需补一张 BrickBreak_Light.png 再叠 Additive。
 			Color armLight = HenshinFxDraw.LightAt(owner.MountedCenter + _dir * 48f);
-			Color body = Color.Lerp(armLight, Color.White, 0.5f);
+			Color body = Color.Lerp(armLight, Color.White, 0.15f);
 			Main.EntitySpriteDraw(tex, (owner.MountedCenter - Main.screenPosition).Floor(), src, body * opacity,
 				rot, new Vector2(tex.Width * 0.5f, fh * 0.5f), 1f, fx, 0f);
 			return false;
