@@ -474,8 +474,14 @@ namespace PokemonHenshin.Content.Combat.Moves
 			Lighting.AddLight(Projectile.Center, 1.25f, 1f, 0.4f);
 			Lighting.AddLight(_from + aim * 40f, 1.2f * Env(), 1.0f * Env(), 0.4f * Env());
 			if (!Main.dedServ)
-				HenshinUltGlow.Emit(Vector2.Lerp(_from, _to, Main.rand.NextFloat(0.05f, 0.85f)), Projectile.owner, Projectile.whoAmI,
-					44f * Math.Max(0.3f, Env()), DustID.YellowTorch, Vector3.Zero, everyTicks: 1);
+			{
+				// 第 2 轮修正 M4：旧写法以轴线为圆心随机外推，约一半落在光束（半宽 30px）上。
+				// 改成同破坏光线：轴线点 + 两侧交替 40px，半径 8，粒子落在离轴 32–48px，光束外。
+				float side = (Main.GameUpdateCount & 1) == 0 ? 1f : -1f;
+				Vector2 perp = new(-aim.Y, aim.X);
+				HenshinUltGlow.Emit(Vector2.Lerp(_from, _to, Main.rand.NextFloat(0.05f, 0.85f)) + perp * (side * 40f), Projectile.owner, Projectile.whoAmI,
+					8f, DustID.YellowTorch, Vector3.Zero, everyTicks: 1);
+			}
 		}
 
 		private static readonly Color SolarTint = new(255, 220, 110);

@@ -719,6 +719,15 @@ namespace PokemonHenshin.Content.Combat.Moves
 						break;
 					Lighting.AddLight(at, 0.07f * fade, 0.13f * fade, 0.2f * fade);
 				}
+				// 第 2 轮修正 M3：对空放也要有少量大招发光粒子。枪口两侧交替，离中线 44px、半径 8（水柱半宽 36px 之外），
+				// 不落在水柱上；写法同破坏光线。位置只用玩家位置 + 同步鼠标（_from/_aimDir 各端自算）。
+				if (fade > 0.05f)
+				{
+					float side = (Main.GameUpdateCount / 3 & 1) == 0 ? 1f : -1f;
+					Vector2 perp = new(-_aimDir.Y, _aimDir.X);
+					HenshinUltGlow.Emit(_from + _aimDir * 40f + perp * (44f * side), Projectile.owner, Projectile.whoAmI, 8f,
+						DustID.GemSapphire, Vector3.Zero, everyTicks: 3, dustScale: 1.2f);
+				}
 			}
 
 			// 水柱本体已是自绘贴图（H1），不再沿线撒粒子。
@@ -821,7 +830,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			const int SliceTex = 8;
 			int slicesPerTile = Math.Max(1, tex.Width / SliceTex);
 			float slicePx = SliceTex * k;
-			float overlap = alpha >= 0.99f ? 2f : 0f;
 			int slices = (int)Math.Ceiling(len / slicePx);
 			Vector2 origin = new(0f, fh * 0.5f);
 			for (int i = 0; i < slices; i++)
@@ -831,9 +839,12 @@ namespace PokemonHenshin.Content.Combat.Moves
 				if (part <= 0.01f)
 					break;
 				int sw = Math.Min(SliceTex, Math.Max(1, (int)Math.Ceiling(part / k)));
-				float drawLen = i < slices - 1 ? part + overlap : part;
 				// 光照第 2 轮 E 组：keepHue 保蓝（暖光下不发灰）+ darkFade 暗处整片变半透明（0.35 + 0.65·k），不再是一整条灰板。
-				Color c = HenshinFxDraw.LitSegment(_from, _to, (start + part * 0.5f) / len, Color.White, keepHue: true, darkFade: true) * alpha;
+				// 第 2 轮修正 M2：加农不保色，逐通道乘光，才能吃到沿线蓝灯；水炮技能版没有灯，仍保色。
+				Color c = HenshinFxDraw.LitSegment(_from, _to, (start + part * 0.5f) / len, Color.White, keepHue: !IsCannon, darkFade: true) * alpha;
+				// 第 2 轮修正 M1：先算颜色再定重叠。只有这片几乎不透明（c.A >= 252）才多画 2px；
+				// darkFade / 淡入淡出让片半透明时不重叠，免得每片接头叠出深色条纹。
+				float drawLen = i < slices - 1 && c.A >= 252 ? part + 2f : part;
 				Rectangle src = new(i % slicesPerTile * SliceTex, fh * frame, sw, fh);
 				Main.EntitySpriteDraw(tex, _from + n * start - Main.screenPosition, src, c, rot,
 					origin, new Vector2(drawLen / sw, k * wMul), SpriteEffects.None, 0f);
