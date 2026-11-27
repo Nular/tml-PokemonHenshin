@@ -829,6 +829,8 @@ namespace PokemonHenshin.Content.Combat.Moves
 				_speed = DashTiles * 16f / Life;
 				_startCenter = p.Center;
 				SoundEngine.PlaySound(SoundID.Item14 with { Pitch = -0.35f }, p.Center);
+				// 入口：土块炸开（H6 组：贴图 + 少量碎屑，不再每帧撒尘）
+				H6Fx.SpawnBurst(Projectile, p.Center, H6Fx.KindDirt, 1.3f);
 			}
 
 			if (Projectile.owner == Main.myPlayer)
@@ -864,27 +866,26 @@ namespace PokemonHenshin.Content.Combat.Moves
 			}
 
 			Projectile.Center = p.Center;
-			Dust.NewDustPerfect(p.Center, DustID.Dirt, -_dir * 3f + Main.rand.NextVector2Circular(2f, 2f), 80, default, 1.4f).noGravity = true;
-			Dust.NewDustPerfect(p.Center, DustID.Sand, Main.rand.NextVector2Circular(3f, 3f), 100, new Color(200, 170, 90), 1.2f).noGravity = true;
+			if (!Main.dedServ && Projectile.timeLeft % 4 == 0)
+				Dust.NewDustPerfect(p.Center, DustID.Dirt, -_dir * 2f + Main.rand.NextVector2Circular(1.5f, 1.5f), 80, default, 1.1f);
+		}
+
+		public override void OnKill(int timeLeft)
+		{
+			// 出口：与入口对称的土块炸开
+			Player p = Main.player[Projectile.owner];
+			if (p.active && !p.dead)
+				H6Fx.SpawnBurst(Projectile, p.Center, H6Fx.KindDirt, 1.3f);
 		}
 
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			SoundEngine.PlaySound(SoundID.Item14, target.Center);
-			for (int i = 0; i < 10; i++)
-				Dust.NewDustPerfect(target.Center, DustID.Dirt, Main.rand.NextVector2Circular(5f, 5f), 80, default, 1.4f);
+			H6Fx.SpawnBurst(Projectile, target.Center, H6Fx.KindDirt, 0.9f);
 		}
 
-		public override bool PreDraw(ref Color lightColor)
-		{
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.SoftGlow, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(200, 160, 80), 0.55f), 0.65f);
-			HenshinFxDraw.DrawAdditiveCentered(HenshinFxDraw.Fog, Projectile.Center,
-				HenshinFxDraw.WithAlpha(new Color(180, 140, 70), 0.35f), 0.9f);
-			HenshinFxDraw.EndAdditive();
-			return false;
-		}
+		// 本体就是三地鼠自己在贴图外；不再叠加算法光晕/雾（H6：挖洞改为出入口贴图爆点）。
+		public override bool PreDraw(ref Color lightColor) => false;
 	}
 
 	/// <summary>落雷 / 定点打击。</summary>

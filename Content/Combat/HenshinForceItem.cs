@@ -311,6 +311,9 @@ namespace PokemonHenshin.Content.Combat
 			HenshinPlayer hp = player.GetModPlayer<HenshinPlayer>();
 			if (!hp.IsTransformed || hp.ChoiceLockUlt || Ultimate == null)
 				return false;
+			// R4：精神击破选不到敌人（鼠标 16 格 / 玩家 60 格）时不扣能量、不进冷却。TryFireUltimate 仅拥有者端调用。
+			if (Ultimate.ProjectileType == ModContent.ProjectileType<MewtwoPsystrikeDirectorProj>() && !MewtwoPsystrikeDirectorProj.HasTarget(player))
+				return false;
 			if (!hp.TryConsumeUltimate())
 				return false;
 

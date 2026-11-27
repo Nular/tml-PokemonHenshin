@@ -66,8 +66,8 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L11_F02", 27, "Mods.PokemonHenshin.Items.PidgeotForce.DisplayName", PokemonType.Flying, 7, "L11_F01", FormPassiveKind.KeenEye, secondary: PokemonType.Normal, role: FormRole.Utility);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.WeatherPainHurricane("Mods.PokemonHenshin.Moves.Hurricane", 1.6f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.BraveBirdSkill("Mods.PokemonHenshin.Moves.BraveBird", 2.2f);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.WorkUpUlt("Mods.PokemonHenshin.Moves.WorkUp");
+		protected override MoveSpec CreateMoveB() => FormItemUtil.AirSlash("Mods.PokemonHenshin.Moves.AirSlash", 1.9f);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.HeatWaveUlt("Mods.PokemonHenshin.Moves.HeatWave", 3.4f);
 	}
 
 	public class AbraForce : HenshinForceItem
@@ -99,7 +99,7 @@ namespace PokemonHenshin.Content.Items.Forms
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L13_F02", 31, "Mods.PokemonHenshin.Items.SteelixForce.DisplayName", PokemonType.Steel, 9, "L13_F01", FormPassiveKind.RockHead, secondary: PokemonType.Ground);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.RockSlideX("Mods.PokemonHenshin.Moves.RockSlide", 3, 1.5f);
 		protected override MoveSpec CreateMoveB() => FormItemUtil.IronTailWhip("Mods.PokemonHenshin.Moves.IronTail", 1.6f);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.DoubleEdgeUlt("Mods.PokemonHenshin.Moves.DoubleEdge", 3.8f, 44f);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.FlashCannonUlt("Mods.PokemonHenshin.Moves.FlashCannon", 3.8f);
 	}
 
 	public class MewtwoForce : HenshinForceItem
@@ -130,8 +130,8 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L16_F01", 35, "Mods.PokemonHenshin.Items.LugiaForce.DisplayName", PokemonType.Psychic, 12, null, FormPassiveKind.Pressure, secondary: PokemonType.Flying, role: FormRole.Legendary, dmgFactor: 1.15f);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.AirBurst("Mods.PokemonHenshin.Moves.Aeroblast", 1.9f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.SkyAttackSextet("Mods.PokemonHenshin.Moves.SkyAttack", 2.4f);
-		protected override MoveSpec CreateUltimate() => FormItemUtil.HurricaneField("Mods.PokemonHenshin.Moves.CycloneAttack", 4.5f, ult: true);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.SkyAttack("Mods.PokemonHenshin.Moves.SkyAttack", 1.8f);
+		protected override MoveSpec CreateUltimate() => FormItemUtil.HurricaneField("Mods.PokemonHenshin.Moves.Hurricane", 4.5f, ult: true);
 	}
 
 	public class RayquazaForce : HenshinForceItem

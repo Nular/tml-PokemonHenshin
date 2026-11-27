@@ -20,7 +20,7 @@ PokemonHenshin/
   tools/          # cloud-agent-setup、build-mod、HenshinStatVerify、fetch/pixelize/extract_locomotion、gen_acc_localization、make_acc_placeholders、PromoVideo（宣传片）
   Assets/Forms/ · Forms/Locomotion/ · Accessories/ · Items/ · Fx/
   Content/Core · Damage · PlayerState · Visual · Combat · Affinity · Evolution · Buffs · Config
-         Accessories · Items/Forms · Items/Consumables · WeatherField · TerrainEdit · Loot · Net · NPCs · Prefixes
+         Accessories · Items/Forms · Items/Consumables · Items/Debug · WeatherField · TerrainEdit · Loot · Net · NPCs · Prefixes
 ```
 
 `build.txt`：`modReferences = CalamityMod`；`sortAfter = CalamityMod`。钉死：**tML 1.4.4.9 / 2026.07（net8.0）**，**CalamityMod 2.2.4**。禁止 `modReferences` 大修 / InnoVault。

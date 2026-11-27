@@ -368,6 +368,11 @@ RareCandy: {
 	MaxLevel: That Force is already max level
 }
 
+UltChargeDebug: {
+	On: Infinite Ultimate: ON
+	Off: Infinite Ultimate: OFF
+}
+
 Recipes.AnyGoldCritter: Any Gold Critter
 
 Accessories: {
@@ -560,6 +565,7 @@ Moves: {
 	PetalDance: Petal Dance
 	ThunderShock: Thunder Shock
 	VoltTackle: Volt Tackle
+	Discharge: Discharge
 	RockTomb: Rock Tomb
 	RockSlide: Rock Slide
 	BrickBreak: Brick Break
@@ -578,12 +584,14 @@ Moves: {
 	StealthRock: Stealth Rock
 	WorkUp: Work Up
 	DoubleEdge: Double-Edge
+	FlashCannon: Flash Cannon
 	TakeDown: Take Down
 	Flail: Flail
 	Earthquake: Earthquake
 	Peck: Peck
 	AerialAce: Aerial Ace
 	BraveBird: Brave Bird
+	HeatWave: Heat Wave
 	ZenHeadbutt: Zen Headbutt
 	FocusPunch: Focus Punch
 	SandTomb: Sand Tomb
@@ -724,7 +732,7 @@ Items: {
 
 	DragoniteForce: {
 		DisplayName: Dragonite Force
-		Tooltip: Dragon/Flying. Hurricane, Dragon Dive, Outrage.
+		Tooltip: Dragon/Flying. Hurricane, Wing Attack, Outrage.
 	}
 
 	MetangForce: {
@@ -764,7 +772,7 @@ Items: {
 
 	PidgeotForce: {
 		DisplayName: Pidgeot Force
-		Tooltip: Flying/Normal. Hurricane, Brave Bird, Work Up.
+		Tooltip: Flying/Normal. Hurricane, Air Slash, Heat Wave.
 	}
 
 	AbraForce: {
@@ -784,7 +792,7 @@ Items: {
 
 	SteelixForce: {
 		DisplayName: Steelix Force
-		Tooltip: Steel/Ground. Rock Slide, Iron Tail, Double-Edge.
+		Tooltip: Steel/Ground. Rock Slide, Iron Tail, Flash Cannon.
 	}
 
 	MewtwoForce: {
@@ -804,7 +812,7 @@ Items: {
 
 	LugiaForce: {
 		DisplayName: Lugia Force
-		Tooltip: Legendary Psychic/Flying. Aeroblast, Sky Attack, Cyclone.
+		Tooltip: Legendary Psychic/Flying. Aeroblast, Sky Attack, Hurricane.
 	}
 
 	RayquazaForce: {
@@ -819,6 +827,15 @@ Items: {
 			Raises the Pokémon Force in inventory slot 1 by 1 level
 			Cannot be used at the current stage cap or level 100
 			Cooking Pot: any gold critter or Golden Carp
+			'''
+	}
+
+	UltChargeDebugItem: {
+		DisplayName: "[Debug] Infinite Ultimate"
+		Tooltip:
+			'''
+			[Debug] For testing only
+			Use: toggle infinite ultimate energy for the current Force
 			'''
 	}
 
@@ -2136,4 +2153,33 @@ Projectiles: {
 	AerialAceSlashProj.DisplayName: Aerial Ace Slash Proj
 	AerialAceUltProj.DisplayName: Aerial Ace Ult Proj
 	WhirlpoolUltProj.DisplayName: Whirlpool Ult Proj
+	AuraSphereOrbProj.DisplayName: Aura Sphere Orb Proj
+	FlashCannonBlastProj.DisplayName: Flash Cannon Blast Proj
+	FlashCannonChargeProj.DisplayName: Flash Cannon Charge Proj
+	FlashCannonShotProj.DisplayName: Flash Cannon Shot Proj
+	H1HitFxProj.DisplayName: H1 Hit Fx Proj
+	H2DischargeProj.DisplayName: H2 Discharge Proj
+	H2HitFxProj.DisplayName: H2 Hit Fx Proj
+	H3HitFxProj.DisplayName: H3 Hit Fx Proj
+	H4HitFxProj.DisplayName: H4 Hit Fx Proj
+	H5FallingRockProj.DisplayName: H5 Falling Rock Proj
+	H5RockBurstProj.DisplayName: H5 Rock Burst Proj
+	H6BurstFxProj.DisplayName: H6 Burst Fx Proj
+	H6SandTombProj.DisplayName: H6 Sand Tomb Proj
+	H7AirSlashProj.DisplayName: H7 Air Slash Proj
+	H7HeatWaveDirectorProj.DisplayName: H7 Heat Wave Director Proj
+	H7HeatWaveProj.DisplayName: H7 Heat Wave Proj
+	H7HitFxProj.DisplayName: H7 Hit Fx Proj
+	H7SkyAttackProj.DisplayName: H7 Sky Attack Proj
+	OverheatBlastProj.DisplayName: Overheat Blast Proj
+	PetalDanceH1Proj.DisplayName: Petal Dance H1 Proj
+	SolarBeamChargeProj.DisplayName: Solar Beam Charge Proj
+	SolarBeamProj.DisplayName: Solar Beam Proj
+	WingAttackProj.DisplayName: Wing Attack Proj
+	H7SkyBirdCrossProj.DisplayName: H7 Sky Bird Cross Proj
+	FlashCannonGlowProj.DisplayName: Flash Cannon Glow Proj
+	DragonAscentBlastProj.DisplayName: Dragon Ascent Blast Proj
+	DragonPulseBlastProj.DisplayName: Dragon Pulse Blast Proj
+	WingFeatherPullProj.DisplayName: Wing Feather Pull Proj
+	WingFeatherBurstProj.DisplayName: Wing Feather Burst Proj
 }

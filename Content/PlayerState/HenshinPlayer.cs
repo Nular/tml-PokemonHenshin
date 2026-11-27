@@ -182,6 +182,7 @@ namespace PokemonHenshin.Content.PlayerState
 		public int ShellBellCooldown { get; private set; }
 		public int RockyHelmetCooldown { get; private set; }
 		public int LifeOrbGate { get; private set; }
+		public int SolarDrainGate { get; private set; }
 		public int GuardBonusTimer { get; set; }
 		/// <summary>撞击类内置 CD（约 0.5s = 30 tick）。</summary>
 		public int LungeCooldown { get; private set; }
@@ -196,6 +197,17 @@ namespace PokemonHenshin.Content.PlayerState
 		public void BeginUltEnergyLockout()
 		{
 			UltEnergyLockoutTicks = UltEnergyLockoutDuration;
+		}
+
+		/// <summary>Debug：把当前之力大招能量设满（并清充能锁定）。仅本机本人；SendClientChanges 会照常同步。</summary>
+		public void DebugFillUltimateEnergy()
+		{
+			if (!IsTransformed || IsRemotePlayerOnClient)
+				return;
+			UltEnergyLockoutTicks = 0;
+			UltimateEnergy = UltimateEnergyMax;
+			if (CurrentForm != null)
+				energyByForm[CurrentForm.FormId] = UltimateEnergy;
 		}
 
 		private readonly float[] combatEnergyRing = new float[60];
@@ -799,6 +811,7 @@ namespace PokemonHenshin.Content.PlayerState
 			if (ShellBellCooldown > 0) ShellBellCooldown--;
 			if (RockyHelmetCooldown > 0) RockyHelmetCooldown--;
 			if (LifeOrbGate > 0) LifeOrbGate--;
+			if (SolarDrainGate > 0) SolarDrainGate--;
 			if (FocusSashCooldown > 0) FocusSashCooldown--;
 			if (GuardBonusTimer > 0)
 			{
@@ -1404,8 +1417,9 @@ namespace PokemonHenshin.Content.PlayerState
 				Player.statLife = Math.Max(1, Player.statLife - 1);
 				Player.HealEffect(-1, true);
 			}
-			if (SolarPowerDrain && Player.statLife > 1 && LifeOrbGate <= 0)
+			if (SolarPowerDrain && Player.statLife > 1 && SolarDrainGate <= 0)
 			{
+				SolarDrainGate = 30; // 多段/穿透招式（喷射火焰 10 弹×穿透）不再每次命中扣血：每 0.5s 至多 1 HP
 				Player.statLife = Math.Max(1, Player.statLife - 1);
 			}
 			if (ShellBellHeal > 0f && ShellBellCooldown <= 0 && damageDone > 0)

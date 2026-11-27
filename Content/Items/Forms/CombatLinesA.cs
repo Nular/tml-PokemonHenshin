@@ -84,7 +84,7 @@ namespace PokemonHenshin.Content.Items.Forms
 	{
 		protected override FormDefinition CreateDefinition() => FormItemUtil.Def("L07_F03", 19, "Mods.PokemonHenshin.Items.DragoniteForce.DisplayName", PokemonType.Dragon, 11, "L07_F02", FormPassiveKind.Multiscale, secondary: PokemonType.Flying);
 		protected override MoveSpec CreateMoveA() => FormItemUtil.WeatherPainHurricane("Mods.PokemonHenshin.Moves.Hurricane", 1.7f);
-		protected override MoveSpec CreateMoveB() => FormItemUtil.DragonDiveSlam("Mods.PokemonHenshin.Moves.DragonDive", 1.9f);
+		protected override MoveSpec CreateMoveB() => FormItemUtil.WingAttack("Mods.PokemonHenshin.Moves.WingAttack", 0.95f);
 		protected override MoveSpec CreateUltimate() => FormItemUtil.OutrageUlt("Mods.PokemonHenshin.Moves.Outrage", 4.2f);
 	}
 }

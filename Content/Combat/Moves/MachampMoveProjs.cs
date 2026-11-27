@@ -84,7 +84,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		private Vector2 _dir = Vector2.UnitX;
 		private float _reach;
-		private VertexPositionColorTexture[] _verts = new VertexPositionColorTexture[3];
 
 		public override string Texture => "Terraria/Images/Projectile_" + ProjectileID.Boulder;
 
@@ -110,7 +109,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 		{
 			if (_reach > 1f)
 				return;
-			Main.instance.LoadProjectile(ProjectileID.Boulder);
 			Player owner = Main.player[Projectile.owner];
 			_dir = Projectile.velocity.LengthSquared() > 0.01f
 				? Vector2.Normalize(Projectile.velocity)
@@ -135,7 +133,6 @@ namespace PokemonHenshin.Content.Combat.Moves
 			float jab = MathHelper.Clamp(age / 5f, 0f, 1f);
 			float reachNow = MathHelper.Lerp(48f, _reach, jab);
 			Projectile.Center = owner.MountedCenter + _dir * reachNow;
-			Dust.NewDustPerfect(Projectile.Center, DustID.Stone, _dir * 2f, 80, new Color(160, 120, 80), 1.1f).noGravity = true;
 		}
 
 		public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
@@ -185,64 +182,23 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
+			// 尖石：自绘 StoneSpike 长石刺（原点=根部），按 jab 从短到长伸出；不再用 Boulder TriangleList。
 			EnsureSpike();
 			Player owner = Main.player[Projectile.owner];
 			float age = Lifetime - Projectile.timeLeft;
 			float jab = MathHelper.Clamp(age / 5f, 0f, 1f);
 			float reachNow = MathHelper.Lerp(48f, _reach, jab);
-			Vector2 origin = owner.MountedCenter;
-			Vector2 tip = origin + _dir * reachNow;
-			Vector2 perp = _dir.RotatedBy(MathHelper.PiOver2);
-			float halfBase = MathHelper.Lerp(BaseHalf * 0.45f, BaseHalf, jab);
-
-			Texture2D tex = ProjectileBorrow.RequestProjectileTexture(ProjectileID.Boulder);
-			Color c = new(210, 200, 190, 255);
-			_verts[0] = new VertexPositionColorTexture(new Vector3(origin + perp * halfBase - Main.screenPosition, 0f), c, new Vector2(0.1f, 0.1f));
-			_verts[1] = new VertexPositionColorTexture(new Vector3(origin - perp * halfBase - Main.screenPosition, 0f), c, new Vector2(0.1f, 0.9f));
-			_verts[2] = new VertexPositionColorTexture(new Vector3(tip - Main.screenPosition, 0f), c, new Vector2(0.9f, 0.5f));
-
-			Main.spriteBatch.End();
-			var device = Main.graphics.GraphicsDevice;
-			_basicEffect ??= new BasicEffect(device)
-			{
-				TextureEnabled = true,
-				VertexColorEnabled = true,
-				World = Matrix.Identity,
-				View = Matrix.Identity
-			};
-			_basicEffect.Texture = tex;
-			_basicEffect.Projection = Matrix.CreateOrthographicOffCenter(0, Main.screenWidth, Main.screenHeight, 0, 0, 1);
-			bool drew = false;
-			try
-			{
-				foreach (EffectPass pass in _basicEffect.CurrentTechnique.Passes)
-				{
-					pass.Apply();
-					device.DrawUserPrimitives(PrimitiveType.TriangleList, _verts, 0, 1);
-				}
-				drew = true;
-			}
-			catch
-			{
-				drew = false;
-			}
-
-			Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
-				DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
-
-			if (!drew)
-			{
-				// FALLBACK slender — report to supervisor: TriangleList failed; elongated boulder
-				float len = reachNow;
-				float rot = _dir.ToRotation();
-				Main.EntitySpriteDraw(tex, (origin + tip) * 0.5f - Main.screenPosition, null,
-					new Color(200, 190, 180, 230), rot, tex.Size() * 0.5f,
-					new Vector2(len / Math.Max(1, tex.Width), halfBase * 2f / Math.Max(1, tex.Height)), SpriteEffects.None);
-			}
+			Texture2D tex = (_spikeTex ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/StoneSpike/StoneSpike", ReLogic.Content.AssetRequestMode.ImmediateLoad)).Value;
+			float rot = _dir.ToRotation();
+			SpriteEffects fx = _dir.X < 0f ? SpriteEffects.FlipVertically : SpriteEffects.None;
+			float fade = Math.Min(1f, Projectile.timeLeft / 3f);
+			Vector2 scale = new(reachNow / (tex.Width - 4f), MathHelper.Lerp(0.6f, 1f, jab));
+			Main.EntitySpriteDraw(tex, (owner.MountedCenter - Main.screenPosition).Floor(), null, Lighting.GetColor(Projectile.Center.ToTileCoordinates()) * fade,
+				rot, new Vector2(4f, tex.Height * 0.5f), scale, fx, 0f);
 			return false;
 		}
 
-		private static BasicEffect _basicEffect;
+		private static ReLogic.Content.Asset<Texture2D> _spikeTex;
 	}
 
 	/// <summary>
@@ -309,17 +265,16 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			float progress = 1f - Projectile.timeLeft / (float)Lifetime;
-			progress = MathHelper.Clamp(progress, 0f, 1f);
-			GetXEnds(progress, out Vector2 a0, out Vector2 a1, out Vector2 b0, out Vector2 b1, out _);
-
-			Color col = HenshinFxDraw.WithAlpha(new Color(255, 230, 210), 0.9f * (0.55f + 0.45f * progress));
-			HenshinFxDraw.BeginAdditive();
-			DrawCurvedSlash(a0, a1, _aim, col, progress);
-			DrawCurvedSlash(b0, b1, _aim, col, progress);
-			HenshinFxDraw.EndAdditive();
+			// X 形剑气用 CrossSlash 贴图（同十字劈 Machop 版），中心在交点；不再画贝塞尔光线。
+			int age = Lifetime - Projectile.timeLeft;
+			int frame = age < 2 ? 0 : age < 4 ? 1 : age < 10 ? 2 : age < 15 ? 3 : 4;
+			float opacity = frame == 4 ? Math.Min(1f, Projectile.timeLeft / 3f) : 1f;
+			CrossChopArcProj.DrawCross(Projectile.Center, _aim.ToRotation(), frame, 1.6f, opacity);
 			return false;
 		}
+
+		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+			=> H2HitFxProj.Spawn(Projectile, target.Center, 0.7f, Main.rand.NextFloat(MathHelper.TwoPi));
 
 		/// <summary>交点身前 CrossOffset；两对角端点构成 X，随瞄准旋转。</summary>
 		private void GetXEnds(float progress, out Vector2 a0, out Vector2 a1, out Vector2 b0, out Vector2 b1, out Vector2 cross)
@@ -441,7 +396,7 @@ namespace PokemonHenshin.Content.Combat.Moves
 			if (Projectile.timeLeft % 3 == 0)
 			{
 				SoundEngine.PlaySound(SoundID.Item1 with { Volume = 0.45f, Pitch = Main.rand.NextFloat(-0.1f, 0.3f) }, Projectile.Center);
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < 1; i++)
 					Dust.NewDustPerfect(Projectile.Center, DustID.Blood, Main.rand.NextVector2Circular(3.5f, 3.5f), 80, default, 1.15f).noGravity = true;
 
 				if (Projectile.owner == Main.myPlayer)
@@ -489,21 +444,24 @@ namespace PokemonHenshin.Content.Combat.Moves
 
 		public override bool PreDraw(ref Color lightColor)
 		{
-			Player p = Main.player[Projectile.owner];
-			Vector2 aim = Projectile.Center - p.MountedCenter;
-			if (aim.LengthSquared() < 1f)
-				aim = new Vector2(p.direction, 0f);
-			Vector2 aimN = Vector2.Normalize(aim);
-
-			// HitJagged01：rot=0 时尖端朝左 → +Pi 对齐瞄准方向
-			float rot = aimN.ToRotation() + MathHelper.Pi;
-
-			int jagged = HenshinFxDraw.AgeFrame(Lifetime, Projectile.timeLeft, 2, HenshinFxDraw.HitJaggedFrames);
-			HenshinFxDraw.BeginAdditive();
-			HenshinFxDraw.DrawHitJaggedFrame(Projectile.Center, HenshinFxDraw.WithAlpha(new Color(255, 220, 200), 0.8f),
-				0.95f, rot, jagged, SpriteEffects.None);
-			HenshinFxDraw.EndAdditive();
+			// 近身战：每 4 tick 换一组随机位置的拳脚命中星（FlurryHit 4 帧），不再用 HitJagged 叠层。
+			int step = Projectile.timeLeft / 4;
+			int phase = 3 - Projectile.timeLeft % 4;
+			var rng = new Terraria.Utilities.UnifiedRandom(step * 131 + Projectile.identity * 17);
+			Texture2D tex = (_flurrySheet ??= ModContent.Request<Texture2D>("PokemonHenshin/Assets/Fx/FlurryHit/FlurryHit", ReLogic.Content.AssetRequestMode.ImmediateLoad)).Value;
+			int fh = tex.Height / 4;
+			Rectangle src = new(0, fh * phase, tex.Width, fh);
+			for (int i = 0; i < 3; i++)
+			{
+				float a = rng.NextFloat() * MathHelper.TwoPi;
+				float r = 10f + rng.NextFloat() * 34f;
+				Vector2 pos = Projectile.Center + a.ToRotationVector2() * r;
+				Main.EntitySpriteDraw(tex, (pos - Main.screenPosition).Floor(), src, Color.White, rng.NextFloat() * MathHelper.TwoPi,
+					src.Size() * 0.5f, 0.7f + rng.NextFloat() * 0.4f, SpriteEffects.None, 0f);
+			}
 			return false;
 		}
+
+		private static ReLogic.Content.Asset<Texture2D> _flurrySheet;
 	}
 }
