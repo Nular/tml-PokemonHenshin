@@ -454,7 +454,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 
 **可见性**：`SfxKey` 是 `internal`，带 `SfxKey` 参数的公开方法也要写 `internal`（否则 CS0050/CS0051）。
 
-### 4.15 招式贴图吃光规则（2026-11-28，分支 `fx/lighting`，构建通过，未进游戏验收）
+### 4.15 招式贴图吃光规则（2026-11-28，分支 `fx/lighting`，第 1+2 轮本地已验收 2026-11-28，联机 pending）
 
 起因：泡沫光线的泡泡在黑洞里仍是亮青色，原版泡泡枪的泡泡会变暗。规则按招式**含义**分三类：
 
@@ -462,7 +462,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 |---|---|---|---|
 | lit（吃光） | 水、泡泡、岩、土、草、风、普通物理 | 本体颜色 × 场景光（`lightColor` / `HenshinFxDraw.Lit`），**不留下限**（旧的 110–200 下限都删了）；拖尾 `Strip(..., lit: true)` | 不加 `AddLight`、不设 `Projectile.light` |
 | glow（发光） | 火、电、超能、鬼、龙能量、光束、大招 | 全亮（`Color.White` / Additive） | 必须有 `Lighting.AddLight` |
-| mixed（混合） | 爪、拳、劈、空气斩、龙尾、潮旋等"实物 + 能量" | 本体 `Lerp(LightAt(pos), White, 0.4~0.5)`，或吃光本体 + 小发光层 | `AddLight` 每通道 ≤ 0.2 |
+| mixed（混合） | 爪、拳、劈、空气斩、龙尾、潮旋等"实物 + 能量" | 本体 `Lerp(LightAt(pos), White, 0.15)`（爪/拳/劈等实物，7cfb1a4 从 0.4/0.5 降下），或吃光本体 + 小发光层 | `AddLight` 每通道 ≤ 0.2 |
 
 **共用工具（A 组，全部带默认值 = 旧行为）：**
 
@@ -478,7 +478,7 @@ Playstyle 代号同 `move-effects.md`。类名默认在 `Content/Combat/Moves/`�
 | lit 招式命中 `lightScale` | 0.5（glow 招式 1） |
 | lit 招式自写 `Pulse` / `SpawnLight` scale | 0.4–0.5 |
 | mixed 的 `AddLight` | 每通道 ≤ 0.2 |
-| mixed 本体白色占比 | `Lerp(光, White, 0.4~0.5)` |
+| mixed 本体白色占比 | 实物 `Lerp(光, White, 0.15)`；例外：近身战大招拳影 `CloseCombatFuryProj` 0.25、风旋 `AirBurstProj` 0.5 |
 
 **写法：** 超过约 3 格的物体逐段取光（`LitSegment` 或切片）；沿地面取样点放空气格（`LightAt` 已自动上移）；命中闪、爆炸是 glow 例外，但 lit 招式调用时要降强度；不加新粒子。
 
